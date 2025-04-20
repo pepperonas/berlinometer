@@ -14,6 +14,7 @@ import EnergyDashboardView from './components/EnergyDashboardView';
 import SensorControlView from './components/SensorControlView';
 import DevView from './components/DevView';
 import UnifiedTimeControlView from './components/UnifiedTimeControlView';
+import EnhancedEnergyDashboardView from "./components/EnhancedEnergyDashboardView";
 
 // BrainBuster-Stil Logo-Komponente
 const LogoComponent = () => (
@@ -1061,7 +1062,7 @@ function App() {
                             </Tab>
 
                             <Tab id="energy" label="Energie">
-                                <EnergyDashboardView
+                                <EnhancedEnergyDashboardView
                                     lights={lights}
                                     username={username}
                                     bridgeIP={bridgeIP}
