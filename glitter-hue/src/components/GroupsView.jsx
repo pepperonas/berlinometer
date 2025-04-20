@@ -177,14 +177,19 @@ const GroupControls = ({ group, lights, onToggleAll, onSetBrightness, username, 
     };
 
     // Gruppe ein-/ausschalten
+    // Gruppe ein-/ausschalten
     const toggleGroup = async () => {
+        // Diese Variablen am Anfang der Funktion deklarieren
+        let newOn;
+        let originalLights;
+
         try {
             // Sofort UI aktualisieren für bessere UX
-            const newOn = !allOn;
+            newOn = !allOn;
             setAllOn(newOn);
 
             // Originalen Zustand für mögliche Wiederherstellung speichern
-            const originalLights = JSON.parse(JSON.stringify(lights));
+            originalLights = JSON.parse(JSON.stringify(lights));
 
             // Die Statusänderung für alle Lichter vorbereiten
             const updatedLights = { ...lights };

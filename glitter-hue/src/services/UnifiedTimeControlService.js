@@ -74,7 +74,7 @@ export default class UnifiedTimeControlService {
         this.localTimerInterval = null;
         this.localTimers = [];
         this.automations = [];
-        this.sunTimes = { sunrise: '06:00', sunset: '18:00' };
+        this.sunTimes = {sunrise: '06:00', sunset: '18:00'};
         this.onTimerExecute = null; // Callback für Timer-Aktionen
         this.onAutomationExecute = null; // Callback für Automatisierungs-Aktionen
     }
@@ -82,7 +82,7 @@ export default class UnifiedTimeControlService {
     /**
      * Initialisiert den Service und lädt alle Zeitsteuerungen
      */
-    async initialize(onTimerExecute, onAutomationExecute, coordinates = { lat: 50.1, lng: 8.6 }) {
+    async initialize(onTimerExecute, onAutomationExecute, coordinates = {lat: 50.1, lng: 8.6}) {
         this.onTimerExecute = onTimerExecute;
         this.onAutomationExecute = onAutomationExecute;
 
@@ -282,7 +282,7 @@ export default class UnifiedTimeControlService {
      */
     saveLocalTimers() {
         try {
-            const timersToSave = this.localTimers.map(({ managed, ...timer }) => timer);
+            const timersToSave = this.localTimers.map(({managed, ...timer}) => timer);
             localStorage.setItem('hue-timers', JSON.stringify(timersToSave));
         } catch (error) {
             console.error("Fehler beim Speichern der lokalen Timer:", error);
@@ -321,7 +321,10 @@ export default class UnifiedTimeControlService {
      */
     saveAutomations() {
         try {
-            const automationsToSave = this.automations.map(({ managed, ...automation }) => automation);
+            const automationsToSave = this.automations.map(({
+                                                                managed,
+                                                                ...automation
+                                                            }) => automation);
             localStorage.setItem('hue-automations', JSON.stringify(automationsToSave));
         } catch (error) {
             console.error("Fehler beim Speichern der Automatisierungen:", error);
@@ -583,17 +586,17 @@ export default class UnifiedTimeControlService {
 
             switch (timer.type) {
                 case TIME_CONTROL_TYPES.COUNTDOWN_ON:
-                    newState = { on: true };
+                    newState = {on: true};
                     break;
                 case TIME_CONTROL_TYPES.COUNTDOWN_OFF:
-                    newState = { on: false };
+                    newState = {on: false};
                     break;
                 case TIME_CONTROL_TYPES.CYCLE:
                     // Wechsle zwischen Ein und Aus
-                    newState = { on: !timer.state };
+                    newState = {on: !timer.state};
                     break;
                 default:
-                    newState = { on: false };
+                    newState = {on: false};
             }
 
             // Rufe den Callback mit den Timer-Aktionen auf
@@ -620,4 +623,471 @@ export default class UnifiedTimeControlService {
             return false;
         }
     }
+
+// Konvertiert Bridge-Zeitpläne ins App-Format
+    formatBridgeSchedulesToApp(schedules) {
+        if (!schedules || typeof schedules !== 'object') return [];
+
+        return Object.entries(schedules).map(([id, schedule]) => {
+            // Bestimme den Typ des Zeitplans
+            let type = TIME_CONTROL_TYPES.FIXED_SCHEDULE;
+            let recurrence = null;
+
+            // Analysiere den Zeitplan-String
+            if (schedule.localtime) {
+                if (schedule.localtime.includes('A')) {
+                    type = TIME_CONTROL_TYPES.SUNRISE_SCHEDULE;
+                    recurrence = this.parseSunBasedTime(schedule.localtime);
+                } else if (schedule.localtime.includes('P')) {
+                    type = TIME_CONTROL_TYPES.SUNSET_SCHEDULE;
+                    recurrence = this.parseSunBasedTime(schedule.localtime);
+                } else {
+                    recurrence = this.parseFixedTime(schedule.localtime);
+                }
+            }
+
+            // Konvertiere Wochentage
+            let days = [];
+            if (schedule.weekdays) {
+                days = this.convertWeekdaysToDays(schedule.weekdays);
+            } else if (schedule.recycle) {
+                // Wenn kein spezifischer Tag angegeben ist, aber wiederkehrend, dann täglich
+                days = [0, 1, 2, 3, 4, 5, 6]; // Alle Tage
+            }
+
+            // Baue App-Format
+            return {
+                id,
+                managed: 'bridge',
+                type,
+                name: schedule.name || `Zeitplan ${id}`,
+                enabled: schedule.status === 'enabled',
+                schedule: {
+                    time: recurrence ? recurrence.time : '00:00',
+                    days,
+                    offset: recurrence ? recurrence.offset : 0
+                },
+                actions: schedule.command ? this.formatBridgeCommandToAction(schedule.command) : []
+            };
+        });
+    }
+
+// Hilfsfunktion, um Sonnenaufgang/Sonnenuntergang-basierte Zeitpläne zu analysieren
+    parseSunBasedTime(timeString) {
+        // Beispielformat: "PT23:30:00" oder "A01:30:00"
+        let time = '00:00';
+        let offset = 0;
+
+        // Für Sonnenaufgang (A) oder Sonnenuntergang (P)
+        if (timeString.startsWith('A') || timeString.startsWith('P')) {
+            const hourMinSec = timeString.substring(1).split(':');
+            const hours = parseInt(hourMinSec[0]);
+            const minutes = parseInt(hourMinSec[1]);
+
+            // Wenn positiver Offset (nach Sonnenauf/-untergang)
+            if (hours >= 0 && minutes >= 0) {
+                offset = hours * 60 + minutes;
+                time = this.formatTimeString(hours, minutes);
+            }
+            // Wenn negativer Offset (vor Sonnenauf/-untergang)
+            else {
+                offset = -(Math.abs(hours) * 60 + Math.abs(minutes));
+                time = this.formatTimeString(Math.abs(hours), Math.abs(minutes));
+            }
+        }
+
+        return {time, offset};
+    }
+
+// Hilfsfunktion, um feste Zeitpläne zu analysieren
+    parseFixedTime(timeString) {
+        // Beispielformat: "W124/T07:30:00"
+        let time = '00:00';
+
+        // Für feste Zeiten (W/T)
+        if (timeString.includes('T')) {
+            const timePart = timeString.split('T')[1];
+            const hourMinSec = timePart.split(':');
+            time = `${hourMinSec[0]}:${hourMinSec[1]}`;
+        }
+
+        return {time, offset: 0};
+    }
+
+// Hilfsfunktion zum Konvertieren des bridge-Wochentage-Formats ins App-Format
+    convertWeekdaysToDays(weekdays) {
+        // Bridge: "1234567" -> App: [0, 1, 2, 3, 4, 5, 6]
+        // Beachte: Bridge verwendet 1-7 (Mo-So), während unsere App 0-6 (So-Sa) verwendet
+        const days = [];
+
+        // Hue Bridge verwendet 1-7 (Montag bis Sonntag)
+        // Unsere App verwendet 0-6 (Sonntag bis Samstag)
+        const bridgeToDayMap = {
+            '1': 1, // Montag
+            '2': 2, // Dienstag
+            '3': 3, // Mittwoch
+            '4': 4, // Donnerstag
+            '5': 5, // Freitag
+            '6': 6, // Samstag
+            '7': 0  // Sonntag
+        };
+
+        if (typeof weekdays === 'string') {
+            for (const day of weekdays) {
+                const mappedDay = bridgeToDayMap[day];
+                if (mappedDay !== undefined) {
+                    days.push(mappedDay);
+                }
+            }
+        }
+
+        return days;
+    }
+
+// Hilfsfunktion zum Formatieren der Zeiten
+    formatTimeString(hours, minutes) {
+        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+
+// Hilfsfunktion zum Konvertieren von Bridge-Kommandos in App-Aktionen
+    formatBridgeCommandToAction(command) {
+        if (!command || !command.address) return [];
+
+        const actions = [];
+        const addressParts = command.address.split('/');
+
+        // Verschiedene Aktionen je nach Adresstyp
+        if (addressParts.length >= 4) {
+            const resourceType = addressParts[1]; // 'lights', 'groups', etc.
+            const resourceId = addressParts[2];
+
+            let actionType;
+            switch (resourceType) {
+                case 'lights':
+                    actionType = 'light';
+                    break;
+                case 'groups':
+                    actionType = 'group';
+                    break;
+                case 'scenes':
+                    actionType = 'scene';
+                    break;
+                case 'sensors':
+                    actionType = 'sensor';
+                    break;
+                default:
+                    actionType = resourceType;
+            }
+
+            actions.push({
+                type: actionType,
+                target: resourceId,
+                state: command.body || {}
+            });
+        }
+
+        return actions;
+    }
+
+    /**
+     * Erstellt einen neuen Bridge-Zeitplan
+     */
+    async createBridgeSchedule(scheduleData) {
+        try {
+            // Formatieren der Anfrage für die Bridge-API
+            const bridgeSchedule = this.formatAppToBridgeSchedule(scheduleData);
+
+            // Senden der Anfrage an die Bridge
+            const response = await fetch(`${this.apiBaseUrl}/schedules`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bridgeSchedule)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Fehler: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Prüfen, ob die ID im Erfolgsfall zurückgegeben wurde
+            if (data[0] && data[0].success && data[0].success.id) {
+                return data[0].success.id;
+            } else {
+                throw new Error('Keine ID vom Server erhalten');
+            }
+        } catch (error) {
+            console.error("Fehler beim Erstellen des Zeitplans:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Aktualisiert einen bestehenden Bridge-Zeitplan
+     */
+    async updateBridgeSchedule(id, scheduleData) {
+        try {
+            // Formatieren der Anfrage für die Bridge-API
+            const bridgeSchedule = this.formatAppToBridgeSchedule(scheduleData);
+
+            // Senden der Anfrage an die Bridge
+            const response = await fetch(`${this.apiBaseUrl}/schedules/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bridgeSchedule)
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Fehler: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Fehler beim Aktualisieren des Zeitplans:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Löscht einen Bridge-Zeitplan
+     */
+    async deleteBridgeSchedule(id) {
+        try {
+            // Senden der Anfrage an die Bridge
+            const response = await fetch(`${this.apiBaseUrl}/schedules/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Fehler: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Fehler beim Löschen des Zeitplans:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Setzt den Status (aktiviert/deaktiviert) eines Bridge-Zeitplans
+     */
+    async setBridgeScheduleStatus(id, enabled) {
+        try {
+            // Senden der Anfrage an die Bridge
+            const response = await fetch(`${this.apiBaseUrl}/schedules/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: enabled ? 'enabled' : 'disabled'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP Fehler: ${response.status}`);
+            }
+
+            return true;
+        } catch (error) {
+            console.error("Fehler beim Setzen des Zeitplan-Status:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Konvertiert das App-Zeitplanformat in das Bridge-Format
+     */
+    formatAppToBridgeSchedule(appSchedule) {
+        const bridgeSchedule = {
+            name: appSchedule.name,
+            status: appSchedule.enabled ? 'enabled' : 'disabled',
+            recycle: true // Erlaube das Recycling des Zeitplans, wenn er nicht mehr benötigt wird
+        };
+
+        // Command generieren (was soll ausgeführt werden)
+        if (appSchedule.actions && appSchedule.actions.length > 0) {
+            const action = appSchedule.actions[0]; // Vorerst nur die erste Aktion unterstützen
+
+            let resourceType;
+            switch (action.type) {
+                case 'light':
+                    resourceType = 'lights';
+                    break;
+                case 'group':
+                    resourceType = 'groups';
+                    break;
+                case 'scene':
+                    resourceType = 'scenes';
+                    break;
+                case 'sensor':
+                    resourceType = 'sensors';
+                    break;
+                default:
+                    resourceType = action.type;
+            }
+
+            bridgeSchedule.command = {
+                address: `/api/${this.username}/${resourceType}/${action.target}/state`,
+                method: 'PUT',
+                body: action.state || {}
+            };
+        }
+
+        // Schedule generieren (wann soll es ausgeführt werden)
+        let localtime;
+        let weekdays;
+
+        if (appSchedule.schedule?.days && appSchedule.schedule.days.length > 0) {
+            // Filtere und sortiere die Tage
+            const sortedDays = [...appSchedule.schedule.days].sort((a, b) => a - b);
+
+            // Finde heraus, ob es sich um einen speziellen Wochentags-Preset handelt
+            if (sortedDays.length === 7) {
+                // Täglich
+                weekdays = null; // Kein spezieller Tag, gilt für alle Tage
+            } else {
+                // Spezifische Tage
+                weekdays = sortedDays.map(day => {
+                    // Konvertiere von App-Format (0 = Sonntag) zu Bridge-Format (1 = Montag, 7 = Sonntag)
+                    return day === 0 ? '7' : String(day);
+                }).join('');
+            }
+        }
+
+        // Zeitformat basierend auf Typ
+        switch (appSchedule.type) {
+            case TIME_CONTROL_TYPES.FIXED_SCHEDULE:
+                // Festes Zeitformat: W124/T07:30:00
+                const timeStr = appSchedule.schedule?.time || '00:00';
+                localtime = weekdays ? `W${weekdays}/T${timeStr}:00` : `T${timeStr}:00`;
+                break;
+
+            case TIME_CONTROL_TYPES.SUNRISE_SCHEDULE:
+                // Sonnenaufgangsformat: A01:30:00 (1h30m nach Sonnenaufgang)
+                const sunriseOffset = appSchedule.schedule?.offset || 0;
+                const offsetHours = Math.floor(Math.abs(sunriseOffset) / 60);
+                const offsetMinutes = Math.abs(sunriseOffset) % 60;
+
+                if (sunriseOffset >= 0) {
+                    localtime = `A${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}:00`;
+                } else {
+                    localtime = `A-${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}:00`;
+                }
+
+                if (weekdays) {
+                    localtime = `W${weekdays}/${localtime}`;
+                }
+                break;
+
+            case TIME_CONTROL_TYPES.SUNSET_SCHEDULE:
+                // Sonnenuntergangsformat: P01:30:00 (1h30m nach Sonnenuntergang)
+                const sunsetOffset = appSchedule.schedule?.offset || 0;
+                const offsetHoursSunset = Math.floor(Math.abs(sunsetOffset) / 60);
+                const offsetMinutesSunset = Math.abs(sunsetOffset) % 60;
+
+                if (sunsetOffset >= 0) {
+                    localtime = `P${String(offsetHoursSunset).padStart(2, '0')}:${String(offsetMinutesSunset).padStart(2, '0')}:00`;
+                } else {
+                    localtime = `P-${String(offsetHoursSunset).padStart(2, '0')}:${String(offsetMinutesSunset).padStart(2, '0')}:00`;
+                }
+
+                if (weekdays) {
+                    localtime = `W${weekdays}/${localtime}`;
+                }
+                break;
+        }
+
+        if (localtime) {
+            bridgeSchedule.localtime = localtime;
+        }
+
+        return bridgeSchedule;
+    }
+
+    /**
+     * Erstellt einen lokalen Timer
+     */
+    createLocalTimer(timerData) {
+        const newTimer = {
+            ...timerData,
+            id: Date.now().toString(),
+            managed: 'local',
+            enabled: true,
+            startTime: Date.now(),
+            executed: false
+        };
+
+        // Bei zyklischen Timern: Status speichern
+        if (timerData.type === TIME_CONTROL_TYPES.CYCLE) {
+            newTimer.state = true; // Startet im "Ein"-Zustand
+        }
+
+        this.localTimers.push(newTimer);
+        this.saveLocalTimers();
+
+        return newTimer.id;
+    }
+
+    /**
+     * Aktualisiert einen lokalen Timer
+     */
+    updateLocalTimer(id, timerData) {
+        const index = this.localTimers.findIndex(t => t.id === id);
+        if (index === -1) {
+            throw new Error(`Timer mit ID ${id} nicht gefunden`);
+        }
+
+        // Behalte wichtige bestehende Eigenschaften bei
+        const updatedTimer = {
+            ...timerData,
+            id,
+            managed: 'local',
+            enabled: timerData.enabled !== undefined ? timerData.enabled : this.localTimers[index].enabled,
+            // Wenn der Timer neu gestartet werden soll, aktualisiere die Startzeit
+            startTime: timerData.restart ? Date.now() : this.localTimers[index].startTime,
+            executed: timerData.restart ? false : this.localTimers[index].executed
+        };
+
+        this.localTimers[index] = updatedTimer;
+        this.saveLocalTimers();
+
+        return true;
+    }
+
+    /**
+     * Löscht einen lokalen Timer
+     */
+    deleteLocalTimer(id) {
+        const index = this.localTimers.findIndex(t => t.id === id);
+        if (index === -1) {
+            throw new Error(`Timer mit ID ${id} nicht gefunden`);
+        }
+
+        this.localTimers.splice(index, 1);
+        this.saveLocalTimers();
+
+        return true;
+    }
+
+    /**
+     * Setzt den Status (aktiviert/deaktiviert) eines lokalen Timers
+     */
+    setLocalTimerStatus(id, enabled) {
+        const index = this.localTimers.findIndex(t => t.id === id);
+        if (index === -1) {
+            throw new Error(`Timer mit ID ${id} nicht gefunden`);
+        }
+
+        this.localTimers[index].enabled = enabled;
+        this.saveLocalTimers();
+
+        return true;
+    }
 }
+

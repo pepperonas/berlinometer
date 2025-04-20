@@ -1,4 +1,4 @@
-Verzeichnisstruktur generiert am Sat Apr 19 18:06:09 CEST 2025
+Verzeichnisstruktur generiert am Sun Apr 20 18:10:56 CEST 2025
 Aktueller Pfad: /Users/martin/WebstormProjects/mrx3k1/glitter-hue
 
 .
@@ -6,16 +6,9 @@ Aktueller Pfad: /Users/martin/WebstormProjects/mrx3k1/glitter-hue
 ├── _prompts
 │   └── fast-forward.txt
 ├── bridge-test-tool.sh
-├── build
-│   ├── custom-logo-svg.svg
-│   ├── favicon.ico
-│   ├── logo.svg
-│   ├── logo192.png
-│   ├── logo512.png
-│   ├── manifest.json
-│   └── robots.txt
 ├── features.md
-├── generate-tree.sh
+├── hue-proxy-integration.md
+├── hue-proxy-setup.sh
 ├── package-lock.json
 ├── package.json
 ├── public
@@ -35,8 +28,10 @@ Aktueller Pfad: /Users/martin/WebstormProjects/mrx3k1/glitter-hue
 │   │   ├── DevView.jsx
 │   │   ├── DynamicEffectsView.jsx
 │   │   ├── EnergyDashboardView.jsx
-│   │   ├── EnhancedAutomationView.jsx
+│   │   ├── EnhancedEnergyDashboardView.jsx
+│   │   ├── EnhancedEnergyExportComponent.jsx
 │   │   ├── GroupsView.jsx
+│   │   ├── ImportProgressModal.jsx
 │   │   ├── LightCard.jsx
 │   │   ├── MediaSyncTool.jsx
 │   │   ├── MusicVisualizer.jsx
@@ -45,7 +40,7 @@ Aktueller Pfad: /Users/martin/WebstormProjects/mrx3k1/glitter-hue
 │   │   ├── SettingsPanel.jsx
 │   │   ├── SpotifyIntegration.jsx
 │   │   ├── Tabs.jsx
-│   │   ├── TimeControlView.jsx
+│   │   ├── UnifiedTimeControlView.jsx
 │   │   └── WeatherIntegrationView.jsx
 │   ├── index.css
 │   ├── index.js
@@ -53,26 +48,31 @@ Aktueller Pfad: /Users/martin/WebstormProjects/mrx3k1/glitter-hue
 │   │   └── types.js
 │   ├── services
 │   │   ├── HueApiService.js
-│   │   └── TimeControlService.js
+│   │   └── UnifiedTimeControlService.js
 │   ├── styles
 │   │   ├── _empty.css
 │   │   ├── automation.css
-│   │   ├── automations.css
 │   │   ├── dashboard.css
 │   │   ├── dev.css
 │   │   ├── effects.css
 │   │   ├── energy.css
+│   │   ├── enhanced-energy.css
+│   │   ├── export-import.css
 │   │   ├── groups.css
 │   │   ├── mediasync.css
 │   │   ├── scenes.css
-│   │   ├── schedules.css
 │   │   ├── sensors.css
 │   │   ├── spotify.css
 │   │   ├── timeControl.css
-│   │   ├── timer.css
 │   │   └── weather.css
 │   └── utils
-│       └── colorConverters.js
+│       ├── EnergyCSVExporter.js
+│       ├── EnergyDataStorage.js
+│       ├── EnergyDataUtils.js
+│       ├── EnergyReportGenerator.js
+│       ├── EnhancedJSONImporter.js
+│       └── ColorConverters.js
+├── tree-generator.sh
 └── tree.txt
 
-10 directories, 63 files
+9 directories, 64 files

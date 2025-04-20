@@ -1,6 +1,7 @@
 // App.jsx - Mit Sensoren-/Schalter-Verwaltung
 import React, {useEffect, useRef, useState} from 'react';
 import './App.css';
+import './styles/custom-checkbox.css';
 import LightCard from './components/LightCard';
 import MusicVisualizer from './components/MusicVisualizer';
 import {Tab, Tabs} from './components/Tabs';
@@ -10,7 +11,6 @@ import ScenesView from './components/ScenesView';
 import DynamicEffectsView from './components/DynamicEffectsView';
 import DashboardView from './components/DashboardView';
 import MediaSyncTool from './components/MediaSyncTool';
-import EnergyDashboardView from './components/EnergyDashboardView';
 import SensorControlView from './components/SensorControlView';
 import DevView from './components/DevView';
 import UnifiedTimeControlView from './components/UnifiedTimeControlView';

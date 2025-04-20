@@ -1,6 +1,7 @@
 // src/components/DynamicEffectsView.jsx - Erweiterte dynamische Lichteffekte
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/effects.css';
+import CustomCheckbox from './CustomCheckbox'; // Import der CustomCheckbox-Komponente
 
 // Vordefinierte Effekte
 const PRESET_EFFECTS = [
@@ -390,14 +391,13 @@ const EffectCustomizeModal = ({ effect, onSave, onCancel, lights }) => {
                             <h3>Blitz-Effekt</h3>
                             <div className="flash-controls">
                                 <div className="control-row">
-                                    <label className="checkbox-container">
-                                        <input
-                                            type="checkbox"
-                                            checked={settings.flash || false}
-                                            onChange={(e) => handleSettingChange('flash', e.target.checked)}
-                                        />
-                                        <span>Blitz-Effekt aktivieren</span>
-                                    </label>
+                                    {/* Verwende hier die CustomCheckbox-Komponente */}
+                                    <CustomCheckbox
+                                        id="flash-toggle"
+                                        label="Blitz-Effekt aktivieren"
+                                        checked={settings.flash || false}
+                                        onChange={(e) => handleSettingChange('flash', e.target.checked)}
+                                    />
                                 </div>
 
                                 <div className="flash-field">
@@ -433,15 +433,14 @@ const EffectCustomizeModal = ({ effect, onSave, onCancel, lights }) => {
                                 </div>
 
                                 <div className="flash-field">
-                                    <label className="checkbox-container">
-                                        <input
-                                            type="checkbox"
-                                            checked={settings.strobo || false}
-                                            onChange={(e) => handleSettingChange('strobo', e.target.checked)}
-                                            disabled={!settings.flash}
-                                        />
-                                        <span>Strobo-Effekt bei Blitzen</span>
-                                    </label>
+                                    {/* Verwende hier die CustomCheckbox-Komponente */}
+                                    <CustomCheckbox
+                                        id="strobo-toggle"
+                                        label="Strobo-Effekt bei Blitzen"
+                                        checked={settings.strobo || false}
+                                        onChange={(e) => handleSettingChange('strobo', e.target.checked)}
+                                        className={!settings.flash ? "disabled" : ""}
+                                    />
 
                                     {settings.strobo && (
                                         <div className="setting-controls">
@@ -526,18 +525,24 @@ const EffectCustomizeModal = ({ effect, onSave, onCancel, lights }) => {
 
                     <div className="setting-group">
                         <h3>Lampenauswahl</h3>
-                        <div className="lights-grid">
+                        <div className="light-selection-buttons">
+                            <button onClick={() => setSelectedLights(Object.keys(lights))}>
+                                Alle auswählen
+                            </button>
+                            <button onClick={() => setSelectedLights([])}>
+                                Keine auswählen
+                            </button>
+                        </div>
+                        {/* Ersetze die herkömmlichen Checkboxen durch CustomCheckbox-Komponenten */}
+                        <div className="checkbox-group lamp-selection">
                             {Object.entries(lights).map(([id, light]) => (
-                                <div key={id} className="light-checkbox">
-                                    <label>
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedLights.includes(id)}
-                                            onChange={() => toggleLight(id)}
-                                        />
-                                        {light.name}
-                                    </label>
-                                </div>
+                                <CustomCheckbox
+                                    key={id}
+                                    id={`light-${id}`}
+                                    label={light.name}
+                                    checked={selectedLights.includes(id)}
+                                    onChange={() => toggleLight(id)}
+                                />
                             ))}
                         </div>
                     </div>

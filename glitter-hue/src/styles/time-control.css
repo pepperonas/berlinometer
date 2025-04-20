@@ -807,3 +807,121 @@ button.secondary-button:hover {
         gap: var(--space-xs);
     }
 }
+
+.time-control-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    background-color: rgba(125, 131, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+}
+
+.time-control-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Noch kleinere Icons im Zeitsteuerungs-Typ-Modal */
+.time-control-type-card .time-control-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+}
+
+.time-control-type-card .time-control-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Verbesserte Buttons im Modal */
+.time-control-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-md);
+}
+
+.time-control-type-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-md);
+    background-color: rgba(125, 131, 255, 0.08);
+    border-radius: var(--radius-medium);
+    transition: all var(--transition-normal);
+    border: 1px solid transparent;
+}
+
+.time-control-type-card:hover {
+    background-color: rgba(125, 131, 255, 0.15);
+    border-color: rgba(125, 131, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.time-control-type-card h4 {
+    margin: var(--space-xs) 0;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.time-control-type-card p {
+    margin: 0;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+}
+
+.unified-time-control-view svg {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Spezifische Regeln für Sonnenaufgang/Sonnenuntergang-Icons */
+.sun-event-info .sun-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.sun-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* Buttons in der Zeitsteuerung-Ansicht */
+.icon-button svg {
+    width: 16px !important;
+    height: 16px !important;
+}
+
+/* Responsive Designs für sehr kleine Bildschirme */
+@media (max-width: 480px) {
+    .time-control-icon {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+    }
+
+    .time-control-icon svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    .sun-icon {
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+    }
+
+    .sun-icon svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+}

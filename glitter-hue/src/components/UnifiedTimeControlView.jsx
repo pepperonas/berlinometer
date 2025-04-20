@@ -1,7 +1,8 @@
 // src/components/UnifiedTimeControlView.jsx - Kombiniert alle Arten von Zeitsteuerungen
 import React, { useState, useEffect } from 'react';
 import UnifiedTimeControlService, { TIME_CONTROL_TYPES, DEFAULT_SETTINGS } from '../services/UnifiedTimeControlService';
-import '../styles/timeControl.css';
+import '../styles/time-control.css';
+import TimerForm from './forms/TimerForm'; // Import für das Timer-Formular
 
 // Icon-Komponente für verschiedene Zeitsteuerungstypen
 const TimeControlIcon = ({ type }) => {
@@ -430,7 +431,7 @@ const SelectTimeControlTypeModal = ({ onSelect, onCancel }) => {
                     <button className="close-button" onClick={onCancel}>×</button>
                 </div>
 
-                <div className="time-control-type-groups">
+                <div className="modal-body time-control-type-groups">
                     <div className="type-group">
                         <h3>Einfache Timer</h3>
                         <div className="time-control-type-grid">
@@ -767,7 +768,16 @@ const UnifiedTimeControlView = ({ username, bridgeIP, lights, rooms = [], scenes
         // Je nach Typ unterschiedliche Standardeinstellungen
         let defaultSettings;
 
-        if (service.isBridgeScheduleType(type)) {
+        if (isLocalTimerType(type)) {
+            defaultSettings = {
+                type,
+                name: type === TIME_CONTROL_TYPES.COUNTDOWN_ON ? 'Einschalttimer' :
+                    type === TIME_CONTROL_TYPES.COUNTDOWN_OFF ? 'Ausschalttimer' : 'Zyklischer Timer',
+                duration: 30,
+                lightIds: [],
+                interval: 30 // nur für zyklische Timer
+            };
+        } else if (isBridgeScheduleType(type)) {
             defaultSettings = {
                 type,
                 name: '',
@@ -778,21 +788,38 @@ const UnifiedTimeControlView = ({ username, bridgeIP, lights, rooms = [], scenes
                 },
                 actions: []
             };
-        } else if (service.isLocalTimerType(type)) {
-            defaultSettings = {
-                type,
-                name: type === TIME_CONTROL_TYPES.COUNTDOWN_ON ? 'Einschalttimer' :
-                    type === TIME_CONTROL_TYPES.COUNTDOWN_OFF ? 'Ausschalttimer' : 'Zyklischer Timer',
-                duration: 30,
-                lightIds: [],
-                interval: 30 // nur für zyklische Timer
-            };
-        } else if (service.isAdvancedAutomationType(type)) {
+        } else if (isAdvancedAutomationType(type)) {
             defaultSettings = DEFAULT_SETTINGS[type] || {};
         }
 
         setEditingTimeControl(defaultSettings);
         setShowForm(true);
+    };
+
+    // Hilfsfunktionen zur Typprüfung
+    const isLocalTimerType = (type) => {
+        return [
+            TIME_CONTROL_TYPES.COUNTDOWN_ON,
+            TIME_CONTROL_TYPES.COUNTDOWN_OFF,
+            TIME_CONTROL_TYPES.CYCLE
+        ].includes(type);
+    };
+
+    const isBridgeScheduleType = (type) => {
+        return [
+            TIME_CONTROL_TYPES.FIXED_SCHEDULE,
+            TIME_CONTROL_TYPES.SUNRISE_SCHEDULE,
+            TIME_CONTROL_TYPES.SUNSET_SCHEDULE
+        ].includes(type);
+    };
+
+    const isAdvancedAutomationType = (type) => {
+        return [
+            TIME_CONTROL_TYPES.WAKE_UP,
+            TIME_CONTROL_TYPES.PRESENCE,
+            TIME_CONTROL_TYPES.SLEEP,
+            TIME_CONTROL_TYPES.GEO_FENCE
+        ].includes(type);
     };
 
     // Zeitsteuerung bearbeiten
@@ -861,6 +888,113 @@ const UnifiedTimeControlView = ({ username, bridgeIP, lights, rooms = [], scenes
         }
     };
 
+    // Rendert das richtige Formular basierend auf dem Typ der Zeitsteuerung
+    const renderFormByType = (timeControl) => {
+        if (!timeControl) return null;
+
+        // Für lokale Timer
+        if (isLocalTimerType(timeControl.type)) {
+            return (
+                <TimerForm
+                    timer={timeControl}
+                    lights={lights}
+                    onSave={saveTimeControl}
+                    onCancel={() => {
+                        setShowForm(false);
+                        setEditingTimeControl(null);
+                    }}
+                />
+            );
+        }
+
+        // Für Bridge-Zeitpläne
+        if (isBridgeScheduleType(timeControl.type)) {
+            // Hier würde ScheduleForm gerendert werden
+            return (
+                <div className="placeholder-form">
+                    <p>Bearbeitungsformular für Zeitpläne wird implementiert...</p>
+
+                    <div className="form-actions">
+                        <button
+                            className="secondary-button"
+                            onClick={() => {
+                                setShowForm(false);
+                                setEditingTimeControl(null);
+                            }}
+                        >
+                            Abbrechen
+                        </button>
+                        <button onClick={() => {
+                            saveTimeControl({
+                                ...timeControl,
+                                name: timeControl.name || 'Neuer Zeitplan'
+                            });
+                        }}>
+                            Speichern
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Für erweiterte Automatisierungen
+        if (isAdvancedAutomationType(timeControl.type)) {
+            // Hier würden spezifische Formulare für Automatisierungen gerendert
+            return (
+                <div className="placeholder-form">
+                    <p>Bearbeitungsformular für {timeControl.type} wird implementiert...</p>
+
+                    <div className="form-actions">
+                        <button
+                            className="secondary-button"
+                            onClick={() => {
+                                setShowForm(false);
+                                setEditingTimeControl(null);
+                            }}
+                        >
+                            Abbrechen
+                        </button>
+                        <button onClick={() => {
+                            saveTimeControl({
+                                ...timeControl,
+                                name: timeControl.name || 'Neue Automatisierung'
+                            });
+                        }}>
+                            Speichern
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        // Fallback
+        return (
+            <div className="placeholder-form">
+                <p>Bearbeitungsformular für {timeControl.type}</p>
+
+                <div className="form-actions">
+                    <button
+                        className="secondary-button"
+                        onClick={() => {
+                            setShowForm(false);
+                            setEditingTimeControl(null);
+                        }}
+                    >
+                        Abbrechen
+                    </button>
+                    <button onClick={() => {
+                        saveTimeControl({
+                            ...timeControl,
+                            name: timeControl.name || 'Neue Zeitsteuerung'
+                        });
+                    }}>
+                        Speichern
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="unified-time-control-view">
             <div className="time-control-header">
@@ -877,7 +1011,7 @@ const UnifiedTimeControlView = ({ username, bridgeIP, lights, rooms = [], scenes
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                            Neu
+                        Neu
                     </button>
                 </div>
             </div>
@@ -934,8 +1068,7 @@ const UnifiedTimeControlView = ({ username, bridgeIP, lights, rooms = [], scenes
                 />
             )}
 
-            {/* Bearbeitungs-Dialog würde hier eingefügt - dieser ist komplex und
-                würde aus mehreren Komponenten für die verschiedenen Zeitsteuerungstypen bestehen */}
+            {/* Bearbeitungs-Dialog */}
             {showForm && editingTimeControl && (
                 <div className="modal-backdrop">
                     <div className="modal-content">
@@ -948,31 +1081,8 @@ const UnifiedTimeControlView = ({ username, bridgeIP, lights, rooms = [], scenes
                         </div>
 
                         <div className="modal-body">
-                            {/* Hier würde die entsprechende Form-Komponente für den ausgewählten Typ eingefügt,
-                                z.B. ScheduleForm, TimerForm, WakeUpForm, etc. */}
-                            <p>Bearbeitungsformular für {editingTimeControl.type}</p>
-
-                            {/* Demo-Buttons */}
-                            <div className="form-actions">
-                                <button
-                                    className="secondary-button"
-                                    onClick={() => {
-                                        setShowForm(false);
-                                        setEditingTimeControl(null);
-                                    }}
-                                >
-                                    Abbrechen
-                                </button>
-                                <button onClick={() => {
-                                    // Demo-Speichern
-                                    saveTimeControl({
-                                        ...editingTimeControl,
-                                        name: editingTimeControl.name || 'Neue Zeitsteuerung'
-                                    });
-                                }}>
-                                    Speichern
-                                </button>
-                            </div>
+                            {/* Hier wird das passende Formular basierend auf dem Typ gerendert */}
+                            {renderFormByType(editingTimeControl)}
                         </div>
                     </div>
                 </div>

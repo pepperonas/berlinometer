@@ -1,5 +1,5 @@
 // src/services/HueApiService.js - Zentrale API-Klasse für die Hue Bridge-Kommunikation
-import { hexToHsv, hsvToHex } from '../utils/colorConverters';
+import { hexToHsv, hsvToHex } from '../utils/ColorConverters';
 
 /**
  * HueApiService - Zentrale Klasse für alle Kommunikation mit der Philips Hue Bridge
