@@ -30,23 +30,65 @@ class HitCache {
 }
 
 class SpectrumHitDetector {
-    constructor(sampleRate, threshold = 0.5, minTimeBetweenHits = 0.1) {
+    constructor(sampleRate, threshold = 0.32, minTimeBetweenHits = 0.08) {
         this.sampleRate = sampleRate;
         this.threshold = threshold;
         this.minTimeBetweenHits = minTimeBetweenHits;
         this.lastHitTime = 0;
         this.energyHistory = [];
         this.historySize = 8; // Speichere die letzten 8 Frames für Vergleiche
+        this.averageEnergy = 0; // Durchschnittliche Energie für adaptive Schwellwerte
+        this.adaptiveThreshold = threshold;
+
+        // Dynamische Genre-Erkennung für bessere Frequenzgewichtung
+        this.genreProfile = {
+            lowRatio: 0.6,    // Standard-Gewichtung für niedrige Frequenzen
+            midLowRatio: 0.3, // Standard-Gewichtung für mittlere-niedrige Frequenzen
+            midRatio: 0.1,    // Standard-Gewichtung für mittlere Frequenzen
+            highRatio: 0.0    // Standard-Gewichtung für hohe Frequenzen
+        };
+
+        // Diagnosedaten
+        this.diagnosticData = {
+            lastHitEnergies: null,
+            averageEnergy: 0,
+            peakRatio: 0,
+            adaptiveThresholdValue: threshold,
+            genreProfile: {...this.genreProfile}
+        };
     }
 
     // Analysiert ein Frequenzspektrum und erkennt Beats
     update(frequencyData, timestamp) {
         // Berechne die Energiewerte in verschiedenen Frequenzbändern
         const lowEnergy = this.calculateBandEnergy(frequencyData, 0, 200);
-        const midEnergy = this.calculateBandEnergy(frequencyData, 200, 2000);
+        const midLowEnergy = this.calculateBandEnergy(frequencyData, 200, 800);
+        const midEnergy = this.calculateBandEnergy(frequencyData, 800, 2000);
+        const highEnergy = this.calculateBandEnergy(frequencyData, 2000, 8000);
+
+        // Überprüfe auf Genre-Eigenschaften und passe Gewichtungen an
+        this.updateGenreProfile(lowEnergy, midLowEnergy, midEnergy, highEnergy);
+
+        // Kombinierte Energie mit dynamischer Gewichtung basierend auf Genre
+        const combinedEnergy =
+            (lowEnergy * this.genreProfile.lowRatio) +
+            (midLowEnergy * this.genreProfile.midLowRatio) +
+            (midEnergy * this.genreProfile.midRatio) +
+            (highEnergy * this.genreProfile.highRatio);
+
+        // Adaptive Schwellwertanpassung - sensibler und mit mehr Dynamik
+        this.updateAdaptiveThreshold(combinedEnergy, timestamp);
 
         // Überführe Energiewerte in Historie
-        this.energyHistory.push({ low: lowEnergy, mid: midEnergy });
+        this.energyHistory.push({
+            low: lowEnergy,
+            midLow: midLowEnergy,
+            mid: midEnergy,
+            high: highEnergy,
+            combined: combinedEnergy,
+            timestamp: timestamp
+        });
+
         if (this.energyHistory.length > this.historySize) {
             this.energyHistory.shift();
         }
@@ -56,14 +98,115 @@ class SpectrumHitDetector {
             return null;
         }
 
-        // Prüfe auf Beat in den unteren Frequenzen (klassischer Kick-Drum-Bereich)
-        const isHit = this.triggersHit(lowEnergy, timestamp);
+        // Prüfe auf Beat mit kombinierter Energie
+        const isHit = this.triggersHit(combinedEnergy, timestamp);
+
+        // Diagnose-Daten aktualisieren
+        const recentAvg = this.energyHistory.length > 1 ?
+            this.energyHistory.slice(0, -1).reduce((sum, entry) => sum + entry.combined, 0) /
+            (this.energyHistory.length - 1) : 0;
+
+        this.diagnosticData.peakRatio = combinedEnergy / (recentAvg || 1);
+        this.diagnosticData.adaptiveThresholdValue = this.adaptiveThreshold;
+        this.diagnosticData.averageEnergy = this.averageEnergy;
+        this.diagnosticData.genreProfile = {...this.genreProfile};
 
         if (isHit) {
-            return new Hit(timestamp, lowEnergy, 100); // Ungefährer Frequenzschwerpunkt
+            // Speichere Energiewerte dieses Hits für Diagnose
+            this.diagnosticData.lastHitEnergies = {
+                low: lowEnergy,
+                midLow: midLowEnergy,
+                mid: midEnergy,
+                high: highEnergy,
+                combined: combinedEnergy,
+                timestamp: timestamp
+            };
+
+            return new Hit(timestamp, combinedEnergy, this.estimateFrequency(lowEnergy, midLowEnergy, midEnergy, highEnergy));
         }
 
         return null;
+    }
+
+    // Schätzt den Frequenzschwerpunkt des Beats
+    estimateFrequency(lowEnergy, midLowEnergy, midEnergy, highEnergy) {
+        const totalEnergy = lowEnergy + midLowEnergy + midEnergy + highEnergy;
+        if (totalEnergy === 0) return 100; // Fallback
+
+        // Gewichteter Durchschnitt der Frequenzbänder
+        return (100 * lowEnergy + 500 * midLowEnergy + 1400 * midEnergy + 4000 * highEnergy) / totalEnergy;
+    }
+
+    // Erkennt Muster in der Musik und passt Genre-Profil an
+    updateGenreProfile(lowEnergy, midLowEnergy, midEnergy, highEnergy) {
+        const totalEnergy = lowEnergy + midLowEnergy + midEnergy + highEnergy;
+        if (totalEnergy === 0) return;
+
+        // Berechne relative Energien
+        const lowRatio = lowEnergy / totalEnergy;
+        const midLowRatio = midLowEnergy / totalEnergy;
+        const midRatio = midEnergy / totalEnergy;
+        const highRatio = highEnergy / totalEnergy;
+
+        // Identifiziere Muster basierend auf Energieverteilung
+        if (lowRatio > 0.5 && midLowRatio < 0.3) {
+            // Bass-lastige Musik (EDM, Hip-Hop, etc.)
+            this.genreProfile = {
+                lowRatio: 0.7,
+                midLowRatio: 0.2,
+                midRatio: 0.1,
+                highRatio: 0.0
+            };
+        } else if (midLowRatio > 0.4 && lowRatio < 0.4) {
+            // Mittlere-Frequenz-fokussierte Musik (Rock, Pop)
+            this.genreProfile = {
+                lowRatio: 0.4,
+                midLowRatio: 0.4,
+                midRatio: 0.15,
+                highRatio: 0.05
+            };
+        } else if (midRatio > 0.3 || highRatio > 0.2) {
+            // Hohe-Frequenz-fokussierte Musik (Elektronische Musik, Klassik)
+            this.genreProfile = {
+                lowRatio: 0.35,
+                midLowRatio: 0.35,
+                midRatio: 0.2,
+                highRatio: 0.1
+            };
+        } else {
+            // Ausgeglichene Musik oder nicht eindeutig
+            this.genreProfile = {
+                lowRatio: 0.5,
+                midLowRatio: 0.3,
+                midRatio: 0.15,
+                highRatio: 0.05
+            };
+        }
+
+        // Langsame Anpassung (Vermeidung von schnellen Wechseln)
+        this.genreProfile.lowRatio = this.genreProfile.lowRatio * 0.05 + this.genreProfile.lowRatio * 0.95;
+        this.genreProfile.midLowRatio = this.genreProfile.midLowRatio * 0.05 + this.genreProfile.midLowRatio * 0.95;
+        this.genreProfile.midRatio = this.genreProfile.midRatio * 0.05 + this.genreProfile.midRatio * 0.95;
+        this.genreProfile.highRatio = this.genreProfile.highRatio * 0.05 + this.genreProfile.highRatio * 0.95;
+    }
+
+    // Passt den Schwellwert basierend auf durchschnittlicher Energie an
+    updateAdaptiveThreshold(currentEnergy, timestamp) {
+        // Langsam anpassender Durchschnitt
+        this.averageEnergy = (this.averageEnergy * 0.95) + (currentEnergy * 0.05);
+
+        // Dynamischere Schwellwertanpassung basierend auf Zeit und Energie
+        const timeSinceLastHit = timestamp - this.lastHitTime;
+
+        // Wenn lange kein Hit erkannt wurde, reduziere Schwellwert
+        let thresholdModifier = 1.0;
+        if (timeSinceLastHit > 1.0) {
+            thresholdModifier = Math.max(0.7, 1.0 - (timeSinceLastHit - 1.0) * 0.1);
+        }
+
+        // Energiebasierte Anpassung
+        const energyFactor = Math.max(0.2, Math.min(1.0, this.averageEnergy / 80));
+        this.adaptiveThreshold = this.threshold * thresholdModifier * (0.6 + energyFactor * 0.4);
     }
 
     // Berechnet Energie in einem Frequenzband
@@ -81,35 +224,54 @@ class SpectrumHitDetector {
 
     // Prüft, ob die Energie einen Beat auslöst
     triggersHit(energy, timestamp) {
-        if (this.energyHistory.length < 2) return false;
+        if (this.energyHistory.length < 3) return false;
 
         // Durchschnitt der letzten Energie-Werte berechnen (ohne den aktuellen)
         const recentAvg = this.energyHistory
             .slice(0, -1)
-            .reduce((sum, entry) => sum + entry.low, 0) / (this.energyHistory.length - 1);
+            .reduce((sum, entry) => sum + entry.combined, 0) / (this.energyHistory.length - 1);
 
-        // Prüfe, ob aktueller Wert den Durchschnitt um threshold überschreitet
-        const isEnergyPeak = energy > recentAvg * (1 + this.threshold);
+        // Prüfe, ob aktueller Wert den Durchschnitt um adaptiveThreshold überschreitet
+        const isEnergyPeak = energy > recentAvg * (1 + this.adaptiveThreshold);
+
+        // Prüfe auch, ob es ein lokales Maximum ist
+        const prevEnergy = this.energyHistory[this.energyHistory.length - 2].combined;
+        const isLocalPeak = energy > prevEnergy;
 
         // Zeitliche Begrenzung der Beat-Erkennung
         const timeSinceLastHit = timestamp - this.lastHitTime;
         const isTimeValid = timeSinceLastHit > this.minTimeBetweenHits;
 
-        if (isEnergyPeak && isTimeValid) {
+        if (isEnergyPeak && isLocalPeak && isTimeValid) {
             this.lastHitTime = timestamp;
             return true;
         }
 
         return false;
     }
+
+    // Getter für Diagnose-Daten
+    getDiagnosticData() {
+        return {...this.diagnosticData};
+    }
 }
 
 class TempoQueue {
-    constructor(maxSize = 20) {
+    constructor(maxSize = 24) {
         this.intervals = [];
         this.maxSize = maxSize;
         this.minBPM = 60;
         this.maxBPM = 200;
+        // Gewichtung für häufige BPM-Bereiche - Bevorzugung von höheren BPMs in typischen Bereichen
+        this.bpmWeights = {
+            60: 0.6,  // Langsamer
+            80: 0.8,  // Langsam
+            105: 1.0, // Moderat
+            115: 1.4, // Bevorzugter Bereich Anfang - Höhere Gewichtung
+            140: 1.4, // Bevorzugter Bereich Ende
+            170: 0.8, // Schneller
+            200: 0.5  // Sehr schnell
+        };
     }
 
     // Fügt ein neues Beat-Intervall hinzu
@@ -139,41 +301,145 @@ class TempoQueue {
     }
 
     // Berechnet den aktuellen BPM-Wert mit Schwellwert-Filterung
-    getThresholdedBPM(confidenceThreshold = 0.3) {
-        if (this.intervals.length < 2) {
+    getThresholdedBPM(confidenceThreshold = 0.12) { // Noch niedriger für schnellere Erkennung
+        if (this.intervals.length < 1) {
             return null; // Nicht genug Daten
         }
 
         // Berechne BPM-Werte aus Intervallen
         const bpmValues = this.intervals.map(interval => 60 / interval);
 
-        // Gruppiere ähnliche BPM-Werte
-        const bpmClusters = this.clusterBPMValues(bpmValues);
+        // Spezialfall: Bei nur einem oder zwei Intervallen, direkt BPM zurückgeben
+        if (bpmValues.length <= 2) {
+            const sum = bpmValues.reduce((a, b) => a + b, 0);
+            // Verdoppele BPM wenn zu niedrig (unter 90)
+            const avgBPM = sum / bpmValues.length;
+            return avgBPM < 90 ? avgBPM * 2 : avgBPM; // Vermutlich halbes Tempo erkannt
+        }
 
-        // Finde das größte Cluster
-        let largestCluster = null;
-        let maxSize = 0;
+        // Gruppiere ähnliche BPM-Werte und berücksichtige harmonische Beziehungen
+        const bpmClusters = this.clusterBPMValuesWithHarmonics(bpmValues);
+
+        // Wenn keine Cluster gefunden wurden, nutze Durchschnitt
+        if (bpmClusters.length === 0) {
+            const avgBPM = bpmValues.reduce((a, b) => a + b, 0) / bpmValues.length;
+            return avgBPM < 90 ? avgBPM * 2 : avgBPM; // Verdoppele wenn zu niedrig
+        }
+
+        // Finde das gewichtete beste Cluster mit besonderer Berücksichtigung der Verdoppelung
+        let bestCluster = null;
+        let bestScore = 0;
 
         for (const cluster of bpmClusters) {
-            if (cluster.values.length > maxSize) {
-                maxSize = cluster.values.length;
-                largestCluster = cluster;
+            // Spezialfall: Bei niedrigem BPM (< 90), verdoppele für Bewertung
+            const evaluationBPM = cluster.average < 90 ? cluster.average * 2 : cluster.average;
+
+            // Gewichtung basierend auf BPM-Bereich und Clustergröße
+            const bpmWeight = this.getBpmWeight(evaluationBPM); // Verwende verdoppeltes BPM
+            const sizeWeight = Math.pow(cluster.values.length / bpmValues.length, 1.5); // Stärkere Gewichtung größerer Cluster
+            const recencyWeight = 1.3; // Neuere Werte werden stärker gewichtet
+
+            // Berechne Gesamtscore mit Präferenz für typische Musik-Tempos
+            const score = bpmWeight * sizeWeight * recencyWeight;
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestCluster = cluster;
             }
         }
 
-        // Berechne Konfidenz (Anteil der Werte im größten Cluster)
-        const confidence = maxSize / bpmValues.length;
+        // Berechne Konfidenz (gewichteter Anteil der Werte im größten Cluster)
+        const confidence = bestCluster ? (bestCluster.values.length / bpmValues.length) : 0;
 
-        // Wenn Konfidenz über Schwellwert, gib Durchschnitt des größten Clusters zurück
-        if (confidence >= confidenceThreshold && largestCluster) {
-            return largestCluster.average;
+        // Wenn Konfidenz über Schwellwert, gib Durchschnitt des besten Clusters zurück
+        if (confidence >= confidenceThreshold && bestCluster) {
+            // BPM verdoppeln, wenn im niedrigen Bereich und wahrscheinlich halbes Tempo erkannt
+            return bestCluster.average < 90 ? bestCluster.average * 2 : bestCluster.average;
         }
 
         return null;
     }
 
-    // Gruppiert ähnliche BPM-Werte zu Clustern
-    clusterBPMValues(bpmValues, tolerance = 8) {
+    // Gibt Gewichtung für BPM-Bereich zurück
+    getBpmWeight(bpm) {
+        // Linear interpolieren zwischen den definierten Gewichtungspunkten
+        const weightPoints = Object.entries(this.bpmWeights).sort((a, b) => a[0] - b[0]);
+
+        // Wenn unter Minimum oder über Maximum
+        if (bpm <= Number(weightPoints[0][0])) return weightPoints[0][1];
+        if (bpm >= Number(weightPoints[weightPoints.length - 1][0]))
+            return weightPoints[weightPoints.length - 1][1];
+
+        // Finde die zwei umgebenden Punkte für Interpolation
+        for (let i = 0; i < weightPoints.length - 1; i++) {
+            const lowerBpm = Number(weightPoints[i][0]);
+            const upperBpm = Number(weightPoints[i + 1][0]);
+
+            if (bpm >= lowerBpm && bpm <= upperBpm) {
+                const lowerWeight = weightPoints[i][1];
+                const upperWeight = weightPoints[i + 1][1];
+
+                // Lineare Interpolation
+                const factor = (bpm - lowerBpm) / (upperBpm - lowerBpm);
+                return lowerWeight + factor * (upperWeight - lowerWeight);
+            }
+        }
+
+        return 1.0; // Fallback
+    }
+
+    // Gruppiert ähnliche BPM-Werte zu Clustern und berücksichtigt harmonische Beziehungen
+    clusterBPMValuesWithHarmonics(bpmValues, tolerance = 6) {
+        const clusters = [];
+        const harmonicRelations = [0.5, 1, 2]; // Halbierte, normale und doppelte Geschwindigkeit
+
+        for (const bpm of bpmValues) {
+            let addedToCluster = false;
+
+            // Teste alle Cluster mit allen harmonischen Beziehungen
+            for (const cluster of clusters) {
+                for (const harmonic of harmonicRelations) {
+                    const normalizedBpm = bpm * harmonic;
+
+                    if (Math.abs(cluster.average - normalizedBpm) <= tolerance) {
+                        // Füge zu bestehendem Cluster hinzu - aber normalisiert
+                        // Bei niedrigen BPMs (unter 90) normalisiere auf die doppelte Geschwindigkeit
+                        let normalizedValue = bpm;
+                        if (bpm < 90 && harmonic === 1) {
+                            normalizedValue = bpm * 2; // Verdoppele niedrige BPMs
+                        } else {
+                            normalizedValue = bpm * harmonic / Math.pow(2, Math.round(Math.log2(harmonic)));
+                        }
+
+                        cluster.values.push(normalizedValue);
+                        cluster.sum += normalizedValue;
+                        cluster.average = cluster.sum / cluster.values.length;
+                        addedToCluster = true;
+                        break;
+                    }
+                }
+                if (addedToCluster) break;
+            }
+
+            // Wenn nicht zu bestehendem Cluster hinzugefügt, erstelle neues Cluster
+            if (!addedToCluster) {
+                // Bei niedrigen BPMs (unter 90) normalisiere auf die doppelte Geschwindigkeit
+                const normalizedBpm = bpm < 90 ? bpm * 2 : bpm;
+
+                clusters.push({
+                    values: [normalizedBpm],
+                    sum: normalizedBpm,
+                    average: normalizedBpm
+                });
+            }
+        }
+
+        // Entferne zu kleine Cluster
+        return clusters.filter(cluster => cluster.values.length >= 1); // Auch einzelne Werte zulassen
+    }
+
+    // Gruppiert ähnliche BPM-Werte zu Clustern (ohne harmonische Beziehungen)
+    clusterBPMValues(bpmValues, tolerance = 6) {
         const clusters = [];
 
         for (const bpm of bpmValues) {
@@ -210,6 +476,8 @@ class BPMTracker {
         this.currentBPM = null;
         this.confidence = 0;
         this.lastUpdateTime = 0;
+        this.bpmHistory = []; // Historische BPM-Werte für Stabilität
+        this.maxHistorySize = 5;
     }
 
     // Aktualisiert den BPM-Tracker mit einem neuen Wert
@@ -219,8 +487,9 @@ class BPMTracker {
         // Bei erstem BPM-Wert
         if (this.currentBPM === null) {
             this.currentBPM = newBPM;
-            this.confidence = 0.1;
+            this.confidence = 0.3; // Start mit mittlerer Konfidenz
             this.lastUpdateTime = timestamp;
+            this.bpmHistory.push(newBPM);
             return;
         }
 
@@ -228,31 +497,56 @@ class BPMTracker {
         const timeDelta = timestamp - this.lastUpdateTime;
         this.lastUpdateTime = timestamp;
 
-        // Vergesse allmählich alten BPM-Wert (zeitabhängig)
-        const forgetFactor = Math.min(0.1, timeDelta / 10);
+        // Füge neuen BPM zur Historie hinzu
+        this.bpmHistory.push(newBPM);
+        if (this.bpmHistory.length > this.maxHistorySize) {
+            this.bpmHistory.shift();
+        }
 
-        // Kombiniere alten und neuen BPM-Wert
-        this._mergeBPM(forgetFactor, newBPM);
+        // Vergesse allmählich alten BPM-Wert (zeitabhängig)
+        const forgetFactor = Math.min(0.15, timeDelta / 8); // Schnellere Anpassung
+
+        // Berechne Median der letzten BPM-Werte für höhere Stabilität
+        const medianBPM = this.getMedianBPM();
+
+        // Kombiniere alten und neuen BPM-Wert mit Median als Referenz
+        this._mergeBPM(forgetFactor, newBPM, medianBPM);
+    }
+
+    // Berechnet den Median der BPM-Historie
+    getMedianBPM() {
+        if (this.bpmHistory.length === 0) return this.currentBPM;
+
+        const sortedBPM = [...this.bpmHistory].sort((a, b) => a - b);
+        const mid = Math.floor(sortedBPM.length / 2);
+
+        return sortedBPM.length % 2 === 0
+            ? (sortedBPM[mid - 1] + sortedBPM[mid]) / 2
+            : sortedBPM[mid];
     }
 
     // Intern: Kombiniere bestehenden BPM mit neuem Wert
-    _mergeBPM(factor, newBPM) {
-        const bpmDiff = Math.abs(this.currentBPM - newBPM) / this.currentBPM;
+    _mergeBPM(factor, newBPM, medianBPM) {
+        // Vergleiche mit Median statt mit aktuellem Wert für stabilere Übergänge
+        const bpmDiff = Math.abs(medianBPM - newBPM) / medianBPM;
 
-        // Wenn neuer Wert sehr ähnlich ist, erhöhe Konfidenz
+        // Bevorzuge BPMs in typischen Musik-Bereichen (115-135)
+        const preferenceBonus = (newBPM >= 115 && newBPM <= 135) ? 0.05 : 0;
+
+        // Wenn neuer Wert sehr ähnlich dem Median ist, erhöhe Konfidenz
         if (bpmDiff < 0.05) {
-            this.confidence = Math.min(0.99, this.confidence + 0.1);
-            // Gewichtete Durchschnittsbildung
-            this.currentBPM = (this.currentBPM * (1 - factor) + newBPM * factor);
+            this.confidence = Math.min(0.99, this.confidence + (0.15 + preferenceBonus));
+            // Gewichtete Durchschnittsbildung mit höherem Faktor für stabile Werte
+            this.currentBPM = (this.currentBPM * (1 - factor * 1.5) + newBPM * factor * 1.5);
         }
         // Bei größerem Unterschied reduziere Konfidenz
-        else if (bpmDiff < 0.2) {
-            this.confidence = Math.max(0.1, this.confidence - 0.05);
-            this.currentBPM = (this.currentBPM * 0.8 + newBPM * 0.2);
+        else if (bpmDiff < 0.15) {
+            this.confidence = Math.max(0.1, this.confidence - (0.03 - preferenceBonus));
+            this.currentBPM = (this.currentBPM * 0.85 + newBPM * 0.15);
         }
         // Bei sehr großem Unterschied, ignoriere neuen Wert meistens
         else {
-            this.confidence = Math.max(0.05, this.confidence - 0.1);
+            this.confidence = Math.max(0.05, this.confidence - (0.08 - preferenceBonus / 2));
             // Nur leichte Anpassung in Richtung des neuen Wertes
             this.currentBPM = (this.currentBPM * 0.95 + newBPM * 0.05);
         }
@@ -265,12 +559,17 @@ class BPMTracker {
             confidence: this.confidence
         };
     }
+
+    // Gibt BPM-Historie zurück für Diagnose
+    getBPMHistory() {
+        return [...this.bpmHistory];
+    }
 }
 
 class BPMAnalyzer {
     constructor(sampleRate = 44100) {
         this.sampleRate = sampleRate;
-        this.hitDetector = new SpectrumHitDetector(sampleRate, 0.4, 0.08);
+        this.hitDetector = new SpectrumHitDetector(sampleRate, 0.32, 0.08);
         this.hitCache = new HitCache();
         this.tempoQueue = new TempoQueue();
         this.bpmTracker = new BPMTracker();
@@ -310,12 +609,47 @@ class BPMAnalyzer {
                     const boundedBPM = this.applyBPMBounds(thresholdedBPM);
                     this.bpmTracker.update(timestamp, boundedBPM);
                 }
+            } else if (this.hitCache.hits.length === 1) {
+                // Bei erstem Hit, schon einen Default-BPM anzeigen
+                // Dies verbessert die UX, indem wir sofort Feedback geben
+                this.bpmTracker.update(timestamp, 120); // Starten mit 120 BPM als Standardwert
             }
 
             this.lastHitTime = timestamp;
 
             // Hier Beat-Indikator aktivieren
             animateBeatIndicator();
+        } else {
+            // Notfall-Mechanismus: Wenn wir Hits haben, aber keinen BPM,
+            // und mehr als 3 Sekunden vergangen sind - Versuche einen BPM zu schätzen
+            if (this.lastHitTime !== null &&
+                timestamp - this.lastHitTime > 3 &&
+                this.hitCache.hits.length > 0 &&
+                this.bpmTracker.getState().bpm === null) {
+
+                // Nimm den Durchschnitt der vorhandenen Intervalle oder schätze basierend auf Hits
+                if (this.tempoQueue.intervals.length > 0) {
+                    const avgInterval = this.tempoQueue.intervals.reduce((a, b) => a + b, 0) /
+                        this.tempoQueue.intervals.length;
+                    let estimatedBPM = 60 / avgInterval;
+
+                    // Verdoppele BPM wenn unter 90 (wahrscheinlich halbes Tempo erkannt)
+                    if (estimatedBPM < 90) estimatedBPM *= 2;
+
+                    this.bpmTracker.update(timestamp, this.applyBPMBounds(estimatedBPM));
+                } else if (this.hitCache.hits.length > 1) {
+                    // Berechne aus den Zeitstempeln der Hits
+                    const hits = this.hitCache.getHits();
+                    const totalTime = hits[hits.length - 1].timestamp - hits[0].timestamp;
+                    const avgInterval = totalTime / (hits.length - 1);
+                    let estimatedBPM = 60 / avgInterval;
+
+                    // Verdoppele BPM wenn unter 90 (wahrscheinlich halbes Tempo erkannt)
+                    if (estimatedBPM < 90) estimatedBPM *= 2;
+
+                    this.bpmTracker.update(timestamp, this.applyBPMBounds(estimatedBPM));
+                }
+            }
         }
     }
 
@@ -351,7 +685,7 @@ class BPMAnalyzer {
 
     // Gibt Informationen über die BPM-Cluster zurück
     getClusterInfo() {
-        if (this.tempoQueue.intervals.length < 2) {
+        if (this.tempoQueue.intervals.length < 1) {
             return null;
         }
 
@@ -359,6 +693,33 @@ class BPMAnalyzer {
         const clusters = this.tempoQueue.clusterBPMValues(bpmValues);
 
         return clusters.map(c => `${Math.round(c.average)}bpm (${c.values.length})`).join(', ');
+    }
+
+    // Gibt detaillierte Cluster-Informationen zurück
+    getDetailedClusterInfo() {
+        if (this.tempoQueue.intervals.length < 1) {
+            return null;
+        }
+
+        const bpmValues = this.tempoQueue.intervals.map(interval => 60 / interval);
+        const clusters = this.tempoQueue.clusterBPMValuesWithHarmonics(bpmValues);
+
+        return clusters.map(c => ({
+            average: c.average,
+            count: c.values.length,
+            values: c.values.slice(-5) // Die letzten 5 Werte pro Cluster
+        }));
+    }
+
+    // Gibt Diagnose-Daten zurück
+    getDiagnosticData() {
+        return {
+            hitDetector: this.hitDetector.getDiagnosticData(),
+            beatIntervals: this.tempoQueue.intervals.slice(-5), // Die letzten 5 Intervalle
+            hitCount: this.hitCache.hits.length,
+            lastClusters: this.getDetailedClusterInfo(),
+            bpmHistory: this.bpmTracker.getBPMHistory()
+        };
     }
 
     // Setzt alles zurück
@@ -399,7 +760,7 @@ class AudioBPMAnalyzer {
 
     async connectToMicrophone() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
             this.audioSource = this.audioContext.createMediaStreamSource(stream);
             this.audioSource.connect(this.analyser);
             this.isRunning = true;
@@ -471,6 +832,11 @@ class AudioBPMAnalyzer {
         return this.bpmAnalyzer.getClusterInfo();
     }
 
+    getDiagnosticData() {
+        if (!this.bpmAnalyzer) return null;
+        return this.bpmAnalyzer.getDiagnosticData();
+    }
+
     stop() {
         this.isRunning = false;
         if (this.audioSource) {
@@ -525,9 +891,14 @@ function updateBPMDisplay() {
     const bpm = bpmAnalyzer.getBPM();
     const quality = bpmAnalyzer.getBPMQuality();
 
+    // BPM anzeigen, auch wenn Qualität niedrig ist
     if (bpm) {
         bpmDisplay.textContent = Math.round(bpm);
         qualityFill.style.width = `${quality * 100}%`;
+    } else if (bpmAnalyzer.getHitCount() > 0) {
+        // Fallback: Wenn Hits aber kein BPM, zeige "Berechne..." an
+        bpmDisplay.textContent = "...";
+        qualityFill.style.width = "10%"; // Zeigt an, dass wir arbeiten
     }
 
     // Aktualisiere Live-Informationen
@@ -660,6 +1031,9 @@ function copyFeedbackToClipboard() {
     const currentBPM = bpmAnalyzer.getBPM();
     const currentQuality = bpmAnalyzer.getBPMQuality();
 
+    // Erweiterte Diagnostik-Daten
+    const diagnosticData = bpmAnalyzer.getDiagnosticData();
+
     const feedbackData = {
         type: selectedFeedback,
         comment: comment,
@@ -672,14 +1046,16 @@ function copyFeedbackToClipboard() {
         // Zusätzliche Debug-Informationen
         hitCount: bpmAnalyzer.getHitCount(),
         lastInterval: bpmAnalyzer.getLastInterval(),
-        clusterInfo: bpmAnalyzer.getClusterInfo()
+        clusterInfo: bpmAnalyzer.getClusterInfo(),
+        // Detaillierte Diagnose-Daten
+        diagnostic: diagnosticData
     };
 
     // In die Zwischenablage kopieren
     const jsonString = JSON.stringify(feedbackData, null, 2);
     navigator.clipboard.writeText(jsonString)
         .then(() => {
-            M.toast({html: 'Feedback in Zwischenablage kopiert!'});
+            M.toast({html: 'Feedback mit Diagnose-Daten in Zwischenablage kopiert!'});
         })
         .catch(err => {
             console.error('Fehler beim Kopieren in die Zwischenablage:', err);
@@ -688,7 +1064,7 @@ function copyFeedbackToClipboard() {
 }
 
 // Initialisierung beim Laden der Seite
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Überprüfe Unterstützung für Web Audio API
     if (!window.AudioContext && !window.webkitAudioContext) {
         statusText.textContent = "Dein Browser unterstützt die Web Audio API nicht";
