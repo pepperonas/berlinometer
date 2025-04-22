@@ -5,6 +5,7 @@ import OpenerView from './components/OpenerView';
 import DatesView from './components/DatesView';
 import TipsView from './components/TipsView';
 import Toast from './components/Toast';
+import PWAPrompt from './components/PWAPrompt';
 import './App.css';
 
 function App() {
@@ -15,6 +16,17 @@ function App() {
     const [currentOpener, setCurrentOpener] = useState('');
     const [toast, setToast] = useState({ show: false, message: '' });
     const [loading, setLoading] = useState(false);
+    const [newVersionAvailable, setNewVersionAvailable] = useState(false);
+
+    // Prüfe auf neue App-Versionen
+    useEffect(() => {
+        // Event-Listener für Service Worker Updates
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                setNewVersionAvailable(true);
+            });
+        }
+    }, []);
 
     // Debugging-Funktion
     const logError = (message, error) => {
@@ -26,6 +38,11 @@ function App() {
     const showToast = (message) => {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
+    };
+
+    // Neue Version laden
+    const updateApp = () => {
+        window.location.reload();
     };
 
     // Passwort prüfen
@@ -199,6 +216,13 @@ function App() {
                 <div className="loading-indicator">Lädt Daten...</div>
             )}
 
+            {newVersionAvailable && (
+                <div className="update-notice">
+                    <p>Eine neue Version ist verfügbar!</p>
+                    <button className="primary-btn" onClick={updateApp}>Jetzt aktualisieren</button>
+                </div>
+            )}
+
             {view === 'password' && (
                 <PasswordView onSubmit={checkPassword} />
             )}
@@ -229,6 +253,9 @@ function App() {
                 show={toast.show}
                 message={toast.message}
             />
+
+            {/* PWA Installationsaufforderung */}
+            <PWAPrompt />
         </div>
     );
 }

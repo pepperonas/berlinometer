@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Secret Content",
+  "name": "Secret Content App",
+  "description": "Exklusive Inhalte und Geheimtipps auf mrx3k1.de",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,7 +11,8 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
@@ -18,8 +20,17 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/secret-content/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#2C2E3B",
+  "background_color": "#2C2E3B",
+  "orientation": "portrait",
+  "scope": "/secret-content/",
+  "screenshots": [
+    {
+      "src": "screenshot1.png",
+      "sizes": "320x640",
+      "type": "image/png"
+    }
+  ]
 }
