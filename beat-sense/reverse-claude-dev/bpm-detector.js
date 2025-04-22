@@ -192,16 +192,16 @@ class SpectrumHitDetector {
 
     // Passt den Schwellwert basierend auf durchschnittlicher Energie an
     updateAdaptiveThreshold(currentEnergy, timestamp) {
-        // Langsam anpassender Durchschnitt
-        this.averageEnergy = (this.averageEnergy * 0.95) + (currentEnergy * 0.05);
+        // Schnellere Anpassung des Durchschnitts (0.90 und 0.10 statt 0.95 und 0.05)
+        this.averageEnergy = (this.averageEnergy * 0.90) + (currentEnergy * 0.10);
 
-        // Dynamischere Schwellwertanpassung basierend auf Zeit und Energie
+        // Dynamischere Schwellwertanpassung
         const timeSinceLastHit = timestamp - this.lastHitTime;
 
-        // Wenn lange kein Hit erkannt wurde, reduziere Schwellwert
+        // Schnellere Schwellwertsenkung wenn kein Hit
         let thresholdModifier = 1.0;
-        if (timeSinceLastHit > 1.0) {
-            thresholdModifier = Math.max(0.7, 1.0 - (timeSinceLastHit - 1.0) * 0.1);
+        if (timeSinceLastHit > 0.8) { // Von 1.0 auf 0.8 reduziert
+            thresholdModifier = Math.max(0.6, 1.0 - (timeSinceLastHit - 0.8) * 0.15); // Stärkere Reduktion
         }
 
         // Energiebasierte Anpassung
@@ -257,7 +257,7 @@ class SpectrumHitDetector {
 }
 
 class TempoQueue {
-    constructor(maxSize = 24) {
+    constructor(maxSize = 16) { // Von 24 auf 16 reduziert
         this.intervals = [];
         this.maxSize = maxSize;
         this.minBPM = 60;
@@ -301,7 +301,7 @@ class TempoQueue {
     }
 
     // Berechnet den aktuellen BPM-Wert mit Schwellwert-Filterung
-    getThresholdedBPM(confidenceThreshold = 0.12) { // Noch niedriger für schnellere Erkennung
+    getThresholdedBPM(confidenceThreshold = 0.08) { // Von 0.12 auf 0.08 reduziert
         if (this.intervals.length < 1) {
             return null; // Nicht genug Daten
         }
@@ -476,8 +476,8 @@ class BPMTracker {
         this.currentBPM = null;
         this.confidence = 0;
         this.lastUpdateTime = 0;
-        this.bpmHistory = []; // Historische BPM-Werte für Stabilität
-        this.maxHistorySize = 5;
+        this.bpmHistory = [];
+        this.maxHistorySize = 3; // Von 5 auf 3 reduziert - schnellere Anpassung
     }
 
     // Aktualisiert den BPM-Tracker mit einem neuen Wert
@@ -527,28 +527,40 @@ class BPMTracker {
 
     // Intern: Kombiniere bestehenden BPM mit neuem Wert
     _mergeBPM(factor, newBPM, medianBPM) {
-        // Vergleiche mit Median statt mit aktuellem Wert für stabilere Übergänge
+        // Erkennen von drastischen Änderungen (Liedwechsel)
         const bpmDiff = Math.abs(medianBPM - newBPM) / medianBPM;
 
         // Bevorzuge BPMs in typischen Musik-Bereichen (115-135)
         const preferenceBonus = (newBPM >= 115 && newBPM <= 135) ? 0.05 : 0;
 
-        // Wenn neuer Wert sehr ähnlich dem Median ist, erhöhe Konfidenz
+        // Bei großen Änderungen: schnellerer Reset
+        if (bpmDiff > 0.25 && this.bpmHistory.length >= 3) {
+            // Prüfe ob die letzten BPM-Werte konsistent sind (deutet auf Liedwechsel hin)
+            const recentBpms = this.bpmHistory.slice(-3);
+            const recentAvg = recentBpms.reduce((sum, bpm) => sum + bpm, 0) / recentBpms.length;
+            const recentConsistency = recentBpms.every(bpm => Math.abs(bpm - recentAvg) / recentAvg < 0.1);
+
+            if (recentConsistency) {
+                // Schnellere Anpassung bei konsistenten neuen Werten
+                this.confidence = 0.4; // Höhere Startkonfidenzzuweisung
+                this.currentBPM = newBPM * 0.6 + this.currentBPM * 0.4; // Stärkere Gewichtung des neuen Werts
+                return;
+            }
+        }
+
+        // Normale Anpassungen mit verbesserten Werten
         if (bpmDiff < 0.05) {
-            this.confidence = Math.min(0.99, this.confidence + (0.15 + preferenceBonus));
-            // Gewichtete Durchschnittsbildung mit höherem Faktor für stabile Werte
-            this.currentBPM = (this.currentBPM * (1 - factor * 1.5) + newBPM * factor * 1.5);
-        }
-        // Bei größerem Unterschied reduziere Konfidenz
-        else if (bpmDiff < 0.15) {
-            this.confidence = Math.max(0.1, this.confidence - (0.03 - preferenceBonus));
-            this.currentBPM = (this.currentBPM * 0.85 + newBPM * 0.15);
-        }
-        // Bei sehr großem Unterschied, ignoriere neuen Wert meistens
-        else {
-            this.confidence = Math.max(0.05, this.confidence - (0.08 - preferenceBonus / 2));
-            // Nur leichte Anpassung in Richtung des neuen Wertes
-            this.currentBPM = (this.currentBPM * 0.95 + newBPM * 0.05);
+            // Kleine Abweichung: normal anpassen
+            this.confidence = Math.min(0.99, this.confidence + (0.2 + preferenceBonus));
+            this.currentBPM = (this.currentBPM * (1 - factor * 2.0) + newBPM * factor * 2.0);
+        } else if (bpmDiff < 0.15) {
+            // Mittlere Abweichung: schneller anpassen
+            this.confidence = Math.max(0.15, this.confidence - (0.02 - preferenceBonus));
+            this.currentBPM = (this.currentBPM * 0.75 + newBPM * 0.25); // Mehr Gewicht auf neuem Wert
+        } else {
+            // Große Abweichung: vorsichtiger, aber immer noch schneller als original
+            this.confidence = Math.max(0.1, this.confidence - (0.05 - preferenceBonus / 2));
+            this.currentBPM = (this.currentBPM * 0.85 + newBPM * 0.15); // 15% statt 5% Anpassung
         }
     }
 
@@ -576,6 +588,7 @@ class BPMAnalyzer {
         this.lastHitTime = null;
         this.minBPM = 60;
         this.maxBPM = 200;
+        this.energyHistory = []; // Für Track-Wechsel-Erkennung
     }
 
     // Setzt die BPM-Grenzen
@@ -589,6 +602,38 @@ class BPMAnalyzer {
     update(frequencyData, timestamp) {
         // Suche nach Beats im Frequenzspektrum
         const hit = this.hitDetector.update(frequencyData, timestamp);
+
+        // Erkenne mögliche Track-Wechsel durch drastische Änderungen in der Energieverteilung
+        const currentEnergy = this.hitDetector.diagnosticData.averageEnergy;
+
+        // Speichere historische Energiewerte für Vergleich
+        if (!this.energyHistory) this.energyHistory = [];
+        this.energyHistory.push(currentEnergy);
+        if (this.energyHistory.length > 20) this.energyHistory.shift();
+
+        // Erkennung von drastischen Energieänderungen (potenzieller Track-Wechsel)
+        if (this.energyHistory.length > 10) {
+            const recentAvg = this.energyHistory.slice(-5).reduce((sum, e) => sum + e, 0) / 5;
+            const olderAvg = this.energyHistory.slice(-10, -5).reduce((sum, e) => sum + e, 0) / 5;
+
+            // Wenn sich die Energie drastisch ändert, setze Tempo-Queue zurück
+            if (Math.abs(recentAvg - olderAvg) / Math.max(recentAvg, olderAvg, 0.1) > 0.4) {
+                console.log("Track-Wechsel erkannt: Energie-Änderung", Math.abs(recentAvg - olderAvg) / Math.max(recentAvg, olderAvg, 0.1));
+                this.tempoQueue = new TempoQueue();
+                this.bpmTracker = new BPMTracker();
+                this.lastHitTime = timestamp - 0.5; // Nicht komplett zurücksetzen
+
+                // Nach Reset: Schnellere Neuerkennung durch temporär empfindlichere Parameter
+                this.hitDetector.threshold *= 0.8; // Temporär empfindlicher für Beats
+                this.hitDetector.minTimeBetweenHits = Math.max(0.05, this.hitDetector.minTimeBetweenHits * 0.8); // Empfindlicher
+
+                // Timer zur Wiederherstellung normaler Empfindlichkeit nach 2 Sekunden
+                setTimeout(() => {
+                    this.hitDetector.threshold /= 0.8; // Original-Empfindlichkeit wiederherstellen
+                    this.hitDetector.minTimeBetweenHits /= 0.8; // Original-Zeit wiederherstellen
+                }, 2000);
+            }
+        }
 
         if (hit) {
             // Speichere erkannten Hit
@@ -620,10 +665,11 @@ class BPMAnalyzer {
             // Hier Beat-Indikator aktivieren
             animateBeatIndicator();
         } else {
+            // Verbesserten Notfall-Mechanismus implementieren - schnellere initiale Schätzung
             // Notfall-Mechanismus: Wenn wir Hits haben, aber keinen BPM,
-            // und mehr als 3 Sekunden vergangen sind - Versuche einen BPM zu schätzen
+            // und mehr als 1.5 Sekunden vergangen sind - Versuche einen BPM zu schätzen (von 3 auf 1.5 reduziert)
             if (this.lastHitTime !== null &&
-                timestamp - this.lastHitTime > 3 &&
+                timestamp - this.lastHitTime > 1.5 && // Reduziert von 3 auf 1.5 Sekunden
                 this.hitCache.hits.length > 0 &&
                 this.bpmTracker.getState().bpm === null) {
 
@@ -637,8 +683,9 @@ class BPMAnalyzer {
                     if (estimatedBPM < 90) estimatedBPM *= 2;
 
                     this.bpmTracker.update(timestamp, this.applyBPMBounds(estimatedBPM));
+                    console.log("Notfall-BPM geschätzt:", Math.round(estimatedBPM));
                 } else if (this.hitCache.hits.length > 1) {
-                    // Berechne aus den Zeitstempeln der Hits
+                    // Berechne aus den Zeitstempeln der Hits - Optimiert für 2+ Hits
                     const hits = this.hitCache.getHits();
                     const totalTime = hits[hits.length - 1].timestamp - hits[0].timestamp;
                     const avgInterval = totalTime / (hits.length - 1);
@@ -648,6 +695,7 @@ class BPMAnalyzer {
                     if (estimatedBPM < 90) estimatedBPM *= 2;
 
                     this.bpmTracker.update(timestamp, this.applyBPMBounds(estimatedBPM));
+                    console.log("Notfall-BPM aus Hits geschätzt:", Math.round(estimatedBPM));
                 }
             }
         }
@@ -869,6 +917,8 @@ const hitCountDisplay = document.getElementById('hitCount');
 const lastIntervalDisplay = document.getElementById('lastInterval');
 const clusterInfoDisplay = document.getElementById('clusterInfo');
 const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+const infoAccordion = document.getElementById('infoAccordion');
+const feedbackAccordion = document.getElementById('feedbackAccordion');
 
 // Event Listeners
 microphoneBtn.addEventListener('click', startMicrophoneAnalysis);
@@ -897,7 +947,7 @@ function updateBPMDisplay() {
         qualityFill.style.width = `${quality * 100}%`;
     } else if (bpmAnalyzer.getHitCount() > 0) {
         // Fallback: Wenn Hits aber kein BPM, zeige "Berechne..." an
-        bpmDisplay.textContent = "...";
+        bpmDisplay.textContent = "--";
         qualityFill.style.width = "10%"; // Zeigt an, dass wir arbeiten
     }
 
@@ -1056,6 +1106,12 @@ function copyFeedbackToClipboard() {
     navigator.clipboard.writeText(jsonString)
         .then(() => {
             M.toast({html: 'Feedback mit Diagnose-Daten in Zwischenablage kopiert!'});
+
+            // Schließe das Feedback-Akkordeon nach dem Kopieren
+            const feedbackInstance = M.Collapsible.getInstance(feedbackAccordion);
+            if (feedbackInstance) {
+                feedbackInstance.close(0);
+            }
         })
         .catch(err => {
             console.error('Fehler beim Kopieren in die Zwischenablage:', err);
@@ -1081,4 +1137,13 @@ document.addEventListener('DOMContentLoaded', function () {
     // Materialize-Komponenten initialisieren
     M.updateTextFields();
     M.textareaAutoResize(document.getElementById('feedbackComment'));
+
+    // Akkordeons initialisieren
+    const elems = document.querySelectorAll('.collapsible');
+    M.Collapsible.init(elems, {
+        accordion: true,
+        onOpenStart: function (el) {
+            // Hier könnten spezifische Aktionen beim Öffnen eines Akkordeons stattfinden
+        }
+    });
 });

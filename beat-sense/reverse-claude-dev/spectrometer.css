@@ -1,0 +1,61 @@
+/* spectrometer.css - Styles für die Spektrometer-Komponente */
+
+#spectrometer-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    border-radius: 8px;
+    margin: 15px 0;
+    background-color: #2C2E3B;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+#spectrometer-canvas {
+    display: block;
+    width: 100%;
+    background-color: #2C2E3B;
+}
+
+.spectrometer-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* Switch Styling (Materialize angepasst) */
+.switch label input[type=checkbox]:checked+.lever {
+    background-color: rgba(93, 95, 239, 0.5);
+}
+
+.switch label input[type=checkbox]:checked+.lever:after {
+    background-color: #5D5FEF;
+}
+
+/* Advanced Menu */
+.advanced-menu {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.btn-small {
+    text-transform: none;
+    font-size: 12px;
+    padding: 0 8px;
+}
+
+.btn-small i.left {
+    margin-right: 5px;
+}
+
+/* Anpassungen an die Material Design Farbpalette */
+.grey.darken-2 {
+    background-color: #3A3C4E !important;
+}
+
+.grey.darken-2:hover {
+    background-color: #4A4C5E !important;
+}
