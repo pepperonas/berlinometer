@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPM Analyzer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CSS bleibt unverändert, wie im Original bereitgestellt */
+    </style>
+</head>
+<body>
+<header>
+    <h1>BPM Analyzer</h1>
+    <h2>Echtzeit Beat-Erkennung</h2>
+</header>
+
+<main>
+    <div class="container">
+        <div class="card">
+            <div class="result">
+                <div class="bpm-label">BEATS PER MINUTE</div>
+                <div class="bpm-display" id="bpmDisplay">--.-</div>
+                <div class="status" id="statusText">Bereit zur Aufnahme</div>
+            </div>
+
+            <div class="visualizer">
+                <canvas id="visualizer"></canvas>
+                <div class="beat-indicator" id="beatIndicator"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="recordButton">
+                    <i class="fas fa-microphone"></i> Mikrofon starten
+                </button>
+                <label class="btn file-label">
+                    <i class="fas fa-file-audio"></i> Audio öffnen
+                    <input type="file" class="file-input" id="audioFileInput" accept="audio/*">
+                </label>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Einstellungen</h2>
+            <div class="settings">
+                <div class="setting-group">
+                    <label for="minBPM">Minimale BPM: <span id="minBPMValue">60</span></label>
+                    <input type="range" id="minBPM" min="40" max="120" value="60">
+                </div>
+                <div class="setting-group">
+                    <label for="maxBPM">Maximale BPM: <span id="maxBPMValue">180</span></label>
+                    <input type="range" id="maxBPM" min="120" max="220" value="180">
+                </div>
+                <div class="setting-group">
+                    <label for="sensitivity">Empfindlichkeit: <span id="sensitivityValue">1.5</span></label>
+                    <input type="range" id="sensitivity" min="1" max="3" step="0.1" value="1.5">
+                </div>
+                <div class="setting-group">
+                    <label for="decay">Decay Rate: <span id="decayValue">0.99</span></label>
+                    <input type="range" id="decay" min="0.95" max="0.999" step="0.001" value="0.99">
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>BPM Analyzer App © 2025</p>
+</footer>
+
+<script>
+    class BPMAnalyzer {
+        constructor(options = {}) {
+            this.sampleRate = options.sampleRate || 44100;
+            this.minBPM = options.minBPM || 60;
+            this.maxBPM = options.maxBPM || 180;
+            this.bufferSize = options.bufferSize || 2048;
+            this.hopSize = options.hopSize || 441;
+            this.historySize = options.historySize || 20;
+
+            this.bands = [
+                { low: 20, high: 60 },
+                { low: 60, high: 200 },
+                { low: 200, high: 600 },
+                { low: 600, high: 2000 }
+            ];
+
+            this.energyHistory = this.bands.map(() => []);
+            this.beatHistory = [];
+            this.tempoQueue = [];
+            this.lastBeatTime = 0;
+            this.frameCount = 0;
+
+            this.beatSensitivity = options.sensitivity || 1.5;
+            this.beatDecay = options.decay || 0.99;
+            this.energyThreshold = 0.1; // Niedrigerer Schwellwert
+        }
+
+        analyzeSpectrum(audioData) {
+            const windowed = this._applyHanningWindow(audioData);
+            const fftResult = this._computeFFT(windowed);
+            return this._computeBandEnergies(fftResult);
+        }
+
+        _applyHanningWindow(samples) {
+            const windowed = new Float32Array(samples.length);
+            for (let i = 0; i < samples.length; i++) {
+                const windowValue = 0.5 * (1 - Math.cos(2 * Math.PI * i / (samples.length - 1)));
+                windowed[i] = samples[i] * windowValue;
+            }
+            return windowed;
+        }
+
+        _computeFFT(samples) {
+            const fftSize = this.bufferSize / 2;
+            const magnitude = new Float32Array(fftSize);
+
+            for (let i = 0; i < fftSize; i++) {
+                const bandWidth = samples.length / fftSize;
+                const startIdx = Math.floor(i * bandWidth);
+                const endIdx = Math.floor((i + 1) * bandWidth);
+
+                let sum = 0;
+                let prevValue = 0;
+                let peakCount = 0;
+
+                for (let j = startIdx; j < endIdx; j++) {
+                    sum += Math.abs(samples[j]);
+                    if (samples[j] > prevValue * 1.5) {
+                        peakCount++;
+                    }
+                    prevValue = samples[j];
+                }
+
+                const avgEnergy = sum / (endIdx - startIdx);
+                magnitude[i] = avgEnergy * (1 + peakCount * 0.2);
+            }
+            return magnitude;
+        }
+
+        _computeBandEnergies(fftResult) {
+            const bandEnergies = [];
+            const binSize = this.sampleRate / this.bufferSize;
+
+            for (const band of this.bands) {
+                const lowBin = Math.floor(band.low / binSize);
+                const highBin = Math.min(Math.ceil(band.high / binSize), fftResult.length - 1);
+
+                let energy = 0;
+                for (let i = lowBin; i <= highBin; i++) {
+                    energy += fftResult[i] * fftResult[i];
+                }
+                energy = Math.sqrt(energy / (highBin - lowBin + 1));
+                bandEnergies.push(energy);
+            }
+            return bandEnergies;
+        }
+
+        detectBeats(bandEnergies) {
+            const beats = [];
+
+            for (let i = 0; i < this.bands.length; i++) {
+                const energy = bandEnergies[i];
+                const history = this.energyHistory[i];
+
+                if (history.length < 5) {
+                    history.push(energy);
+                    continue;
+                }
+
+                let avgEnergy = 0;
+                const weights = [0.1, 0.15, 0.2, 0.25, 0.3];
+                for (let j = 0; j < 5; j++) {
+                    avgEnergy += history[history.length - 1 - j] * weights[j];
+                }
+
+                const threshold = avgEnergy * this.beatSensitivity;
+                const currentTime = this.frameCount * (this.hopSize / this.sampleRate);
+                const timeSinceLastBeat = currentTime - this.lastBeatTime;
+                const minBeatInterval = 60 / this.maxBPM;
+
+                if (energy > threshold && energy > this.energyThreshold && timeSinceLastBeat >= minBeatInterval) {
+                    beats.push({
+                        time: currentTime,
+                        band: i,
+                        energy: energy
+                    });
+                    this.lastBeatTime = currentTime;
+                    console.log(`Beat erkannt: Band ${i}, Zeit ${currentTime.toFixed(2)}s, Energie ${energy.toFixed(3)}`);
+                }
+
+                history.push(energy);
+                if (history.length > 20) {
+                    history.shift();
+                }
+            }
+
+            this.frameCount++;
+            return beats;
+        }
+
+        calculateBPM() {
+            if (this.beatHistory.length < 4) {
+                return null;
+            }
+
+            const intervals = [];
+            for (let i = 1; i < this.beatHistory.length; i++) {
+                intervals.push(this.beatHistory[i].time - this.beatHistory[i-1].time);
+            }
+
+            const tempos = intervals.map(interval => 60 / interval);
+            const clusters = this._clusterTempos(tempos);
+
+            let dominantTempo = 0;
+            let maxScore = 0;
+            for (const tempo of Object.keys(clusters)) {
+                const cluster = clusters[tempo];
+                if (cluster.score > maxScore) {
+                    maxScore = cluster.score;
+                    dominantTempo = cluster.average;
+                }
+            }
+            return this._constrainBPM(dominantTempo);
+        }
+
+        _clusterTempos(tempos) {
+            const clusters = {};
+            const tolerance = 5;
+
+            for (const tempo of tempos) {
+                if (tempo < this.minBPM || tempo > this.maxBPM) continue;
+
+                let foundCluster = false;
+                for (const existingTempo of Object.keys(clusters)) {
+                    if (Math.abs(tempo - existingTempo) <= tolerance) {
+                        clusters[existingTempo].values.push(tempo);
+                        clusters[existingTempo].score++;
+                        clusters[existingTempo].average =
+                            clusters[existingTempo].values.reduce((sum, val) => sum + val, 0) /
+                            clusters[existingTempo].values.length;
+                        foundCluster = true;
+                        break;
+                    }
+                }
+
+                if (!foundCluster) {
+                    clusters[tempo] = {
+                        values: [tempo],
+                        average: tempo,
+                        score: 1
+                    };
+                }
+            }
+            return clusters;
+        }
+
+        _constrainBPM(bpm) {
+            if (!bpm) return null;
+            bpm = Math.max(this.minBPM, Math.min(this.maxBPM, bpm));
+            if (bpm < 65) bpm *= 2;
+            else if (bpm > 160) bpm /= 2;
+            return Math.round(bpm * 10) / 10;
+        }
+
+        processFrame(audioData) {
+            const bandEnergies = this.analyzeSpectrum(audioData);
+            const beats = this.detectBeats(bandEnergies);
+
+            if (beats.length > 0) {
+                const strongestBeat = beats.reduce(
+                    (strongest, beat) => beat.energy > strongest.energy ? beat : strongest,
+                    beats[0]
+                );
+                this.beatHistory.push(strongestBeat);
+                if (this.beatHistory.length > this.historySize) {
+                    this.beatHistory.shift();
+                }
+            }
+
+            const bpm = this.calculateBPM();
+            if (bpm !== null) {
+                this.tempoQueue.push(bpm);
+                if (this.tempoQueue.length > 10) {
+                    this.tempoQueue.shift();
+                }
+            }
+            return this.getCurrentBPM();
+        }
+
+        getCurrentBPM() {
+            if (this.tempoQueue.length === 0) return null;
+            const sorted = [...this.tempoQueue].sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            return sorted.length % 2 === 0 ? (sorted[mid-1] + sorted[mid]) / 2 : sorted[mid];
+        }
+
+        reset() {
+            this.energyHistory = this.bands.map(() => []);
+            this.beatHistory = [];
+            this.tempoQueue = [];
+            this.lastBeatTime = 0;
+            this.frameCount = 0;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const recordButton = document.getElementById('recordButton');
+        const audioFileInput = document.getElementById('audioFileInput');
+        const bpmDisplay = document.getElementById('bpmDisplay');
+        const statusText = document.getElementById('statusText');
+        const beatIndicator = document.getElementById('beatIndicator');
+        const visualizerCanvas = document.getElementById('visualizer');
+        const ctx = visualizerCanvas.getContext('2d');
+
+        const minBPMSlider = document.getElementById('minBPM');
+        const maxBPMSlider = document.getElementById('maxBPM');
+        const sensitivitySlider = document.getElementById('sensitivity');
+        const decaySlider = document.getElementById('decay');
+        const minBPMValue = document.getElementById('minBPMValue');
+        const maxBPMValue = document.getElementById('maxBPMValue');
+        const sensitivityValue = document.getElementById('sensitivityValue');
+        const decayValue = document.getElementById('decayValue');
+
+        let audioContext;
+        let mediaStream;
+        let audioSource;
+        let scriptProcessor;
+        let analyserNode;
+        let isRecording = false;
+        let lastBeatTime = 0;
+
+        const bpmAnalyzer = new BPMAnalyzer({
+            sampleRate: 44100,
+            minBPM: parseInt(minBPMSlider.value),
+            maxBPM: parseInt(maxBPMSlider.value),
+            sensitivity: parseFloat(sensitivitySlider.value),
+            decay: parseFloat(decaySlider.value),
+            bufferSize: 2048
+        });
+
+        minBPMSlider.addEventListener('input', () => {
+            minBPMValue.textContent = minBPMSlider.value;
+            bpmAnalyzer.minBPM = parseInt(minBPMSlider.value);
+        });
+
+        maxBPMSlider.addEventListener('input', () => {
+            maxBPMValue.textContent = maxBPMSlider.value;
+            bpmAnalyzer.maxBPM = parseInt(maxBPMSlider.value);
+        });
+
+        sensitivitySlider.addEventListener('input', () => {
+            sensitivityValue.textContent = sensitivitySlider.value;
+            bpmAnalyzer.beatSensitivity = parseFloat(sensitivitySlider.value);
+        });
+
+        decaySlider.addEventListener('input', () => {
+            decayValue.textContent = decaySlider.value;
+            bpmAnalyzer.beatDecay = parseFloat(decaySlider.value);
+        });
+
+        function resizeCanvas() {
+            visualizerCanvas.width = visualizerCanvas.clientWidth * window.devicePixelRatio;
+            visualizerCanvas.height = visualizerCanvas.clientHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function drawVisualization(audioData) {
+            ctx.clearRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+            const width = visualizerCanvas.width;
+            const height = visualizerCanvas.height;
+            const barWidth = width / audioData.length;
+            const baseColor = [63, 81, 181];
+
+            for (let i = 0; i < audioData.length; i++) {
+                const value = audioData[i] / 255;
+                const barHeight = value * height;
+                const r = baseColor[0] + (255 - baseColor[0]) * value;
+                const g = baseColor[1] + (255 - baseColor[1]) * value;
+                const b = baseColor[2] + (255 - baseColor[2]) * value;
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.fillRect(i * barWidth, height - barHeight, barWidth, barHeight);
+            }
+        }
+
+        function showBeatIndicator() {
+            beatIndicator.style.transition = 'none';
+            beatIndicator.style.height = '0%';
+            void beatIndicator.offsetWidth;
+            beatIndicator.style.transition = 'height 100ms ease-out';
+            beatIndicator.style.height = '100%';
+            setTimeout(() => {
+                beatIndicator.style.transition = 'height 400ms ease-in';
+                beatIndicator.style.height = '0%';
+            }, 100);
+        }
+
+        function updateBPMDisplay(bpm) {
+            if (bpm !== null) {
+                bpmDisplay.textContent = bpm.toFixed(1);
+                bpmDisplay.classList.remove('loading');
+                if (bpm < 70) statusText.textContent = 'Langsames Tempo erkannt';
+                else if (bpm < 120) statusText.textContent = 'Mittleres Tempo erkannt';
+                else statusText.textContent = 'Schnelles Tempo erkannt';
+
+                const currentTime = audioContext.currentTime;
+                if (currentTime - lastBeatTime > 60 / bpm) {
+                    showBeatIndicator();
+                    lastBeatTime = currentTime;
+                }
+            } else if (bpmDisplay.textContent === '--.-') {
+                bpmDisplay.classList.add('loading');
+                statusText.textContent = 'Suche nach Beats...';
+            }
+        }
+
+        recordButton.addEventListener('click', async () => {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                bpmDisplay.textContent = '--.-';
+                bpmDisplay.classList.add('loading');
+                statusText.textContent = 'Starte Aufnahme...';
+                try {
+                    await startMicrophoneRecording();
+                } catch (err) {
+                    statusText.textContent = 'Mikrofon-Zugriff verweigert oder nicht verfügbar.';
+                    console.error('Fehler beim Zugriff auf das Mikrofon:', err);
+                    bpmDisplay.classList.remove('loading');
+                }
+            }
+        });
+
+        audioFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                if (isRecording) stopRecording();
+                loadAudioFile(file);
+            }
+        });
+
+        function initAudioContext() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            bpmAnalyzer.sampleRate = audioContext.sampleRate;
+        }
+
+        async function startMicrophoneRecording() {
+            if (!audioContext) initAudioContext();
+            if (mediaStream) stopRecording();
+
+            statusText.textContent = 'Mikrofon wird gestartet...';
+            bpmAnalyzer.reset();
+
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+                });
+                audioSource = audioContext.createMediaStreamSource(mediaStream);
+                setupAudioProcessing(audioSource);
+                isRecording = true;
+                recordButton.innerHTML = '<i class="fas fa-stop"></i> Aufnahme stoppen';
+                recordButton.classList.add('btn-recording');
+                statusText.textContent = 'Analysiere Audio...';
+            } catch (err) {
+                statusText.textContent = 'Fehler beim Zugriff auf das Mikrofon.';
+                console.error('Mikrofon-Fehler:', err);
+                throw err;
+            }
+        }
+
+        function startDemoMode() {
+            if (isRecording) stopRecording();
+            if (!audioContext) initAudioContext();
+
+            statusText.textContent = 'Demo-Modus aktiv: 120 BPM';
+            bpmDisplay.textContent = '--.-';
+            bpmDisplay.classList.add('loading');
+            bpmAnalyzer.reset();
+
+            const duration = 10;
+            const sampleRate = audioContext.sampleRate;
+            const totalSamples = sampleRate * duration;
+            const audioBuffer = audioContext.createBuffer(1, totalSamples, sampleRate);
+            const channel = audioBuffer.getChannelData(0);
+
+            for (let i = 0; i < totalSamples; i++) {
+                channel[i] = (Math.random() * 2 - 1) * 0.05;
+            }
+
+            const beatInterval = sampleRate / 2;
+            for (let i = 0; i < duration * 2; i++) {
+                const beatPos = Math.floor(i * beatInterval);
+                for (let j = 0; j < 1000; j++) {
+                    if (beatPos + j < totalSamples) {
+                        channel[beatPos + j] += 1.5 * Math.exp(-j * 0.01);
+                    }
+                }
+            }
+
+            const bufferSource = audioContext.createBufferSource();
+            bufferSource.buffer = audioBuffer;
+            bufferSource.loop = true;
+
+            analyserNode = audioContext.createAnalyser();
+            analyserNode.fftSize = 4096;
+            bufferSource.connect(analyserNode);
+
+            const bufferSize = 4096;
+            scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+            analyserNode.connect(scriptProcessor);
+            scriptProcessor.connect(audioContext.destination);
+            bufferSource.connect(audioContext.destination);
+
+            let frameCount = 0;
+            scriptProcessor.onaudioprocess = (e) => {
+                const inputData = e.inputBuffer.getChannelData(0);
+                const audioData = new Float32Array(bufferSize);
+                audioData.set(inputData);
+
+                const bpm = bpmAnalyzer.processFrame(audioData);
+                frameCount++;
+                if (frameCount % 50 === 0) {
+                    const maxAmplitude = Math.max(...audioData.map(Math.abs));
+                    console.log(`Demo: Frame ${frameCount}, Max Amplitude: ${maxAmplitude.toFixed(3)}, BPM: ${bpm}`);
+                }
+
+                const visualData = new Uint8Array(analyserNode.frequencyBinCount);
+                analyserNode.getByteFrequencyData(visualData);
+                requestAnimationFrame(() => {
+                    drawVisualization(visualData);
+                    updateBPMDisplay(bpm);
+                });
+            };
+
+            bufferSource.start();
+            isRecording = true;
+            recordButton.innerHTML = '<i class="fas fa-stop"></i> Demo stoppen';
+            recordButton.classList.add('btn-recording');
+            bufferSource.onended = stopRecording;
+        }
+
+        const demoButton = document.createElement('button');
+        demoButton.id = 'demoButton';
+        demoButton.innerHTML = '<i class="fas fa-vial"></i> Demo (120 BPM)';
+        demoButton.classList.add('btn');
+        demoButton.style.backgroundColor = '#009688';
+        demoButton.addEventListener('click', startDemoMode);
+        if (!document.getElementById('demoButton')) {
+            document.querySelector('.controls').appendChild(demoButton);
+        }
+
+        function loadAudioFile(file) {
+            if (!audioContext) initAudioContext();
+            const reader = new FileReader();
+            statusText.textContent = 'Lade Audiodatei...';
+            bpmAnalyzer.reset();
+            bpmDisplay.textContent = '--.-';
+            bpmDisplay.classList.add('loading');
+
+            reader.onload = async (e) => {
+                try {
+                    const audioBuffer = await audioContext.decodeAudioData(e.target.result);
+                    const bufferSource = audioContext.createBufferSource();
+                    bufferSource.buffer = audioBuffer;
+                    stopRecording();
+                    setupAudioProcessing(bufferSource);
+                    bufferSource.connect(audioContext.destination);
+                    bufferSource.start();
+                    isRecording = true;
+                    statusText.textContent = 'Analysiere Audiodatei...';
+                    recordButton.innerHTML = '<i class="fas fa-stop"></i> Wiedergabe stoppen';
+                    recordButton.classList.add('btn-recording');
+                    bufferSource.onended = () => {
+                        stopRecording();
+                        statusText.textContent = 'Wiedergabe beendet';
+                    };
+                } catch (err) {
+                    statusText.textContent = 'Fehler beim Dekodieren der Audiodatei.';
+                    console.error('Audiodatei-Fehler:', err);
+                    bpmDisplay.classList.remove('loading');
+                }
+            };
+            reader.onerror = () => {
+                statusText.textContent = 'Fehler beim Lesen der Datei.';
+                bpmDisplay.classList.remove('loading');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function setupAudioProcessing(source) {
+            analyserNode = audioContext.createAnalyser();
+            analyserNode.fftSize = 4096;
+            analyserNode.smoothingTimeConstant = 0.5;
+            source.connect(analyserNode);
+
+            const bufferSize = 4096;
+            scriptProcessor = audioContext.createScriptProcessor(bufferSize, 1, 1);
+            source.connect(scriptProcessor);
+            scriptProcessor.connect(audioContext.destination);
+
+            const audioData = new Float32Array(bufferSize);
+            const visualData = new Uint8Array(analyserNode.frequencyBinCount);
+
+            let frameCount = 0;
+            let debugCounter = 0;
+
+            scriptProcessor.onaudioprocess = (e) => {
+                const inputData = e.inputBuffer.getChannelData(0);
+                audioData.set(inputData);
+
+                let maxAmplitude = Math.max(...audioData.map(Math.abs));
+                if (maxAmplitude > 0.01) {
+                    if (maxAmplitude < 0.2) {
+                        const gain = 0.5 / maxAmplitude;
+                        for (let i = 0; i < audioData.length; i++) {
+                            audioData[i] *= gain;
+                        }
+                    }
+
+                    const bpm = bpmAnalyzer.processFrame(audioData);
+                    frameCount++;
+                    if (frameCount % 50 === 0) {
+                        console.log(`Frame ${frameCount}, Max Amplitude: ${maxAmplitude.toFixed(3)}, BPM: ${bpm}, Beats erkannt: ${bpmAnalyzer.beatHistory.length}`);
+                        debugCounter++;
+                        if (debugCounter > 20 && bpm === null) {
+                            console.log("Keine BPM erkannt, setze Analyzer zurück");
+                            bpmAnalyzer.reset();
+                            debugCounter = 0;
+                        }
+                    }
+                    if (bpm !== null) {
+                        requestAnimationFrame(() => updateBPMDisplay(bpm));
+                    }
+                }
+
+                analyserNode.getByteFrequencyData(visualData);
+                requestAnimationFrame(() => drawVisualization(visualData));
+            };
+        }
+
+        function stopRecording() {
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            if (scriptProcessor) {
+                scriptProcessor.onaudioprocess = null;
+                scriptProcessor.disconnect();
+                scriptProcessor = null;
+            }
+            if (audioSource) {
+                audioSource.disconnect();
+                audioSource = null;
+            }
+            if (analyserNode) {
+                analyserNode.disconnect();
+                analyserNode = null;
+            }
+            isRecording = false;
+            recordButton.innerHTML = '<i class="fas fa-microphone"></i> Mikrofon starten';
+            recordButton.classList.remove('btn-recording');
+            statusText.textContent = 'Bereit zur Aufnahme';
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPM Detector</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>BPM Detector</h1>
+        <p>Erkenne das Tempo deiner Musik in Echtzeit</p>
+    </div>
+
+    <div class="card">
+        <div class="source-selector">
+            <button id="microphoneBtn" class="btn waves-effect waves-light">
+                <i class="material-icons left">mic</i>Mikrofon
+            </button>
+            <label for="audioFileInput" class="btn waves-effect waves-light">
+                <i class="material-icons left">audio_file</i>Audiodatei
+            </label>
+            <input type="file" id="audioFileInput" class="file-upload" accept="audio/*">
+            <button id="stopBtn" class="btn waves-effect waves-light red disabled">
+                <i class="material-icons left">stop</i>Stop
+            </button>
+        </div>
+
+        <div id="audioPlayer" style="display: none;">
+            <audio id="audioElement" controls style="width: 100%;"></audio>
+        </div>
+
+        <div class="status" id="statusText">Wähle eine Audioquelle, um zu starten</div>
+    </div>
+
+    <div class="card">
+        <div class="beat-indicator" id="beatIndicator"></div>
+        <div class="bpm-display" id="bpmDisplay">--</div>
+        <div>Qualität:</div>
+        <div class="quality-meter">
+            <div class="quality-fill" id="qualityFill"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="bpm-detector.js"></script>
+</body>
+</html>

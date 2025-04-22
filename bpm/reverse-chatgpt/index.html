@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPM-Erkennung WebApp</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #bpm-display { font-size: 2em; margin-top: 20px; }
+        button { margin: 5px; padding: 10px 20px; font-size: 1em; }
+        input[type="file"] { margin-top: 10px; }
+    </style>
+</head>
+<body>
+<h1>BPM-Erkennung WebApp</h1>
+<input type="file" id="file-input" accept="audio/*"><br>
+<button id="play-btn" disabled>Play</button>
+<button id="pause-btn" disabled>Pause</button>
+<div id="bpm-display">Erkannter BPM: --</div>
+
+<script>
+    /**
+     * BPM-Erkennungs-Engine mit Frequenzanalyse
+     */
+    class BPMAnalyzer {
+        constructor(options = {}) {
+            // Konfiguration
+            this.sampleRate = options.sampleRate || 44100;
+            this.minBPM = options.minBPM || 60;
+            this.maxBPM = options.maxBPM || 180;
+            this.bufferSize = options.bufferSize || 2048;
+            this.hopSize = options.hopSize || 441;
+            this.historySize = options.historySize || 20;
+
+            this.bands = [
+                { low: 20, high: 60 },
+                { low: 60, high: 200 },
+                { low: 200, high: 600 },
+                { low: 600, high: 2000 }
+            ];
+
+            this.energyHistory = this.bands.map(() => []);
+            this.beatHistory = [];
+            this.tempoQueue = [];
+            this.lastBeatTime = 0;
+            this.frameCount = 0;
+
+            this.beatSensitivity = options.sensitivity || 1.5;
+            this.beatDecay = options.decay || 0.99;
+            this.energyThreshold = 0.8;
+        }
+        analyzeSpectrum(audioData) {
+            const windowed = this._applyHanningWindow(audioData);
+            const fftResult = this._computeFFT(windowed);
+            return this._computeBandEnergies(fftResult);
+        }
+        _applyHanningWindow(samples) {
+            const windowed = new Float32Array(samples.length);
+            for (let i = 0; i < samples.length; i++) {
+                const w = 0.5 * (1 - Math.cos(2 * Math.PI * i / (samples.length - 1)));
+                windowed[i] = samples[i] * w;
+            }
+            return windowed;
+        }
+        _computeFFT(samples) {
+            const fftSize = this.bufferSize / 2;
+            const magnitude = new Float32Array(fftSize);
+            for (let i = 0; i < fftSize; i++) {
+                let sum = 0;
+                for (let j = 0; j < samples.length; j++) {
+                    sum += samples[j] * Math.cos(2 * Math.PI * i * j / samples.length);
+                }
+                magnitude[i] = Math.abs(sum) / samples.length;
+            }
+            return magnitude;
+        }
+        _computeBandEnergies(fftResult) {
+            const bandEnergies = [];
+            const binSize = this.sampleRate / this.bufferSize;
+            for (const band of this.bands) {
+                const lowBin = Math.floor(band.low / binSize);
+                const highBin = Math.min(Math.ceil(band.high / binSize), fftResult.length - 1);
+                let energy = 0;
+                for (let i = lowBin; i <= highBin; i++) {
+                    energy += fftResult[i] * fftResult[i];
+                }
+                energy = Math.sqrt(energy / (highBin - lowBin + 1));
+                bandEnergies.push(energy);
+            }
+            return bandEnergies;
+        }
+        detectBeats(bandEnergies) {
+            const beats = [];
+            for (let i = 0; i < this.bands.length; i++) {
+                const energy = bandEnergies[i];
+                const history = this.energyHistory[i];
+                if (history.length < 5) { history.push(energy); continue; }
+                const avg = history.reduce((a,b) => a + b, 0) / history.length;
+                const varSum = history.reduce((a,b) => a + Math.pow(b - avg,2), 0) / history.length;
+                const stdDev = Math.sqrt(varSum);
+                const threshold = avg + this.beatSensitivity * stdDev;
+                const currentTime = this.frameCount * (this.hopSize / this.sampleRate);
+                const timeSinceLast = currentTime - this.lastBeatTime;
+                const minInterval = 60 / this.maxBPM;
+                if (energy > threshold && energy > this.energyThreshold && timeSinceLast >= minInterval) {
+                    beats.push({ time: currentTime, band: i, energy });
+                    this.lastBeatTime = currentTime;
+                }
+                history.push(energy);
+                if (history.length > this.historySize) history.shift();
+            }
+            this.frameCount++;
+            return beats;
+        }
+        calculateBPM() {
+            if (this.beatHistory.length < 4) return null;
+            const intervals = [];
+            for (let i = 1; i < this.beatHistory.length; i++) {
+                intervals.push(this.beatHistory[i].time - this.beatHistory[i-1].time);
+            }
+            const tempos = intervals.map(i => 60 / i);
+            const clusters = this._clusterTempos(tempos);
+            let dominant = 0, maxScore = 0;
+            for (const t in clusters) {
+                if (clusters[t].score > maxScore) {
+                    maxScore = clusters[t].score;
+                    dominant = clusters[t].average;
+                }
+            }
+            return this._constrainBPM(dominant);
+        }
+        _clusterTempos(tempos) {
+            const clusters = {};
+            const tol = 5;
+            for (const tempo of tempos) {
+                if (tempo < this.minBPM || tempo > this.maxBPM) continue;
+                let found = false;
+                for (const t in clusters) {
+                    if (Math.abs(tempo - t) <= tol) {
+                        clusters[t].values.push(tempo);
+                        clusters[t].score++;
+                        clusters[t].average = clusters[t].values.reduce((a,b) => a+b,0)/clusters[t].values.length;
+                        found = true; break;
+                    }
+                }
+                if (!found) clusters[tempo] = { values: [tempo], average: tempo, score: 1 };
+            }
+            return clusters;
+        }
+        _constrainBPM(bpm) {
+            if (!bpm) return null;
+            bpm = Math.max(this.minBPM, Math.min(this.maxBPM, bpm));
+            if (bpm < 65) bpm *= 2;
+            else if (bpm > 160) bpm /= 2;
+            return Math.round(bpm * 10) / 10;
+        }
+        processFrame(audioData) {
+            const energies = this.analyzeSpectrum(audioData);
+            const beats = this.detectBeats(energies);
+            if (beats.length > 0) {
+                const strong = beats.reduce((a,b) => b.energy > a.energy ? b : a, beats[0]);
+                this.beatHistory.push(strong);
+                if (this.beatHistory.length > this.historySize) this.beatHistory.shift();
+            }
+            const bpm = this.calculateBPM();
+            if (bpm !== null) {
+                this.tempoQueue.push(bpm);
+                if (this.tempoQueue.length > 10) this.tempoQueue.shift();
+            }
+            return this.getCurrentBPM();
+        }
+        getCurrentBPM() {
+            if (!this.tempoQueue.length) return null;
+            const sorted = [...this.tempoQueue].sort((a,b) => a - b);
+            const m = Math.floor(sorted.length/2);
+            return sorted.length % 2 === 0 ? (sorted[m-1] + sorted[m]) / 2 : sorted[m];
+        }
+        reset() {
+            this.energyHistory = this.bands.map(() => []);
+            this.beatHistory = [];
+            this.tempoQueue = [];
+            this.lastBeatTime = 0;
+            this.frameCount = 0;
+        }
+    }
+
+    // UI-Logik
+    const analyzer = new BPMAnalyzer({ sampleRate: 44100, minBPM: 60, maxBPM: 180 });
+    let audioCtx, srcNode, procNode, buffer;
+    const fileIn = document.getElementById('file-input');
+    const playBtn = document.getElementById('play-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const bpmDisp = document.getElementById('bpm-display');
+
+    fileIn.addEventListener('change', async () => {
+        const f = fileIn.files[0]; if (!f) return;
+        if (audioCtx) await audioCtx.close();
+        audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+        const arr = await f.arrayBuffer();
+        buffer = await audioCtx.decodeAudioData(arr);
+        playBtn.disabled = false;
+    });
+
+    playBtn.addEventListener('click', () => {
+        srcNode = audioCtx.createBufferSource();
+        srcNode.buffer = buffer;
+        procNode = audioCtx.createScriptProcessor(analyzer.bufferSize, 1, 1);
+        srcNode.connect(procNode);
+        procNode.connect(audioCtx.destination);
+        srcNode.connect(audioCtx.destination);
+        procNode.onaudioprocess = e => {
+            const data = e.inputBuffer.getChannelData(0);
+            const bpm = analyzer.processFrame(data);
+            if (bpm !== null) bpmDisp.textContent = 'Erkannter BPM: ' + bpm.toFixed(1);
+        };
+        srcNode.start(); playBtn.disabled = true; pauseBtn.disabled = false;
+    });
+
+    pauseBtn.addEventListener('click', () => {
+        if (srcNode) { srcNode.stop(); procNode.disconnect(); }
+        playBtn.disabled = false; pauseBtn.disabled = true;
+    });
+</script>
+</body>
+</html>

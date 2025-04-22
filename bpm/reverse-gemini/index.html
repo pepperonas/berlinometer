@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BPM Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Zusätzliches Styling für besseres Aussehen */
+        body {
+            font-family: 'Inter', sans-serif; /* Bevorzugte Schriftart */
+        }
+        .upload-button {
+            cursor: pointer;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            transition: background-color 0.3s ease;
+            text-align: center;
+        }
+        .upload-button:hover {
+            background-color: #2563eb; /* Blue-600 */
+        }
+        .upload-button:disabled {
+            background-color: #9ca3af; /* Gray-400 */
+            cursor: not-allowed;
+        }
+        #bpmResult {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #10b981; /* Emerald-500 */
+        }
+        #progressBarContainer {
+            height: 1rem;
+            background-color: #e5e7eb; /* Gray-200 */
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-top: 1rem;
+            display: none; /* Standardmäßig ausblenden */
+        }
+        #progressBar {
+            height: 100%;
+            width: 0%;
+            background-color: #3b82f6; /* Blue-500 */
+            transition: width 0.1s linear;
+            border-radius: 0.5rem;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+    <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">BPM Analyzer</h1>
+
+    <div class="mb-4">
+        <label for="audioFile" class="block text-sm font-medium text-gray-700 mb-2">Audiodatei auswählen:</label>
+        <input type="file" id="audioFile" accept="audio/*" class="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100 cursor-pointer
+            "/>
+    </div>
+
+    <button id="analyzeButton" class="w-full upload-button" disabled>
+        Analyse starten
+    </button>
+
+    <div id="status" class="mt-4 text-center text-gray-600 h-6"></div>
+
+    <div id="progressBarContainer">
+        <div id="progressBar"></div>
+    </div>
+
+    <div class="mt-6 text-center">
+        <span class="text-lg font-medium text-gray-700">Geschätzte BPM:</span>
+        <div id="bpmResult" class="mt-2 text-4xl font-bold text-blue-600">--</div>
+    </div>
+
+    <p class="mt-4 text-xs text-gray-500 text-center">
+        Hinweis: Die Genauigkeit der BPM-Erkennung hängt von der Audioqualität ab. Die verwendete FFT-Berechnung in diesem Beispiel ist ein vereinfachter Platzhalter und liefert möglicherweise keine präzisen Ergebnisse für komplexe Audiosignale. Für eine genaue Analyse wäre eine vollständige FFT-Implementierung oder die Nutzung der Web Audio API's AnalyserNode erforderlich.
+    </p>
+</div>
+
+<script>
+    /**
+     * BPM-Erkennungs-Engine mit Frequenzanalyse
+     * (Der von Ihnen bereitgestellte Code)
+     */
+    class BPMAnalyzer {
+        constructor(options = {}) {
+            // Konfiguration
+            this.sampleRate = options.sampleRate || 44100;
+            this.minBPM = options.minBPM || 60;
+            this.maxBPM = options.maxBPM || 180;
+            this.bufferSize = options.bufferSize || 2048; // Größe des Analysefensters
+            this.hopSize = options.hopSize || 441; // Schrittweite (ca. 10ms bei 44.1kHz)
+            this.historySize = options.historySize || 20; // Anzahl der Beats zum Speichern
+
+            // Frequenzbänder für die Analyse
+            this.bands = [
+                { low: 20, high: 60 },   // Subbass
+                { low: 60, high: 200 },  // Bass
+                { low: 200, high: 600 }, // Low-Mids
+                { low: 600, high: 2000 } // Mids (hier konzentrieren sich die meisten Beats)
+            ];
+
+            // Zustandsmanagement
+            this.energyHistory = this.bands.map(() => []); // Energieverlauf pro Band
+            this.beatHistory = []; // Zeitpunkte der erkannten Beats
+            this.tempoQueue = [];  // Letzte BPM-Schätzungen zur Glättung
+            this.lastBeatTime = 0; // Zeitpunkt des letzten erkannten Beats
+            this.frameCount = 0; // Zähler für verarbeitete Frames
+
+            // Schwellwerte
+            this.beatSensitivity = options.sensitivity || 1.5; // Empfindlichkeit der Beat-Erkennung
+            this.beatDecay = options.decay || 0.99; // Abklingfaktor (aktuell nicht verwendet im Code)
+            this.energyThreshold = options.energyThreshold || 0.1; // Mindestenergie für einen Beat (angepasst für Demo)
+        }
+
+        /**
+         * Wendet FFT auf ein Frame an und extrahiert Frequenzbänder.
+         * @param {Float32Array} audioData - Ein Array von Audiosamples.
+         * @returns {number[]} Array der Energiewerte für jedes Frequenzband.
+         */
+        analyzeSpectrum(audioData) {
+            // Hanning-Fenster anwenden, um spektrale Leckagen zu reduzieren
+            const windowed = this._applyHanningWindow(audioData);
+
+            // FFT berechnen (Platzhalter-Implementierung)
+            const fftResult = this._computeFFT(windowed);
+
+            // Energie in den Frequenzbändern berechnen
+            return this._computeBandEnergies(fftResult);
+        }
+
+        /**
+         * Wendet ein Hanning-Fenster auf die Audiosamples an.
+         * @param {Float32Array} samples - Die Audiosamples.
+         * @returns {Float32Array} Die gefensterten Samples.
+         */
+        _applyHanningWindow(samples) {
+            const windowed = new Float32Array(samples.length);
+            for (let i = 0; i < samples.length; i++) {
+                // Hanning-Fensterformel
+                const windowValue = 0.5 * (1 - Math.cos(2 * Math.PI * i / (samples.length - 1)));
+                windowed[i] = samples[i] * windowValue;
+            }
+            return windowed;
+        }
+
+        /**
+         * Vereinfachte FFT-Berechnung (Platzhalter).
+         * In einer Produktionsumgebung sollte hier eine optimierte FFT-Bibliothek
+         * oder die Web Audio API (AnalyserNode) verwendet werden.
+         * @param {Float32Array} samples - Die (gefensterten) Audiosamples.
+         * @returns {Float32Array} Das Betragsspektrum (Magnitude).
+         */
+        _computeFFT(samples) {
+            const fftSize = Math.floor(this.bufferSize / 2); // Nur die erste Hälfte des Spektrums ist relevant
+            const magnitude = new Float32Array(fftSize);
+
+            // *** WICHTIGER HINWEIS: Dies ist KEINE echte FFT! ***
+            // Es ist eine sehr vereinfachte Simulation, die nicht die
+            // tatsächlichen Frequenzkomponenten korrekt berechnet.
+            // Sie dient nur dazu, die Struktur des Codes zu erhalten.
+            // Für echte Ergebnisse muss dies durch eine korrekte FFT ersetzt werden.
+
+            // Simulierte Frequenzanalyse: Einfache gewichtete Summierung als Platzhalter
+            for (let i = 0; i < fftSize; i++) {
+                let sumReal = 0;
+                // Einfache Simulation: Gewichtung basierend auf Index
+                for (let j = 0; j < samples.length; j++) {
+                    // Dies ist keine korrekte DFT/FFT-Formel!
+                    sumReal += samples[j] * Math.cos(2 * Math.PI * i * j / samples.length);
+                }
+                // Verwende den Betrag als Magnitude
+                magnitude[i] = Math.abs(sumReal) / samples.length;
+            }
+            // Einfache Skalierung, um Werte im erwarteten Bereich zu haben
+            const scaleFactor = 5; // Empirisch ermittelter Faktor für Demo
+            for(let i = 0; i < magnitude.length; i++) {
+                magnitude[i] *= scaleFactor;
+            }
+
+            return magnitude;
+        }
+
+        /**
+         * Berechnet die durchschnittliche Energie in den definierten Frequenzbändern.
+         * @param {Float32Array} fftResult - Das Betragsspektrum von der FFT.
+         * @returns {number[]} Array der Energiewerte für jedes Band.
+         */
+        _computeBandEnergies(fftResult) {
+            const bandEnergies = [];
+            // Frequenzauflösung pro FFT-Bin
+            const binSize = this.sampleRate / this.bufferSize;
+
+            for (const band of this.bands) {
+                // Bestimme die Start- und End-Bins für das aktuelle Band
+                const lowBin = Math.max(0, Math.floor(band.low / binSize));
+                const highBin = Math.min(fftResult.length - 1, Math.ceil(band.high / binSize));
+
+                let energy = 0;
+                if (lowBin <= highBin) {
+                    // Summiere die quadrierten Magnituden im Band
+                    for (let i = lowBin; i <= highBin; i++) {
+                        energy += fftResult[i] * fftResult[i];
+                    }
+                    // Normalisiere die Energie durch die Anzahl der Bins (RMS-ähnlich)
+                    energy = Math.sqrt(energy / (highBin - lowBin + 1));
+                } else {
+                    energy = 0; // Kein gültiger Frequenzbereich
+                }
+                bandEnergies.push(energy);
+            }
+
+            return bandEnergies;
+        }
+
+        /**
+         * Erkennt Beats basierend auf Energieänderungen in den Frequenzbändern.
+         * @param {number[]} bandEnergies - Die aktuellen Energiewerte der Bänder.
+         * @returns {object[]} Ein Array von erkannten Beat-Objekten.
+         */
+        detectBeats(bandEnergies) {
+            const beats = [];
+            const currentTime = this.frameCount * (this.hopSize / this.sampleRate);
+
+            for (let i = 0; i < this.bands.length; i++) {
+                const energy = bandEnergies[i];
+                const history = this.energyHistory[i];
+
+                // Füge aktuelle Energie zum Verlauf hinzu
+                history.push(energy);
+                // Begrenze die Größe des Verlaufs (FIFO)
+                if (history.length > 43) { // ca. 43 * 10ms = 430ms Fenster für Durchschnitt
+                    history.shift();
+                }
+
+                // Benötigen genügend Daten für Durchschnittsbildung
+                if (history.length < 10) { // Mindestens 10 Werte für stabilen Durchschnitt
+                    continue;
+                }
+
+                // Berechne den gleitenden Durchschnitt der Energie im Band
+                const avgEnergy = history.reduce((sum, val) => sum + val, 0) / history.length;
+
+                // Berechne eine dynamische Schwelle basierend auf dem Durchschnitt
+                // C * Mittelwert (einfacher Ansatz statt Standardabweichung)
+                const threshold = this.beatSensitivity * avgEnergy;
+
+                // Prüfe auf Beat: Aktuelle Energie muss Schwelle überschreiten UND Mindestenergie haben
+                // UND es muss genügend Zeit seit dem letzten Beat vergangen sein.
+                const timeSinceLastBeat = currentTime - this.lastBeatTime;
+                const minBeatInterval = 60 / this.maxBPM; // Minimaler Abstand zwischen Beats
+
+                if (energy > threshold && energy > this.energyThreshold && timeSinceLastBeat >= minBeatInterval) {
+                    // Beat erkannt!
+                    beats.push({
+                        time: currentTime,
+                        band: i,
+                        energy: energy
+                    });
+                    // Aktualisiere den Zeitpunkt des letzten Beats für alle Bänder gemeinsam
+                    this.lastBeatTime = currentTime;
+
+                    // Optional: Kurzer Reset des Energieverlaufs nach Beat, um schnelle Folgebeats zu ermöglichen
+                    // history.splice(0, history.length, energy); // Reset mit aktueller Energie
+                }
+            }
+            this.frameCount++; // Inkrementiere Frame-Zähler nach Verarbeitung aller Bänder
+            return beats;
+        }
+
+
+        /**
+         * Analysiert die Intervalle zwischen erkannten Beats, um das BPM zu schätzen.
+         * @returns {number | null} Die geschätzte BPM oder null, wenn nicht genügend Daten vorhanden sind.
+         */
+        calculateBPM() {
+            if (this.beatHistory.length < 4) {
+                return null; // Nicht genug Beats für eine zuverlässige Schätzung
+            }
+
+            // Berechne die Zeitintervalle zwischen aufeinanderfolgenden Beats
+            const intervals = [];
+            for (let i = 1; i < this.beatHistory.length; i++) {
+                const interval = this.beatHistory[i].time - this.beatHistory[i - 1].time;
+                // Ignoriere zu kurze oder zu lange Intervalle, die wahrscheinlich Fehler sind
+                if (interval > (60 / this.maxBPM) * 0.8 && interval < (60 / this.minBPM) * 1.2) {
+                    intervals.push(interval);
+                }
+            }
+
+            if (intervals.length < 3) {
+                return null; // Nicht genug gültige Intervalle
+            }
+
+
+            // Konvertiere Intervalle in Tempo-Werte (BPM)
+            const tempos = intervals.map(interval => 60 / interval);
+
+            // --- Tempo-Clustering (vereinfacht) ---
+            // Findet das am häufigsten vorkommende Tempo (Median ist oft robuster)
+            tempos.sort((a, b) => a - b); // Sortiere Tempi
+            const midIndex = Math.floor(tempos.length / 2);
+            let dominantTempo;
+            if (tempos.length % 2 === 0) {
+                // Gerade Anzahl: Durchschnitt der beiden mittleren Werte
+                dominantTempo = (tempos[midIndex - 1] + tempos[midIndex]) / 2;
+            } else {
+                // Ungerade Anzahl: Der mittlere Wert
+                dominantTempo = tempos[midIndex];
+            }
+
+
+            // Alternativ: Einfaches Clustering (wie im Originalcode, aber weniger robust als Median)
+            // const clusters = this._clusterTempos(tempos);
+            // let dominantTempo = 0;
+            // let maxScore = 0;
+            // for (const tempoKey of Object.keys(clusters)) {
+            //     const cluster = clusters[tempoKey];
+            //     if (cluster.score > maxScore) {
+            //         maxScore = cluster.score;
+            //         dominantTempo = cluster.average;
+            //     }
+            // }
+
+            // Stelle sicher, dass das BPM im gültigen Bereich liegt und korrigiere Oktavfehler
+            return this._constrainBPM(dominantTempo);
+        }
+
+        /**
+         * Gruppiert ähnliche Tempi in Cluster (wie im Originalcode).
+         * @param {number[]} tempos - Array von Tempo-Werten (BPM).
+         * @returns {object} Ein Objekt, das Cluster von Tempi enthält.
+         */
+        _clusterTempos(tempos) {
+            const clusters = {};
+            const tolerance = 5; // BPM-Toleranz für Clustering
+
+            for (const tempo of tempos) {
+                // Ignoriere Tempi außerhalb des erwarteten Bereichs für das Clustering
+                if (tempo < this.minBPM * 0.8 || tempo > this.maxBPM * 1.2) continue;
+
+
+                let foundCluster = false;
+                // Prüfen, ob das Tempo in einen bestehenden Cluster passt
+                for (const existingTempoKey of Object.keys(clusters)) {
+                    const existingTempo = parseFloat(existingTempoKey); // Schlüssel ist String
+                    if (Math.abs(tempo - existingTempo) <= tolerance) {
+                        clusters[existingTempoKey].values.push(tempo);
+                        clusters[existingTempoKey].score++;
+                        // Durchschnitt aktualisieren
+                        clusters[existingTempoKey].average =
+                            clusters[existingTempoKey].values.reduce((sum, val) => sum + val, 0) /
+                            clusters[existingTempoKey].values.length;
+                        foundCluster = true;
+                        break;
+                    }
+                }
+
+                // Neuen Cluster erstellen, wenn nötig
+                if (!foundCluster) {
+                    clusters[tempo] = {
+                        values: [tempo],
+                        average: tempo,
+                        score: 1
+                    };
+                }
+            }
+            return clusters;
+        }
+
+
+        /**
+         * Stellt sicher, dass das BPM im gültigen Bereich (minBPM, maxBPM) liegt
+         * und versucht, Oktavfehler zu korrigieren.
+         * @param {number} bpm - Das rohe BPM.
+         * @returns {number | null} Das angepasste BPM oder null.
+         */
+        _constrainBPM(bpm) {
+            if (!bpm || bpm <= 0) return null;
+
+            // Versuche, das BPM in den primären Bereich [minBPM, maxBPM] zu bringen
+            while (bpm < this.minBPM && bpm > 10) { // > 10 um Endlosschleife bei sehr kleinen Werten zu vermeiden
+                bpm *= 2; // Verdoppeln, wenn zu langsam
+            }
+            while (bpm > this.maxBPM) {
+                bpm /= 2; // Halbieren, wenn zu schnell
+            }
+
+            // Finale Prüfung, ob es jetzt im Bereich liegt
+            if (bpm < this.minBPM || bpm > this.maxBPM) {
+                // console.warn(`BPM ${bpm} konnte nicht in den Bereich [${this.minBPM}, ${this.maxBPM}] gebracht werden.`);
+                return null; // Konnte nicht sinnvoll angepasst werden
+            }
+
+
+            // Auf eine Dezimalstelle runden
+            return Math.round(bpm * 10) / 10;
+        }
+
+
+        /**
+         * Verarbeitet einen einzelnen Audio-Frame (Chunk) und aktualisiert die BPM-Schätzung.
+         * @param {Float32Array} audioData - Die Audiodaten für diesen Frame.
+         * @returns {number | null} Die aktuell geschätzte BPM.
+         */
+        processFrame(audioData) {
+            // 1. Spektrumanalyse durchführen
+            const bandEnergies = this.analyzeSpectrum(audioData);
+
+            // 2. Beats erkennen
+            const beats = this.detectBeats(bandEnergies);
+
+            // 3. Beat-Historie aktualisieren, wenn Beats gefunden wurden
+            if (beats.length > 0) {
+                // Optional: Nur den stärksten Beat pro Frame hinzufügen
+                const strongestBeat = beats.reduce(
+                    (strongest, beat) => beat.energy > strongest.energy ? beat : strongest,
+                    beats[0]
+                );
+                this.beatHistory.push(strongestBeat);
+
+                // Begrenze die Größe der Beat-Historie
+                if (this.beatHistory.length > this.historySize) {
+                    this.beatHistory.shift(); // Entferne den ältesten Beat
+                }
+            }
+
+            // 4. BPM basierend auf der aktuellen Beat-Historie berechnen
+            const bpm = this.calculateBPM();
+
+            // 5. Tempo-Queue zur Glättung aktualisieren
+            if (bpm !== null) {
+                this.tempoQueue.push(bpm);
+                // Begrenze die Größe der Tempo-Queue
+                if (this.tempoQueue.length > 15) { // Etwas längere Queue für Glättung
+                    this.tempoQueue.shift();
+                }
+            }
+
+            // 6. Aktuelles (geglättetes) BPM zurückgeben
+            return this.getCurrentBPM();
+        }
+
+        /**
+         * Gibt den aktuellen, geglätteten BPM-Wert zurück (Median der Tempo-Queue).
+         * @returns {number | null} Der geglättete BPM-Wert oder null.
+         */
+        getCurrentBPM() {
+            if (this.tempoQueue.length === 0) {
+                return null;
+            }
+
+            // Median-Berechnung für robustere Ergebnisse als einfacher Durchschnitt
+            const sorted = [...this.tempoQueue].sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+
+            let medianBpm;
+            if (sorted.length % 2 === 0) {
+                // Gerade Anzahl: Durchschnitt der beiden mittleren
+                medianBpm = (sorted[mid - 1] + sorted[mid]) / 2;
+            } else {
+                // Ungerade Anzahl: Der mittlere Wert
+                medianBpm = sorted[mid];
+            }
+            // Auf eine Dezimalstelle runden für die Anzeige
+            return Math.round(medianBpm * 10) / 10;
+        }
+
+        /**
+         * Setzt den internen Zustand des Analyzers zurück.
+         */
+        reset() {
+            this.energyHistory = this.bands.map(() => []);
+            this.beatHistory = [];
+            this.tempoQueue = [];
+            this.lastBeatTime = 0;
+            this.frameCount = 0;
+            console.log("BPM Analyzer zurückgesetzt.");
+        }
+    }
+
+    // --- Web App Logik ---
+
+    const audioFileInput = document.getElementById('audioFile');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const statusDiv = document.getElementById('status');
+    const bpmResultDiv = document.getElementById('bpmResult');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const progressBar = document.getElementById('progressBar');
+
+    let audioContext;
+    let bpmAnalyzer;
+    let audioBuffer;
+
+    // Initialisiere AudioContext beim ersten Benutzerinteraktion (wichtig für Browser-Richtlinien)
+    function initAudioContext() {
+        if (!audioContext) {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                console.log("AudioContext initialisiert.");
+            } catch (e) {
+                console.error("Web Audio API wird nicht unterstützt.", e);
+                statusDiv.textContent = 'Fehler: Web Audio API nicht unterstützt.';
+                alert('Dein Browser unterstützt die benötigte Web Audio API nicht.');
+            }
+        }
+    }
+
+    // Event Listener für Datei-Auswahl
+    audioFileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file && audioContext) { // Stelle sicher, dass AudioContext bereit ist
+            analyzeButton.disabled = false;
+            statusDiv.textContent = `Datei "${file.name}" ausgewählt.`;
+            bpmResultDiv.textContent = '--'; // Ergebnis zurücksetzen
+            progressBarContainer.style.display = 'none'; // Fortschrittsbalken ausblenden
+            progressBar.style.width = '0%';
+        } else {
+            analyzeButton.disabled = true;
+            if (!audioContext) {
+                statusDiv.textContent = 'Bitte interagiere zuerst mit der Seite (z.B. Klick), um Audio zu aktivieren.';
+            }
+        }
+    });
+
+    // Event Listener für den Analyse-Button
+    analyzeButton.addEventListener('click', async () => {
+        if (!audioFileInput.files || audioFileInput.files.length === 0) {
+            statusDiv.textContent = 'Bitte zuerst eine Audiodatei auswählen.';
+            return;
+        }
+        if (!audioContext) {
+            statusDiv.textContent = 'AudioContext konnte nicht initialisiert werden.';
+            return;
+        }
+
+        const file = audioFileInput.files[0];
+        analyzeButton.disabled = true;
+        statusDiv.textContent = `Lade und dekodiere ${file.name}...`;
+        bpmResultDiv.textContent = '--';
+        progressBarContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+
+
+        try {
+            // 1. Datei als ArrayBuffer lesen
+            const arrayBuffer = await file.arrayBuffer();
+
+            // 2. Audiodaten dekodieren
+            statusDiv.textContent = 'Dekodiere Audiodaten...';
+            // Verwende Promise-basierte decodeAudioData
+            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            console.log("Audio dekodiert:", audioBuffer);
+
+            // 3. BPM Analyzer initialisieren
+            bpmAnalyzer = new BPMAnalyzer({
+                sampleRate: audioBuffer.sampleRate,
+                minBPM: 60, // Beispiel: Mindest-BPM
+                maxBPM: 180, // Beispiel: Maximal-BPM
+                bufferSize: 2048, // Muss zur FFT-Implementierung passen
+                hopSize: 512     // Kleinere hopSize für feinere Analyse
+            });
+            bpmAnalyzer.reset(); // Stelle sicher, dass der Analyzer sauber ist
+
+            // 4. Audio Puffer analysieren (Offline-Verarbeitung)
+            statusDiv.textContent = 'Analysiere Audio... (Dies kann dauern)';
+            await processAudioBuffer(audioBuffer); // Warte auf Abschluss der Analyse
+
+            // 5. Endergebnis anzeigen
+            const finalBPM = bpmAnalyzer.getCurrentBPM();
+            if (finalBPM !== null) {
+                bpmResultDiv.textContent = finalBPM;
+                statusDiv.textContent = 'Analyse abgeschlossen.';
+                console.log(`Geschätzte BPM: ${finalBPM}`);
+            } else {
+                bpmResultDiv.textContent = 'N/A';
+                statusDiv.textContent = 'Konnte BPM nicht zuverlässig bestimmen.';
+                console.log("Konnte BPM nicht bestimmen.");
+            }
+
+        } catch (error) {
+            console.error('Fehler bei der Audioverarbeitung:', error);
+            statusDiv.textContent = `Fehler: ${error.message}`;
+            bpmResultDiv.textContent = 'Fehler';
+            alert(`Ein Fehler ist aufgetreten: ${error.message}`);
+        } finally {
+            analyzeButton.disabled = false; // Button wieder aktivieren
+            // progressBarContainer.style.display = 'none'; // Fortschrittsbalken ausblenden
+        }
+    });
+
+    // Funktion zur asynchronen Verarbeitung des AudioBuffers in Chunks
+    async function processAudioBuffer(buffer) {
+        return new Promise(resolve => {
+            const channelData = buffer.getChannelData(0); // Nimm den ersten Kanal
+            const totalSamples = channelData.length;
+            const bufferSize = bpmAnalyzer.bufferSize;
+            const hopSize = bpmAnalyzer.hopSize;
+            let currentPosition = 0;
+            let chunksProcessed = 0;
+            const totalChunks = Math.ceil(totalSamples / hopSize);
+
+            function processChunk() {
+                if (currentPosition + bufferSize <= totalSamples) {
+                    // Extrahiere den aktuellen Chunk
+                    const chunk = channelData.slice(currentPosition, currentPosition + bufferSize);
+
+                    // Verarbeite den Chunk mit dem BPMAnalyzer
+                    bpmAnalyzer.processFrame(chunk);
+
+                    // Aktualisiere die Position
+                    currentPosition += hopSize;
+                    chunksProcessed++;
+
+                    // Aktualisiere den Fortschrittsbalken (nicht bei jedem Chunk, um UI nicht zu blockieren)
+                    if (chunksProcessed % 50 === 0 || currentPosition + bufferSize > totalSamples) {
+                        const progress = Math.round((currentPosition / totalSamples) * 100);
+                        progressBar.style.width = `${progress}%`;
+                        // Gib dem Browser Zeit zum Rendern und vermeide Einfrieren
+                        requestAnimationFrame(processChunk);
+                    } else {
+                        // Sofort weiter ohne UI-Update
+                        processChunk();
+                    }
+
+                } else {
+                    // Ende des Buffers erreicht
+                    progressBar.style.width = '100%';
+                    resolve(); // Beende die Promise
+                }
+            }
+            // Starte die Verarbeitung des ersten Chunks
+            requestAnimationFrame(processChunk);
+        });
+    }
+
+
+    // Initialisiere AudioContext bei der ersten Benutzerinteraktion
+    // um die Autoplay-Richtlinien der Browser zu umgehen.
+    document.body.addEventListener('click', initAudioContext, { once: true });
+    document.body.addEventListener('touchstart', initAudioContext, { once: true });
+
+
+</script>
+</body>
+</html>
