@@ -1,6 +1,8 @@
 // src/components/EnergyDashboardView.jsx - Energieverbrauchsanalyse für Philips Hue-Lampen
 import React, { useState, useEffect, useRef } from 'react';
 import '../styles/energy.css';
+import { saveEnergyDataWithFallback } from '../services/energyDataService';
+
 
 // Lampentypen mit ihrem durchschnittlichen Energieverbrauch in Watt
 const LIGHT_TYPES = {

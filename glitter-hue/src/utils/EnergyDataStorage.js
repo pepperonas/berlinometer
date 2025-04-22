@@ -1,4 +1,4 @@
-// src/utils/EnergyDataStorage.js - Datenbank für Energiedaten mit IndexedDB
+// src/utils/EnergyDataStorage.js - Verbesserte und robustere Datenbank für Energiedaten mit IndexedDB
 
 // Name und Version der Datenbank
 const DB_NAME = 'GlitterHueEnergyDB';
@@ -13,91 +13,234 @@ const STORES = {
     MONTHLY_TOTALS: 'monthlyTotals' // Monatliche Gesamtwerte
 };
 
-/**
- * Initialisiere die Datenbank
- * @returns {Promise<IDBDatabase>} - Eine Promise, die die Datenbankverbindung liefert
- */
-const initDatabase = () => {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
+// Fallback für Browser ohne IndexedDB
+const localStorageFallback = {
+    data: {},
 
-        // Wird aufgerufen, wenn die Datenbank neu erstellt oder aktualisiert werden muss
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-
-            // Erstelle Object Stores (Tabellen), falls sie noch nicht existieren
-
-            // Speichert aktuelle Energiedaten pro Lampe
-            if (!db.objectStoreNames.contains(STORES.LIGHT_DATA)) {
-                const lightDataStore = db.createObjectStore(STORES.LIGHT_DATA, { keyPath: 'lightId' });
-                lightDataStore.createIndex('timestamp', 'timestamp', { unique: false });
+    // Initialisiert den Speicher
+    init() {
+        // Lade vorhandene Daten aus dem localStorage
+        try {
+            const savedData = localStorage.getItem('energy-data');
+            if (savedData) {
+                this.data = JSON.parse(savedData);
             }
+        } catch (error) {
+            console.error('Fehler beim Laden der Energiedaten aus dem localStorage:', error);
+            this.data = {};
+        }
 
-            // Speichert den Verlauf der Energiedaten pro Lampe
-            if (!db.objectStoreNames.contains(STORES.USAGE_HISTORY)) {
-                const historyStore = db.createObjectStore(STORES.USAGE_HISTORY, { keyPath: 'id', autoIncrement: true });
-                historyStore.createIndex('lightId', 'lightId', { unique: false });
-                historyStore.createIndex('timestamp', 'timestamp', { unique: false });
-                historyStore.createIndex('lightId_timestamp', ['lightId', 'timestamp'], { unique: false });
+        // Stelle sicher, dass alle Stores existieren
+        Object.values(STORES).forEach(store => {
+            if (!this.data[store]) {
+                this.data[store] = {};
             }
+        });
 
-            // Speichert Benutzereinstellungen
-            if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
-                db.createObjectStore(STORES.SETTINGS, { keyPath: 'key' });
+        return Promise.resolve();
+    },
+
+    // Speichert Daten im Store
+    save(storeName, key, value) {
+        if (!this.data[storeName]) {
+            this.data[storeName] = {};
+        }
+
+        this.data[storeName][key] = value;
+
+        // Speichere im localStorage
+        try {
+            localStorage.setItem('energy-data', JSON.stringify(this.data));
+        } catch (error) {
+            console.error('Fehler beim Speichern der Energiedaten im localStorage:', error);
+        }
+
+        return Promise.resolve(value);
+    },
+
+    // Lädt Daten aus dem Store
+    get(storeName, key) {
+        if (!this.data[storeName]) {
+            return Promise.resolve(null);
+        }
+
+        return Promise.resolve(this.data[storeName][key] || null);
+    },
+
+    // Lädt alle Daten aus einem Store
+    getAll(storeName) {
+        if (!this.data[storeName]) {
+            return Promise.resolve([]);
+        }
+
+        return Promise.resolve(Object.values(this.data[storeName]));
+    },
+
+    // Löscht Daten aus dem Store
+    delete(storeName, key) {
+        if (this.data[storeName] && this.data[storeName][key]) {
+            delete this.data[storeName][key];
+
+            // Speichere im localStorage
+            try {
+                localStorage.setItem('energy-data', JSON.stringify(this.data));
+            } catch (error) {
+                console.error('Fehler beim Speichern der Energiedaten im localStorage:', error);
             }
+        }
 
-            // Speichert tägliche Gesamtwerte
-            if (!db.objectStoreNames.contains(STORES.DAILY_TOTALS)) {
-                const dailyStore = db.createObjectStore(STORES.DAILY_TOTALS, { keyPath: 'date' });
-                dailyStore.createIndex('month', 'month', { unique: false });
+        return Promise.resolve();
+    },
+
+    // Löscht alle Daten aus einem Store
+    clear(storeName) {
+        if (this.data[storeName]) {
+            this.data[storeName] = {};
+
+            // Speichere im localStorage
+            try {
+                localStorage.setItem('energy-data', JSON.stringify(this.data));
+            } catch (error) {
+                console.error('Fehler beim Speichern der Energiedaten im localStorage:', error);
             }
+        }
 
-            // Speichert monatliche Gesamtwerte
-            if (!db.objectStoreNames.contains(STORES.MONTHLY_TOTALS)) {
-                const monthlyStore = db.createObjectStore(STORES.MONTHLY_TOTALS, { keyPath: 'month' });
-                monthlyStore.createIndex('year', 'year', { unique: false });
-            }
-        };
-
-        request.onerror = (event) => {
-            console.error('Fehler beim Öffnen der Datenbank:', event.target.error);
-            reject(event.target.error);
-        };
-
-        request.onsuccess = (event) => {
-            const db = event.target.result;
-
-            // Ereignislistener für Fehler
-            db.onerror = (event) => {
-                console.error('Datenbankfehler:', event.target.error);
-            };
-
-            resolve(db);
-        };
-    });
+        return Promise.resolve();
+    }
 };
 
-/**
- * Öffnet eine Transaktion für bestimmte Object Stores
- * @param {string|Array<string>} storeNames - Name(n) der zu öffnenden Object Stores
- * @param {string} mode - Transaktionsmodus ('readonly' oder 'readwrite')
- * @returns {Promise<Object>} - Object Stores in einer Transaktion
- */
-const openTransaction = async (storeNames, mode = 'readonly') => {
-    const db = await initDatabase();
-    const transaction = db.transaction(storeNames, mode);
-
-    const stores = {};
-
-    if (Array.isArray(storeNames)) {
-        storeNames.forEach(name => {
-            stores[name] = transaction.objectStore(name);
-        });
-    } else {
-        stores[storeNames] = transaction.objectStore(storeNames);
+// Prüft, ob IndexedDB verfügbar ist
+const isIndexedDBSupported = () => {
+    try {
+        return !!window.indexedDB;
+    } catch (e) {
+        return false;
     }
+};
 
-    return { stores, transaction };
+// Storage-Manager für robuste Datenspeicherung
+const storageManager = {
+    useIndexedDB: isIndexedDBSupported(),
+    dbPromise: null,
+
+    // Initialisiert die Speicherung
+    init() {
+        if (this.useIndexedDB) {
+            return this._initIndexedDB();
+        } else {
+            console.warn('IndexedDB wird nicht unterstützt. Verwende localStorage als Fallback.');
+            return localStorageFallback.init();
+        }
+    },
+
+    // Initialisiert IndexedDB
+    _initIndexedDB() {
+        if (this.dbPromise) {
+            return this.dbPromise;
+        }
+
+        this.dbPromise = new Promise((resolve, reject) => {
+            try {
+                const request = window.indexedDB.open(DB_NAME, DB_VERSION);
+
+                // Wird aufgerufen, wenn die Datenbank neu erstellt oder aktualisiert werden muss
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+
+                    // Erstelle Object Stores (Tabellen), falls sie noch nicht existieren
+
+                    // Speichert aktuelle Energiedaten pro Lampe
+                    if (!db.objectStoreNames.contains(STORES.LIGHT_DATA)) {
+                        const lightDataStore = db.createObjectStore(STORES.LIGHT_DATA, { keyPath: 'lightId' });
+                        lightDataStore.createIndex('timestamp', 'timestamp', { unique: false });
+                    }
+
+                    // Speichert den Verlauf der Energiedaten pro Lampe
+                    if (!db.objectStoreNames.contains(STORES.USAGE_HISTORY)) {
+                        const historyStore = db.createObjectStore(STORES.USAGE_HISTORY, { keyPath: 'id', autoIncrement: true });
+                        historyStore.createIndex('lightId', 'lightId', { unique: false });
+                        historyStore.createIndex('timestamp', 'timestamp', { unique: false });
+                        historyStore.createIndex('lightId_timestamp', ['lightId', 'timestamp'], { unique: false });
+                    }
+
+                    // Speichert Benutzereinstellungen
+                    if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
+                        db.createObjectStore(STORES.SETTINGS, { keyPath: 'key' });
+                    }
+
+                    // Speichert tägliche Gesamtwerte
+                    if (!db.objectStoreNames.contains(STORES.DAILY_TOTALS)) {
+                        const dailyStore = db.createObjectStore(STORES.DAILY_TOTALS, { keyPath: 'date' });
+                        dailyStore.createIndex('month', 'month', { unique: false });
+                    }
+
+                    // Speichert monatliche Gesamtwerte
+                    if (!db.objectStoreNames.contains(STORES.MONTHLY_TOTALS)) {
+                        const monthlyStore = db.createObjectStore(STORES.MONTHLY_TOTALS, { keyPath: 'month' });
+                        monthlyStore.createIndex('year', 'year', { unique: false });
+                    }
+                };
+
+                request.onerror = (event) => {
+                    console.error('Fehler beim Öffnen der Datenbank:', event.target.error);
+                    this.useIndexedDB = false;
+                    resolve(localStorageFallback.init());
+                };
+
+                request.onsuccess = (event) => {
+                    const db = event.target.result;
+
+                    // Ereignislistener für Fehler
+                    db.onerror = (event) => {
+                        console.error('Datenbankfehler:', event.target.error);
+                    };
+
+                    resolve(db);
+                };
+            } catch (error) {
+                console.error('Fehler bei der Initialisierung von IndexedDB:', error);
+                this.useIndexedDB = false;
+                resolve(localStorageFallback.init());
+            }
+        });
+
+        return this.dbPromise;
+    },
+
+    // Öffnet eine Transaktion für bestimmte Object Stores
+    async openTransaction(storeNames, mode = 'readonly') {
+        if (!this.useIndexedDB) {
+            return { fallback: true };
+        }
+
+        try {
+            const db = await this._initIndexedDB();
+
+            // Wenn db nicht eine IndexedDB-Instanz ist (Fallback wurde aktiviert)
+            if (!db.transaction) {
+                this.useIndexedDB = false;
+                return { fallback: true };
+            }
+
+            const transaction = db.transaction(storeNames, mode);
+
+            const stores = {};
+
+            if (Array.isArray(storeNames)) {
+                storeNames.forEach(name => {
+                    stores[name] = transaction.objectStore(name);
+                });
+            } else {
+                stores[storeNames] = transaction.objectStore(storeNames);
+            }
+
+            return { stores, transaction, fallback: false };
+        } catch (error) {
+            console.error('Fehler beim Öffnen der Transaktion:', error);
+            this.useIndexedDB = false;
+            return { fallback: true };
+        }
+    }
 };
 
 /**
@@ -108,8 +251,7 @@ const openTransaction = async (storeNames, mode = 'readonly') => {
  */
 export const saveLightData = async (lightId, data) => {
     try {
-        const { stores } = await openTransaction(STORES.LIGHT_DATA, 'readwrite');
-        const store = stores[STORES.LIGHT_DATA];
+        await storageManager.init();
 
         const lightData = {
             lightId,
@@ -117,15 +259,33 @@ export const saveLightData = async (lightId, data) => {
             timestamp: data.timestamp || Date.now()
         };
 
+        if (!storageManager.useIndexedDB) {
+            return localStorageFallback.save(STORES.LIGHT_DATA, lightId, lightData);
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.LIGHT_DATA, 'readwrite');
+
+        if (fallback) {
+            return localStorageFallback.save(STORES.LIGHT_DATA, lightId, lightData);
+        }
+
+        const store = stores[STORES.LIGHT_DATA];
+
         return new Promise((resolve, reject) => {
             const request = store.put(lightData);
 
             request.onsuccess = () => resolve(lightData);
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Speichern der Lampendaten:', request.error);
+                // Fallback
+                localStorageFallback.save(STORES.LIGHT_DATA, lightId, lightData)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Speichern der Lampendaten:', error);
-        throw error;
+        return localStorageFallback.save(STORES.LIGHT_DATA, lightId, data);
     }
 };
 
@@ -136,18 +296,35 @@ export const saveLightData = async (lightId, data) => {
  */
 export const getLightData = async (lightId) => {
     try {
-        const { stores } = await openTransaction(STORES.LIGHT_DATA);
+        await storageManager.init();
+
+        if (!storageManager.useIndexedDB) {
+            return localStorageFallback.get(STORES.LIGHT_DATA, lightId);
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.LIGHT_DATA);
+
+        if (fallback) {
+            return localStorageFallback.get(STORES.LIGHT_DATA, lightId);
+        }
+
         const store = stores[STORES.LIGHT_DATA];
 
         return new Promise((resolve, reject) => {
             const request = store.get(lightId);
 
             request.onsuccess = () => resolve(request.result || null);
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Laden der Lampendaten:', request.error);
+                // Fallback
+                localStorageFallback.get(STORES.LIGHT_DATA, lightId)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Laden der Lampendaten:', error);
-        throw error;
+        return localStorageFallback.get(STORES.LIGHT_DATA, lightId);
     }
 };
 
@@ -157,18 +334,35 @@ export const getLightData = async (lightId) => {
  */
 export const getAllLightData = async () => {
     try {
-        const { stores } = await openTransaction(STORES.LIGHT_DATA);
+        await storageManager.init();
+
+        if (!storageManager.useIndexedDB) {
+            return localStorageFallback.getAll(STORES.LIGHT_DATA);
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.LIGHT_DATA);
+
+        if (fallback) {
+            return localStorageFallback.getAll(STORES.LIGHT_DATA);
+        }
+
         const store = stores[STORES.LIGHT_DATA];
 
         return new Promise((resolve, reject) => {
             const request = store.getAll();
 
             request.onsuccess = () => resolve(request.result || []);
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Laden aller Lampendaten:', request.error);
+                // Fallback
+                localStorageFallback.getAll(STORES.LIGHT_DATA)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Laden aller Lampendaten:', error);
-        throw error;
+        return localStorageFallback.getAll(STORES.LIGHT_DATA);
     }
 };
 
@@ -179,23 +373,44 @@ export const getAllLightData = async () => {
  */
 export const addToHistory = async (historyEntry) => {
     try {
-        const { stores } = await openTransaction(STORES.USAGE_HISTORY, 'readwrite');
-        const store = stores[STORES.USAGE_HISTORY];
+        await storageManager.init();
 
         const entry = {
             ...historyEntry,
             timestamp: historyEntry.timestamp || Date.now()
         };
 
+        // Generiere eine ID für den localStorage-Fallback
+        const id = `${entry.lightId}_${entry.timestamp}`;
+
+        if (!storageManager.useIndexedDB) {
+            return localStorageFallback.save(STORES.USAGE_HISTORY, id, entry);
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.USAGE_HISTORY, 'readwrite');
+
+        if (fallback) {
+            return localStorageFallback.save(STORES.USAGE_HISTORY, id, entry);
+        }
+
+        const store = stores[STORES.USAGE_HISTORY];
+
         return new Promise((resolve, reject) => {
             const request = store.add(entry);
 
             request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Hinzufügen zum Verlauf:', request.error);
+                // Fallback
+                localStorageFallback.save(STORES.USAGE_HISTORY, id, entry)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Hinzufügen zum Verlauf:', error);
-        throw error;
+        const id = `${historyEntry.lightId}_${historyEntry.timestamp || Date.now()}`;
+        return localStorageFallback.save(STORES.USAGE_HISTORY, id, historyEntry);
     }
 };
 
@@ -207,7 +422,43 @@ export const addToHistory = async (historyEntry) => {
  */
 export const getLightHistory = async (lightId, options = {}) => {
     try {
-        const { stores } = await openTransaction(STORES.USAGE_HISTORY);
+        await storageManager.init();
+
+        if (!storageManager.useIndexedDB) {
+            // Für localStorage müssen wir alle Daten holen und dann filtern
+            const allHistory = await localStorageFallback.getAll(STORES.USAGE_HISTORY);
+
+            // Filtern nach lightId
+            let results = allHistory.filter(item => item.lightId === lightId);
+
+            // Nach Zeitraum filtern
+            if (options.startTime && options.endTime) {
+                results = results.filter(entry =>
+                    entry.timestamp >= options.startTime &&
+                    entry.timestamp <= options.endTime
+                );
+            } else if (options.startTime) {
+                results = results.filter(entry =>
+                    entry.timestamp >= options.startTime
+                );
+            } else if (options.endTime) {
+                results = results.filter(entry =>
+                    entry.timestamp <= options.endTime
+                );
+            }
+
+            // Sortieren nach Zeitstempel (aufsteigend)
+            results.sort((a, b) => a.timestamp - b.timestamp);
+
+            return results;
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.USAGE_HISTORY);
+
+        if (fallback) {
+            return getLightHistory(lightId, options); // Rekursiver Aufruf für Fallback
+        }
+
         const store = stores[STORES.USAGE_HISTORY];
 
         // Verwende den Index lightId für die Suche
@@ -241,11 +492,42 @@ export const getLightHistory = async (lightId, options = {}) => {
                 resolve(results);
             };
 
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Laden des Lampenverlaufs:', request.error);
+                // Fallback
+                getLightHistory(lightId, options)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Laden des Lampenverlaufs:', error);
-        throw error;
+        // Für localStorage müssen wir alle Daten holen und dann filtern
+        const allHistory = await localStorageFallback.getAll(STORES.USAGE_HISTORY);
+
+        // Filtern nach lightId
+        let results = allHistory.filter(item => item.lightId === lightId);
+
+        // Nach Zeitraum filtern
+        if (options.startTime && options.endTime) {
+            results = results.filter(entry =>
+                entry.timestamp >= options.startTime &&
+                entry.timestamp <= options.endTime
+            );
+        } else if (options.startTime) {
+            results = results.filter(entry =>
+                entry.timestamp >= options.startTime
+            );
+        } else if (options.endTime) {
+            results = results.filter(entry =>
+                entry.timestamp <= options.endTime
+            );
+        }
+
+        // Sortieren nach Zeitstempel (aufsteigend)
+        results.sort((a, b) => a.timestamp - b.timestamp);
+
+        return results;
     }
 };
 
@@ -257,8 +539,7 @@ export const getLightHistory = async (lightId, options = {}) => {
  */
 export const saveSetting = async (key, value) => {
     try {
-        const { stores } = await openTransaction(STORES.SETTINGS, 'readwrite');
-        const store = stores[STORES.SETTINGS];
+        await storageManager.init();
 
         const setting = {
             key,
@@ -266,15 +547,37 @@ export const saveSetting = async (key, value) => {
             updatedAt: Date.now()
         };
 
+        if (!storageManager.useIndexedDB) {
+            return localStorageFallback.save(STORES.SETTINGS, key, setting);
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.SETTINGS, 'readwrite');
+
+        if (fallback) {
+            return localStorageFallback.save(STORES.SETTINGS, key, setting);
+        }
+
+        const store = stores[STORES.SETTINGS];
+
         return new Promise((resolve, reject) => {
             const request = store.put(setting);
 
             request.onsuccess = () => resolve(setting);
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Speichern der Einstellung:', request.error);
+                // Fallback
+                localStorageFallback.save(STORES.SETTINGS, key, setting)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Speichern der Einstellung:', error);
-        throw error;
+        return localStorageFallback.save(STORES.SETTINGS, key, {
+            key,
+            value,
+            updatedAt: Date.now()
+        });
     }
 };
 
@@ -286,7 +589,20 @@ export const saveSetting = async (key, value) => {
  */
 export const getSetting = async (key, defaultValue = null) => {
     try {
-        const { stores } = await openTransaction(STORES.SETTINGS);
+        await storageManager.init();
+
+        if (!storageManager.useIndexedDB) {
+            const setting = await localStorageFallback.get(STORES.SETTINGS, key);
+            return setting ? setting.value : defaultValue;
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.SETTINGS);
+
+        if (fallback) {
+            const setting = await localStorageFallback.get(STORES.SETTINGS, key);
+            return setting ? setting.value : defaultValue;
+        }
+
         const store = stores[STORES.SETTINGS];
 
         return new Promise((resolve, reject) => {
@@ -297,11 +613,22 @@ export const getSetting = async (key, defaultValue = null) => {
                 resolve(result ? result.value : defaultValue);
             };
 
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Laden der Einstellung:', request.error);
+                // Fallback
+                localStorageFallback.get(STORES.SETTINGS, key)
+                    .then(setting => resolve(setting ? setting.value : defaultValue))
+                    .catch(() => resolve(defaultValue));
+            };
         });
     } catch (error) {
         console.error('Fehler beim Laden der Einstellung:', error);
-        return defaultValue;
+        try {
+            const setting = await localStorageFallback.get(STORES.SETTINGS, key);
+            return setting ? setting.value : defaultValue;
+        } catch (e) {
+            return defaultValue;
+        }
     }
 };
 
@@ -313,8 +640,7 @@ export const getSetting = async (key, defaultValue = null) => {
  */
 export const saveDailyTotal = async (date, data) => {
     try {
-        const { stores } = await openTransaction(STORES.DAILY_TOTALS, 'readwrite');
-        const store = stores[STORES.DAILY_TOTALS];
+        await storageManager.init();
 
         const [year, month, day] = date.split('-').map(Number);
 
@@ -327,15 +653,37 @@ export const saveDailyTotal = async (date, data) => {
             updatedAt: Date.now()
         };
 
+        if (!storageManager.useIndexedDB) {
+            return localStorageFallback.save(STORES.DAILY_TOTALS, date, dailyData);
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.DAILY_TOTALS, 'readwrite');
+
+        if (fallback) {
+            return localStorageFallback.save(STORES.DAILY_TOTALS, date, dailyData);
+        }
+
+        const store = stores[STORES.DAILY_TOTALS];
+
         return new Promise((resolve, reject) => {
             const request = store.put(dailyData);
 
             request.onsuccess = () => resolve(dailyData);
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Speichern der Tageswerte:', request.error);
+                // Fallback
+                localStorageFallback.save(STORES.DAILY_TOTALS, date, dailyData)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Speichern der Tageswerte:', error);
-        throw error;
+        return localStorageFallback.save(STORES.DAILY_TOTALS, date, {
+            date,
+            ...data,
+            updatedAt: Date.now()
+        });
     }
 };
 
@@ -346,7 +694,51 @@ export const saveDailyTotal = async (date, data) => {
  */
 export const getDailyTotals = async (options = {}) => {
     try {
-        const { stores } = await openTransaction(STORES.DAILY_TOTALS);
+        await storageManager.init();
+
+        if (!storageManager.useIndexedDB) {
+            // Für localStorage müssen wir alle Daten holen und dann filtern
+            const allDailyTotals = await localStorageFallback.getAll(STORES.DAILY_TOTALS);
+
+            // Filtern nach Zeitraum
+            let results = [...allDailyTotals];
+
+            if (options.month) {
+                results = results.filter(entry => entry.month === options.month);
+            } else {
+                // Ansonsten alle Werte laden und filtern
+                if (options.startDate && options.endDate) {
+                    results = results.filter(entry =>
+                        entry.date >= options.startDate &&
+                        entry.date <= options.endDate
+                    );
+                } else if (options.startDate) {
+                    results = results.filter(entry =>
+                        entry.date >= options.startDate
+                    );
+                } else if (options.endDate) {
+                    results = results.filter(entry =>
+                        entry.date <= options.endDate
+                    );
+                }
+            }
+
+            // Sortiere nach Datum (aufsteigend)
+            results.sort((a, b) => {
+                if (a.date < b.date) return -1;
+                if (a.date > b.date) return 1;
+                return 0;
+            });
+
+            return results;
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.DAILY_TOTALS);
+
+        if (fallback) {
+            return getDailyTotals(options); // Rekursiver Aufruf für Fallback
+        }
+
         const store = stores[STORES.DAILY_TOTALS];
 
         // Für Monatswerte verwenden wir den Index "month"
@@ -363,7 +755,13 @@ export const getDailyTotals = async (options = {}) => {
                     resolve(results);
                 };
 
-                request.onerror = () => reject(request.error);
+                request.onerror = () => {
+                    console.error('Fehler beim Laden der Tageswerte für den Monat:', request.error);
+                    // Fallback
+                    getDailyTotals(options)
+                        .then(resolve)
+                        .catch(reject);
+                };
             });
         }
 
@@ -400,11 +798,50 @@ export const getDailyTotals = async (options = {}) => {
                 resolve(results);
             };
 
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Laden der Tageswerte:', request.error);
+                // Fallback
+                getDailyTotals(options)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Laden der Tageswerte:', error);
-        throw error;
+        // Für localStorage müssen wir alle Daten holen und dann filtern
+        const allDailyTotals = await localStorageFallback.getAll(STORES.DAILY_TOTALS);
+
+        // Filtern nach Zeitraum
+        let results = [...allDailyTotals];
+
+        if (options.month) {
+            results = results.filter(entry => entry.month === options.month);
+        } else {
+            // Ansonsten alle Werte laden und filtern
+            if (options.startDate && options.endDate) {
+                results = results.filter(entry =>
+                    entry.date >= options.startDate &&
+                    entry.date <= options.endDate
+                );
+            } else if (options.startDate) {
+                results = results.filter(entry =>
+                    entry.date >= options.startDate
+                );
+            } else if (options.endDate) {
+                results = results.filter(entry =>
+                    entry.date <= options.endDate
+                );
+            }
+        }
+
+        // Sortiere nach Datum (aufsteigend)
+        results.sort((a, b) => {
+            if (a.date < b.date) return -1;
+            if (a.date > b.date) return 1;
+            return 0;
+        });
+
+        return results;
     }
 };
 
@@ -416,8 +853,7 @@ export const getDailyTotals = async (options = {}) => {
  */
 export const saveMonthlyTotal = async (month, data) => {
     try {
-        const { stores } = await openTransaction(STORES.MONTHLY_TOTALS, 'readwrite');
-        const store = stores[STORES.MONTHLY_TOTALS];
+        await storageManager.init();
 
         const [year, monthNum] = month.split('-').map(Number);
 
@@ -429,15 +865,37 @@ export const saveMonthlyTotal = async (month, data) => {
             updatedAt: Date.now()
         };
 
+        if (!storageManager.useIndexedDB) {
+            return localStorageFallback.save(STORES.MONTHLY_TOTALS, month, monthlyData);
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.MONTHLY_TOTALS, 'readwrite');
+
+        if (fallback) {
+            return localStorageFallback.save(STORES.MONTHLY_TOTALS, month, monthlyData);
+        }
+
+        const store = stores[STORES.MONTHLY_TOTALS];
+
         return new Promise((resolve, reject) => {
             const request = store.put(monthlyData);
 
             request.onsuccess = () => resolve(monthlyData);
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Speichern der Monatswerte:', request.error);
+                // Fallback
+                localStorageFallback.save(STORES.MONTHLY_TOTALS, month, monthlyData)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Speichern der Monatswerte:', error);
-        throw error;
+        return localStorageFallback.save(STORES.MONTHLY_TOTALS, month, {
+            month,
+            ...data,
+            updatedAt: Date.now()
+        });
     }
 };
 
@@ -448,7 +906,36 @@ export const saveMonthlyTotal = async (month, data) => {
  */
 export const getMonthlyTotals = async (year = null) => {
     try {
-        const { stores } = await openTransaction(STORES.MONTHLY_TOTALS);
+        await storageManager.init();
+
+        if (!storageManager.useIndexedDB) {
+            // Für localStorage müssen wir alle Daten holen und dann filtern
+            const allMonthlyTotals = await localStorageFallback.getAll(STORES.MONTHLY_TOTALS);
+
+            // Filtern nach Jahr
+            let results = [...allMonthlyTotals];
+
+            if (year) {
+                results = results.filter(entry => entry.year === year);
+            }
+
+            // Sortiere nach Jahr und Monat
+            results.sort((a, b) => {
+                if (a.year !== b.year) {
+                    return a.year - b.year;
+                }
+                return a.monthNum - b.monthNum;
+            });
+
+            return results;
+        }
+
+        const { stores, fallback } = await storageManager.openTransaction(STORES.MONTHLY_TOTALS);
+
+        if (fallback) {
+            return getMonthlyTotals(year); // Rekursiver Aufruf für Fallback
+        }
+
         const store = stores[STORES.MONTHLY_TOTALS];
 
         // Für Jahreswerte verwenden wir den Index "year"
@@ -465,7 +952,13 @@ export const getMonthlyTotals = async (year = null) => {
                     resolve(results);
                 };
 
-                request.onerror = () => reject(request.error);
+                request.onerror = () => {
+                    console.error('Fehler beim Laden der Monatswerte für das Jahr:', request.error);
+                    // Fallback
+                    getMonthlyTotals(year)
+                        .then(resolve)
+                        .catch(reject);
+                };
             });
         }
 
@@ -487,56 +980,35 @@ export const getMonthlyTotals = async (year = null) => {
                 resolve(results);
             };
 
-            request.onerror = () => reject(request.error);
+            request.onerror = () => {
+                console.error('Fehler beim Laden der Monatswerte:', request.error);
+                // Fallback
+                getMonthlyTotals(year)
+                    .then(resolve)
+                    .catch(reject);
+            };
         });
     } catch (error) {
         console.error('Fehler beim Laden der Monatswerte:', error);
-        throw error;
-    }
-};
+        // Für localStorage müssen wir alle Daten holen und dann filtern
+        const allMonthlyTotals = await localStorageFallback.getAll(STORES.MONTHLY_TOTALS);
 
-/**
- * Exportiert alle Daten aus der Datenbank als JSON-Objekt
- * @returns {Promise<Object>} - Die exportierten Daten
- */
-export const exportAllData = async () => {
-    try {
-        // Liste aller zu exportierenden Stores
-        const allStores = Object.values(STORES);
+        // Filtern nach Jahr
+        let results = [...allMonthlyTotals];
 
-        // Öffne Transaktion für alle Stores
-        const { stores } = await openTransaction(allStores);
+        if (year) {
+            results = results.filter(entry => entry.year === year);
+        }
 
-        // Lade die Daten aus jedem Store
-        const exportData = {};
-
-        const promises = allStores.map(storeName => {
-            return new Promise((resolve, reject) => {
-                const request = stores[storeName].getAll();
-
-                request.onsuccess = () => {
-                    exportData[storeName] = request.result;
-                    resolve();
-                };
-
-                request.onerror = () => reject(request.error);
-            });
+        // Sortiere nach Jahr und Monat
+        results.sort((a, b) => {
+            if (a.year !== b.year) {
+                return a.year - b.year;
+            }
+            return a.monthNum - b.monthNum;
         });
 
-        // Warte, bis alle Daten geladen sind
-        await Promise.all(promises);
-
-        // Füge Metadaten hinzu
-        exportData.meta = {
-            exportTime: new Date().toISOString(),
-            version: DB_VERSION,
-            database: DB_NAME
-        };
-
-        return exportData;
-    } catch (error) {
-        console.error('Fehler beim Exportieren der Daten:', error);
-        throw error;
+        return results;
     }
 };
 
@@ -547,49 +1019,75 @@ export const exportAllData = async () => {
  */
 export const importData = async (importData) => {
     try {
+        // Initialisiere Storage
+        await storageManager.init();
+
         // Prüfe, ob das richtige Format vorliegt
         if (!importData || !importData.meta) {
             throw new Error('Ungültiges Datenformat für den Import');
         }
 
-        // Liste aller zu importierenden Stores
-        const storesToImport = Object.keys(importData)
-            .filter(key => key !== 'meta' && Object.values(STORES).includes(key));
+        // Für jeden verfügbaren Store in den importierten Daten
+        for (const storeName in STORES) {
+            // Prüfe, ob Daten für diesen Store vorhanden sind
+            if (importData[storeName] && Array.isArray(importData[storeName]) && importData[storeName].length > 0) {
+                // Für IndexedDB
+                if (storageManager.useIndexedDB) {
+                    const { stores, fallback } = await storageManager.openTransaction(storeName, 'readwrite');
 
-        // Erstelle eine Transaktion für alle betroffenen Stores
-        const { stores } = await openTransaction(storesToImport, 'readwrite');
+                    // Fallback zu localStorage
+                    if (fallback) {
+                        // Für localStorage müssen wir erst alles löschen
+                        await localStorageFallback.clear(storeName);
 
-        // Importiere die Daten in jeden Store
-        const promises = storesToImport.map(storeName => {
-            if (!Array.isArray(importData[storeName])) {
-                return Promise.resolve();
-            }
+                        // Dann alles neu speichern
+                        for (const item of importData[storeName]) {
+                            // Schlüssel extrahieren
+                            const key = item.lightId || item.key || item.id || item.date || item.month;
+                            if (key) {
+                                await localStorageFallback.save(storeName, key, item);
+                            }
+                        }
+                        continue;
+                    }
 
-            return new Promise((resolve, reject) => {
-                // Lösche zuerst alle vorhandenen Daten
-                const clearRequest = stores[storeName].clear();
+                    const store = stores[storeName];
 
-                clearRequest.onsuccess = () => {
-                    // Importiere dann die neuen Daten
-                    const importPromises = importData[storeName].map(item => {
-                        return new Promise((resolveItem, rejectItem) => {
-                            const request = stores[storeName].add(item);
-                            request.onsuccess = resolveItem;
-                            request.onerror = rejectItem;
-                        });
+                    // Lösche zuerst alle vorhandenen Daten
+                    await new Promise((resolve, reject) => {
+                        const clearRequest = store.clear();
+                        clearRequest.onsuccess = resolve;
+                        clearRequest.onerror = reject;
                     });
 
-                    Promise.all(importPromises)
-                        .then(resolve)
-                        .catch(reject);
-                };
+                    // Importiere die neuen Daten
+                    for (const item of importData[storeName]) {
+                        await new Promise((resolve, reject) => {
+                            const addRequest = store.add(item);
+                            addRequest.onsuccess = resolve;
+                            addRequest.onerror = (e) => {
+                                console.warn(`Fehler beim Hinzufügen eines Elements zu ${storeName}:`, e.target.error);
+                                resolve(); // Ignoriere Fehler und fahre fort
+                            };
+                        });
+                    }
+                }
+                // Für localStorage
+                else {
+                    // Für localStorage müssen wir erst alles löschen
+                    await localStorageFallback.clear(storeName);
 
-                clearRequest.onerror = reject;
-            });
-        });
-
-        // Warte, bis alle Daten importiert sind
-        await Promise.all(promises);
+                    // Dann alles neu speichern
+                    for (const item of importData[storeName]) {
+                        // Schlüssel extrahieren
+                        const key = item.lightId || item.key || item.id || item.date || item.month;
+                        if (key) {
+                            await localStorageFallback.save(storeName, key, item);
+                        }
+                    }
+                }
+            }
+        }
 
         console.log('Datenimport erfolgreich abgeschlossen');
     } catch (error) {
@@ -598,134 +1096,10 @@ export const importData = async (importData) => {
     }
 };
 
-/**
- * Löscht alte Daten aus der Datenbank
- * @param {Object} options - Optionen für die Bereinigung
- * @returns {Promise<number>} - Anzahl der gelöschten Einträge
- */
-export const cleanupOldData = async (options = {}) => {
-    try {
-        const opts = {
-            maxAgeInDays: options.maxAgeInDays || 365, // Standard: 1 Jahr
-            aggregateOldData: options.aggregateOldData !== undefined ? options.aggregateOldData : true
-        };
+// Initialisiere den Storage-Manager
+storageManager.init().catch(error => {
+    console.error('Fehler bei der Initialisierung des Storage-Managers:', error);
+});
 
-        const { stores } = await openTransaction(STORES.USAGE_HISTORY, 'readwrite');
-        const store = stores[STORES.USAGE_HISTORY];
-
-        // Berechne den Zeitstempel für das maximale Alter
-        const now = Date.now();
-        const maxAgeTimestamp = now - (opts.maxAgeInDays * 24 * 60 * 60 * 1000);
-
-        // Finde alte Einträge
-        const index = store.index('timestamp');
-
-        // Verwende ein IDBKeyRange für alle Einträge vor dem maxAgeTimestamp
-        const range = IDBKeyRange.upperBound(maxAgeTimestamp);
-
-        return new Promise((resolve, reject) => {
-            // Sammle erst alle zu löschenden Einträge
-            const getRequest = index.getAll(range);
-
-            getRequest.onsuccess = () => {
-                const oldEntries = getRequest.result || [];
-
-                if (oldEntries.length === 0) {
-                    resolve(0);
-                    return;
-                }
-
-                // Wenn wir alte Daten aggregieren wollen, tun wir das hier
-                if (opts.aggregateOldData) {
-                    // Gruppiere nach Lampe und Tag
-                    const aggregatedData = {};
-
-                    oldEntries.forEach(entry => {
-                        const date = new Date(entry.timestamp);
-                        const dateKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-                        const key = `${entry.lightId}_${dateKey}`;
-
-                        if (!aggregatedData[key]) {
-                            aggregatedData[key] = {
-                                lightId: entry.lightId,
-                                date: dateKey,
-                                timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime(),
-                                totalWatt: 0,
-                                totalWh: 0,
-                                count: 0,
-                                isAggregated: true
-                            };
-                        }
-
-                        aggregatedData[key].totalWatt += entry.value || 0;
-                        aggregatedData[key].totalWh += entry.valueWh || 0;
-                        aggregatedData[key].count++;
-                    });
-
-                    // Erstelle aggregierte Einträge
-                    const aggregatedEntries = Object.values(aggregatedData).map(data => ({
-                        lightId: data.lightId,
-                        timestamp: data.timestamp,
-                        value: data.totalWatt / data.count, // Durchschnittlicher Watt-Wert
-                        valueWh: data.totalWh, // Gesamte Wh für den Tag
-                        isAggregated: true,
-                        originalCount: data.count,
-                        date: data.date
-                    }));
-
-                    // Speichere die aggregierten Daten und lösche die alten
-                    const transaction = store.transaction;
-                    let deletedCount = 0;
-
-                    // Erstelle Promises für jede Operation
-                    const deletePromises = oldEntries.map(entry =>
-                        new Promise((resolveDelete) => {
-                            const deleteRequest = store.delete(entry.id);
-                            deleteRequest.onsuccess = () => {
-                                deletedCount++;
-                                resolveDelete();
-                            };
-                            deleteRequest.onerror = () => resolveDelete();
-                        })
-                    );
-
-                    const addPromises = aggregatedEntries.map(entry =>
-                        new Promise((resolveAdd) => {
-                            const addRequest = store.add(entry);
-                            addRequest.onsuccess = resolveAdd;
-                            addRequest.onerror = resolveAdd;
-                        })
-                    );
-
-                    // Führe alle Operationen durch
-                    Promise.all([...deletePromises, ...addPromises])
-                        .then(() => resolve(deletedCount))
-                        .catch(reject);
-                } else {
-                    // Lösche einfach alle alten Einträge ohne Aggregation
-                    let deletedCount = 0;
-
-                    const deletePromises = oldEntries.map(entry =>
-                        new Promise((resolveDelete) => {
-                            const deleteRequest = store.delete(entry.id);
-                            deleteRequest.onsuccess = () => {
-                                deletedCount++;
-                                resolveDelete();
-                            };
-                            deleteRequest.onerror = () => resolveDelete();
-                        })
-                    );
-
-                    Promise.all(deletePromises)
-                        .then(() => resolve(deletedCount))
-                        .catch(reject);
-                }
-            };
-
-            getRequest.onerror = () => reject(getRequest.error);
-        });
-    } catch (error) {
-        console.error('Fehler bei der Bereinigung alter Daten:', error);
-        throw error;
-    }
-};
+// Exportiere auch den Storage-Manager für Tests
+export const _storageManager = storageManager;

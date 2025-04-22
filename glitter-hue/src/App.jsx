@@ -1122,7 +1122,7 @@ function App() {
                                             <span>Bridge IP: {bridgeIP}</span>
                                         </div>
                                         <div className="setting-row">
-                                            <span>API Username: {username.substring(0, 8)}...</span>
+                                            <span>API Username: {username}</span>
                                         </div>
                                         <div className="button-group">
                                             <button onClick={resetConnection}
