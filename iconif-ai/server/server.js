@@ -306,21 +306,53 @@ async function processFormat(format, sourcePath, outputDir) {
  */
 function createZipArchive(sourceDir, outputPath) {
     return new Promise((resolve, reject) => {
+        console.log('Creating ZIP archive from:', sourceDir);
+        console.log('Saving to:', outputPath);
+
+        // Stelle sicher, dass das Verzeichnis existiert
+        const outputDir = path.dirname(outputPath);
+        if (!fs.existsSync(outputDir)) {
+            fs.mkdirSync(outputDir, { recursive: true });
+        }
+
         const output = fs.createWriteStream(outputPath);
         const archive = archiver('zip', {
-            zlib: {level: 9} // Maximum compression
+            zlib: { level: 9 } // Maximum compression
         });
 
         output.on('close', () => {
+            console.log('ZIP archive created successfully:', outputPath);
+            console.log('ZIP size:', archive.pointer() + ' bytes');
             resolve();
         });
 
+        archive.on('warning', (err) => {
+            console.warn('Archive warning:', err);
+            if (err.code === 'ENOENT') {
+                // Warnung loggen, aber nicht abbrechen
+                console.warn('Warning during archiving:', err);
+            } else {
+                reject(err);
+            }
+        });
+
         archive.on('error', (err) => {
+            console.error('Archive error:', err);
             reject(err);
         });
 
         archive.pipe(output);
-        archive.directory(sourceDir, false);
+
+        // Prüfe, ob das Quellverzeichnis existiert
+        if (fs.existsSync(sourceDir)) {
+            console.log('Adding directory to archive:', sourceDir);
+            archive.directory(sourceDir, false);
+        } else {
+            console.error('Source directory does not exist:', sourceDir);
+            reject(new Error(`Source directory does not exist: ${sourceDir}`));
+            return;
+        }
+
         archive.finalize();
     });
 }
@@ -341,13 +373,21 @@ app.get('/api/images/:id', (req, res) => {
 /**
  * Download the zip file
  */
+// server/server.js - Verbessere die Download-Route
 app.get('/api/download/:id', (req, res) => {
     const zipPath = path.join(tempDir, `${req.params.id}.zip`);
 
+    console.log('Requested ZIP path:', zipPath);
+    console.log('File exists:', fs.existsSync(zipPath));
+
     if (fs.existsSync(zipPath)) {
-        res.download(zipPath, 'icon-package.zip');
+        // Absolute Pfade verwenden
+        const absolutePath = path.resolve(zipPath);
+        console.log('Sending ZIP file from:', absolutePath);
+        res.download(absolutePath, 'icon-package.zip');
     } else {
-        res.status(404).json({message: 'Package not found'});
+        console.error('ZIP file not found at path:', zipPath);
+        res.status(404).json({ message: 'Package not found' });
     }
 });
 
