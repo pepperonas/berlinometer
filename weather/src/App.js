@@ -6,6 +6,7 @@ import Forecast from './components/Forecast';
 import LoadingSpinner from './components/LoadingSpinner';
 import ThemeSwitch from './components/ThemeSwitch';
 import { ThemeContext } from './context/ThemeContext';
+import WeatherCharts from "./components/WeatherCharts";
 
 function App() {
     const [weather, setWeather] = useState(null);
@@ -84,12 +85,16 @@ function App() {
                         {weather && <WeatherCard weather={weather}/>}
 
                         {forecast && (
-                            <div className="mt-6 sm:mt-8">
-                                <h2 className={`text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 ${darkMode ? 'text-blue-300' : 'text-blue-500'}`}>
-                                    5-Tage-Vorhersage für {location}
-                                </h2>
-                                <Forecast forecast={forecast}/>
-                            </div>
+                            <>
+                                <div className="mt-6 sm:mt-8">
+                                    <h2 className={`text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 ${darkMode ? 'text-blue-300' : 'text-blue-500'}`}>
+                                        5-Tage-Vorhersage für {location}
+                                    </h2>
+                                    <Forecast forecast={forecast}/>
+                                </div>
+
+                                <WeatherCharts forecast={forecast}/>
+                            </>
                         )}
                     </>
                 )}

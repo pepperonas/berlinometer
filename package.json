@@ -9,6 +9,7 @@
   },
   "private": true,
   "dependencies": {
-    "lucide-react": "^0.487.0"
+    "lucide-react": "^0.487.0",
+    "recharts": "^2.15.3"
   }
 }
