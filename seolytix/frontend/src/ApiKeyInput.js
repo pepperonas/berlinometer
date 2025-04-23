@@ -1,4 +1,4 @@
-// Sichere API-Key-Behandlung im Frontend
+// Sichere API-Key-Behandlung im Frontend mit Dark Theme
 
 import React, { useState, useEffect } from 'react';
 import { Key } from 'lucide-react';
@@ -51,22 +51,22 @@ const ApiKeyInput = ({ apiKey, setApiKey, disabled }) => {
     };
 
     return (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <div className="mb-6 p-4 bg-bg-dark rounded-xl shadow-sm">
             <div className="flex items-center justify-between mb-2">
-                <h3 className="text-md font-semibold text-[#2C2E3B] flex items-center">
-                    <Key size={18} className="mr-2"/> ChatGPT API-Schlüssel für SEO-Verbesserungen
+                <h3 className="text-md font-semibold text-text-primary flex items-center">
+                    <Key size={18} className="mr-2 text-accent-blue"/> ChatGPT API-Schlüssel für SEO-Verbesserungen
                 </h3>
                 <div className="flex items-center space-x-2">
                     <button
                         onClick={() => setShowApiKey(!showApiKey)}
-                        className="text-xs text-[#2C2E3B] underline"
+                        className="text-xs text-accent-blue hover:underline transition-colors duration-300"
                     >
                         {showApiKey ? "Verbergen" : "Anzeigen"}
                     </button>
                     {localApiKey && (
                         <button
                             onClick={clearApiKey}
-                            className="text-xs text-red-500 underline"
+                            className="text-xs text-accent-red hover:underline transition-colors duration-300"
                         >
                             Löschen
                         </button>
@@ -80,16 +80,16 @@ const ApiKeyInput = ({ apiKey, setApiKey, disabled }) => {
                     onChange={handleApiKeyChange}
                     disabled={disabled}
                     placeholder="sk-..."
-                    className={`w-full p-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2C2E3B] focus:border-transparent ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    className={`w-full p-3 pr-10 border border-bg-darker bg-bg-darker rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue text-text-primary transition-all duration-300 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                 />
                 {localApiKey && (
                     <div className="absolute top-0 right-0 h-full flex items-center pr-3">
-                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        <span className="w-2 h-2 rounded-full bg-accent-green"></span>
                     </div>
                 )}
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-                Ihr API-Schlüssel wird lokal in Ihrem Browser gespeichert und niemals an unsere Server gesendet.
+            <p className="text-xs text-text-secondary mt-1">
+                Dein API-Schlüssel wird lokal in deinem Browser gespeichert und niemals an unsere Server gesendet.
                 Die Anfragen werden über einen sicheren Proxy geleitet.
             </p>
         </div>

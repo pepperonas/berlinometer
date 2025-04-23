@@ -107,6 +107,10 @@ function App() {
                         JETZT AKTUALISIEREN!
                     </button>
                 </div>
+
+                <div className={`mt-8 pt-4 pb-2 text-center text-m ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    Made with ❤️ by Martin Pfeffer
+                </div>
             </div>
         </div>
     );

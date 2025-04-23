@@ -1,4 +1,5 @@
 // src/KeywordResearch.js - Komponente für die Keyword-Recherche mit KI-Vorschlägen
+// Dark Theme-Version
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -100,7 +101,7 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
     // Funktion zum Starten der Keyword-Recherche
     const startKeywordResearch = async () => {
         if (!keyword.trim()) {
-            setError('Bitte geben Sie ein Keyword ein');
+            setError('Bitte gib ein Keyword ein');
             return;
         }
 
@@ -155,9 +156,9 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
 
     // Generiert eine Schwierigkeitsbewertung basierend auf dem Wert
     const getDifficultyLabel = (value) => {
-        if (value < 30) return { label: 'Einfach', color: 'text-green-500' };
-        if (value < 60) return { label: 'Mittel', color: 'text-yellow-500' };
-        return { label: 'Schwer', color: 'text-red-500' };
+        if (value < 30) return { label: 'Einfach', color: 'text-accent-green' };
+        if (value < 60) return { label: 'Mittel', color: 'text-yellow-400' };
+        return { label: 'Schwer', color: 'text-accent-red' };
     };
 
     // CSV-Export der Keyword-Daten
@@ -171,7 +172,7 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
             ...results.related.map(item => ({ ...item, type: 'Verwandt' }))
         ];
 
-// CSV-Header
+        // CSV-Header
         let csv = 'Keyword,Typ,Suchvolumen,Wettbewerb,Schwierigkeit\n';
 
         // CSV-Daten hinzufügen
@@ -205,15 +206,23 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
             }));
     };
 
+    // Custom colors für Dark Mode
+    const chartColors = {
+        suchvolumen: '#688db1',  // Accent-Blau
+        schwierigkeit: '#e16162', // Accent-Rot
+        gridLines: '#454855',     // Etwas heller als der Hintergrund
+        text: '#d1d5db'           // Text-Primary
+    };
+
     return (
         <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4 text-[#2C2E3B] flex items-center">
-                <Tag className="mr-2" size={20}/> Keyword-Recherche
+            <h2 className="text-xl font-semibold mb-4 text-text-primary flex items-center">
+                <Tag className="mr-2 text-accent-blue" size={20}/> Keyword-Recherche
             </h2>
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <p className="text-gray-600 mb-4">
-                    Recherchieren Sie relevante Keywords für Ihre Website und erhalten Sie Vorschläge für Content-Ideen.
+            <div className="bg-card-bg rounded-xl shadow-card p-6">
+                <p className="text-text-secondary mb-4">
+                    Recherchiere relevante Keywords für deine Website und erhalte Vorschläge für Content-Ideen.
                 </p>
 
                 {/* Keyword-Eingabe */}
@@ -225,17 +234,17 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
                                 value={keyword}
                                 onChange={(e) => setKeyword(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Geben Sie ein Keyword ein..."
-                                className="w-full p-3 pr-10 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-[#2C2E3B] focus:border-transparent"
+                                placeholder="Gib ein Keyword ein..."
+                                className="w-full p-3 pr-10 border border-bg-darker bg-bg-darker rounded-l-xl focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue text-text-primary transition-all duration-300"
                             />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-text-secondary">
                                 <Tag size={18}/>
                             </div>
                         </div>
                         <button
                             onClick={startKeywordResearch}
                             disabled={isResearching || !keyword.trim()}
-                            className={`px-6 py-3 bg-[#2C2E3B] text-white rounded-r-lg hover:bg-opacity-90 flex items-center ${(isResearching || !keyword.trim()) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`px-6 py-3 bg-accent-blue text-white rounded-r-xl hover:bg-opacity-90 flex items-center transition-all duration-300 ${(isResearching || !keyword.trim()) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {isResearching ? (
                                 <>Recherchiere<span className="ml-2 animate-pulse">...</span></>
@@ -246,7 +255,7 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
                     </div>
 
                     {error && (
-                        <div className="mt-2 text-red-500 text-sm flex items-center">
+                        <div className="mt-2 text-accent-red text-sm flex items-center">
                             <AlertCircle size={16} className="mr-1"/> {error}
                         </div>
                     )}
@@ -254,15 +263,15 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
 
                 {/* Gespeicherte Keywords */}
                 {savedKeywords.length > 0 && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                        <h3 className="text-md font-semibold text-[#2C2E3B] mb-3">Gespeicherte Keywords</h3>
+                    <div className="mb-6 p-4 bg-bg-dark rounded-xl">
+                        <h3 className="text-md font-semibold text-text-primary mb-3">Gespeicherte Keywords</h3>
                         <div className="flex flex-wrap gap-2">
                             {savedKeywords.map((item, index) => (
-                                <div key={index} className="px-3 py-1 bg-[#2C2E3B] text-white rounded-full flex items-center">
+                                <div key={index} className="px-3 py-1 bg-accent-blue bg-opacity-80 text-white rounded-full flex items-center transition-all duration-300">
                                     <span className="mr-2">{item.keyword}</span>
                                     <button
                                         onClick={() => removeKeyword(item.keyword)}
-                                        className="hover:text-red-200 focus:outline-none"
+                                        className="hover:text-red-200 focus:outline-none transition-colors duration-300"
                                     >
                                         <X size={14} />
                                     </button>
@@ -274,44 +283,44 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
 
                 {isResearching && (
                     <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#2C2E3B] mb-4"></div>
-                        <p className="text-gray-600">Recherchiere Keywords...</p>
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-blue mb-4"></div>
+                        <p className="text-text-secondary">Recherchiere Keywords...</p>
                     </div>
                 )}
 
                 {results && !isResearching && (
                     <div>
                         {/* Zusammenfassung */}
-                        <div className="mb-6 p-4 bg-[#2C2E3B] bg-opacity-5 rounded-lg">
-                            <h3 className="text-md font-semibold text-[#2C2E3B] mb-3 flex items-center">
-                                <BarChart2 size={18} className="mr-2"/> Keyword-Übersicht für "{results.baseKeyword}"
+                        <div className="mb-6 p-4 bg-bg-dark rounded-xl">
+                            <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                                <BarChart2 size={18} className="mr-2 text-accent-blue"/> Keyword-Übersicht für "{results.baseKeyword}"
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                    <div className="text-sm text-gray-500">Gefundene Keywords</div>
-                                    <div className="text-2xl font-bold">{results.summary.totalKeywords}</div>
+                                <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
+                                    <div className="text-sm text-text-secondary">Gefundene Keywords</div>
+                                    <div className="text-2xl font-bold text-text-primary">{results.summary.totalKeywords}</div>
                                 </div>
 
-                                <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                    <div className="text-sm text-gray-500">Ø Suchvolumen</div>
-                                    <div className="text-2xl font-bold">{results.summary.avgSearchVolume}</div>
+                                <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
+                                    <div className="text-sm text-text-secondary">Ø Suchvolumen</div>
+                                    <div className="text-2xl font-bold text-text-primary">{results.summary.avgSearchVolume}</div>
                                 </div>
 
-                                <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                    <div className="text-sm text-gray-500">Ø Schwierigkeit</div>
-                                    <div className="text-2xl font-bold">{results.summary.avgDifficulty}%</div>
+                                <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
+                                    <div className="text-sm text-text-secondary">Ø Schwierigkeit</div>
+                                    <div className="text-2xl font-bold text-text-primary">{results.summary.avgDifficulty}%</div>
                                 </div>
                             </div>
 
                             {results.summary.bestOpportunities.length > 0 && (
                                 <div className="mt-4">
-                                    <h4 className="text-sm font-medium text-[#2C2E3B] mb-2">Beste Chancen</h4>
+                                    <h4 className="text-sm font-medium text-text-primary mb-2">Beste Chancen</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                                         {results.summary.bestOpportunities.map((item, index) => (
-                                            <div key={index} className="bg-green-50 p-2 rounded-lg border border-green-100">
-                                                <div className="font-medium text-green-700">{item.keyword}</div>
-                                                <div className="flex justify-between text-xs text-green-600">
+                                            <div key={index} className="bg-accent-green bg-opacity-10 p-2 rounded-xl border border-accent-green border-opacity-30">
+                                                <div className="font-medium text-accent-green">{item.keyword}</div>
+                                                <div className="flex justify-between text-xs text-accent-green">
                                                     <span>Volumen: {item.searchVolume}</span>
                                                     <span>Schwierigkeit: {item.difficulty}%</span>
                                                 </div>
@@ -324,7 +333,7 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
                             <div className="mt-4">
                                 <button
                                     onClick={exportToCSV}
-                                    className="flex items-center text-[#2C2E3B] hover:underline"
+                                    className="flex items-center text-accent-blue hover:underline transition-colors duration-300"
                                 >
                                     <Download size={16} className="mr-1"/> Alle Keywords als CSV exportieren
                                 </button>
@@ -333,57 +342,64 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
 
                         {/* Diagramm */}
                         <div className="mb-6">
-                            <h3 className="text-md font-semibold text-[#2C2E3B] mb-3">Top Keywords nach Suchvolumen</h3>
+                            <h3 className="text-md font-semibold text-text-primary mb-3">Top Keywords nach Suchvolumen</h3>
                             <div className="h-80">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
                                         data={prepareChartData()}
                                         margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                                     >
-                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.gridLines} />
                                         <XAxis
                                             dataKey="name"
-                                            tick={{ fontSize: 12 }}
+                                            tick={{ fontSize: 12, fill: chartColors.text }}
+                                            stroke={chartColors.gridLines}
                                         />
-                                        <YAxis />
+                                        <YAxis
+                                            tick={{ fill: chartColors.text }}
+                                            stroke={chartColors.gridLines}
+                                        />
                                         <Tooltip
                                             formatter={(value, name) => [value, name]}
                                             labelFormatter={(name) => {
                                                 const item = prepareChartData().find(item => item.name === name);
                                                 return item ? item.originalName : name;
                                             }}
+                                            contentStyle={{ backgroundColor: '#343845', borderColor: '#454855', color: '#d1d5db' }}
                                         />
-                                        <Legend />
-                                        <Bar dataKey="Suchvolumen" fill="#2C2E3B" />
-                                        <Bar dataKey="Schwierigkeit" fill="#8884d8" />
+                                        <Legend
+                                            wrapperStyle={{ color: chartColors.text }}
+                                        />
+                                        <Bar dataKey="Suchvolumen" fill={chartColors.suchvolumen} />
+                                        <Bar dataKey="Schwierigkeit" fill={chartColors.schwierigkeit} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
                         </div>
 
                         {/* Tabs */}
-                        <div className="flex border-b border-gray-200 mb-4">
+                        <div className="flex border-b border-bg-darker mb-4">
                             <button
                                 onClick={() => setActiveTab('suggestions')}
-                                className={`px-4 py-2 font-medium text-sm mr-2 ${activeTab === 'suggestions' ? 'text-[#2C2E3B] border-b-2 border-[#2C2E3B]' : 'text-gray-500 hover:text-[#2C2E3B]'}`}
+                                className={`px-4 py-2 font-medium text-sm mr-2 ${activeTab === 'suggestions' ? 'text-accent-blue border-b-2 border-accent-blue' : 'text-text-secondary hover:text-accent-blue'}`}
                             >
                                 Keyword-Vorschläge
                             </button>
                             <button
                                 onClick={() => setActiveTab('questions')}
-                                className={`px-4 py-2 font-medium text-sm mr-2 ${activeTab === 'questions' ? 'text-[#2C2E3B] border-b-2 border-[#2C2E3B]' : 'text-gray-500 hover:text-[#2C2E3B]'}`}
+                                className={`px-4 py-2 font-medium text-sm mr-2 ${activeTab === 'questions' ? 'text-accent-blue border-b-2 border-accent-blue' : 'text-text-secondary hover:text-accent-blue'}`}
                             >
                                 Fragen
                             </button>
                             <button
                                 onClick={() => setActiveTab('related')}
-                                className={`px-4 py-2 font-medium text-sm mr-2 ${activeTab === 'related' ? 'text-[#2C2E3B] border-b-2 border-[#2C2E3B]' : 'text-gray-500 hover:text-[#2C2E3B]'}`}
+                                className={`px-4 py-2 font-medium text-sm mr-2 ${activeTab === 'related' ? 'text-accent-blue border-b-2 border-accent-blue' : 'text-text-secondary hover:text-accent-blue'}`}
                             >
                                 Verwandte Keywords
                             </button>
                             <button
                                 onClick={() => setActiveTab('content')}
-                                className={`px-4 py-2 font-medium text-sm ${activeTab === 'content' ? 'text-[#2C2E3B] border-b-2 border-[#2C2E3B]' : 'text-gray-500 hover:text-[#2C2E3B]'}`}
+                                className={`px-4 py-2 font-medium text-sm ${activeTab === 'content' ? 'text-accent-blue border-b-2 border-accent-blue' : 'text-text-secondary hover:text-accent-blue'}`}
                             >
                                 Content-Ideen
                             </button>
@@ -391,32 +407,32 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
 
                         {/* Keyword-Vorschläge Tabelle */}
                         {activeTab === 'suggestions' && (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto pr-1 custom-scrollbar">
                                 <table className="min-w-full">
-                                    <thead className="bg-gray-50">
+                                    <thead className="bg-bg-darker">
                                     <tr>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keyword</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Suchvolumen</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wettbewerb</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schwierigkeit</th>
-                                        <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Keyword</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Suchvolumen</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Wettbewerb</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Schwierigkeit</th>
+                                        <th className="py-3 px-4 text-right text-xs font-medium text-text-secondary uppercase tracking-wider"></th>
                                     </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-card-bg divide-y divide-bg-darker">
                                     {results.variations.map((item, index) => {
                                         const difficultyInfo = getDifficultyLabel(item.difficulty);
                                         return (
-                                            <tr key={index} className="hover:bg-gray-50">
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.keyword}</td>
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.searchVolume}</td>
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.competition}</td>
+                                            <tr key={index} className="hover:bg-bg-dark transition-colors duration-300">
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.keyword}</td>
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.searchVolume}</td>
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.competition}</td>
                                                 <td className="py-3 px-4 whitespace-nowrap">
                                                     <span className={`${difficultyInfo.color}`}>{item.difficulty}% ({difficultyInfo.label})</span>
                                                 </td>
                                                 <td className="py-3 px-4 whitespace-nowrap text-right">
                                                     <button
                                                         onClick={() => saveKeyword(item)}
-                                                        className="text-[#2C2E3B] hover:underline flex items-center justify-end"
+                                                        className="text-accent-blue hover:underline flex items-center justify-end transition-colors duration-300"
                                                     >
                                                         Speichern <Plus size={16} className="ml-1"/>
                                                     </button>
@@ -431,32 +447,32 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
 
                         {/* Fragen Tabelle */}
                         {activeTab === 'questions' && (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto pr-1 custom-scrollbar">
                                 <table className="min-w-full">
-                                    <thead className="bg-gray-50">
+                                    <thead className="bg-bg-darker">
                                     <tr>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frage</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Suchvolumen</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wettbewerb</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schwierigkeit</th>
-                                        <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Frage</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Suchvolumen</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Wettbewerb</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Schwierigkeit</th>
+                                        <th className="py-3 px-4 text-right text-xs font-medium text-text-secondary uppercase tracking-wider"></th>
                                     </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-card-bg divide-y divide-bg-darker">
                                     {results.questions.map((item, index) => {
                                         const difficultyInfo = getDifficultyLabel(item.difficulty);
                                         return (
-                                            <tr key={index} className="hover:bg-gray-50">
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.keyword}</td>
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.searchVolume}</td>
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.competition}</td>
+                                            <tr key={index} className="hover:bg-bg-dark transition-colors duration-300">
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.keyword}</td>
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.searchVolume}</td>
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.competition}</td>
                                                 <td className="py-3 px-4 whitespace-nowrap">
                                                     <span className={`${difficultyInfo.color}`}>{item.difficulty}% ({difficultyInfo.label})</span>
                                                 </td>
                                                 <td className="py-3 px-4 whitespace-nowrap text-right">
                                                     <button
                                                         onClick={() => saveKeyword(item)}
-                                                        className="text-[#2C2E3B] hover:underline flex items-center justify-end"
+                                                        className="text-accent-blue hover:underline flex items-center justify-end transition-colors duration-300"
                                                     >
                                                         Speichern <Plus size={16} className="ml-1"/>
                                                     </button>
@@ -471,32 +487,32 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
 
                         {/* Verwandte Keywords Tabelle */}
                         {activeTab === 'related' && (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto pr-1 custom-scrollbar">
                                 <table className="min-w-full">
-                                    <thead className="bg-gray-50">
+                                    <thead className="bg-bg-darker">
                                     <tr>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verwandtes Keyword</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Suchvolumen</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wettbewerb</th>
-                                        <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Schwierigkeit</th>
-                                        <th className="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Verwandtes Keyword</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Suchvolumen</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Wettbewerb</th>
+                                        <th className="py-3 px-4 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Schwierigkeit</th>
+                                        <th className="py-3 px-4 text-right text-xs font-medium text-text-secondary uppercase tracking-wider"></th>
                                     </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-card-bg divide-y divide-bg-darker">
                                     {results.related.map((item, index) => {
                                         const difficultyInfo = getDifficultyLabel(item.difficulty);
                                         return (
-                                            <tr key={index} className="hover:bg-gray-50">
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.keyword}</td>
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.searchVolume}</td>
-                                                <td className="py-3 px-4 whitespace-nowrap">{item.competition}</td>
+                                            <tr key={index} className="hover:bg-bg-dark transition-colors duration-300">
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.keyword}</td>
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.searchVolume}</td>
+                                                <td className="py-3 px-4 whitespace-nowrap text-text-primary">{item.competition}</td>
                                                 <td className="py-3 px-4 whitespace-nowrap">
                                                     <span className={`${difficultyInfo.color}`}>{item.difficulty}% ({difficultyInfo.label})</span>
                                                 </td>
                                                 <td className="py-3 px-4 whitespace-nowrap text-right">
                                                     <button
                                                         onClick={() => saveKeyword(item)}
-                                                        className="text-[#2C2E3B] hover:underline flex items-center justify-end"
+                                                        className="text-accent-blue hover:underline flex items-center justify-end transition-colors duration-300"
                                                     >
                                                         Speichern <Plus size={16} className="ml-1"/>
                                                     </button>
@@ -514,13 +530,13 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
                             <div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {contentIdeas.map((idea, index) => (
-                                        <div key={index} className="bg-[#2C2E3B] bg-opacity-5 p-4 rounded-lg">
+                                        <div key={index} className="bg-bg-dark bg-opacity-80 p-4 rounded-xl hover:bg-bg-darker transition-all duration-300">
                                             <div className="flex items-start space-x-2">
-                                                <Sparkles className="text-[#2C2E3B] mt-1" size={16}/>
+                                                <Sparkles className="text-accent-blue mt-1 flex-shrink-0" size={16}/>
                                                 <div>
-                                                    <div className="font-medium text-[#2C2E3B]">{idea}</div>
+                                                    <div className="font-medium text-text-primary">{idea}</div>
                                                     <div className="flex items-center mt-2">
-                                                        <a href="#" className="text-sm text-[#2C2E3B] hover:underline flex items-center">
+                                                        <a href="#" className="text-sm text-accent-blue hover:underline flex items-center transition-colors duration-300">
                                                             Content-Brief erstellen <ArrowRight size={14} className="ml-1"/>
                                                         </a>
                                                     </div>
@@ -533,7 +549,7 @@ const KeywordResearch = ({ apiKey, apiUrl, mainSiteData, onError }) => {
                                 <div className="mt-6 flex justify-center">
                                     <button
                                         onClick={() => {/* In einer realen Implementierung: Weitere Content-Ideen generieren */}}
-                                        className="flex items-center px-4 py-2 bg-[#2C2E3B] text-white rounded-lg hover:bg-opacity-90"
+                                        className="flex items-center px-4 py-2 bg-accent-blue text-white rounded-xl hover:bg-opacity-90 transition-all duration-300"
                                     >
                                         Mehr Content-Ideen <Sparkles className="ml-2" size={16}/>
                                     </button>

@@ -11,7 +11,9 @@ Modern Dark Theme Spezifikation:
   * Text-Sekundär: #9ca3af
 
 - Typografie:
-  * Schriftart: 'Poppins', sans-serif
+  * Schriftart: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
   * Überschriften mit klarer Hierarchie (h1-h4)
   * Text-Größen: Normal (1rem), Klein (0.875rem), Akzent (in Blauton)
 

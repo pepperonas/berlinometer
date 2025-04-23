@@ -1,3 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Farben */
+    --background-dark: #2B2E3B;
+    --background-darker: #252830;
+    --card-bg: #343845;
+    --accent-blue: #688db1;
+    --accent-green: #9cb68f;
+    --accent-red: #e16162;
+    --text-primary: #d1d5db;
+    --text-secondary: #9ca3af;
+
+    /* Schatten */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+
+    /* Abstände */
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-4: 1rem;
+    --spacing-8: 2rem;
+    --spacing-16: 4rem;
+
+    /* Rundungen */
+    --radius-sm: 0.25rem;
+    --radius: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--background-dark);
+    color: var(--text-primary);
+}
+
+/* Standard Komponenten-Definitionen */
+@layer components {
+    .card {
+        @apply bg-card-bg rounded-xl shadow-card p-4 transition-all duration-300;
+    }
+
+    .card:hover {
+        @apply shadow-card-hover;
+    }
+
+    .btn-primary {
+        @apply bg-accent-blue text-white px-4 py-2 rounded-lg transition-all duration-300 hover:opacity-90;
+    }
+
+    .btn-secondary {
+        @apply bg-accent-green text-white px-4 py-2 rounded-lg transition-all duration-300 hover:opacity-90;
+    }
+
+    .btn-outline {
+        @apply border border-text-secondary text-text-primary px-4 py-2 rounded-lg transition-all duration-300 hover:bg-opacity-10 hover:bg-white;
+    }
+
+    .btn-danger {
+        @apply bg-accent-red text-white px-4 py-2 rounded-lg transition-all duration-300 hover:opacity-90;
+    }
+
+    .form-input {
+        @apply bg-bg-darker border border-opacity-10 border-white text-text-primary px-4 py-2 rounded-lg transition-all duration-300 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue focus:ring-opacity-20;
+    }
+
+    .progress-bar {
+        @apply bg-bg-darker rounded-lg overflow-hidden;
+    }
+
+    .progress-bar-fill {
+        @apply h-2 rounded-lg transition-all duration-300;
+    }
+
+    .progress-bar-fill-success {
+        @apply bg-accent-green;
+    }
+
+    .progress-bar-fill-warning {
+        @apply bg-accent-red;
+    }
+
+    /* Typografie */
+    h1, h2, h3, h4, h5, h6 {
+        @apply text-text-primary font-semibold;
+    }
+
+    h1 {
+        @apply text-2xl;
+    }
+
+    h2 {
+        @apply text-xl;
+    }
+
+    h3 {
+        @apply text-lg;
+    }
+
+    h4 {
+        @apply text-base;
+    }
+
+    /* Tabellen im Dark Mode */
+    table {
+        @apply w-full;
+    }
+
+    thead {
+        @apply bg-bg-darker;
+    }
+
+    th {
+        @apply px-4 py-2 text-left text-text-secondary;
+    }
+
+    td {
+        @apply px-4 py-2 border-t border-bg-darker;
+    }
+
+    tr:hover {
+        @apply bg-bg-darker;
+    }
+}

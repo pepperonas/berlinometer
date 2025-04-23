@@ -1,4 +1,4 @@
-// src/DashboardView.js - Dashboard für historische SEO-Daten und Vergleiche
+// src/DashboardView.js - Dashboard für historische SEO-Daten und Vergleiche mit Dark Theme
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -114,22 +114,22 @@ const DashboardView = ({ websiteUrl }) => {
 
     // Bestimmt die Farbe basierend auf dem Score
     const getScoreColor = (score) => {
-        if (score >= 80) return '#4CAF50'; // Grün
-        if (score >= 60) return '#FF9800'; // Orange
-        return '#F44336'; // Rot
+        if (score >= 80) return '#9cb68f'; // Grün
+        if (score >= 60) return '#FFC107'; // Gelb
+        return '#e16162'; // Rot
     };
 
     // Rendere die entsprechende Farbe und Icon für Issues
     const getIssueTypeInfo = (type) => {
         switch (type) {
             case 'error':
-                return { color: '#F44336', icon: <AlertTriangle size={16} className="mr-2" /> };
+                return { color: '#e16162', icon: <AlertTriangle size={16} className="mr-2" /> };
             case 'warning':
-                return { color: '#FF9800', icon: <AlertTriangle size={16} className="mr-2" /> };
+                return { color: '#FFC107', icon: <AlertTriangle size={16} className="mr-2" /> };
             case 'info':
-                return { color: '#2196F3', icon: <CheckCircle size={16} className="mr-2" /> };
+                return { color: '#688db1', icon: <CheckCircle size={16} className="mr-2" /> };
             default:
-                return { color: '#757575', icon: <AlertTriangle size={16} className="mr-2" /> };
+                return { color: '#9ca3af', icon: <AlertTriangle size={16} className="mr-2" /> };
         }
     };
 
@@ -153,10 +153,21 @@ const DashboardView = ({ websiteUrl }) => {
         issues.forEach(issue => counts[issue.type]++);
 
         return [
-            { name: 'Kritisch', value: counts.error, color: '#F44336' },
-            { name: 'Warnung', value: counts.warning, color: '#FF9800' },
-            { name: 'Info', value: counts.info, color: '#2196F3' }
+            { name: 'Kritisch', value: counts.error, color: '#e16162' },
+            { name: 'Warnung', value: counts.warning, color: '#FFC107' },
+            { name: 'Info', value: counts.info, color: '#688db1' }
         ];
+    };
+
+    // Custom Chart Themes für Dark Mode
+    const chartTheme = {
+        // Helle, gut sichtbare Farben für dunklen Hintergrund
+        primary: '#688db1',
+        secondary: '#9cb68f',
+        tertiary: '#e16162',
+        quaternary: '#a6a9fc',
+        grid: '#4a4d5a',
+        text: '#d1d5db'
     };
 
     // Daten zum Rendern vorbereiten
@@ -165,21 +176,21 @@ const DashboardView = ({ websiteUrl }) => {
 
     return (
         <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4 text-[#2C2E3B] flex items-center">
-                <BarChart2 className="mr-2" size={20}/> SEO Dashboard
+            <h2 className="text-xl font-semibold mb-4 text-text-primary flex items-center">
+                <BarChart2 className="mr-2 text-accent-blue" size={20}/> SEO Dashboard
             </h2>
 
             {isLoading ? (
-                <div className="text-center py-12 bg-white rounded-lg shadow-md">
-                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#2C2E3B] mb-4"></div>
-                    <p className="text-gray-600">Dashboard wird geladen...</p>
+                <div className="text-center py-12 bg-card-bg rounded-xl shadow-card">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-blue mb-4"></div>
+                    <p className="text-text-secondary">Dashboard wird geladen...</p>
                 </div>
             ) : (
                 <div>
                     {/* Domain-Auswahl */}
-                    <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-                        <h3 className="text-md font-semibold text-[#2C2E3B] mb-3 flex items-center">
-                            <Globe size={18} className="mr-2"/> Überwachte Websites
+                    <div className="bg-card-bg rounded-xl shadow-card p-4 mb-6">
+                        <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                            <Globe size={18} className="mr-2 text-accent-blue"/> Überwachte Websites
                         </h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -187,7 +198,7 @@ const DashboardView = ({ websiteUrl }) => {
                                 <div
                                     key={index}
                                     onClick={() => setSelectedDomain(domain.url)}
-                                    className={`p-3 rounded-lg border cursor-pointer transition-all ${domain.url === selectedDomain ? 'bg-[#2C2E3B] text-white border-[#2C2E3B]' : 'bg-white text-gray-800 border-gray-200 hover:border-[#2C2E3B]'}`}
+                                    className={`p-3 rounded-xl border cursor-pointer transition-all duration-300 ${domain.url === selectedDomain ? 'bg-accent-blue text-white border-accent-blue' : 'bg-bg-dark text-text-primary border-bg-darker hover:border-accent-blue'}`}
                                 >
                                     <div className="font-medium">{domain.url}</div>
                                     <div className="flex justify-between text-sm mt-1">
@@ -197,7 +208,7 @@ const DashboardView = ({ websiteUrl }) => {
                                 </div>
                             ))}
 
-                            <div className="p-3 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-gray-500 cursor-pointer hover:border-[#2C2E3B] hover:text-[#2C2E3B] hover:bg-gray-50">
+                            <div className="p-3 rounded-xl border border-dashed border-bg-darker flex items-center justify-center text-text-secondary cursor-pointer hover:border-accent-blue hover:text-accent-blue transition-all duration-300">
                                 <span>+ Neue Website hinzufügen</span>
                             </div>
                         </div>
@@ -206,15 +217,15 @@ const DashboardView = ({ websiteUrl }) => {
                     {/* Score-Karten */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         {/* Gesamt-Score */}
-                        <div className="bg-white rounded-lg shadow-md p-4">
+                        <div className="bg-card-bg rounded-xl shadow-card p-4">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Gesamt-Score</h3>
-                                    <div className="text-2xl font-bold mt-1">
+                                    <h3 className="text-sm font-medium text-text-secondary">Gesamt-Score</h3>
+                                    <div className="text-2xl font-bold mt-1 text-text-primary">
                                         {historicalData[historicalData.length - 1]?.overallScore || 0}/100
                                     </div>
                                 </div>
-                                <div className={`flex items-center text-sm ${overallChange.isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                                <div className={`flex items-center text-sm ${overallChange.isPositive ? 'text-accent-green' : 'text-accent-red'}`}>
                                     {overallChange.isPositive ? (
                                         <TrendingUp size={14} className="mr-1" />
                                     ) : (
@@ -223,9 +234,9 @@ const DashboardView = ({ websiteUrl }) => {
                                     {overallChange.value}
                                 </div>
                             </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
+                            <div className="w-full h-2 bg-bg-darker rounded-full mt-2">
                                 <div
-                                    className="h-2 rounded-full"
+                                    className="h-2 rounded-full transition-all duration-300"
                                     style={{
                                         width: `${historicalData[historicalData.length - 1]?.overallScore || 0}%`,
                                         backgroundColor: getScoreColor(historicalData[historicalData.length - 1]?.overallScore || 0)
@@ -235,15 +246,15 @@ const DashboardView = ({ websiteUrl }) => {
                         </div>
 
                         {/* Meta-Score */}
-                        <div className="bg-white rounded-lg shadow-md p-4">
+                        <div className="bg-card-bg rounded-xl shadow-card p-4">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Meta-Tags</h3>
-                                    <div className="text-2xl font-bold mt-1">
+                                    <h3 className="text-sm font-medium text-text-secondary">Meta-Tags</h3>
+                                    <div className="text-2xl font-bold mt-1 text-text-primary">
                                         {historicalData[historicalData.length - 1]?.metaScore || 0}/100
                                     </div>
                                 </div>
-                                <div className={`flex items-center text-sm ${calculateChange('metaScore').isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                                <div className={`flex items-center text-sm ${calculateChange('metaScore').isPositive ? 'text-accent-green' : 'text-accent-red'}`}>
                                     {calculateChange('metaScore').isPositive ? (
                                         <TrendingUp size={14} className="mr-1" />
                                     ) : (
@@ -252,9 +263,9 @@ const DashboardView = ({ websiteUrl }) => {
                                     {calculateChange('metaScore').value}
                                 </div>
                             </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
+                            <div className="w-full h-2 bg-bg-darker rounded-full mt-2">
                                 <div
-                                    className="h-2 rounded-full"
+                                    className="h-2 rounded-full transition-all duration-300"
                                     style={{
                                         width: `${historicalData[historicalData.length - 1]?.metaScore || 0}%`,
                                         backgroundColor: getScoreColor(historicalData[historicalData.length - 1]?.metaScore || 0)
@@ -264,15 +275,15 @@ const DashboardView = ({ websiteUrl }) => {
                         </div>
 
                         {/* Content-Score */}
-                        <div className="bg-white rounded-lg shadow-md p-4">
+                        <div className="bg-card-bg rounded-xl shadow-card p-4">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Inhalt</h3>
-                                    <div className="text-2xl font-bold mt-1">
+                                    <h3 className="text-sm font-medium text-text-secondary">Inhalt</h3>
+                                    <div className="text-2xl font-bold mt-1 text-text-primary">
                                         {historicalData[historicalData.length - 1]?.contentScore || 0}/100
                                     </div>
                                 </div>
-                                <div className={`flex items-center text-sm ${calculateChange('contentScore').isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                                <div className={`flex items-center text-sm ${calculateChange('contentScore').isPositive ? 'text-accent-green' : 'text-accent-red'}`}>
                                     {calculateChange('contentScore').isPositive ? (
                                         <TrendingUp size={14} className="mr-1" />
                                     ) : (
@@ -281,9 +292,9 @@ const DashboardView = ({ websiteUrl }) => {
                                     {calculateChange('contentScore').value}
                                 </div>
                             </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
+                            <div className="w-full h-2 bg-bg-darker rounded-full mt-2">
                                 <div
-                                    className="h-2 rounded-full"
+                                    className="h-2 rounded-full transition-all duration-300"
                                     style={{
                                         width: `${historicalData[historicalData.length - 1]?.contentScore || 0}%`,
                                         backgroundColor: getScoreColor(historicalData[historicalData.length - 1]?.contentScore || 0)
@@ -293,15 +304,15 @@ const DashboardView = ({ websiteUrl }) => {
                         </div>
 
                         {/* Speed-Score */}
-                        <div className="bg-white rounded-lg shadow-md p-4">
+                        <div className="bg-card-bg rounded-xl shadow-card p-4">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-sm font-medium text-gray-500">Ladezeit</h3>
-                                    <div className="text-2xl font-bold mt-1">
+                                    <h3 className="text-sm font-medium text-text-secondary">Ladezeit</h3>
+                                    <div className="text-2xl font-bold mt-1 text-text-primary">
                                         {historicalData[historicalData.length - 1]?.speedScore || 0}/100
                                     </div>
                                 </div>
-                                <div className={`flex items-center text-sm ${calculateChange('speedScore').isPositive ? 'text-green-500' : 'text-red-500'}`}>
+                                <div className={`flex items-center text-sm ${calculateChange('speedScore').isPositive ? 'text-accent-green' : 'text-accent-red'}`}>
                                     {calculateChange('speedScore').isPositive ? (
                                         <TrendingUp size={14} className="mr-1" />
                                     ) : (
@@ -310,9 +321,9 @@ const DashboardView = ({ websiteUrl }) => {
                                     {calculateChange('speedScore').value}
                                 </div>
                             </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full mt-2">
+                            <div className="w-full h-2 bg-bg-darker rounded-full mt-2">
                                 <div
-                                    className="h-2 rounded-full"
+                                    className="h-2 rounded-full transition-all duration-300"
                                     style={{
                                         width: `${historicalData[historicalData.length - 1]?.speedScore || 0}%`,
                                         backgroundColor: getScoreColor(historicalData[historicalData.length - 1]?.speedScore || 0)
@@ -326,9 +337,9 @@ const DashboardView = ({ websiteUrl }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Linke Spalte - Verlaufsgrafik */}
                         <div className="md:col-span-2">
-                            <div className="bg-white rounded-lg shadow-md p-4">
-                                <h3 className="text-md font-semibold text-[#2C2E3B] mb-4 flex items-center">
-                                    <Activity size={18} className="mr-2"/> SEO-Score Verlauf
+                            <div className="bg-card-bg rounded-xl shadow-card p-4">
+                                <h3 className="text-md font-semibold text-text-primary mb-4 flex items-center">
+                                    <Activity size={18} className="mr-2 text-accent-blue"/> SEO-Score Verlauf
                                 </h3>
 
                                 <div className="h-80">
@@ -337,24 +348,26 @@ const DashboardView = ({ websiteUrl }) => {
                                             data={historicalData}
                                             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                                         >
-                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.grid} />
                                             <XAxis
                                                 dataKey="date"
                                                 tickFormatter={(dateStr) => {
                                                     const date = new Date(dateStr);
                                                     return `${date.getMonth() + 1}/${date.getFullYear().toString().slice(2)}`;
                                                 }}
+                                                stroke={chartTheme.text}
                                             />
-                                            <YAxis domain={[0, 100]} />
+                                            <YAxis domain={[0, 100]} stroke={chartTheme.text} />
                                             <Tooltip
                                                 formatter={(value) => [`${value}/100`, ""]}
                                                 labelFormatter={(dateStr) => formatDate(dateStr)}
+                                                contentStyle={{ backgroundColor: '#343845', borderColor: '#4a4d5a', color: '#d1d5db' }}
                                             />
-                                            <Legend />
-                                            <Line type="monotone" dataKey="overallScore" name="Gesamt" stroke="#2C2E3B" activeDot={{ r: 8 }} />
-                                            <Line type="monotone" dataKey="metaScore" name="Meta-Tags" stroke="#8884d8" />
-                                            <Line type="monotone" dataKey="contentScore" name="Inhalt" stroke="#82ca9d" />
-                                            <Line type="monotone" dataKey="speedScore" name="Ladezeit" stroke="#ff7300" />
+                                            <Legend wrapperStyle={{ color: chartTheme.text }} />
+                                            <Line type="monotone" dataKey="overallScore" name="Gesamt" stroke={chartTheme.primary} activeDot={{ r: 8 }} />
+                                            <Line type="monotone" dataKey="metaScore" name="Meta-Tags" stroke={chartTheme.quaternary} />
+                                            <Line type="monotone" dataKey="contentScore" name="Inhalt" stroke={chartTheme.secondary} />
+                                            <Line type="monotone" dataKey="speedScore" name="Ladezeit" stroke={chartTheme.tertiary} />
                                         </LineChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -364,9 +377,9 @@ const DashboardView = ({ websiteUrl }) => {
                         {/* Rechte Spalte - Issue-Typen und Liste */}
                         <div className="md:col-span-1">
                             {/* Issue-Typen Grafik */}
-                            <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-                                <h3 className="text-md font-semibold text-[#2C2E3B] mb-3 flex items-center">
-                                    <AlertTriangle size={18} className="mr-2"/> Problemverteilung
+                            <div className="bg-card-bg rounded-xl shadow-card p-4 mb-6">
+                                <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                                    <AlertTriangle size={18} className="mr-2 text-accent-blue"/> Problemverteilung
                                 </h3>
 
                                 <div className="h-60">
@@ -386,32 +399,35 @@ const DashboardView = ({ websiteUrl }) => {
                                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip formatter={(value) => [`${value}`, "Anzahl"]} />
+                                            <Tooltip
+                                                formatter={(value) => [`${value}`, "Anzahl"]}
+                                                contentStyle={{ backgroundColor: '#343845', borderColor: '#4a4d5a', color: '#d1d5db' }}
+                                            />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
 
                             {/* Issues Liste */}
-                            <div className="bg-white rounded-lg shadow-md p-4">
-                                <h3 className="text-md font-semibold text-[#2C2E3B] mb-3 flex items-center">
-                                    <Link2 size={18} className="mr-2"/> SEO Probleme
+                            <div className="bg-card-bg rounded-xl shadow-card p-4">
+                                <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                                    <Link2 size={18} className="mr-2 text-accent-blue"/> SEO Probleme
                                 </h3>
 
-                                <div className="space-y-2 max-h-64 overflow-y-auto">
+                                <div className="space-y-2 max-h-64 overflow-y-auto pr-1 custom-scrollbar">
                                     {issues.map(issue => {
                                         const { color, icon } = getIssueTypeInfo(issue.type);
                                         return (
                                             <div
                                                 key={issue.id}
-                                                className="p-2 border-l-4 bg-gray-50 flex items-center"
+                                                className="p-2 border-l-4 bg-bg-dark rounded-r-lg flex items-center"
                                                 style={{ borderLeftColor: color }}
                                             >
                                                 {icon}
                                                 <div className="text-sm">
-                                                    <span className="font-medium">{issue.message}</span>
+                                                    <span className="font-medium text-text-primary">{issue.message}</span>
                                                     {issue.count && <span className="ml-1">({issue.count})</span>}
-                                                    <span className="block text-xs text-gray-500">URL: {issue.url}</span>
+                                                    <span className="block text-xs text-text-secondary">URL: {issue.url}</span>
                                                 </div>
                                             </div>
                                         );
@@ -419,7 +435,7 @@ const DashboardView = ({ websiteUrl }) => {
                                 </div>
 
                                 <div className="mt-3 text-center">
-                                    <button className="text-[#2C2E3B] text-sm font-medium hover:underline">
+                                    <button className="text-accent-blue text-sm font-medium hover:underline transition-colors duration-300">
                                         Alle Probleme anzeigen
                                     </button>
                                 </div>
