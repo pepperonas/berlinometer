@@ -19,8 +19,11 @@ function IconPreview({ icon }) {
     <div className="card preview-card">
       <h2>Icon-Vorschau</h2>
       <div className="preview-container">
-        <img src={icon.previewUrl} alt="Generiertes Icon" className="icon-preview" />
-      </div>
+          <img
+              src={`http://localhost:5012${icon.previewUrl}`}
+              alt="Generiertes Icon"
+              className="icon-preview"
+          />      </div>
       
       <div className="preview-info">
         <div className="preview-meta">

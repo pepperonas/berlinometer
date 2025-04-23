@@ -16,6 +16,7 @@ function App() {
   const handleIconGenerated = (iconData) => {
     setGeneratedIcon(iconData);
     setDownloadUrl(null);
+    setIsGenerating(false); // Wichtig: Status zurücksetzen
   };
 
   const handleProcessingStart = () => {
@@ -24,7 +25,7 @@ function App() {
   };
 
   const handleProcessingComplete = (downloadUrl) => {
-    setIsProcessing(false);
+    setIsProcessing(false); // Wichtig: Status zurücksetzen
     setDownloadUrl(downloadUrl);
   };
 
