@@ -1,0 +1,115 @@
+/* Modernisiertes Dark Theme - Spektrometer-Komponente */
+
+#spectrometer-container {
+    position: relative;
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    margin: var(--spacing-4) 0;
+    background-color: var(--background-darker);
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+#spectrometer-canvas {
+    display: block;
+    width: 100%;
+    background-color: var(--background-darker);
+}
+
+.spectrometer-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: var(--spacing-4);
+}
+
+/* Switch Styling für 2D/3D Umschalter */
+.switch label input[type=checkbox]:checked+.lever {
+    background-color: rgba(104, 141, 177, 0.5);
+}
+
+.switch label input[type=checkbox]:checked+.lever:after {
+    background-color: var(--accent-blue);
+}
+
+.switch label .lever {
+    background-color: var(--background-darker);
+}
+
+.switch label .lever:after {
+    background-color: var(--text-secondary);
+}
+
+/* Visuelle Verbesserungen für den Spektrometer */
+#spectrometer-container::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+    opacity: 0.3;
+}
+
+/* Advanced Menu */
+.advanced-menu {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-2);
+    margin: var(--spacing-4) 0;
+}
+
+.btn-small {
+    background-color: var(--card-bg);
+    color: var(--text-secondary);
+    text-transform: none;
+    font-size: 0.85rem;
+    padding: 0 var(--spacing-2);
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.btn-small:hover {
+    background-color: var(--accent-blue);
+    color: var(--text-primary);
+}
+
+.btn-small i.left {
+    margin-right: var(--spacing-1);
+}
+
+/* Anpassungen an die Material Design Farbpalette */
+.grey.darken-2 {
+    background-color: var(--card-bg) !important;
+}
+
+.grey.darken-2:hover {
+    background-color: rgba(104, 141, 177, 0.2) !important;
+}
+
+/* 3D-Visualisierung Verbesserungen */
+#spectrometer-canvas.mode-3d {
+    border-bottom: 1px solid rgba(104, 141, 177, 0.2);
+}
+
+/* Beschriftungen für die Spektrometer-Controls */
+.spectrometer-controls .switch label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Responsive Anpassungen */
+@media (max-width: 600px) {
+    .btn-small {
+        padding: 0 var(--spacing-1);
+        font-size: 0.75rem;
+    }
+
+    .spectrometer-controls {
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+}
