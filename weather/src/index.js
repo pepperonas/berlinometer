@@ -12,3 +12,16 @@ root.render(
         </ThemeProvider>
     </React.StrictMode>
 );
+
+// Service Worker registrieren
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/weather/service-worker.js')
+            .then(registration => {
+                console.log('Service Worker erfolgreich registriert mit Scope:', registration.scope);
+            })
+            .catch(error => {
+                console.log('Service Worker Registrierung fehlgeschlagen:', error);
+            });
+    });
+}

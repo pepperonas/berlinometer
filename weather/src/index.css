@@ -10,10 +10,41 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
+    /* PWA Optimierungen */
+    overscroll-behavior-y: contain;
+    min-height: 100vh;
 }
 
 .dark {
     color-scheme: dark;
+}
+
+/* PWA Animationen und Transitions */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes chartLoad {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-slideIn {
+    animation: slideIn 0.4s ease-out;
+}
+
+.animate-chartLoad {
+    animation: chartLoad 0.5s ease-out;
 }
 
 /* Besseres Touch-Feedback für mobile Geräte */
@@ -36,4 +67,14 @@ button, a {
 /* Verbessert die Lesbarkeit auf dunklen Hintergründen */
 .dark input::placeholder {
     opacity: 0.7;
+}
+
+/* Standalone-App-Styling für PWA */
+@media all and (display-mode: standalone) {
+    body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
 }
