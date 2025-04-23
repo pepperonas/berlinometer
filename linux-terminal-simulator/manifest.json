@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Linux Terminal",
+  "name": "Linux Terminal Simulator",
   "icons": [
     {
       "src": "favicon.ico",

@@ -4,12 +4,10 @@ import React, {useEffect, useState} from 'react';
 import {
     AlertCircle,
     Clock,
-    Code,
     FileCheck,
     FileText,
     Globe,
     Layers,
-    List,
     Search,
     Smartphone,
     Sparkles,
@@ -38,8 +36,6 @@ function App() {
 
     // API-Basis-URL für alle Anfragen
     useEffect(() => {
-        // In einer Produktionsumgebung würde dies automatisch auf das richtige Backend zeigen
-        // Für die lokale Entwicklung kann /seolytix als Basis verwendet werden
         const isLocalhost = window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1';
         setApiBaseUrl(isLocalhost ? '' : '/seolytix');
@@ -434,7 +430,8 @@ Konzentriere dich besonders auf Bereiche mit niedrigen Scores. Wenn Meta-Tags fe
                             <div className="text-center py-12">
                                 <div
                                     className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-blue mb-4"></div>
-                                <p className="text-text-secondary">Generiere SEO-Verbesserungsvorschläge
+                                <p className="text-text-secondary">Generiere
+                                    SEO-Verbesserungsvorschläge
                                     mit
                                     ChatGPT...</p>
                             </div>
@@ -640,8 +637,9 @@ Konzentriere dich besonders auf Bereiche mit niedrigen Scores. Wenn Meta-Tags fe
                                             {/* Sitemap - NEU */}
                                             <div className="bg-bg-dark p-4 rounded-xl">
                                                 <div className="flex items-start">
-                                                    <FileCheck className="text-accent-blue mr-3 mt-1"
-                                                               size={20}/>
+                                                    <FileCheck
+                                                        className="text-accent-blue mr-3 mt-1"
+                                                        size={20}/>
                                                     <div>
                                                         <div
                                                             className="flex items-center justify-between w-full">
@@ -724,8 +722,11 @@ Konzentriere dich besonders auf Bereiche mit niedrigen Scores. Wenn Meta-Tags fe
                                 )}
 
                                 {activeTab === 'crawling' && (
-                                    <AdvancedCrawling apiUrl={apiBaseUrl}
-                                                      onError={handleApiError}/>
+                                    <AdvancedCrawling
+                                        apiUrl={apiBaseUrl}
+                                        onError={handleApiError}
+                                        initialUrl={results?.url}
+                                    />
                                 )}
                             </div>
                         )}
@@ -756,7 +757,8 @@ Konzentriere dich besonders auf Bereiche mit niedrigen Scores. Wenn Meta-Tags fe
                         <div>Made with ❤️ by Martin Pfeffer</div>
                         <div className="flex items-center text-xs">
                             <span className="mr-4">Version 2.0</span>
-                            <a href="#" className="hover:underline mr-4 text-accent-blue">Impressum</a>
+                            <a href="#"
+                               className="hover:underline mr-4 text-accent-blue">Impressum</a>
                             <a href="#" className="hover:underline text-accent-blue">Datenschutz</a>
                         </div>
                     </div>

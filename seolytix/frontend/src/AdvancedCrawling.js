@@ -1,26 +1,34 @@
 // src/AdvancedCrawling.js - Komponente für benutzerdefinierte Crawling-Tiefe und erweiterte Website-Analyse
 // Mit Dark Theme
 
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-    BarChart2,
-    Search,
     AlertCircle,
-    Code,
-    Link,
-    Layers,
-    Shuffle,
-    Download,
-    Plus,
-    X,
-    Sliders,
+    BarChart2,
     Check,
+    Download,
     File,
-    Map
+    Layers,
+    Link,
+    Map,
+    Plus,
+    Search,
+    Shuffle,
+    Sliders,
+    X
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Legend,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis
+} from 'recharts';
 
-const AdvancedCrawling = ({ apiUrl, onError }) => {
+const AdvancedCrawling = ({apiUrl, onError, initialUrl}) => {
     const [url, setUrl] = useState('');
     const [crawlOptions, setCrawlOptions] = useState({
         maxDepth: 2,
@@ -41,6 +49,13 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
     const [inclusionPath, setInclusionPath] = useState('');
     const [isGeneratingSitemap, setIsGeneratingSitemap] = useState(false);
     const [sitemap, setSitemap] = useState(null);
+
+    useEffect(() => {
+        // Setze die URL, wenn initialUrl vorhanden ist
+        if (initialUrl) {
+            setUrl(initialUrl);
+        }
+    }, [initialUrl]);
 
     // Crawling-Optionen aktualisieren
     const updateOption = (option, value) => {
@@ -115,7 +130,35 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                 })
             });
 
-            const data = await response.json();
+            // Prüfe, ob die Antwort erfolgreich war (HTTP 200-299)
+            if (!response.ok) {
+                // Bei einem HTTP-Fehler versuchen wir den Fehlertext zu lesen
+                let errorMessage;
+                const contentType = response.headers.get('content-type');
+
+                if (contentType && contentType.includes('application/json')) {
+                    // Wenn JSON zurückkommt, versuchen wir die Fehlermeldung zu extrahieren
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || `HTTP-Fehler: ${response.status}`;
+                    } catch (e) {
+                        errorMessage = `HTTP-Fehler: ${response.status}`;
+                    }
+                } else {
+                    // Bei HTML oder anderen Formaten nur den Status-Code anzeigen
+                    errorMessage = `HTTP-Fehler: ${response.status}`;
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Versuche die JSON-Antwort zu parsen
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                throw new Error('Ungültiges Antwortformat vom Server (kein JSON)');
+            }
 
             if (!data.success) {
                 throw new Error(data.message || 'Fehler beim Crawling');
@@ -125,9 +168,16 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
             setActiveTab('overview');
         } catch (error) {
             console.error('Fehler beim Crawling:', error);
-            const errorMessage = error.message === 'Failed to fetch'
-                ? 'Verbindung zum Server fehlgeschlagen. Bitte prüfe, ob der Backend-Server läuft.'
-                : `Fehler beim Crawling: ${error.message}`;
+            let errorMessage;
+
+            if (error.message === 'Failed to fetch') {
+                errorMessage = 'Verbindung zum Server fehlgeschlagen. Bitte prüfe, ob der Backend-Server läuft.';
+            } else if (error.message.includes('NetworkError') || error.message.includes('ECONNREFUSED')) {
+                errorMessage = 'Netzwerkfehler: Server nicht erreichbar. Bitte prüfe deine Internetverbindung und den Backend-Server.';
+            } else {
+                errorMessage = `Fehler beim Crawling: ${error.message}`;
+            }
+
             setError(errorMessage);
 
             if (onError) {
@@ -176,7 +226,35 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                 })
             });
 
-            const data = await response.json();
+            // Prüfe, ob die Antwort erfolgreich war (HTTP 200-299)
+            if (!response.ok) {
+                // Bei einem HTTP-Fehler versuchen wir den Fehlertext zu lesen
+                let errorMessage;
+                const contentType = response.headers.get('content-type');
+
+                if (contentType && contentType.includes('application/json')) {
+                    // Wenn JSON zurückkommt, versuchen wir die Fehlermeldung zu extrahieren
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || `HTTP-Fehler: ${response.status}`;
+                    } catch (e) {
+                        errorMessage = `HTTP-Fehler: ${response.status}`;
+                    }
+                } else {
+                    // Bei HTML oder anderen Formaten nur den Status-Code anzeigen
+                    errorMessage = `HTTP-Fehler: ${response.status}`;
+                }
+
+                throw new Error(errorMessage);
+            }
+
+            // Versuche die JSON-Antwort zu parsen
+            let data;
+            try {
+                data = await response.json();
+            } catch (e) {
+                throw new Error('Ungültiges Antwortformat vom Server (kein JSON)');
+            }
 
             if (!data.success) {
                 throw new Error(data.message || 'Fehler bei der Sitemap-Generierung');
@@ -185,10 +263,20 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
             setSitemap(data.data);
         } catch (error) {
             console.error('Fehler bei der Sitemap-Generierung:', error);
-            setError(`Fehler bei der Sitemap-Generierung: ${error.message}`);
+            let errorMessage;
+
+            if (error.message === 'Failed to fetch') {
+                errorMessage = 'Verbindung zum Server fehlgeschlagen. Bitte prüfe, ob der Backend-Server läuft.';
+            } else if (error.message.includes('NetworkError') || error.message.includes('ECONNREFUSED')) {
+                errorMessage = 'Netzwerkfehler: Server nicht erreichbar. Bitte prüfe deine Internetverbindung und den Backend-Server.';
+            } else {
+                errorMessage = `Fehler bei der Sitemap-Generierung: ${error.message}`;
+            }
+
+            setError(errorMessage);
 
             if (onError) {
-                onError(error.message);
+                onError(errorMessage);
             }
         } finally {
             setIsGeneratingSitemap(false);
@@ -200,7 +288,7 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
         if (!sitemap) return;
 
         const element = document.createElement('a');
-        const file = new Blob([sitemap.sitemap], { type: 'application/xml' });
+        const file = new Blob([sitemap.sitemap], {type: 'application/xml'});
         element.href = URL.createObjectURL(file);
         element.download = 'sitemap.xml';
         document.body.appendChild(element);
@@ -267,7 +355,7 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
     const renderOverviewTab = () => {
         if (!results || !results.summary) return null;
 
-        const { summary } = results;
+        const {summary} = results;
         const chartData = prepareChartData();
 
         return (
@@ -280,19 +368,23 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
                             <div className="text-sm text-text-secondary">Gecrawlte Seiten</div>
-                            <div className="text-2xl font-bold text-text-primary">{summary.totalPages}</div>
+                            <div
+                                className="text-2xl font-bold text-text-primary">{summary.totalPages}</div>
                         </div>
 
                         <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
-                            <div className="text-sm text-text-secondary">Durchschnittlicher Score</div>
-                            <div className={`text-2xl font-bold ${getScoreColor(summary.avgScore)}`}>
+                            <div className="text-sm text-text-secondary">Durchschnittlicher Score
+                            </div>
+                            <div
+                                className={`text-2xl font-bold ${getScoreColor(summary.avgScore)}`}>
                                 {summary.avgScore}/100
                             </div>
                         </div>
 
                         <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
                             <div className="text-sm text-text-secondary">Fehler</div>
-                            <div className="text-2xl font-bold text-accent-red">{summary.totalErrors}</div>
+                            <div
+                                className="text-2xl font-bold text-accent-red">{summary.totalErrors}</div>
                         </div>
                     </div>
 
@@ -300,14 +392,19 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                         <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
                             <div className="text-sm text-text-secondary mb-1">Crawling-Tiefe</div>
                             <div className="flex items-center">
-                                <div className="text-xl font-bold text-text-primary">{summary.maxDepth}</div>
-                                <div className="text-sm text-text-secondary ml-2">von {crawlOptions.maxDepth} konfiguriert</div>
+                                <div
+                                    className="text-xl font-bold text-text-primary">{summary.maxDepth}</div>
+                                <div
+                                    className="text-sm text-text-secondary ml-2">von {crawlOptions.maxDepth} konfiguriert
+                                </div>
                             </div>
                         </div>
 
                         <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
                             <div className="text-sm text-text-secondary mb-1">Crawling-Dauer</div>
-                            <div className="text-xl font-bold text-text-primary">{summary.duration.toFixed(2)} Sek.</div>
+                            <div
+                                className="text-xl font-bold text-text-primary">{summary.duration.toFixed(2)} Sek.
+                            </div>
                         </div>
                     </div>
 
@@ -316,12 +413,13 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
                                 data={chartData}
-                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                margin={{top: 5, right: 30, left: 20, bottom: 5}}
                             >
-                                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
-                                <XAxis dataKey="depth" stroke={chartColors.text} />
-                                <YAxis yAxisId="left" orientation="left" stroke={chartColors.bars} />
-                                <YAxis yAxisId="right" orientation="right" stroke={chartColors.scores} />
+                                <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid}/>
+                                <XAxis dataKey="depth" stroke={chartColors.text}/>
+                                <YAxis yAxisId="left" orientation="left" stroke={chartColors.bars}/>
+                                <YAxis yAxisId="right" orientation="right"
+                                       stroke={chartColors.scores}/>
                                 <Tooltip
                                     contentStyle={{
                                         backgroundColor: '#343845',
@@ -329,9 +427,11 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                                         color: '#d1d5db'
                                     }}
                                 />
-                                <Legend wrapperStyle={{ color: chartColors.text }} />
-                                <Bar yAxisId="left" dataKey="count" name="Anzahl Seiten" fill={chartColors.bars} />
-                                <Bar yAxisId="right" dataKey="avgScore" name="Durchschn. Score" fill={chartColors.scores} />
+                                <Legend wrapperStyle={{color: chartColors.text}}/>
+                                <Bar yAxisId="left" dataKey="count" name="Anzahl Seiten"
+                                     fill={chartColors.bars}/>
+                                <Bar yAxisId="right" dataKey="avgScore" name="Durchschn. Score"
+                                     fill={chartColors.scores}/>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -340,20 +440,23 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                 {/* Probleme und Empfehlungen */}
                 <div className="mb-6 p-4 bg-bg-dark rounded-xl">
                     <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
-                        <AlertCircle size={18} className="mr-2 text-accent-blue"/> Gefundene Probleme
+                        <AlertCircle size={18} className="mr-2 text-accent-blue"/> Gefundene
+                        Probleme
                     </h3>
 
                     {/* Kritische Probleme */}
                     {summary.issues.critical.length > 0 && (
                         <div className="mb-4">
-                            <h4 className="text-sm font-medium text-accent-red mb-2">Kritische Probleme</h4>
+                            <h4 className="text-sm font-medium text-accent-red mb-2">Kritische
+                                Probleme</h4>
                             <div className="space-y-2">
                                 {summary.issues.critical.map((issue, index) => (
                                     <div
                                         key={index}
                                         className="p-2 border-l-4 border-accent-red bg-accent-red bg-opacity-10 rounded-r-lg"
                                     >
-                                        <div className="text-sm font-medium text-text-primary">{issue.message}</div>
+                                        <div
+                                            className="text-sm font-medium text-text-primary">{issue.message}</div>
                                     </div>
                                 ))}
                             </div>
@@ -363,14 +466,16 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                     {/* Wichtige Probleme */}
                     {summary.issues.major.length > 0 && (
                         <div className="mb-4">
-                            <h4 className="text-sm font-medium text-yellow-400 mb-2">Wichtige Probleme</h4>
+                            <h4 className="text-sm font-medium text-yellow-400 mb-2">Wichtige
+                                Probleme</h4>
                             <div className="space-y-2">
                                 {summary.issues.major.map((issue, index) => (
                                     <div
                                         key={index}
                                         className="p-2 border-l-4 border-yellow-400 bg-yellow-400 bg-opacity-10 rounded-r-lg"
                                     >
-                                        <div className="text-sm font-medium text-text-primary">{issue.message}</div>
+                                        <div
+                                            className="text-sm font-medium text-text-primary">{issue.message}</div>
                                     </div>
                                 ))}
                             </div>
@@ -380,14 +485,16 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                     {/* Kleinere Probleme */}
                     {summary.issues.minor.length > 0 && (
                         <div>
-                            <h4 className="text-sm font-medium text-accent-blue mb-2">Kleinere Probleme</h4>
+                            <h4 className="text-sm font-medium text-accent-blue mb-2">Kleinere
+                                Probleme</h4>
                             <div className="space-y-2">
                                 {summary.issues.minor.map((issue, index) => (
                                     <div
                                         key={index}
                                         className="p-2 border-l-4 border-accent-blue bg-accent-blue bg-opacity-10 rounded-r-lg"
                                     >
-                                        <div className="text-sm font-medium text-text-primary">{issue.message}</div>
+                                        <div
+                                            className="text-sm font-medium text-text-primary">{issue.message}</div>
                                     </div>
                                 ))}
                             </div>
@@ -418,29 +525,43 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                     <table className="min-w-full divide-y divide-bg-darker">
                         <thead className="bg-bg-darker">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">URL</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Tiefe</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Score</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Wörter</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Links</th>
+                            <th scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">URL
+                            </th>
+                            <th scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Tiefe
+                            </th>
+                            <th scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Score
+                            </th>
+                            <th scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Wörter
+                            </th>
+                            <th scope="col"
+                                className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Links
+                            </th>
                         </tr>
                         </thead>
                         <tbody className="bg-card-bg divide-y divide-bg-darker">
                         {results.crawledPages.map((page, index) => (
-                            <tr key={index} className={page.error ? 'bg-accent-red bg-opacity-5' : index % 2 === 0 ? 'bg-card-bg' : 'bg-bg-dark'}>
+                            <tr key={index}
+                                className={page.error ? 'bg-accent-red bg-opacity-5' : index % 2 === 0 ? 'bg-card-bg' : 'bg-bg-dark'}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                                     <div className="flex items-start">
                                         {page.error ? (
-                                            <AlertCircle size={16} className="text-accent-red mr-2 mt-1 flex-shrink-0"/>
+                                            <AlertCircle size={16}
+                                                         className="text-accent-red mr-2 mt-1 flex-shrink-0"/>
                                         ) : (
-                                            <File size={16} className="text-text-secondary mr-2 mt-1 flex-shrink-0"/>
+                                            <File size={16}
+                                                  className="text-text-secondary mr-2 mt-1 flex-shrink-0"/>
                                         )}
                                         <div className="truncate max-w-xs" title={page.url}>
                                             {page.url}
                                         </div>
                                     </div>
                                     {page.error && (
-                                        <div className="text-xs text-accent-red mt-1">{page.error}</div>
+                                        <div
+                                            className="text-xs text-accent-red mt-1">{page.error}</div>
                                     )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
@@ -450,7 +571,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                                     {page.error ? (
                                         <span className="text-accent-red">Fehler</span>
                                     ) : (
-                                        <span className={getScoreColor(page.score)}>{page.score}/100</span>
+                                        <span
+                                            className={getScoreColor(page.score)}>{page.score}/100</span>
                                     )}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
@@ -459,8 +581,10 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                                     {!page.error && (
                                         <span>
-                                            <span className="text-accent-blue">{page.internalLinksCount || 0}</span> /
-                                            <span className="text-accent-green ml-1">{page.externalLinksCount || 0}</span>
+                                            <span
+                                                className="text-accent-blue">{page.internalLinksCount || 0}</span> /
+                                            <span
+                                                className="text-accent-green ml-1">{page.externalLinksCount || 0}</span>
                                         </span>
                                     )}
                                 </td>
@@ -514,13 +638,19 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
-                            <div className="text-sm font-medium text-accent-blue mb-1">Interne Links</div>
-                            <div className="text-2xl font-bold text-text-primary">{internalLinks.length}</div>
+                            <div className="text-sm font-medium text-accent-blue mb-1">Interne
+                                Links
+                            </div>
+                            <div
+                                className="text-2xl font-bold text-text-primary">{internalLinks.length}</div>
                         </div>
 
                         <div className="bg-card-bg p-3 rounded-xl border border-bg-darker">
-                            <div className="text-sm font-medium text-accent-green mb-1">Externe Links</div>
-                            <div className="text-2xl font-bold text-text-primary">{externalLinks.length}</div>
+                            <div className="text-sm font-medium text-accent-green mb-1">Externe
+                                Links
+                            </div>
+                            <div
+                                className="text-2xl font-bold text-text-primary">{externalLinks.length}</div>
                         </div>
                     </div>
                 </div>
@@ -535,23 +665,35 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                         <table className="min-w-full divide-y divide-bg-darker">
                             <thead className="bg-bg-darker">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Von</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Zu</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Linktext</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Nofollow</th>
+                                <th scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Von
+                                </th>
+                                <th scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Zu
+                                </th>
+                                <th scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Linktext
+                                </th>
+                                <th scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Nofollow
+                                </th>
                             </tr>
                             </thead>
                             <tbody className="bg-card-bg divide-y divide-bg-darker">
                             {internalLinks.slice(0, 10).map((link, index) => (
-                                <tr key={index} className={index % 2 === 0 ? 'bg-card-bg' : 'bg-bg-dark'}>
+                                <tr key={index}
+                                    className={index % 2 === 0 ? 'bg-card-bg' : 'bg-bg-dark'}>
                                     <td className="px-6 py-4 text-sm text-text-primary">
-                                        <div className="truncate max-w-xs" title={link.from}>{link.from}</div>
+                                        <div className="truncate max-w-xs"
+                                             title={link.from}>{link.from}</div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-text-primary">
-                                        <div className="truncate max-w-xs" title={link.to}>{link.to}</div>
+                                        <div className="truncate max-w-xs"
+                                             title={link.to}>{link.to}</div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-text-primary">
-                                        <div className="truncate max-w-xs" title={link.text}>{link.text || '-'}</div>
+                                        <div className="truncate max-w-xs"
+                                             title={link.text}>{link.text || '-'}</div>
                                     </td>
                                     <td className="px-6 py-4 text-sm">
                                         {link.nofollow ? (
@@ -583,23 +725,35 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                         <table className="min-w-full divide-y divide-bg-darker">
                             <thead className="bg-bg-darker">
                             <tr>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Von</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Zu</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Linktext</th>
-                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Nofollow</th>
+                                <th scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Von
+                                </th>
+                                <th scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Zu
+                                </th>
+                                <th scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Linktext
+                                </th>
+                                <th scope="col"
+                                    className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Nofollow
+                                </th>
                             </tr>
                             </thead>
                             <tbody className="bg-card-bg divide-y divide-bg-darker">
                             {externalLinks.slice(0, 10).map((link, index) => (
-                                <tr key={index} className={index % 2 === 0 ? 'bg-card-bg' : 'bg-bg-dark'}>
+                                <tr key={index}
+                                    className={index % 2 === 0 ? 'bg-card-bg' : 'bg-bg-dark'}>
                                     <td className="px-6 py-4 text-sm text-text-primary">
-                                        <div className="truncate max-w-xs" title={link.from}>{link.from}</div>
+                                        <div className="truncate max-w-xs"
+                                             title={link.from}>{link.from}</div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-text-primary">
-                                        <div className="truncate max-w-xs" title={link.to}>{link.to}</div>
+                                        <div className="truncate max-w-xs"
+                                             title={link.to}>{link.to}</div>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-text-primary">
-                                        <div className="truncate max-w-xs" title={link.text}>{link.text || '-'}</div>
+                                        <div className="truncate max-w-xs"
+                                             title={link.text}>{link.text || '-'}</div>
                                     </td>
                                     <td className="px-6 py-4 text-sm">
                                         {link.nofollow ? (
@@ -630,11 +784,13 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
             <div>
                 {!sitemap ? (
                     <div className="text-center py-8">
-                        <Map size={48} className="mx-auto mb-4 text-accent-blue opacity-70" />
-                        <h3 className="text-lg font-semibold mb-2 text-text-primary">XML-Sitemap generieren</h3>
+                        <Map size={48} className="mx-auto mb-4 text-accent-blue opacity-70"/>
+                        <h3 className="text-lg font-semibold mb-2 text-text-primary">XML-Sitemap
+                            generieren</h3>
                         <p className="text-text-secondary mb-6 max-w-xl mx-auto">
                             Generiere eine XML-Sitemap basierend auf den gecrawlten Seiten.
-                            Die Sitemap kann bei Suchmaschinen eingereicht werden, um die Indexierung zu verbessern.
+                            Die Sitemap kann bei Suchmaschinen eingereicht werden, um die
+                            Indexierung zu verbessern.
                         </p>
 
                         <button
@@ -643,7 +799,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                             className={`px-6 py-3 bg-accent-blue text-white rounded-xl hover:bg-opacity-90 flex items-center mx-auto transition-all duration-300 ${(isGeneratingSitemap || !results) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {isGeneratingSitemap ? (
-                                <>Sitemap generieren<span className="ml-2 animate-pulse">...</span></>
+                                <>Sitemap generieren<span
+                                    className="ml-2 animate-pulse">...</span></>
                             ) : (
                                 <>Sitemap generieren <Map size={18} className="ml-2"/></>
                             )}
@@ -659,7 +816,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                     <div>
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-text-primary flex items-center">
-                                <Map className="mr-2 text-accent-blue" size={20}/> Generierte Sitemap
+                                <Map className="mr-2 text-accent-blue" size={20}/> Generierte
+                                Sitemap
                             </h3>
 
                             <button
@@ -672,20 +830,26 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
 
                         <div className="bg-bg-dark p-4 rounded-xl mb-4">
                             <div className="text-sm text-text-secondary mb-2">
-                                <span className="font-medium text-text-primary">URLs in Sitemap:</span> {sitemap.stats.totalUrls}
+                                <span
+                                    className="font-medium text-text-primary">URLs in Sitemap:</span> {sitemap.stats.totalUrls}
                             </div>
                             {sitemap.stats.errors > 0 && (
                                 <div className="text-sm text-accent-red mb-2">
-                                    <span className="font-medium">Fehler:</span> {sitemap.stats.errors}
+                                    <span
+                                        className="font-medium">Fehler:</span> {sitemap.stats.errors}
                                 </div>
                             )}
                             <div className="text-sm text-text-secondary">
-                                <span className="font-medium text-text-primary">Hinweis:</span> Reiche diese Sitemap bei Google Search Console und anderen Suchmaschinen ein.
+                                <span
+                                    className="font-medium text-text-primary">Hinweis:</span> Reiche
+                                diese Sitemap bei Google Search Console und anderen Suchmaschinen
+                                ein.
                             </div>
                         </div>
 
                         <div className="bg-card-bg rounded-xl p-4 overflow-x-auto">
-                            <pre className="text-xs text-text-primary max-h-96 overflow-y-auto pr-1 custom-scrollbar">
+                            <pre
+                                className="text-xs text-text-primary max-h-96 overflow-y-auto pr-1 custom-scrollbar">
                                 {sitemap.sitemap}
                             </pre>
                         </div>
@@ -712,7 +876,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
 
             <div className="bg-card-bg rounded-xl shadow-card p-6">
                 <p className="text-text-secondary mb-4">
-                    Analysiere deine Website mit anpassbarer Crawling-Tiefe und erhalte detaillierte Einblicke.
+                    Analysiere deine Website mit anpassbarer Crawling-Tiefe und erhalte detaillierte
+                    Einblicke.
                 </p>
 
                 {/* URL-Eingabe */}
@@ -726,7 +891,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                                 placeholder="https://example.com"
                                 className="w-full p-3 pr-10 border border-bg-darker bg-bg-darker rounded-l-xl focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-accent-blue text-text-primary transition-all duration-300"
                             />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-text-secondary">
+                            <div
+                                className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-text-secondary">
                                 <Link size={18}/>
                             </div>
                         </div>
@@ -816,7 +982,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                                 onChange={(e) => updateOption('includeImages', e.target.checked)}
                                 className="w-4 h-4 text-accent-blue border-bg-darker bg-bg-darker rounded focus:ring-accent-blue"
                             />
-                            <label htmlFor="includeImages" className="ml-2 text-sm text-text-primary">
+                            <label htmlFor="includeImages"
+                                   className="ml-2 text-sm text-text-primary">
                                 Bilder analysieren
                             </label>
                         </div>
@@ -829,7 +996,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                                 onChange={(e) => updateOption('includeExternalLinks', e.target.checked)}
                                 className="w-4 h-4 text-accent-blue border-bg-darker bg-bg-darker rounded focus:ring-accent-blue"
                             />
-                            <label htmlFor="includeExternalLinks" className="ml-2 text-sm text-text-primary">
+                            <label htmlFor="includeExternalLinks"
+                                   className="ml-2 text-sm text-text-primary">
                                 Externe Links crawlen
                             </label>
                         </div>
@@ -842,7 +1010,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                                 onChange={(e) => updateOption('followRobotsTxt', e.target.checked)}
                                 className="w-4 h-4 text-accent-blue border-bg-darker bg-bg-darker rounded focus:ring-accent-blue"
                             />
-                            <label htmlFor="followRobotsTxt" className="ml-2 text-sm text-text-primary">
+                            <label htmlFor="followRobotsTxt"
+                                   className="ml-2 text-sm text-text-primary">
                                 robots.txt respektieren
                             </label>
                         </div>
@@ -855,7 +1024,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
                                 onChange={(e) => updateOption('onlyHtmlPages', e.target.checked)}
                                 className="w-4 h-4 text-accent-blue border-bg-darker bg-bg-darker rounded focus:ring-accent-blue"
                             />
-                            <label htmlFor="onlyHtmlPages" className="ml-2 text-sm text-text-primary">
+                            <label htmlFor="onlyHtmlPages"
+                                   className="ml-2 text-sm text-text-primary">
                                 Nur HTML-Seiten
                             </label>
                         </div>
@@ -887,7 +1057,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
 
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {crawlOptions.excludeUrlPatterns.map((pattern, index) => (
-                                        <div key={index} className="inline-flex items-center bg-card-bg rounded-full px-3 py-1 text-sm text-text-primary">
+                                        <div key={index}
+                                             className="inline-flex items-center bg-card-bg rounded-full px-3 py-1 text-sm text-text-primary">
                                             <span>{pattern}</span>
                                             <button
                                                 onClick={() => removeExclusionPattern(pattern)}
@@ -923,7 +1094,8 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
 
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {crawlOptions.inclusionPaths.map((path, index) => (
-                                        <div key={index} className="inline-flex items-center bg-card-bg rounded-full px-3 py-1 text-sm text-text-primary">
+                                        <div key={index}
+                                             className="inline-flex items-center bg-card-bg rounded-full px-3 py-1 text-sm text-text-primary">
                                             <span>{path}</span>
                                             <button
                                                 onClick={() => removeInclusionPath(path)}
@@ -941,8 +1113,10 @@ const AdvancedCrawling = ({ apiUrl, onError }) => {
 
                 {isCrawling && (
                     <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-blue mb-4"></div>
-                        <p className="text-text-secondary">Website wird gecrawlt und analysiert...</p>
+                        <div
+                            className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-blue mb-4"></div>
+                        <p className="text-text-secondary">Website wird gecrawlt und
+                            analysiert...</p>
                     </div>
                 )}
 
