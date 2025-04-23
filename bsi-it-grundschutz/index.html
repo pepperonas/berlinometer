@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kombiniertes IT-Sicherheits-Quiz</title>
+    <style>
+        :root {
+            --primary-color: #2C2E3B;
+            --secondary-color: #3F4156;
+            --accent-color: #6c63ff;
+            --text-color: #f5f5f5;
+            --light-text: #e0e0e0;
+            --success-color: #4CAF50;
+            --warning-color: #ff9800;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 500;
+        }
+
+        .search-container {
+            margin: 20px 0;
+            display: flex;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #searchInput::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .no-content {
+            text-align: center;
+            padding: 40px 20px;
+            background-color: var(--secondary-color);
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 18px;
+            color: var(--light-text);
+        }
+
+        #categoryDropdown {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 16px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        #categoryDropdown option {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            header {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Kombiniertes IT-Sicherheits-Quiz</h1>
+    </header>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Suche nach Fragen oder Antworten...">
+        <select id="categoryDropdown">
+            <option value="all">Alle Kategorien</option>
+            <option value="grundschutz-kompendium">IT-Grundschutz Kompendium</option>
+            <option value="lektion2">Lektion 2: Sicherheitsmanagement</option>
+            <option value="lektion3">Lektion 3: Strukturanalyse</option>
+            <option value="lektion4">Lektion 4: Schutzbedarfsfeststellung</option>
+            <option value="lektion5">Lektion 5: Modellierung</option>
+            <option value="lektion6">Lektion 6: IT-Grundschutz-Check</option>
+            <option value="lektion7">Lektion 7: Risikoanalyse</option>
+            <option value="lektion8">Lektion 8: Umsetzungsplanung</option>
+            <option value="lektion9">Lektion 9: Aufrechterhaltung und Verbesserung</option>
+        </select>
+    </div>
+
+    <div class="no-content">
+        Derzeit kein Quiz verfügbar.
+    </div>
+</div>
+
+<script>
+    // Leere Fragensammlung - alle Fragen wurden entfernt
+    const allQuestions = {
+        "grundschutz-kompendium": [],
+        "lektion2": [],
+        "lektion3": [],
+        "lektion4": [],
+        "lektion5": [],
+        "lektion6": [],
+        "lektion7": [],
+        "lektion8": [],
+        "lektion9": []
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Such-Funktionalität bleibt erhalten, zeigt aber keine Ergebnisse an
+        document.getElementById('searchInput').addEventListener('input', function () {
+            // Tut nichts, da keine Inhalte verfügbar sind
+        });
+
+        document.getElementById('categoryDropdown').addEventListener('change', function () {
+            // Tut nichts, da keine Inhalte verfügbar sind
+        });
+    });
+</script>
+</body>
+</html>
