@@ -22,10 +22,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Code-Syntax Highlighting aktivieren
-    document.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightBlock(block);
-    });
+    // Code-Syntax Highlighting mit verbesserter Initialisierung
+    if (typeof hljs !== 'undefined') {
+        // Registriere alle verfügbaren Sprachen
+        hljs.configure({
+            languages: ['javascript', 'python', 'bash', 'css', 'html', 'java', 'php', 'json', 'xml', 'markdown']
+        });
+
+        // Wende das Highlighting auf alle Code-Blöcke an
+        document.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+
+            // Füge Line-Wrapping hinzu, falls Code zu breit ist
+            block.style.whiteSpace = 'pre-wrap';
+        });
+
+        console.log('Syntax-Highlighting wurde aktiviert');
+    } else {
+        console.warn('Highlight.js ist nicht verfügbar - Syntax-Highlighting deaktiviert');
+    }
 
     // Mobile Navigation
     const menuToggle = document.createElement('button');

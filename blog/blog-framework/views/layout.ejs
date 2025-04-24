@@ -21,6 +21,9 @@
     <meta name="twitter:description"
           content="IT-Blog für alle: Tutorials, spannende Einblicke und Lösungen für technische Alltagsprobleme">
     <meta name="twitter:image" content="blog.jpg">
+
+    <!-- Highlight.js JavaScript hinzugefügt -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
 </head>
 <body>
 <header>
@@ -52,5 +55,25 @@
 </footer>
 
 <script src="/blog/js/main.js"></script>
+<script> document.addEventListener('DOMContentLoaded', function () {
+        function fixFirstLineInCodeBlocks() {
+            const codeBlocks = document.querySelectorAll('pre code');
+
+            codeBlocks.forEach(function (codeBlock) {
+                const firstElement = codeBlock.firstElementChild;
+
+                if (firstElement) {
+                    firstElement.style.marginLeft = '0 !important';
+                    firstElement.style.paddingLeft = '0 !important';
+                    firstElement.style.textIndent = '0 !important';
+                    firstElement.style.display = 'inline-block';
+                    firstElement.style.width = 'auto';
+                }
+            });
+        }
+
+        fixFirstLineInCodeBlocks();
+        setTimeout(fixFirstLineInCodeBlocks, 500);
+    });</script>
 </body>
 </html>
