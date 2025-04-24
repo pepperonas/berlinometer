@@ -55,23 +55,72 @@
 </footer>
 
 <script src="/blog/js/main.js"></script>
-<script> document.addEventListener('DOMContentLoaded', function () {
+<script>document.addEventListener('DOMContentLoaded', function () {
         function fixFirstLineInCodeBlocks() {
             const codeBlocks = document.querySelectorAll('pre code');
 
             codeBlocks.forEach(function (codeBlock) {
-                const firstElement = codeBlock.firstElementChild;
+                // Stelle sicher, dass das erste Element und der erste Text korrigiert werden
 
-                if (firstElement) {
-                    firstElement.style.marginLeft = '0 !important';
-                    firstElement.style.paddingLeft = '0 !important';
-                    firstElement.style.textIndent = '0 !important';
-                    firstElement.style.display = 'inline-block';
-                    firstElement.style.width = 'auto';
+                // Korrigiere das erste Element (falls vorhanden)
+                if (codeBlock.firstElementChild) {
+                    codeBlock.firstElementChild.style.marginLeft = '0';
+                    codeBlock.firstElementChild.style.paddingLeft = '0';
+                    codeBlock.firstElementChild.style.textIndent = '0';
+                    codeBlock.firstElementChild.style.position = 'static';
+                    codeBlock.firstElementChild.style.display = 'inline-block';
+                }
+
+                // Korrigiere alle Elemente der ersten Zeile
+                // Wir nehmen alle direkten Kinder und wenden die Korrektur an
+                const children = codeBlock.childNodes;
+                for (let i = 0; i < children.length; i++) {
+                    const child = children[i];
+
+                    // Prüfen, ob es ein Element ist
+                    if (child.nodeType === Node.ELEMENT_NODE) {
+                        child.style.marginLeft = '0';
+                        child.style.paddingLeft = '0';
+                        child.style.textIndent = '0';
+                        child.style.position = 'static';
+                        child.style.display = 'inline-block';
+
+                        // Wenn es ein <span> ist, auch dessen Kinder anpassen
+                        if (child.tagName === 'SPAN') {
+                            Array.from(child.children).forEach(subChild => {
+                                subChild.style.marginLeft = '0';
+                                subChild.style.paddingLeft = '0';
+                                subChild.style.textIndent = '0';
+                                subChild.style.position = 'static';
+                            });
+                        }
+                    }
+                        // Wenn wir den ersten Textknoten erreichen, brechen wir ab
+                    // (wir wollen nur die erste Zeile korrigieren)
+                    else if (child.nodeType === Node.TEXT_NODE && child.textContent.includes('\n')) {
+                        break;
+                    }
+                }
+
+                // Alternative Methode: Erste Zeile als Text extrahieren und ersetzen
+                const codeText = codeBlock.innerHTML;
+                const firstLineEndIndex = codeText.indexOf('\n');
+
+                if (firstLineEndIndex > 0) {
+                    const firstLine = codeText.substring(0, firstLineEndIndex);
+                    const restOfCode = codeText.substring(firstLineEndIndex);
+
+                    // Entferne alle margin/padding/indent Styles aus der ersten Zeile
+                    const cleanFirstLine = firstLine.replace(/style="[^"]*"/g, 'style="margin-left: 0; padding-left: 0; text-indent: 0; position: static;"');
+
+                    // Ersetze den Code-Block-Inhalt
+                    codeBlock.innerHTML = cleanFirstLine + restOfCode;
                 }
             });
         }
 
+        // Führe die Funktion beim Laden und nach einer kurzen Verzögerung aus
+        // (für dynamisch geladene Code-Blöcke)
         fixFirstLineInCodeBlocks();
         setTimeout(fixFirstLineInCodeBlocks, 500);
     });</script>

@@ -327,7 +327,7 @@ main {
 
 /* Ursprüngliche Code-Block Styles */
 .post-content pre {
-    margin: 20px 0;
+    margin: 20px;
     border-radius: 8px;
     overflow-x: auto;
 }
@@ -554,128 +554,162 @@ nav ul li a.active:after {
 
 /* Syntax-Highlighting für verschiedene Sprachen */
 
-/* Schlüsselwörter in allen Sprachen */
+.post-content pre {
+    margin: 20px 0;
+    border-radius: 8px;
+    overflow-x: auto;
+    background-color: #282c34;
+    padding: 20px;
+    border: 1px solid #3E4050;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Code innerhalb von Blöcken */
+.post-content code {
+    font-family: 'Fira Code', Consolas, Monaco, 'Andale Mono', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    tab-size: 4;
+}
+
+/* Code innerhalb von pre-Tags */
+.post-content pre code {
+    display: block;
+    white-space: pre;
+    overflow-x: auto;
+    padding: 0;
+    text-align: left;
+}
+
+/* Kritischer Fix für die erste Zeile */
+.post-content pre code > *:first-child,
+.post-content pre code > span:first-child,
+.post-content pre code > .hljs-meta:first-child,
+.post-content pre code > .hljs-comment:first-child,
+.post-content pre code > .hljs-keyword:first-child,
+.post-content pre code::first-line {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    text-indent: 0 !important;
+    display: inline !important;
+    position: static !important;
+    left: 0 !important;
+}
+
+/* Spezifischer Fix für erste Zeilen mit bestimmten Klassen */
+.hljs-keyword:first-child,
+.hljs-built_in:first-child,
+.hljs-comment:first-child,
+.hljs-string:first-child,
+.hljs-meta:first-child,
+.hljs-function:first-child,
+.hljs-title:first-child {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    text-indent: 0 !important;
+}
+
+/* Stellen Sie sicher, dass die erste Codezeile korrekt angezeigt wird */
+.post-content pre code span:first-of-type {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    text-indent: 0 !important;
+}
+
+/* Syntax-Highlighting für verschiedene Sprachen */
 .hljs-keyword {
     color: #c678dd;
     font-weight: bold;
 }
 
-/* Strings in allen Sprachen */
 .hljs-string {
     color: #98c379;
 }
 
-/* Kommentare in allen Sprachen */
 .hljs-comment {
     color: #7f848e;
     font-style: italic;
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    text-indent: 0 !important;
 }
 
-/* Zahlen in allen Sprachen */
 .hljs-number {
     color: #d19a66;
 }
 
-/* Variablen in allen Sprachen */
 .hljs-variable {
     color: #e06c75;
 }
 
-/* Funktionsnamen in allen Sprachen */
 .hljs-function, .hljs-title {
     color: #61afef;
 }
 
-/* Meta-Informationen (z.B. Shebangs, Präprozessor-Direktiven) */
 .hljs-meta {
     color: #e6c07b;
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    text-indent: 0 !important;
 }
 
-/* Konstanten */
 .hljs-built_in, .hljs-literal, .hljs-params {
     color: #d19a66;
 }
 
-/* Alle möglichen Klassen für die erste Zeile in Code-Blöcken */
-.hljs-meta:first-child,
-.hljs-comment:first-child,
-.hljs-keyword:first-child,
-.hljs-function:first-child,
-.hljs-title:first-child,
-.hljs:first-child,
-code:first-child > span:first-child {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    text-indent: 0 !important;
-    display: inline-block !important;
+.post-content pre {
+    position: relative;
+    overflow: hidden; /* Versteckt den Scrollbalken-Indikator */
 }
 
-pre code > *:first-child,
-pre code > *:first-of-type,
-pre code > span:first-child,
-pre code > span:first-of-type,
-.hljs > *:first-child,
-.hljs > *:first-of-type,
-.hljs span:first-child,
-.hljs span:first-of-type,
-.hljs-keyword:first-child,
-.hljs-string:first-child,
-.hljs-comment:first-child,
-.hljs-built_in:first-child,
-.hljs-meta:first-child,
-code.language-javascript > *:first-child,
-code.language-python > *:first-child,
-code.language-bash > *:first-child,
-code.language-html > *:first-child,
-code.language-css > *:first-child {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    text-indent: 0 !important;
-    position: relative !important;
-    left: 0 !important;
-    display: inline-block !important;
+.post-content pre code {
+    overflow-x: auto; /* Behält horizontales Scrollen bei */
+    scrollbar-width: thin; /* Schlankere Scrollbalken in Firefox */
+    max-width: 100%; /* Verhindert Überlauf */
 }
 
-/* Noch aggressiverer Brute-Force-Ansatz mit höchster Priorität */
-pre code::first-line {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    text-indent: 0 !important;
-    white-space: pre !important;
+/* Chrome/Safari/Edge Scrollbar-Styling */
+.post-content pre code::-webkit-scrollbar {
+    height: 6px; /* Höhe des horizontalen Scrollbalkens */
 }
 
-/* Entferne Border-Box-Modell für Code-Blöcke */
-pre code,
-pre code * {
-    box-sizing: content-box !important;
+.post-content pre code::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2); /* Scrollbalken-Farbe */
+    border-radius: 3px;
 }
 
-/* Wichtiger Fix für erste Textknoten in Code-Blöcken */
-pre code,
-pre code span,
-.hljs,
-.hljs span {
-    white-space: pre !important;
-    display: inline !important;
-    position: static !important;
+/* Entfernt alle möglichen Indikatoren oder Pfeile */
+.post-content pre::after,
+.post-content pre::before,
+.post-content code::after,
+.post-content code::before {
+    display: none !important;
 }
 
-/* Erzwinge Block-Level für das pre-Element selbst */
-pre.hljs {
-    display: block !important;
-    overflow-x: auto !important;
+.code-block-header {
+    margin-bottom: 0 !important;
+    display: block;
 }
 
-/* Wichtig: Stile für die Sprach-Elemente */
-.code-block-header + pre code > *:first-child,
-.code-block-header + pre code > span:first-child {
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-    text-indent: 0 !important;
+.code-block-header + pre {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    margin-top: 0 !important;
+    position: relative;
+    top: -1px; /* Überlappung erzeugen, um visuellen Spalt zu vermeiden */
+}
+
+/* Entfernt rote Pfeile/Ränder an der rechten Seite der Code-Blöcke */
+.post-content pre {
+    position: relative;
+    overflow: hidden;
+    border-right: none !important;
+}
+
+.post-content pre::after,
+.post-content pre * ::after,
+.post-content pre * ::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* Stellt sicher, dass Scrollen weiterhin funktioniert */
+.post-content pre code {
+    overflow-x: auto;
+    width: 100%;
+    display: inline-block;
 }
