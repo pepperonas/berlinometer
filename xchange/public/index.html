@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>xchange | Online Speicher</title>
+    <style>
+        :root {
+            /* Dunkles Theme basierend auf #2C2E3B */
+            --background-dark: #2B2E3B;
+            --background-darker: #252830;
+            --card-background: #343845;
+            --accent-blue: #688db1;
+            --accent-green: #9cb68f;
+            --accent-red: #e16162;
+            --text-primary: #d1d5db;
+            --text-secondary: #9ca3af;
+
+            /* Alias-Variablen für Kompatibilität */
+            --primary-color: var(--accent-blue);
+            --accent-color: #4a5274;
+            --success-color: var(--accent-green);
+            --error-color: var(--accent-red);
+
+            /* Schatten */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+
+            /* Abstände */
+            --radius-sm: 0.25rem;
+            --radius: 0.5rem;
+            --radius-lg: 1rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+            sans-serif;
+        }
+
+        body {
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--background-darker);
+            color: var(--text-primary);
+            padding: 20px;
+            text-align: center;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            box-shadow: var(--shadow);
+        }
+
+        .upload-area {
+            background-color: var(--card-background);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .upload-area.highlight {
+            background-color: rgba(104, 141, 177, 0.1);
+            border: 2px dashed var(--accent-blue);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            background-color: var(--accent-blue);
+            color: var(--text-primary);
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: var(--shadow-sm);
+            margin-top: 15px;
+        }
+
+        .upload-btn:hover {
+            background-color: var(--accent-color);
+            box-shadow: var(--shadow);
+        }
+
+        .files-container {
+            background-color: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--background-darker);
+            margin-bottom: 15px;
+        }
+
+        .files-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background-color: var(--accent-green);
+            color: var(--background-darker);
+        }
+
+        .status-offline {
+            background-color: var(--accent-red);
+            color: var(--text-primary);
+        }
+
+        .files-list {
+            list-style: none;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--background-darker);
+            transition: background-color 0.2s;
+        }
+
+        .file-item:hover {
+            background-color: rgba(104, 141, 177, 0.1);
+        }
+
+        .file-name {
+            flex-grow: 1;
+            margin-right: 15px;
+        }
+
+        .file-size {
+            color: var(--text-secondary);
+            margin-right: 15px;
+            white-space: nowrap;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-btn, .delete-btn {
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: color 0.2s;
+        }
+
+        .download-btn {
+            color: var(--accent-blue);
+        }
+
+        .download-btn:hover {
+            color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .delete-btn {
+            color: var(--text-secondary);
+        }
+
+        .delete-btn:hover {
+            color: var(--accent-red);
+            transform: scale(1.1);
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: var(--background-darker);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-green));
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: var(--accent-blue);
+            color: var(--text-primary);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background-color: var(--success-color);
+        }
+
+        .toast.error {
+            background-color: var(--error-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .file-size {
+                margin: 5px 0;
+            }
+
+            .file-actions {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 10px;
+            }
+        }
+
+        /* Material Design Icons */
+        .material-icons {
+            font-family: 'Material Icons';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--text-secondary);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+            position: relative;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-online {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+        }
+
+        .status-offline {
+            background-color: var(--accent-red);
+            box-shadow: 0 0 6px var(--accent-red);
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css"
+          rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>xchange | Online Speicher</h1>
+    </header>
+
+    <div class="upload-area" id="dropZone">
+        <div class="upload-icon">
+            <i class="material-icons">cloud_upload</i>
+        </div>
+        <h2>Dateien hierher ziehen</h2>
+        <p>oder</p>
+        <input type="file" id="fileInput" class="file-input" multiple>
+        <button class="upload-btn" id="browseBtn">Durchsuchen</button>
+
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <div class="progress-text" id="progressText">0%</div>
+        </div>
+    </div>
+
+    <div class="files-container">
+        <div class="files-header">
+            <h2>Meine Dateien</h2>
+            <div class="files-info">
+                <span id="totalFiles">0 Dateien</span>
+                <span class="status-indicator" id="apiStatus"></span>
+            </div>
+        </div>
+
+        <div id="filesList">
+            <div class="empty-message" id="emptyMessage">
+                Keine Dateien vorhanden
+            </div>
+            <ul class="files-list" id="filesListItems">
+                <!-- Dateien werden hier dynamisch eingefügt -->
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Basis-URL für API-Aufrufe
+        const API_BASE_URL = '/xchange';
+
+        // Flag für API-Verfügbarkeit
+        let apiAvailable = false;
+
+        // Prüfen, ob die API erreichbar ist
+        function checkApiAvailability() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', API_BASE_URL + '/status', true);
+            xhr.timeout = 5000; // 5 Sekunden Timeout
+            xhr.onload = function () {
+                try {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        apiAvailable = response.status === 'ok';
+                    } else {
+                        apiAvailable = false;
+                    }
+                } catch (e) {
+                    apiAvailable = false;
+                }
+
+                if (!apiAvailable) {
+                    showToast('API nicht verfügbar - lokaler Modus aktiv', 'error');
+                }
+
+                console.log('API verfügbar:', apiAvailable);
+
+                // UI-Status anzeigen
+                updateStatusDisplay();
+            };
+            xhr.onerror = function () {
+                apiAvailable = false;
+                showToast('API nicht erreichbar - lokaler Modus aktiv', 'error');
+                console.log('API nicht erreichbar');
+                updateStatusDisplay();
+            };
+            xhr.ontimeout = function () {
+                apiAvailable = false;
+                showToast('API Timeout - lokaler Modus aktiv', 'error');
+                console.log('API Timeout');
+                updateStatusDisplay();
+            };
+            xhr.send();
+        }
+
+        // Status im UI anzeigen
+        function updateStatusDisplay() {
+            const statusElement = document.getElementById('apiStatus');
+            if (statusElement) {
+                statusElement.className = 'status-indicator ' + (apiAvailable ? 'status-online' : 'status-offline');
+            }
+        }
+
+        // DOM-Elemente
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const filesListItems = document.getElementById('filesListItems');
+        const totalFiles = document.getElementById('totalFiles');
+        const emptyMessage = document.getElementById('emptyMessage');
+        const toast = document.getElementById('toast');
+
+        // Datei-Array
+        let files = [];
+
+        // Event-Listener für Datei-Browse-Button
+        browseBtn.addEventListener('click', function () {
+            fileInput.click();
+        });
+
+        // Event-Listener für ausgewählte Dateien
+        fileInput.addEventListener('change', function () {
+            handleFiles(this.files);
+        });
+
+        // Drag & Drop Event-Listener
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropZone.classList.add('highlight');
+        }
+
+        function unhighlight() {
+            dropZone.classList.remove('highlight');
+        }
+
+        // Event-Listener für Drop
+        dropZone.addEventListener('drop', function (e) {
+            const dt = e.dataTransfer;
+            const droppedFiles = dt.files;
+            handleFiles(droppedFiles);
+        });
+
+        // Dateien verarbeiten
+        function handleFiles(fileList) {
+            if (fileList.length === 0) return;
+
+            // Für jede Datei hochladen
+            Array.from(fileList).forEach(file => {
+                uploadFile(file);
+            });
+        }
+
+        // Datei hochladen
+        function uploadFile(file) {
+            // FormData für den Upload erstellen
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // XHR für den Upload erstellen
+            const xhr = new XMLHttpRequest();
+
+            // Progress-Event
+            xhr.upload.addEventListener('progress', e => {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    progressContainer.style.display = 'block';
+                    progressBar.style.width = percentComplete + '%';
+                    progressText.textContent = percentComplete + '%';
+                }
+            });
+
+            // Load-Complete-Event
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            // Datei zur Liste hinzufügen
+                            addFileToList({
+                                id: response.fileId,
+                                name: file.name,
+                                size: file.size,
+                                type: file.type,
+                                uploadDate: new Date().toISOString()
+                            });
+                            showToast('Datei erfolgreich hochgeladen!', 'success');
+                        } else {
+                            showToast('Fehler beim Hochladen: ' + response.message, 'error');
+                        }
+                    } catch (e) {
+                        // Fallback für unerwartete Antworten
+                        console.error("Parsing-Fehler:", e);
+                        fallbackUpload(file);
+                    }
+                } else {
+                    fallbackUpload(file);
+                }
+
+                // Progress zurücksetzen
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                    progressText.textContent = '0%';
+                }, 1000);
+            });
+
+            // Error-Event
+            xhr.addEventListener('error', () => {
+                showToast('Verbindungsfehler - verwende lokalen Speicher', 'error');
+                fallbackUpload(file);
+
+                // Progress zurücksetzen
+                progressContainer.style.display = 'none';
+            });
+
+            // XHR öffnen und senden
+            try {
+                xhr.open('POST', API_BASE_URL + '/upload', true);
+                xhr.send(formData);
+            } catch (e) {
+                console.error('Fehler beim Senden der Anfrage:', e);
+                fallbackUpload(file);
+            }
+        }
+
+        // Fallback: Datei lokal speichern, wenn API nicht verfügbar
+        function fallbackUpload(file) {
+            console.log('Verwende lokalen Speicher für Upload');
+
+            // Simuliere eine erfolgreiche Antwort
+            const fileId = 'local_' + new Date().getTime();
+
+            // Datei zur Liste hinzufügen
+            const fileData = {
+                id: fileId,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                uploadDate: new Date().toISOString()
+            };
+
+            addFileToList(fileData);
+            saveFilesToLocalStorage();
+            showToast('Datei lokal gespeichert (Offlinemodus)', 'success');
+        }
+
+        // Datei zur Liste hinzufügen
+        function addFileToList(fileData) {
+            // Datei zum Array hinzufügen
+            files.push(fileData);
+
+            // UI aktualisieren
+            updateFilesList();
+
+            // Lokalen Speicher aktualisieren
+            saveFilesToLocalStorage();
+        }
+
+        // Dateien im lokalen Speicher speichern
+        function saveFilesToLocalStorage() {
+            try {
+                localStorage.setItem('onlineStorageFiles', JSON.stringify(files));
+            } catch (e) {
+                console.error('Fehler beim Speichern im localStorage:', e);
+            }
+        }
+
+        // Dateiliste aktualisieren
+        function updateFilesList() {
+            // Leere Nachricht anzeigen/ausblenden
+            emptyMessage.style.display = files.length === 0 ? 'block' : 'none';
+
+            // Gesamtzahl aktualisieren
+            totalFiles.textContent = files.length + (files.length === 1 ? ' Datei' : ' Dateien');
+
+            // Liste leeren
+            filesListItems.innerHTML = '';
+
+            // Dateien hinzufügen
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'file-item';
+                li.dataset.id = file.id;
+
+                // Dateigröße formatieren
+                const fileSize = formatFileSize(file.size);
+
+                // Datum formatieren
+                const uploadDate = new Date(file.uploadDate);
+                const formattedDate = uploadDate.toLocaleDateString() + ' ' +
+                    uploadDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+
+                li.innerHTML = `
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${fileSize}</div>
+                    <div class="file-actions">
+                        <button class="download-btn" title="Herunterladen">
+                            <i class="material-icons">get_app</i>
+                        </button>
+                        <button class="delete-btn" title="Löschen">
+                            <i class="material-icons">delete</i>
+                        </button>
+                    </div>
+                `;
+
+                // Event-Listener für Download
+                const downloadBtn = li.querySelector('.download-btn');
+                downloadBtn.addEventListener('click', () => {
+                    downloadFile(file);
+                });
+
+                // Event-Listener für Löschen
+                const deleteBtn = li.querySelector('.delete-btn');
+                deleteBtn.addEventListener('click', () => {
+                    deleteFile(file.id);
+                });
+
+                filesListItems.appendChild(li);
+            });
+        }
+
+        // Datei herunterladen
+        function downloadFile(file) {
+            // Für lokale Dateien können wir keinen echten Download anbieten
+            if (file.id.startsWith('local_')) {
+                showToast('Im Offline-Modus ist kein Download möglich', 'error');
+                return;
+            }
+
+            // Prüfen, ob der Endpunkt erreichbar ist
+            const xhr = new XMLHttpRequest();
+            xhr.open('HEAD', API_BASE_URL + '/download/' + file.id, true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    // Redirect zum Download-Endpunkt
+                    window.location.href = API_BASE_URL + '/download/' + file.id;
+                    showToast('Download von ' + file.name + ' gestartet...', 'success');
+                } else {
+                    showToast('Download-Endpunkt nicht verfügbar', 'error');
+                }
+            };
+            xhr.onerror = function () {
+                showToast('Download-Endpunkt nicht erreichbar', 'error');
+            };
+            xhr.send();
+        }
+
+        // Datei löschen
+        function deleteFile(fileId) {
+            // Prüfen ob es eine lokale Datei ist
+            if (fileId.startsWith('local_')) {
+                files = files.filter(file => file.id !== fileId);
+                updateFilesList();
+                saveFilesToLocalStorage();
+                showToast('Datei gelöscht!', 'success');
+                return;
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('DELETE', API_BASE_URL + '/files/' + fileId, true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            // Datei aus Array entfernen
+                            files = files.filter(file => file.id !== fileId);
+                            updateFilesList();
+                            saveFilesToLocalStorage(); // Lokale Kopie auch aktualisieren
+                            showToast('Datei gelöscht!', 'success');
+                        } else {
+                            showToast('Fehler: ' + (response.message || 'Unbekannter Fehler'), 'error');
+                        }
+                    } catch (e) {
+                        console.error('Parsing-Fehler beim Löschen:', e);
+                        localDelete(fileId);
+                    }
+                } else {
+                    localDelete(fileId);
+                }
+            };
+            xhr.onerror = function () {
+                showToast('Verbindungsfehler - verwende lokalen Speicher', 'error');
+                localDelete(fileId);
+            };
+            xhr.send();
+        }
+
+        // Lokales Löschen wenn API nicht verfügbar
+        function localDelete(fileId) {
+            files = files.filter(file => file.id !== fileId);
+            updateFilesList();
+            saveFilesToLocalStorage();
+            showToast('Datei lokal gelöscht (Offlinemodus)', 'success');
+        }
+
+        // Dateigröße formatieren
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Toast-Nachricht anzeigen
+        function showToast(message, type = '') {
+            toast.textContent = message;
+            toast.className = 'toast';
+
+            if (type) {
+                toast.classList.add(type);
+            }
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Dateien beim Seitenstart laden
+        function loadFiles() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', API_BASE_URL + '/files', true);
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success && Array.isArray(response.files)) {
+                            files = response.files;
+                            updateFilesList();
+                        } else {
+                            console.error('Unerwartetes Antwortformat:', response);
+                            fallbackToLocalStorage();
+                        }
+                    } catch (e) {
+                        console.error('Parsing-Fehler:', e);
+                        fallbackToLocalStorage();
+                    }
+                } else {
+                    console.warn('API nicht erreichbar, verwende lokalen Speicher');
+                    fallbackToLocalStorage();
+                }
+            };
+            xhr.onerror = function () {
+                console.warn('Verbindungsfehler, verwende lokalen Speicher');
+                fallbackToLocalStorage();
+            };
+            xhr.send();
+        }
+
+        // Fallback: Lokalen Speicher verwenden wenn API nicht verfügbar
+        function fallbackToLocalStorage() {
+            showToast('API nicht verfügbar - verwende lokalen Speicher', 'error');
+
+            // Aus lokalem Speicher laden
+            const savedFiles = localStorage.getItem('onlineStorageFiles');
+            if (savedFiles) {
+                try {
+                    files = JSON.parse(savedFiles);
+                    updateFilesList();
+                } catch (e) {
+                    console.error('Fehler beim Laden aus localStorage:', e);
+                    files = [];
+                    updateFilesList();
+                }
+            }
+        }
+
+        // API-Status prüfen
+        checkApiAvailability();
+
+        // Initial Dateien laden
+        loadFiles();
+
+        // Status alle 30 Sekunden prüfen
+        setInterval(checkApiAvailability, 30000);
+    });
+</script>
+</body>
+</html>
