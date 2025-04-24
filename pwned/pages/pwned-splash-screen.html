@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pwned!</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Roboto', sans-serif;
+            background-color: #2C2E3B;
+            overflow: hidden;
+        }
+
+        .splash-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .splash-content {
+            text-align: center;
+        }
+
+        .splash-text {
+            color: #fff;
+            font-size: 4rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin: 0;
+            opacity: 0;
+            transform: scale(0.5);
+            animation: splashIn 0.8s ease-out forwards;
+        }
+
+        .splash-subtitle {
+            color: #E91E63;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            opacity: 0;
+            animation: fadeIn 0.8s 0.6s forwards;
+        }
+
+        @keyframes splashIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            70% {
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .circle {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: circleExpand 1.5s ease-out forwards;
+        }
+
+        @keyframes circleExpand {
+            to {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: 'pwned!';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 #E91E63;
+            animation: glitch-1 2s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: 1px 0 #00BCD4;
+            animation: glitch-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-1 {
+            0%, 80%, 100% {
+                clip-path: inset(80% 0 0 0);
+            }
+            20% {
+                clip-path: inset(20% 0 60% 0);
+            }
+            40% {
+                clip-path: inset(40% 0 40% 0);
+            }
+            60% {
+                clip-path: inset(60% 0 20% 0);
+            }
+        }
+
+        @keyframes glitch-2 {
+            0%, 80%, 100% {
+                clip-path: inset(0 0 80% 0);
+            }
+            20% {
+                clip-path: inset(0 0 20% 0);
+            }
+            40% {
+                clip-path: inset(0 0 60% 0);
+            }
+            60% {
+                clip-path: inset(0 0 40% 0);
+            }
+        }
+
+        .progress {
+            width: 200px;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin: 20px auto;
+            border-radius: 2px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 0.8s 0.8s forwards;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #E91E63;
+            animation: progress 3s ease-out forwards;
+        }
+
+        @keyframes progress {
+            to {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <div class="splash-content">
+            <h1 class="splash-text glitch">pwned!</h1>
+            <p class="splash-subtitle">System compromised</p>
+            <div class="progress">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            createCircles();
+            
+            // Optional: Redirect after splash screen
+            setTimeout(function() {
+                const splashContainer = document.querySelector('.splash-container');
+                splashContainer.style.transition = 'opacity 0.5s ease-out';
+                splashContainer.style.opacity = '0';
+                
+                setTimeout(function() {
+                    // Uncomment to redirect
+                    // window.location.href = 'your-main-page.html';
+                    
+                    // For demo: just reload
+                    splashContainer.style.opacity = '1';
+                }, 500);
+            }, 3500);
+        });
+
+        function createCircles() {
+            const container = document.querySelector('.splash-container');
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const circle = document.createElement('div');
+                    circle.classList.add('circle');
+                    
+                    const size = Math.max(window.innerWidth, window.innerHeight) * 2;
+                    
+                    circle.style.width = size + 'px';
+                    circle.style.height = size + 'px';
+                    circle.style.left = (centerX - size/2) + 'px';
+                    circle.style.top = (centerY - size/2) + 'px';
+                    circle.style.animationDelay = (i * 0.5) + 's';
+                    
+                    container.appendChild(circle);
+                    
+                    setTimeout(() => {
+                        circle.remove();
+                    }, 2500);
+                }, i * 500);
+            }
+        }
+    </script>
+</body>
+</html>

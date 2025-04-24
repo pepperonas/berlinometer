@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pwned! Terminal Splash Screen</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Courier New', monospace;
+            background-color: #2C2E3B;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .terminal-container {
+            width: 80%;
+            max-width: 900px;
+            height: 80%;
+            max-height: 500px;
+            background-color: #1a1c25;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal-header {
+            height: 30px;
+            background-color: #333545;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .terminal-button.red {
+            background-color: #ff5f56;
+        }
+
+        .terminal-button.yellow {
+            background-color: #ffbd2e;
+        }
+
+        .terminal-button.green {
+            background-color: #27c93f;
+        }
+
+        .terminal-title {
+            color: #fff;
+            opacity: 0.7;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .terminal-content {
+            flex: 1;
+            padding: 20px;
+            color: #0f0;
+            font-size: 14px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background-color: #0f0;
+            animation: blink 1s step-end infinite;
+            margin-left: 2px;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .terminal-line {
+            display: block;
+            line-height: 1.6;
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 0.05s steps(1);
+            margin-bottom: 5px;
+        }
+
+        .command-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .command-prompt {
+            color: #ff3366;
+            margin-right: 8px;
+        }
+
+        .command-input {
+            color: #fff;
+        }
+
+        .output-line {
+            color: #0f0;
+        }
+
+        .error-line {
+            color: #ff3366;
+        }
+
+        .warning-line {
+            color: #ffbd2e;
+        }
+
+        .success-line {
+            color: #27c93f;
+        }
+
+        .big-text {
+            font-size: 0; /* Start with 0 to hide it */
+            line-height: 1;
+            white-space: pre;
+            margin: 20px 0;
+            color: #ff3366;
+            text-shadow: 0 0 5px rgba(255, 51, 102, 0.5);
+        }
+
+        .scan-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(26, 28, 37, 0) 0%,
+                rgba(26, 28, 37, 0.1) 50%,
+                rgba(26, 28, 37, 0) 100%
+            );
+            pointer-events: none;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 51, 102, 0);
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .noise-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4AQTCzILGS91WQAAADxJREFUaN7t0jERADAIBLCTQP5dKgz2IrnAWscMAAAADvDpixrqUeRVnlmT2q0hZXotEmfL5bdI+nADAADgDU3oqO1dMhxvAAAAAElFTkSuQmCC");
+            opacity: 0.02;
+            pointer-events: none;
+            animation: noise 0.5s steps(2) infinite;
+        }
+
+        @keyframes noise {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-1%, -1%); }
+            20% { transform: translate(1%, 1%); }
+            30% { transform: translate(-2%, -2%); }
+            40% { transform: translate(2%, 2%); }
+            50% { transform: translate(-1%, 1%); }
+            60% { transform: translate(1%, -1%); }
+            70% { transform: translate(3%, -3%); }
+            80% { transform: translate(-3%, 3%); }
+            90% { transform: translate(2%, -2%); }
+        }
+
+        .progress-bar {
+            height: 4px;
+            background-color: #333545;
+            margin-top: 15px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0;
+            background-color: #ff3366;
+            transition: width 3s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-button red"></div>
+            <div class="terminal-button yellow"></div>
+            <div class="terminal-button green"></div>
+            <div class="terminal-title">hack.sh - Terminal</div>
+        </div>
+        <div class="terminal-content" id="terminal">
+            <div class="scan-effect"></div>
+            <div class="noise-effect"></div>
+            <div class="glitch-overlay" id="glitch"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const terminal = document.getElementById('terminal');
+            const glitch = document.getElementById('glitch');
+            
+            // Terminal text animation
+            const lines = [
+                { type: 'command', text: 'sudo hack.sh --target=system --force' },
+                { type: 'output', text: 'Initializing system breach...', delay: 500 },
+                { type: 'output', text: 'Scanning for vulnerabilities...', delay: 800 },
+                { type: 'output', text: 'Found 3 potential entry points', delay: 600 },
+                { type: 'warning', text: 'WARNING: Intrusion detection active!', delay: 500 },
+                { type: 'output', text: 'Bypassing security protocols...', delay: 700 },
+                { type: 'success', text: 'Access granted to main system', delay: 600 },
+                { type: 'output', text: 'Elevating privileges...', delay: 400 },
+                { type: 'success', text: 'Root access acquired!', delay: 600 },
+                { type: 'output', text: 'Deploying payload...', delay: 800 },
+                { type: 'progress', delay: 500 },
+                { type: 'bigtext', text: `
+ _______  _     _  __    _ _______ ______  _______
+|       || | _ | ||  |  | |       |      ||       |
+|    _  || || || ||   |_| |    ___|  _    |    ___|
+|   |_| ||       ||       |   |___| | |   |   |___ 
+|    ___||       ||  _    |    ___| |_|   |    ___|
+|   |    |   _   || | |   |   |___|       |   |___ 
+|___|    |__| |__||_|  |__|_______|______||_______|
+                `, delay: 1000 },
+                { type: 'output', text: 'System completely compromised', delay: 500 },
+                { type: 'command', text: 'cleanup --no-trace', delay: 500 },
+                { type: 'success', text: 'Operation completed successfully', delay: 300 }
+            ];
+            
+            let currentLine = 0;
+            
+            function createTypingLine(lineData) {
+                return new Promise(resolve => {
+                    const lineElement = document.createElement('div');
+                    
+                    if (lineData.type === 'command') {
+                        lineElement.className = 'command-line';
+                        
+                        const promptElement = document.createElement('span');
+                        promptElement.className = 'command-prompt';
+                        promptElement.textContent = 'root@system:~# ';
+                        
+                        const inputElement = document.createElement('span');
+                        inputElement.className = 'command-input';
+                        
+                        const cursorElement = document.createElement('span');
+                        cursorElement.className = 'terminal-cursor';
+                        
+                        lineElement.appendChild(promptElement);
+                        lineElement.appendChild(inputElement);
+                        lineElement.appendChild(cursorElement);
+                        
+                        terminal.appendChild(lineElement);
+                        
+                        // Type the command
+                        let i = 0;
+                        const typing = setInterval(() => {
+                            if (i < lineData.text.length) {
+                                inputElement.textContent += lineData.text.charAt(i);
+                                i++;
+                            } else {
+                                clearInterval(typing);
+                                cursorElement.remove();
+                                setTimeout(resolve, 300);
+                            }
+                        }, 30);
+                    } else if (lineData.type === 'progress') {
+                        const progressContainer = document.createElement('div');
+                        progressContainer.className = 'progress-bar';
+                        
+                        const progressBar = document.createElement('div');
+                        progressBar.className = 'progress';
+                        
+                        progressContainer.appendChild(progressBar);
+                        terminal.appendChild(progressContainer);
+                        
+                        // Animate progress
+                        setTimeout(() => {
+                            progressBar.style.width = '100%';
+                            setTimeout(resolve, 3000);
+                        }, 100);
+                    } else if (lineData.type === 'bigtext') {
+                        const bigTextElement = document.createElement('div');
+                        bigTextElement.className = 'big-text';
+                        bigTextElement.textContent = lineData.text;
+                        terminal.appendChild(bigTextElement);
+                        
+                        // Reveal big text
+                        setTimeout(() => {
+                            bigTextElement.style.fontSize = '10px';
+                            setTimeout(resolve, 500);
+                        }, 100);
+                    } else {
+                        lineElement.className = `terminal-line ${lineData.type}-line`;
+                        terminal.appendChild(lineElement);
+                        
+                        // Type the output
+                        let i = 0;
+                        const typing = setInterval(() => {
+                            if (i < lineData.text.length) {
+                                lineElement.textContent += lineData.text.charAt(i);
+                                i++;
+                            } else {
+                                clearInterval(typing);
+                                setTimeout(resolve, 200);
+                            }
+                        }, 10);
+                    }
+                });
+            }
+            
+            async function runTerminal() {
+                for (const line of lines) {
+                    if (line.delay) {
+                        await new Promise(resolve => setTimeout(resolve, line.delay));
+                    }
+                    await createTypingLine(line);
+                }
+                
+                // After animation completes
+                setTimeout(() => {
+                    // Redirect - Uncomment and modify as needed
+                    // window.location.href = 'your-main-page.html';
+                    
+                    // For demo purposes
+                    document.body.addEventListener('click', () => {
+                        alert('Terminal sequence complete! Ready to navigate to the main page.');
+                    });
+                }, 1500);
+            }
+            
+            // Random glitch effect
+            setInterval(() => {
+                if (Math.random() > 0.9) {
+                    glitch.style.backgroundColor = 'rgba(255, 51, 102, 0.1)';
+                    setTimeout(() => {
+                        glitch.style.backgroundColor = 'rgba(255, 51, 102, 0)';
+                    }, 100);
+                }
+            }, 200);
+            
+            // Start animation sequence
+            setTimeout(runTerminal, 500);
+        });
+    </script>
+</body>
+</html>

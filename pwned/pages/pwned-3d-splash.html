@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Holographic Pwned!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Orbitron', sans-serif;
+            background-color: #2C2E3B;
+            color: #fff;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .splash-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                linear-gradient(rgba(63, 81, 181, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(63, 81, 181, 0.2) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            animation: grid-move 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes grid-move {
+            from {
+                transform: perspective(500px) rotateX(60deg) translateY(0);
+            }
+            to {
+                transform: perspective(500px) rotateX(60deg) translateY(50px);
+            }
+        }
+
+        .hologram-container {
+            position: relative;
+            transform-style: preserve-3d;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .pwned-3d {
+            font-size: 5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            color: rgba(233, 30, 99, 0.9);
+            text-shadow: 
+                0 0 10px rgba(233, 30, 99, 0.8),
+                0 0 20px rgba(233, 30, 99, 0.4),
+                0 0 30px rgba(233, 30, 99, 0.2);
+            letter-spacing: 8px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotate3d 10s ease-in-out infinite;
+        }
+
+        @keyframes rotate3d {
+            0%, 100% {
+                transform: rotateY(0deg);
+            }
+            50% {
+                transform: rotateY(15deg);
+            }
+        }
+
+        .pwned-3d::before,
+        .pwned-3d::after {
+            content: 'PWNED!';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: -1;
+        }
+
+        .pwned-3d::before {
+            color: rgba(3, 169, 244, 0.5);
+            transform: translateX(-5px);
+            animation: glitch-1 2.5s infinite alternate-reverse;
+        }
+
+        .pwned-3d::after {
+            color: rgba(255, 87, 34, 0.5);
+            transform: translateX(5px);
+            animation: glitch-2 3.5s infinite alternate-reverse;
+        }
+
+        @keyframes glitch-1 {
+            0%, 80%, 100% {
+                clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+                transform: translate(-5px, 0);
+            }
+            20% {
+                clip-path: polygon(0 15%, 100% 15%, 100% 30%, 0 30%);
+                transform: translate(-7px, 0);
+            }
+            40% {
+                clip-path: polygon(0 30%, 100% 30%, 100% 70%, 0 70%);
+                transform: translate(-3px, 0);
+            }
+            60% {
+                clip-path: polygon(0 70%, 100% 70%, 100% 85%, 0 85%);
+                transform: translate(-9px, 0);
+            }
+        }
+
+        @keyframes glitch-2 {
+            0%, 80%, 100% {
+                clip-path: polygon(0 45%, 100% 45%, 100% 100%, 0 100%);
+                transform: translate(5px, 0);
+            }
+            20% {
+                clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+                transform: translate(7px, 0);
+            }
+            40% {
+                clip-path: polygon(0 70%, 100% 70%, 100% 90%, 0 90%);
+                transform: translate(3px, 0);
+            }
+            60% {
+                clip-path: polygon(0 85%, 100% 85%, 100% 100%, 0 100%);
+                transform: translate(9px, 0);
+            }
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(255,255,255,0) 0%,
+                rgba(63, 81, 181, 0.2) 50%,
+                rgba(255,255,255,0) 100%);
+            animation: scan 3s linear infinite;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes scan {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(100%); }
+        }
+
+        .status {
+            margin-top: 30px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            color: #fff;
+            letter-spacing: 2px;
+            opacity: 0;
+            animation: fadeIn 1s 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .progress-container {
+            margin-top: 30px;
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            opacity: 0;
+            animation: fadeIn 1s 1.5s forwards;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(to right, #E91E63, #03A9F4);
+            animation: fill 3s 2s forwards;
+        }
+
+        @keyframes fill {
+            to { width: 100%; }
+        }
+
+        .particles-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #03A9F4;
+            border-radius: 50%;
+            opacity: 0.6;
+            box-shadow: 0 0 10px #03A9F4;
+            animation: rise var(--duration) linear infinite;
+            bottom: -10px;
+            left: var(--x);
+        }
+
+        @keyframes rise {
+            from {
+                transform: translateY(0) scale(1);
+                opacity: 0.6;
+            }
+            to {
+                transform: translateY(-100vh) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .complete-message {
+            position: absolute;
+            bottom: 50px;
+            text-align: center;
+            width: 100%;
+            font-size: 1.1rem;
+            color: #fff;
+            opacity: 0;
+            animation: fadeIn 1s 5s forwards;
+        }
+
+        .blink {
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="splash-container">
+        <div class="grid"></div>
+        <div class="scan-line"></div>
+        
+        <div class="hologram-container">
+            <h1 class="pwned-3d">PWNED!</h1>
+            <div class="status">System compromised</div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+        </div>
+        
+        <div class="complete-message">
+            <span class="blink">▶</span> Full access granted // All security protocols disabled
+        </div>
+    </div>
+    
+    <div class="particles-container" id="particles"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // Optional: Redirect after splash screen
+            setTimeout(function() {
+                // Uncomment to redirect
+                // window.location.href = 'your-main-page.html';
+            }, 6000);
+        });
+
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const containerWidth = window.innerWidth;
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.classList.add('particle');
+                    
+                    // Random properties
+                    const size = Math.random() * 4 + 2;
+                    const x = Math.random() * containerWidth;
+                    const duration = Math.random() * 8 + 4; // 4-12 seconds
+                    
+                    // Set variables for animations
+                    particle.style.setProperty('--x', x + 'px');
+                    particle.style.setProperty('--duration', duration + 's');
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+                    
+                    // Add some color variation
+                    if (Math.random() > 0.7) {
+                        particle.style.background = '#E91E63';
+                        particle.style.boxShadow = '0 0 10px #E91E63';
+                    }
+                    
+                    container.appendChild(particle);
+                    
+                    // Remove particle after animation completes
+                    setTimeout(() => {
+                        particle.remove();
+                        // Create a new particle to replace
+                        createParticle();
+                    }, duration * 1000);
+                }, i * 100); // Stagger particle creation
+            }
+        }
+        
+        function createParticle() {
+            const container = document.getElementById('particles');
+            const containerWidth = window.innerWidth;
+            
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            
+            // Random properties
+            const size = Math.random() * 4 + 2;
+            const x = Math.random() * containerWidth;
+            const duration = Math.random() * 8 + 4; // 4-12 seconds
+            
+            // Set variables for animations
+            particle.style.setProperty('--x', x + 'px');
+            particle.style.setProperty('--duration', duration + 's');
+            particle.style.width = size + 'px';
+            particle.style.height = size + 'px';
+            
+            // Add some color variation
+            if (Math.random() > 0.7) {
+                particle.style.background = '#E91E63';
+                particle.style.boxShadow = '0 0 10px #E91E63';
+            }
+            
+            container.appendChild(particle);
+            
+            // Remove particle after animation completes
+            setTimeout(() => {
+                particle.remove();
+                // Create a new particle to replace
+                createParticle();
+            }, duration * 1000);
+        }
+
+        // Add 3D tilt effect on mouse movement
+        document.addEventListener('mousemove', function(e) {
+            const hologramContainer = document.querySelector('.hologram-container');
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            
+            hologramContainer.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Pwned!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            font-family: 'Roboto Mono', monospace;
+            background-color: #2C2E3B;
+            color: #00FF41;
+            overflow: hidden;
+        }
+
+        .terminal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .window {
+            width: 80%;
+            max-width: 900px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        .window-header {
+            background-color: #1D1F2B;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .window-buttons {
+            display: flex;
+            gap: 8px;
+            margin-right: 15px;
+        }
+
+        .window-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .window-button.red {
+            background-color: #FF5F56;
+        }
+
+        .window-button.yellow {
+            background-color: #FFBD2E;
+        }
+
+        .window-button.green {
+            background-color: #27C93F;
+        }
+
+        .window-title {
+            color: #fff;
+            font-size: 14px;
+            flex: 1;
+            text-align: center;
+        }
+
+        .terminal {
+            padding: 20px;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .line {
+            line-height: 1.5;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            animation: type 0s forwards;
+            opacity: 0;
+        }
+
+        @keyframes type {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .prompt {
+            color: #E91E63;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 18px;
+            background-color: #00FF41;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-bottom: 2px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .pwned {
+            font-size: 8px;
+            line-height: 1;
+            white-space: pre;
+            text-align: center;
+            margin: 40px 0;
+            color: #E91E63;
+            text-shadow: 0 0 5px #E91E63, 0 0 10px #E91E63;
+            opacity: 0;
+            animation: fadeIn 1s 5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .progress {
+            width: calc(100% - 40px);
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            margin: 20px 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #E91E63;
+            transition: width 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="matrix-bg" id="matrix"></canvas>
+    
+    <div class="terminal-container">
+        <div class="window">
+            <div class="window-header">
+                <div class="window-buttons">
+                    <div class="window-button red"></div>
+                    <div class="window-button yellow"></div>
+                    <div class="window-button green"></div>
+                </div>
+                <div class="window-title">root@system - Terminal</div>
+            </div>
+            <div class="terminal" id="terminal">
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initMatrix();
+            
+            // Terminal typing animation
+            const terminal = document.getElementById('terminal');
+            const progressBar = document.getElementById('progressBar');
+            const commands = [
+                { text: "root@system:~# ./exploit.sh target.com", delay: 0 },
+                { text: "Initializing exploit framework...", delay: 800 },
+                { text: "Scanning target system...", delay: 1200 },
+                { text: "Attempting exploit CVE-2023-xxxxx...", delay: 2000 },
+                { text: "Bypassing firewall...", delay: 2800 },
+                { text: "Establishing reverse shell...", delay: 3200 },
+                { text: "Escalating privileges...", delay: 3800 },
+                { text: "root@target:~# id", delay: 4300 },
+                { text: "uid=0(root) gid=0(root) groups=0(root)", delay: 4600 },
+                { text: "root@target:~# echo 'TARGET PWNED!' > /etc/motd", delay: 5000 },
+            ];
+            
+            let totalCommands = commands.length;
+            let currentProgress = 0;
+            
+            commands.forEach((cmd, index) => {
+                setTimeout(() => {
+                    const line = document.createElement('div');
+                    line.classList.add('line');
+                    
+                    if (cmd.text.startsWith('root@')) {
+                        const parts = cmd.text.split('# ');
+                        line.innerHTML = `<span class="prompt">${parts[0]}#</span> ${parts[1] || ''}`;
+                    } else {
+                        line.textContent = cmd.text;
+                    }
+                    
+                    line.style.animation = 'type 0.1s forwards';
+                    
+                    terminal.appendChild(line);
+                    
+                    // Update progress bar
+                    currentProgress = ((index + 1) / totalCommands) * 100;
+                    progressBar.style.width = currentProgress + '%';
+                    
+                    // Add cursor to the last line
+                    if (index === commands.length - 1) {
+                        setTimeout(() => {
+                            createPwnedAsciiArt();
+                        }, 1000);
+                    }
+                }, cmd.delay);
+            });
+        });
+        
+        function createPwnedAsciiArt() {
+            const terminal = document.getElementById('terminal');
+            const pwnedArt = document.createElement('div');
+            pwnedArt.classList.add('pwned');
+            
+            // ASCII art for "PWNED!"
+            pwnedArt.innerHTML = `
+██████╗ ██╗    ██╗███╗   ██╗███████╗██████╗     ██╗
+██╔══██╗██║    ██║████╗  ██║██╔════╝██╔══██╗    ██║
+██████╔╝██║ █╗ ██║██╔██╗ ██║█████╗  ██║  ██║    ██║
+██╔═══╝ ██║███╗██║██║╚██╗██║██╔══╝  ██║  ██║    ╚═╝
+██║     ╚███╔███╔╝██║ ╚████║███████╗██████╔╝    ██╗
+╚═╝      ╚══╝╚══╝ ╚═╝  ╚═══╝╚══════╝╚═════╝     ╚═╝
+            `;
+            
+            terminal.appendChild(pwnedArt);
+            
+            // Add cursor after the ASCII art
+            const cursorLine = document.createElement('div');
+            cursorLine.classList.add('line');
+            cursorLine.innerHTML = '<span class="prompt">root@target:~#</span> <span class="cursor"></span>';
+            cursorLine.style.animation = 'type 0.1s forwards';
+            
+            setTimeout(() => {
+                terminal.appendChild(cursorLine);
+            }, 1000);
+        }
+        
+        function initMatrix() {
+            const canvas = document.getElementById('matrix');
+            const ctx = canvas.getContext('2d');
+            
+            // Make canvas full screen
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Characters to be used
+            const chars = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const charArray = chars.split('');
+            
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            
+            // Array to keep track of where each column ends
+            const drops = [];
+            
+            // Initialize all drops to start above the screen
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.random() * -100;
+            }
+            
+            // Set a slightly transparent background for trail effect
+            ctx.fillStyle = 'rgba(44, 46, 59, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            function draw() {
+                // Black with alpha for fading effect
+                ctx.fillStyle = 'rgba(44, 46, 59, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Set text color and font
+                ctx.fillStyle = '#0F0';
+                ctx.font = fontSize + 'px monospace';
+                
+                // Draw characters
+                for (let i = 0; i < drops.length; i++) {
+                    // Choose a random character
+                    const text = charArray[Math.floor(Math.random() * charArray.length)];
+                    
+                    // Draw the character
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    // Move drop down
+                    drops[i]++;
+                    
+                    // Randomly reset a drop back to the top
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                }
+            }
+            
+            setInterval(draw, 33); // ~30 FPS
+        }
+    </script>
+</body>
+</html>
