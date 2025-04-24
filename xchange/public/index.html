@@ -369,19 +369,51 @@
         // Basis-URL für API-Aufrufe
         const API_BASE_URL = '/xchange';
 
+        // Session aus URL-Parameter extrahieren und für alle Anfragen verwenden
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session');
+
+        // Funktion zum Anhängen der Session an URLs
+        function appendSessionToUrl(url) {
+            if (sessionId) {
+                const separator = url.includes('?') ? '&' : '?';
+                return `${url}${separator}session=${sessionId}`;
+            }
+            return url;
+        }
+
+        // Funktion zum Prüfen der Auth vor jeder Anfrage
+        function checkAuth() {
+            return new Promise((resolve, reject) => {
+                // Wenn keine Session vorhanden ist, API-Verfügbarkeit als false melden
+                if (!sessionId) {
+                    apiAvailable = false;
+                    updateStatusDisplay();
+                    showToast('Nicht angemeldet - lokaler Modus aktiv', 'error');
+                    return reject('Nicht authentifiziert');
+                }
+                resolve();
+            });
+        }
+
         // Flag für API-Verfügbarkeit
         let apiAvailable = false;
 
         // Prüfen, ob die API erreichbar ist
         function checkApiAvailability() {
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', API_BASE_URL + '/status', true);
+            xhr.open('GET', appendSessionToUrl(API_BASE_URL + '/status'), true);
             xhr.timeout = 5000; // 5 Sekunden Timeout
             xhr.onload = function () {
                 try {
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         apiAvailable = response.status === 'ok';
+                    } else if (xhr.status === 401) {
+                        // 401 = Nicht authentifiziert
+                        apiAvailable = false;
+                        window.location.href = API_BASE_URL + '/login';
+                        return;
                     } else {
                         apiAvailable = false;
                     }
@@ -491,75 +523,82 @@
 
         // Datei hochladen
         function uploadFile(file) {
-            // FormData für den Upload erstellen
-            const formData = new FormData();
-            formData.append('file', file);
+            checkAuth().then(() => {
+                // FormData für den Upload erstellen
+                const formData = new FormData();
+                formData.append('file', file);
 
-            // XHR für den Upload erstellen
-            const xhr = new XMLHttpRequest();
+                // XHR für den Upload erstellen
+                const xhr = new XMLHttpRequest();
 
-            // Progress-Event
-            xhr.upload.addEventListener('progress', e => {
-                if (e.lengthComputable) {
-                    const percentComplete = Math.round((e.loaded / e.total) * 100);
-                    progressContainer.style.display = 'block';
-                    progressBar.style.width = percentComplete + '%';
-                    progressText.textContent = percentComplete + '%';
-                }
-            });
+                // Progress-Event
+                xhr.upload.addEventListener('progress', e => {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        progressContainer.style.display = 'block';
+                        progressBar.style.width = percentComplete + '%';
+                        progressText.textContent = percentComplete + '%';
+                    }
+                });
 
-            // Load-Complete-Event
-            xhr.addEventListener('load', () => {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                            // Datei zur Liste hinzufügen
-                            addFileToList({
-                                id: response.fileId,
-                                name: file.name,
-                                size: file.size,
-                                type: file.type,
-                                uploadDate: new Date().toISOString()
-                            });
-                            showToast('Datei erfolgreich hochgeladen!', 'success');
-                        } else {
-                            showToast('Fehler beim Hochladen: ' + response.message, 'error');
+                // Load-Complete-Event
+                xhr.addEventListener('load', () => {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                // Datei zur Liste hinzufügen
+                                addFileToList({
+                                    id: response.fileId,
+                                    name: file.name,
+                                    size: file.size,
+                                    type: file.type,
+                                    uploadDate: new Date().toISOString()
+                                });
+                                showToast('Datei erfolgreich hochgeladen!', 'success');
+                            } else {
+                                showToast('Fehler beim Hochladen: ' + response.message, 'error');
+                            }
+                        } catch (e) {
+                            // Fallback für unerwartete Antworten
+                            console.error("Parsing-Fehler:", e);
+                            fallbackUpload(file);
                         }
-                    } catch (e) {
-                        // Fallback für unerwartete Antworten
-                        console.error("Parsing-Fehler:", e);
+                    } else if (xhr.status === 401) {
+                        // Nicht authentifiziert - zur Login-Seite weiterleiten
+                        window.location.href = API_BASE_URL + '/login';
+                    } else {
                         fallbackUpload(file);
                     }
-                } else {
+
+                    // Progress zurücksetzen
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        progressText.textContent = '0%';
+                    }, 1000);
+                });
+
+                // Error-Event
+                xhr.addEventListener('error', () => {
+                    showToast('Verbindungsfehler - verwende lokalen Speicher', 'error');
+                    fallbackUpload(file);
+
+                    // Progress zurücksetzen
+                    progressContainer.style.display = 'none';
+                });
+
+                // XHR öffnen und senden
+                try {
+                    xhr.open('POST', appendSessionToUrl(API_BASE_URL + '/upload'), true);
+                    xhr.send(formData);
+                } catch (e) {
+                    console.error('Fehler beim Senden der Anfrage:', e);
                     fallbackUpload(file);
                 }
-
-                // Progress zurücksetzen
-                setTimeout(() => {
-                    progressContainer.style.display = 'none';
-                    progressBar.style.width = '0%';
-                    progressText.textContent = '0%';
-                }, 1000);
-            });
-
-            // Error-Event
-            xhr.addEventListener('error', () => {
-                showToast('Verbindungsfehler - verwende lokalen Speicher', 'error');
+            }).catch(() => {
                 fallbackUpload(file);
-
-                // Progress zurücksetzen
-                progressContainer.style.display = 'none';
             });
-
-            // XHR öffnen und senden
-            try {
-                xhr.open('POST', API_BASE_URL + '/upload', true);
-                xhr.send(formData);
-            } catch (e) {
-                console.error('Fehler beim Senden der Anfrage:', e);
-                fallbackUpload(file);
-            }
         }
 
         // Fallback: Datei lokal speichern, wenn API nicht verfügbar
@@ -666,22 +705,29 @@
                 return;
             }
 
-            // Prüfen, ob der Endpunkt erreichbar ist
-            const xhr = new XMLHttpRequest();
-            xhr.open('HEAD', API_BASE_URL + '/download/' + file.id, true);
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    // Redirect zum Download-Endpunkt
-                    window.location.href = API_BASE_URL + '/download/' + file.id;
-                    showToast('Download von ' + file.name + ' gestartet...', 'success');
-                } else {
-                    showToast('Download-Endpunkt nicht verfügbar', 'error');
-                }
-            };
-            xhr.onerror = function () {
-                showToast('Download-Endpunkt nicht erreichbar', 'error');
-            };
-            xhr.send();
+            checkAuth().then(() => {
+                // Prüfen, ob der Endpunkt erreichbar ist
+                const xhr = new XMLHttpRequest();
+                xhr.open('HEAD', appendSessionToUrl(API_BASE_URL + '/download/' + file.id), true);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        // Redirect zum Download-Endpunkt mit Session-ID
+                        window.location.href = appendSessionToUrl(API_BASE_URL + '/download/' + file.id);
+                        showToast('Download von ' + file.name + ' gestartet...', 'success');
+                    } else if (xhr.status === 401) {
+                        // Nicht authentifiziert - zur Login-Seite weiterleiten
+                        window.location.href = API_BASE_URL + '/login';
+                    } else {
+                        showToast('Download-Endpunkt nicht verfügbar', 'error');
+                    }
+                };
+                xhr.onerror = function () {
+                    showToast('Download-Endpunkt nicht erreichbar', 'error');
+                };
+                xhr.send();
+            }).catch(() => {
+                showToast('Nicht angemeldet - Download nicht möglich', 'error');
+            });
         }
 
         // Datei löschen
@@ -695,34 +741,41 @@
                 return;
             }
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('DELETE', API_BASE_URL + '/files/' + fileId, true);
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                            // Datei aus Array entfernen
-                            files = files.filter(file => file.id !== fileId);
-                            updateFilesList();
-                            saveFilesToLocalStorage(); // Lokale Kopie auch aktualisieren
-                            showToast('Datei gelöscht!', 'success');
-                        } else {
-                            showToast('Fehler: ' + (response.message || 'Unbekannter Fehler'), 'error');
+            checkAuth().then(() => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('DELETE', appendSessionToUrl(API_BASE_URL + '/files/' + fileId), true);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                // Datei aus Array entfernen
+                                files = files.filter(file => file.id !== fileId);
+                                updateFilesList();
+                                saveFilesToLocalStorage(); // Lokale Kopie auch aktualisieren
+                                showToast('Datei gelöscht!', 'success');
+                            } else {
+                                showToast('Fehler: ' + (response.message || 'Unbekannter Fehler'), 'error');
+                            }
+                        } catch (e) {
+                            console.error('Parsing-Fehler beim Löschen:', e);
+                            localDelete(fileId);
                         }
-                    } catch (e) {
-                        console.error('Parsing-Fehler beim Löschen:', e);
+                    } else if (xhr.status === 401) {
+                        // Nicht authentifiziert - zur Login-Seite weiterleiten
+                        window.location.href = API_BASE_URL + '/login';
+                    } else {
                         localDelete(fileId);
                     }
-                } else {
+                };
+                xhr.onerror = function () {
+                    showToast('Verbindungsfehler - verwende lokalen Speicher', 'error');
                     localDelete(fileId);
-                }
-            };
-            xhr.onerror = function () {
-                showToast('Verbindungsfehler - verwende lokalen Speicher', 'error');
+                };
+                xhr.send();
+            }).catch(() => {
                 localDelete(fileId);
-            };
-            xhr.send();
+            });
         }
 
         // Lokales Löschen wenn API nicht verfügbar
@@ -762,33 +815,40 @@
 
         // Dateien beim Seitenstart laden
         function loadFiles() {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', API_BASE_URL + '/files', true);
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success && Array.isArray(response.files)) {
-                            files = response.files;
-                            updateFilesList();
-                        } else {
-                            console.error('Unerwartetes Antwortformat:', response);
+            checkAuth().then(() => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', appendSessionToUrl(API_BASE_URL + '/files'), true);
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success && Array.isArray(response.files)) {
+                                files = response.files;
+                                updateFilesList();
+                            } else {
+                                console.error('Unerwartetes Antwortformat:', response);
+                                fallbackToLocalStorage();
+                            }
+                        } catch (e) {
+                            console.error('Parsing-Fehler:', e);
                             fallbackToLocalStorage();
                         }
-                    } catch (e) {
-                        console.error('Parsing-Fehler:', e);
+                    } else if (xhr.status === 401) {
+                        // Nicht authentifiziert - zur Login-Seite weiterleiten
+                        window.location.href = API_BASE_URL + '/login';
+                    } else {
+                        console.warn('API nicht erreichbar, verwende lokalen Speicher');
                         fallbackToLocalStorage();
                     }
-                } else {
-                    console.warn('API nicht erreichbar, verwende lokalen Speicher');
+                };
+                xhr.onerror = function () {
+                    console.warn('Verbindungsfehler, verwende lokalen Speicher');
                     fallbackToLocalStorage();
-                }
-            };
-            xhr.onerror = function () {
-                console.warn('Verbindungsfehler, verwende lokalen Speicher');
+                };
+                xhr.send();
+            }).catch(() => {
                 fallbackToLocalStorage();
-            };
-            xhr.send();
+            });
         }
 
         // Fallback: Lokalen Speicher verwenden wenn API nicht verfügbar
