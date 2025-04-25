@@ -29,6 +29,7 @@
             <excludedPath local="true" path="$PROJECT_DIR$/free-wifi/node_modules" />
             <excludedPath local="true" path="$PROJECT_DIR$/glitter-gue/node_modules" />
             <excludedPath local="true" path="$PROJECT_DIR$/glitter-hue/proxy/node_modules" />
+            <excludedPath local="true" path="$PROJECT_DIR$/blog/blog-framework/node_modules" />
           </excludedPaths>
         </serverdata>
       </paths>
