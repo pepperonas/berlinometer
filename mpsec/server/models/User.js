@@ -41,12 +41,18 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
 
 // JWT Token für den Benutzer generieren
 UserSchema.methods.getSignedJwtToken = function() {
+  // Eindeutige Benutzer-ID im Token speichern
   return jwt.sign(
-    { id: this._id, username: this.username },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: process.env.JWT_EXPIRE
-    }
+      {
+        id: this._id,
+        username: this.username,
+        // Zufällige Komponente hinzufügen, um Token-Wiederverwendung zu verhindern
+        jti: Math.random().toString(36).substring(2)
+      },
+      process.env.JWT_SECRET || 'fallback_jwt_secret_for_development',
+      {
+        expiresIn: process.env.JWT_EXPIRE || '30d'
+      }
   );
 };
 

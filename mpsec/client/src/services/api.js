@@ -1,46 +1,72 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5012/api',  // Port auf 5005 angepasst
+    baseURL: 'http://localhost:5005/api',
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
     }
 });
 
-// Token aus localStorage hinzufügen, falls vorhanden
+// Initialen Token aus localStorage hinzufügen, falls vorhanden
 const token = localStorage.getItem('token');
 if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 }
 
-// Interceptor für API-Fehler
-api.interceptors.response.use(
-    (response) => response,
+// Request-Interceptor für Debugging
+api.interceptors.request.use(
+    (config) => {
+        // Debug-Ausgabe für API-Anfragen
+        if (process.env.NODE_ENV === 'development') {
+            console.debug(`API-Anfrage: ${config.method.toUpperCase()} ${config.url}`);
+        }
+        return config;
+    },
     (error) => {
-        // Detailliertere Fehlerausgabe
+        return Promise.reject(error);
+    }
+);
+
+// Response-Interceptor für Fehlerbehandlung
+api.interceptors.response.use(
+    (response) => {
+        // Erfolgreiche Antwort
+        if (process.env.NODE_ENV === 'development') {
+            console.debug(`API-Antwort (${response.status}): ${response.config.method.toUpperCase()} ${response.config.url}`);
+        }
+        return response;
+    },
+    (error) => {
+        // Fehlerhafte Antwort
         console.error('API-Fehler:', error);
 
         if (error.response) {
-            // Der Server hat geantwortet, aber mit einem Status-Code außerhalb von 2xx
+            // Server hat mit einem Fehlercode geantwortet
             console.error('Antwort vom Server:', {
                 status: error.response.status,
                 headers: error.response.headers,
                 data: error.response.data
             });
+
+            // 401 Unauthorized: Token ist ungültig oder abgelaufen
+            if (error.response.status === 401) {
+                // Token aus localStorage entfernen
+                localStorage.removeItem('token');
+                // Authorization-Header entfernen
+                delete api.defaults.headers.common['Authorization'];
+
+                // Optional: Automatisch zur Login-Seite umleiten
+                // window.location.href = '/login';
+            }
         } else if (error.request) {
-            // Die Anfrage wurde gesendet, aber es kam keine Antwort
+            // Keine Antwort vom Server erhalten
             console.error('Keine Antwort erhalten:', error.request);
         } else {
-            // Fehler beim Aufsetzen der Anfrage
-            console.error('Fehler beim Erstellen der Anfrage:', error.message);
+            // Fehler beim Erstellen der Anfrage
+            console.error('Anfrage-Fehler:', error.message);
         }
 
-        // Wenn der Fehler ein 401 (Unauthorized) ist, dann Benutzer ausloggen
-        if (error.response && error.response.status === 401) {
-            localStorage.removeItem('token');
-            delete api.defaults.headers.common['Authorization'];
-        }
         return Promise.reject(error);
     }
 );
