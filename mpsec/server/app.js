@@ -18,11 +18,17 @@ app.use(express.json());
 
 // CORS-Konfiguration erweitert
 app.use(cors({
-    // Erlaube Anfragen von beiden Ports
-    origin: [
-        'http://localhost:5012',
-        'http://localhost:3000'
-    ],
+    origin: function (origin, callback) {
+        // Erlaubt Anfragen ohne Origin (wie mobile Apps, Postman)
+        if (!origin) return callback(null, true);
+
+        // Erlaubt Anfragen von allen Local-Domains
+        if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+            return callback(null, true);
+        }
+
+        callback(new Error('Nicht durch CORS erlaubt'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
