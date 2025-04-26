@@ -43,44 +43,86 @@ exports.register = async (req, res, next) => {
 // @access  Public
 exports.login = async (req, res, next) => {
   try {
+    console.log('=== LOGIN VERSUCH ===');
     const { username, password } = req.body;
 
-    console.log('Anmeldeversuch:', { username });
+    console.log('Anmeldeversuch für:', { username });
+
+    // FEHLERSUCHE: Ausgabe für weitere Informationen
+    console.log('Verfügbare Umgebungsvariablen:', {
+      JWT_SECRET: process.env.JWT_SECRET ? 'Vorhanden' : 'Fehlt',
+      NODE_ENV: process.env.NODE_ENV,
+      MONGO_URI: process.env.MONGO_URI ? 'Vorhanden' : 'Fehlt'
+    });
 
     // Prüfen, ob Benutzername und Passwort vorhanden sind
     if (!username || !password) {
+      console.log('Fehlende Anmeldedaten');
       return res.status(400).json({
         success: false,
         message: 'Bitte gib Benutzername und Passwort ein'
       });
     }
 
-    // Benutzer in DB suchen (mit Passwort)
-    const user = await User.findOne({ username }).select('+password');
-    if (!user) {
-      console.log('Benutzer nicht gefunden:', { username });
-      return res.status(401).json({
+    try {
+      // Benutzer in DB suchen (mit Passwort)
+      console.log('Suche Benutzer in der Datenbank...');
+      const user = await User.findOne({ username }).select('+password');
+
+      if (!user) {
+        console.log('Benutzer nicht gefunden:', { username });
+        return res.status(401).json({
+          success: false,
+          message: 'Ungültige Anmeldedaten'
+        });
+      }
+
+      console.log('Benutzer gefunden:', { id: user._id, username: user.username });
+
+      try {
+        // Passwort überprüfen
+        console.log('Prüfe Passwort...');
+        const isMatch = await user.matchPassword(password);
+
+        if (!isMatch) {
+          console.log('Passwort stimmt nicht überein:', { username });
+          return res.status(401).json({
+            success: false,
+            message: 'Ungültige Anmeldedaten'
+          });
+        }
+
+        console.log('Passwort korrekt, generiere Token...');
+
+        try {
+          // Token erstellen und zurückgeben
+          sendTokenResponse(user, 200, res);
+        } catch (tokenError) {
+          console.error('Fehler bei der Token-Generierung:', tokenError);
+          return res.status(500).json({
+            success: false,
+            message: 'Fehler bei der Token-Generierung',
+            error: process.env.NODE_ENV === 'development' ? tokenError.message : undefined
+          });
+        }
+      } catch (passwordError) {
+        console.error('Fehler beim Passwort-Vergleich:', passwordError);
+        return res.status(500).json({
+          success: false,
+          message: 'Fehler beim Passwort-Vergleich',
+          error: process.env.NODE_ENV === 'development' ? passwordError.message : undefined
+        });
+      }
+    } catch (dbError) {
+      console.error('Datenbank-Fehler:', dbError);
+      return res.status(500).json({
         success: false,
-        message: 'Ungültige Anmeldedaten'
+        message: 'Datenbank-Fehler',
+        error: process.env.NODE_ENV === 'development' ? dbError.message : undefined
       });
     }
-
-    // Passwort überprüfen
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      console.log('Passwort stimmt nicht überein:', { username });
-      return res.status(401).json({
-        success: false,
-        message: 'Ungültige Anmeldedaten'
-      });
-    }
-
-    console.log('Benutzer angemeldet:', { id: user._id, username: user.username });
-
-    // Token erstellen und zurückgeben
-    sendTokenResponse(user, 200, res);
   } catch (err) {
-    console.error('Login-Fehler:', err);
+    console.error('Allgemeiner Login-Fehler:', err);
     res.status(500).json({
       success: false,
       message: 'Fehler bei der Anmeldung',
@@ -116,18 +158,27 @@ exports.getMe = async (req, res, next) => {
 
 // Hilfsfunktion zum Erstellen und Senden des JWT-Tokens
 const sendTokenResponse = (user, statusCode, res) => {
-  // Token erstellen
-  const token = user.getSignedJwtToken();
+  try {
+    // Token erstellen
+    const token = user.getSignedJwtToken();
 
-  // Debug-Ausgabe für Token-Generation
-  console.log('Token generiert für:', { id: user._id, username: user.username });
+    // Debug-Ausgabe für Token-Generation
+    console.log('Token generiert für:', { id: user._id, username: user.username });
 
-  res.status(statusCode).json({
-    success: true,
-    token,
-    user: {
-      id: user._id,
-      username: user.username
-    }
-  });
+    res.status(statusCode).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        username: user.username
+      }
+    });
+  } catch (error) {
+    console.error('Fehler in sendTokenResponse:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Fehler bei der Token-Generierung',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
 };

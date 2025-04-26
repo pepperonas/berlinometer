@@ -1,7 +1,19 @@
 import axios from 'axios';
 
+// Bestimme den Basis-URL basierend auf der Umgebung
+let baseURL = '/api'; // Standard für lokale Entwicklung
+
+// Wenn wir auf dem Produktionsserver sind (über /mpsec erreichbar)
+// oder wenn wir einen speziellen Pfad in der URL haben
+if (window.location.pathname.startsWith('/mpsec') ||
+    process.env.NODE_ENV === 'production') {
+    baseURL = '/mpsec/api';
+}
+
+console.log('[DEBUG] API baseURL:', baseURL);
+
 const api = axios.create({
-    baseURL: '/api', // Relative URL statt http://localhost:5012/api
+    baseURL,
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
@@ -17,10 +29,11 @@ if (token) {
 // Request-Interceptor für Debugging
 api.interceptors.request.use(
     (config) => {
-        // Debug-Ausgabe für API-Anfragen
-        if (process.env.NODE_ENV === 'development') {
-            console.debug(`API-Anfrage: ${config.method.toUpperCase()} ${config.url}`);
-        }
+        // Immer Debug-Ausgabe für API-Anfragen
+        console.debug(`API-Anfrage: ${config.method.toUpperCase()} ${config.url}`);
+        console.debug('Vollständige URL:', `${config.baseURL}${config.url}`);
+        console.debug('Headers:', config.headers);
+
         return config;
     },
     (error) => {
@@ -32,9 +45,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => {
         // Erfolgreiche Antwort
-        if (process.env.NODE_ENV === 'development') {
-            console.debug(`API-Antwort (${response.status}): ${response.config.method.toUpperCase()} ${response.config.url}`);
-        }
+        console.debug(`API-Antwort (${response.status}): ${response.config.method.toUpperCase()} ${response.config.url}`);
         return response;
     },
     (error) => {
@@ -46,7 +57,9 @@ api.interceptors.response.use(
             console.error('Antwort vom Server:', {
                 status: error.response.status,
                 headers: error.response.headers,
-                data: error.response.data
+                data: error.response.data,
+                url: error.config.url,
+                fullUrl: `${error.config.baseURL}${error.config.url}`
             });
 
             // 401 Unauthorized: Token ist ungültig oder abgelaufen
@@ -55,13 +68,11 @@ api.interceptors.response.use(
                 localStorage.removeItem('token');
                 // Authorization-Header entfernen
                 delete api.defaults.headers.common['Authorization'];
-
-                // Optional: Automatisch zur Login-Seite umleiten
-                // window.location.href = '/login';
             }
         } else if (error.request) {
             // Keine Antwort vom Server erhalten
             console.error('Keine Antwort erhalten:', error.request);
+            console.error('Anfrage-URL:', `${error.config.baseURL}${error.config.url}`);
         } else {
             // Fehler beim Erstellen der Anfrage
             console.error('Anfrage-Fehler:', error.message);
@@ -70,5 +81,22 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// Hilfsfunktion für direkte API-Tests (kann in der Konsole aufgerufen werden)
+window.testApi = async (path = '/auth/login', method = 'post', data = {}) => {
+    try {
+        console.log(`Teste API-Endpunkt: ${baseURL}${path}`);
+        const response = await api({
+            method,
+            url: path,
+            data
+        });
+        console.log('API-Test erfolgreich:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('API-Test fehlgeschlagen:', error);
+        throw error;
+    }
+};
 
 export default api;
