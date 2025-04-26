@@ -22,8 +22,7 @@ function App() {
         <ThemeProvider theme={theme}>
             <GlobalStyle/>
             <AuthProvider>
-                <Router future={{v7_startTransition: true, v7_relativeSplatPath: true}}>
-                    <Routes>
+                <Router basename="/mpsec" future={{v7_startTransition: true, v7_relativeSplatPath: true}}>                    <Routes>
                         <Route path="/login" element={<Login/>}/>
                         <Route path="/register" element={<Register/>}/>
 
