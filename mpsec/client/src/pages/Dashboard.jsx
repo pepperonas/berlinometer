@@ -2,17 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import api from '../services/api';
-import { 
-  Button, 
-  Card, 
-  CardContent, 
-  Grid, 
-  PageHeader, 
-  PageTitle, 
+import {
+  Button,
+  Card,
+  CardContent,
+  Grid,
+  PageHeader,
+  PageTitle,
   Alert,
   LoaderContainer,
   Loader,
-  Badge
+  Badge,
+  ButtonGroup
 } from '../components/styled';
 
 const EmptyState = styled.div`
@@ -24,7 +25,7 @@ const EmptyState = styled.div`
 const TokenCard = styled(Card)`
   transition: ${({ theme }) => theme.transitions.default};
   cursor: pointer;
-  
+
   &:hover {
     transform: translateY(-4px);
     box-shadow: ${({ theme }) => theme.shadows.lg};
@@ -79,65 +80,82 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <LoaderContainer>
-        <Loader size="40px" />
-      </LoaderContainer>
+        <LoaderContainer>
+          <Loader size="40px" />
+        </LoaderContainer>
     );
   }
 
   return (
-    <>
-      <PageHeader>
-        <PageTitle>Deine 2FA-Tokens</PageTitle>
-        <Button 
-          as={Link} 
-          to="/tokens/add" 
-          variant="primary"
-        >
-          Neuen Token hinzufügen
-        </Button>
-      </PageHeader>
-
-      {error && <Alert type="error">{error}</Alert>}
-
-      {tokens.length === 0 ? (
-        <EmptyState>
-          <h3>Keine Tokens vorhanden</h3>
-          <p>Füge deinen ersten 2FA-Token hinzu, um zu beginnen</p>
-          <Button 
-            as={Link} 
-            to="/tokens/add" 
-            variant="primary"
-            style={{ marginTop: '1rem' }}
-          >
-            Token hinzufügen
-          </Button>
-        </EmptyState>
-      ) : (
-        <Grid>
-          {tokens.map((token) => (
-            <TokenCard 
-              key={token._id} 
-              as={Link} 
-              to={`/tokens/${token._id}`}
-              style={{ textDecoration: 'none' }}
+      <>
+        <PageHeader>
+          <PageTitle>Deine 2FA-Tokens</PageTitle>
+          <ButtonGroup>
+            <Button
+                as={Link}
+                to="/tokens/add"
+                variant="primary"
             >
-              <CardContent>
-                <TokenName>{token.name}</TokenName>
-                {token.issuer && <TokenIssuer>{token.issuer}</TokenIssuer>}
-                
-                <TokenInfo>
-                  <TokenActions>
-                    <TokenType type="primary">{token.type}</TokenType>
-                    <TokenType>{token.digits} Ziffern</TokenType>
-                  </TokenActions>
-                </TokenInfo>
-              </CardContent>
-            </TokenCard>
-          ))}
-        </Grid>
-      )}
-    </>
+              Neuen Token hinzufügen
+            </Button>
+            <Button
+                as={Link}
+                to="/tokens/import"
+                variant="outline"
+            >
+              Tokens importieren
+            </Button>
+          </ButtonGroup>
+        </PageHeader>
+
+        {error && <Alert type="error">{error}</Alert>}
+
+        {tokens.length === 0 ? (
+            <EmptyState>
+              <h3>Keine Tokens vorhanden</h3>
+              <p>Füge deinen ersten 2FA-Token hinzu, um zu beginnen</p>
+              <ButtonGroup style={{ marginTop: '1rem', justifyContent: 'center' }}>
+                <Button
+                    as={Link}
+                    to="/tokens/add"
+                    variant="primary"
+                >
+                  Token hinzufügen
+                </Button>
+                <Button
+                    as={Link}
+                    to="/tokens/import"
+                    variant="outline"
+                >
+                  Tokens importieren
+                </Button>
+              </ButtonGroup>
+            </EmptyState>
+        ) : (
+            <Grid>
+              {tokens.map((token) => (
+                  <TokenCard
+                      key={token._id}
+                      as={Link}
+                      to={`/tokens/${token._id}`}
+                      style={{ textDecoration: 'none' }}
+                  >
+                    <CardContent>
+                      <TokenName>{token.name}</TokenName>
+                      {token.issuer && <TokenIssuer>{token.issuer}</TokenIssuer>}
+
+                      <TokenInfo>
+                        <TokenActions>
+                          <TokenType type="primary">{token.type}</TokenType>
+                          <TokenType>{token.digits} Ziffern</TokenType>
+                        </TokenActions>
+                      </TokenInfo>
+                    </CardContent>
+                  </TokenCard>
+              ))}
+            </Grid>
+        )}
+      </>
   );
 };
 

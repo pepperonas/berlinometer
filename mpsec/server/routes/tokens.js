@@ -1,14 +1,15 @@
 const express = require('express');
 const {
-  getTokens,
-  getToken,
-  createToken,
-  updateToken,
-  deleteToken,
-  generateCode,
-  generateQRCode
+    getTokens,
+    getToken,
+    createToken,
+    updateToken,
+    deleteToken,
+    generateCode,
+    generateQRCode,
+    importTokens
 } = require('../controllers/tokens');
-const { protect } = require('../middleware/auth');
+const {protect} = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -16,17 +17,18 @@ const router = express.Router();
 router.use(protect);
 
 router
-  .route('/')
-  .get(getTokens)
-  .post(createToken);
+    .route('/')
+    .get(getTokens)
+    .post(createToken);
 
 router
-  .route('/:id')
-  .get(getToken)
-  .put(updateToken)
-  .delete(deleteToken);
+    .route('/:id')
+    .get(getToken)
+    .put(updateToken)
+    .delete(deleteToken);
 
 router.get('/:id/code', generateCode);
 router.get('/:id/qrcode', generateQRCode);
+router.post('/import', importTokens);
 
 module.exports = router;

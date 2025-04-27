@@ -218,3 +218,69 @@ exports.generateQRCode = async (req, res, next) => {
         next(err);
     }
 };
+
+exports.importTokens = async (req, res, next) => {
+    try {
+        const { tokens } = req.body;
+
+        if (!tokens || !Array.isArray(tokens)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ungültiges Format: Ein Array von Tokens wird erwartet'
+            });
+        }
+
+        // Statistik für den Import
+        const stats = {
+            total: tokens.length,
+            imported: 0,
+            skipped: 0,
+            errors: []
+        };
+
+        // Tokens nacheinander verarbeiten
+        for (const tokenData of tokens) {
+            try {
+                // Minimale Validierung der erforderlichen Felder
+                if (!tokenData.Secret || !tokenData.Username) {
+                    stats.skipped++;
+                    stats.errors.push(`Token ohne Secret oder Username übersprungen`);
+                    continue;
+                }
+
+                // Token-Daten transformieren in das Format des Models
+                const newToken = {
+                    name: tokenData.Username || 'Importierter Token',
+                    secret: tokenData.Secret,
+                    issuer: tokenData.Issuer || '',
+                    type: 'totp', // Standard ist TOTP
+                    algorithm: tokenData.Algorithm ? tokenData.Algorithm.replace('HMAC-', '') : 'SHA1',
+                    digits: tokenData.Digits || 6,
+                    period: tokenData.Period || 30,
+                    user: req.user.id // Zum aktuellen Benutzer zuweisen
+                };
+
+                // Token in der Datenbank speichern
+                await Token.create(newToken);
+                stats.imported++;
+            } catch (tokenError) {
+                console.error('Fehler beim Importieren eines Tokens:', tokenError);
+                stats.skipped++;
+                stats.errors.push(`Token konnte nicht importiert werden: ${tokenError.message}`);
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                total: stats.total,
+                imported: stats.imported,
+                skipped: stats.skipped,
+                errors: stats.errors.length > 0 ? stats.errors : undefined
+            }
+        });
+    } catch (err) {
+        console.error('Import-Fehler:', err);
+        next(err);
+    }
+};

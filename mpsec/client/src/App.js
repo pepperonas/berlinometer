@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import TokenDetail from './pages/TokenDetail';
 import AddToken from './pages/AddToken';
 import EditToken from './pages/EditToken';
+import ImportTokens from './pages/ImportTokens'; // Neue Import-Seite
 
 // Importiere Komponenten
 import Layout from './components/Layout';
@@ -22,7 +23,8 @@ function App() {
         <ThemeProvider theme={theme}>
             <GlobalStyle/>
             <AuthProvider>
-                <Router basename="/mpsec" future={{v7_startTransition: true, v7_relativeSplatPath: true}}>                    <Routes>
+                <Router basename="/mpsec" future={{v7_startTransition: true, v7_relativeSplatPath: true}}>
+                    <Routes>
                         <Route path="/login" element={<Login/>}/>
                         <Route path="/register" element={<Register/>}/>
 
@@ -30,6 +32,7 @@ function App() {
                             <Route element={<Layout/>}>
                                 <Route path="/dashboard" element={<Dashboard/>}/>
                                 <Route path="/tokens/add" element={<AddToken/>}/>
+                                <Route path="/tokens/import" element={<ImportTokens/>}/>
                                 <Route path="/tokens/:id" element={<TokenDetail/>}/>
                                 <Route path="/tokens/:id/edit" element={<EditToken/>}/>
                             </Route>
