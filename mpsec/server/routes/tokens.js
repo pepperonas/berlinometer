@@ -7,7 +7,10 @@ const {
     deleteToken,
     generateCode,
     generateQRCode,
-    importTokens
+    importTokens,
+    deleteAllTokens,
+    generateSimpleCode,
+    generateOTPManagerCode
 } = require('../controllers/tokens');
 const {protect} = require('../middleware/auth');
 
@@ -19,7 +22,8 @@ router.use(protect);
 router
     .route('/')
     .get(getTokens)
-    .post(createToken);
+    .post(createToken)
+    .delete(deleteAllTokens);
 
 router
     .route('/:id')
@@ -28,6 +32,8 @@ router
     .delete(deleteToken);
 
 router.get('/:id/code', generateCode);
+router.get('/:id/simple-code', generateSimpleCode);  // Jetzt kann diese Route funktionieren
+router.get('/:id/otpmanager-code', generateOTPManagerCode);
 router.get('/:id/qrcode', generateQRCode);
 router.post('/import', importTokens);
 
