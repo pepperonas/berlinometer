@@ -10,7 +10,8 @@ const {
     importTokens,
     deleteAllTokens,
     generateSimpleCode,
-    generateOTPManagerCode
+    generateOTPManagerCode,
+    debugTOTP
 } = require('../controllers/tokens');
 const {protect} = require('../middleware/auth');
 
@@ -32,9 +33,10 @@ router
     .delete(deleteToken);
 
 router.get('/:id/code', generateCode);
-router.get('/:id/simple-code', generateSimpleCode);  // Jetzt kann diese Route funktionieren
+router.get('/:id/simple-code', generateSimpleCode);
 router.get('/:id/otpmanager-code', generateOTPManagerCode);
 router.get('/:id/qrcode', generateQRCode);
+router.get('/:id/debug', debugTOTP);
 router.post('/import', importTokens);
 
 module.exports = router;

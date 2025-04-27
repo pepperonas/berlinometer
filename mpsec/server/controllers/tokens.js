@@ -374,63 +374,131 @@ exports.generateQRCode = async (req, res, next) => {
 
 exports.importTokens = async (req, res, next) => {
     try {
-        const {tokens} = req.body;
+        let tokensArray = [];
+        const bodyData = req.body;
 
-        if (!tokens || !Array.isArray(tokens)) {
+        // Erkennen des JSON-Formats
+        if (Array.isArray(bodyData.tokens)) {
+            // OTPManager Format
+            tokensArray = bodyData.tokens;
+            console.log('OTPManager-Format erkannt, Anzahl Tokens:', tokensArray.length);
+        } else if (bodyData.services && Array.isArray(bodyData.services)) {
+            // Aegis/Raivo-ähnliches Format
+            tokensArray = bodyData.services;
+            console.log('Aegis/Raivo-Format erkannt, Anzahl Tokens:', tokensArray.length);
+        } else if (Array.isArray(bodyData)) {
+            // Direktes Array
+            tokensArray = bodyData;
+            console.log('Direktes Array-Format erkannt, Anzahl Tokens:', tokensArray.length);
+        } else {
             return res.status(400).json({
                 success: false,
-                message: 'Ungültiges Format: Ein Array von Tokens wird erwartet'
+                message: 'Ungültiges JSON-Format: Weder OTPManager- noch Aegis/Raivo-Format erkannt'
             });
         }
 
         // Statistik für den Import
         const stats = {
-            total: tokens.length,
+            total: tokensArray.length,
             imported: 0,
             skipped: 0,
             errors: []
         };
 
+        // Base32-Alphabet zur Validierung
+        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
         // Tokens nacheinander verarbeiten
-        for (const tokenData of tokens) {
+        for (const tokenData of tokensArray) {
             try {
-                console.log('Importiere Token:', tokenData.Username);
+                // Formatspezifische Extraktion der Werte
+                let name, secret, issuer, algorithm, digits, period, tokenType;
+
+                // OTPManager-Format
+                if (tokenData.Username !== undefined) {
+                    console.log('Verarbeite OTPManager-Token:', tokenData.Username);
+                    name = tokenData.Username;
+                    secret = tokenData.Secret;
+                    issuer = tokenData.Issuer || '';
+                    algorithm = tokenData.Algorithm ? tokenData.Algorithm.replace('HMAC-', '') : 'SHA1';
+                    digits = parseInt(tokenData.Digits) || 6;
+                    period = parseInt(tokenData.Period) || 30;
+                    tokenType = 'totp'; // OTPManager verwendet hauptsächlich TOTP
+                }
+                // Aegis/Raivo-ähnliches Format
+                else if (tokenData.name !== undefined && tokenData.secret !== undefined) {
+                    console.log('Verarbeite Aegis/Raivo-Token:', tokenData.name);
+                    name = tokenData.otp?.account || tokenData.otp?.label || tokenData.name;
+                    secret = tokenData.secret;
+                    issuer = tokenData.otp?.issuer || '';
+                    algorithm = tokenData.otp?.algorithm || 'SHA1';
+                    digits = parseInt(tokenData.otp?.digits) || 6;
+                    period = parseInt(tokenData.otp?.period) || 30;
+                    tokenType = (tokenData.otp?.tokenType || 'TOTP').toLowerCase();
+                } else {
+                    throw new Error('Unbekanntes Token-Format');
+                }
 
                 // Minimale Validierung der erforderlichen Felder
-                if (!tokenData.Secret || !tokenData.Username) {
+                if (!secret || !name) {
                     stats.skipped++;
-                    stats.errors.push(`Token ohne Secret oder Username übersprungen`);
+                    stats.errors.push(`Token ohne Secret oder Name/Username übersprungen`);
                     continue;
                 }
 
-                // Algorithmus korrekt parsen
-                let algorithm = 'SHA1'; // Standardwert
-                if (tokenData.Algorithm) {
-                    // Entferne "HMAC-" Prefix und normalisiere
-                    algorithm = tokenData.Algorithm.replace('HMAC-', '').toUpperCase();
-                    // Prüfe auf gültige Algorithmen
-                    if (!['SHA1', 'SHA256', 'SHA512'].includes(algorithm)) {
-                        algorithm = 'SHA1'; // Fallback auf SHA1
-                    }
+                // Algorithmus normalisieren
+                algorithm = algorithm.toUpperCase();
+                if (!['SHA1', 'SHA256', 'SHA512'].includes(algorithm)) {
+                    algorithm = 'SHA1'; // Fallback auf SHA1
                 }
 
-                // Secret bereinigen - entferne mögliche Leerzeichen und normalisiere Base32
-                let secret = tokenData.Secret.replace(/\s+/g, '').toUpperCase();
+                // Secret bereinigen und normalisieren
+                secret = secret.replace(/\s+/g, '').toUpperCase();
+
+                // Secret auf Base32-Kompatibilität prüfen und anpassen
+                const isValidBase32 = [...secret].every(char =>
+                    base32Chars.includes(char) || char === '='
+                );
+
+                // Für OTPManager-Format: Ersetzungen vornehmen, wenn nicht Base32-konform
+                if (tokenData.Username !== undefined && !isValidBase32) {
+                    console.log(`OTPManager-Token mit nicht-Base32-konformem Secret: ${secret.substring(0, 3)}...`);
+                    secret = secret
+                        .replace(/0/g, 'O')
+                        .replace(/1/g, 'I')
+                        .replace(/8/g, 'B')
+                        .replace(/9/g, 'C');
+
+                    // Nach Ersetzung nochmals prüfen
+                    const nowValid = [...secret].every(char =>
+                        base32Chars.includes(char) || char === '='
+                    );
+
+                    console.log(`Secret nach Ersetzung ${nowValid ? 'ist gültig' : 'immer noch ungültig'}: ${secret.substring(0, 3)}...`);
+                }
+
+                // Bei Aegis-Format: Secret direkt verwenden, da es bereits Base32-konform ist
+                if (tokenData.name !== undefined && !isValidBase32) {
+                    console.log(`Aegis-Token mit nicht-Base32-konformem Secret: ${secret.substring(0, 3)}...`);
+                    // Hier keine Ersetzungen, da Aegis für gewöhnlich valide Base32-Secrets exportiert
+                    stats.errors.push(`Warnung: Secret für ${name} nicht Base32-konform`);
+                }
 
                 // Debug-Ausgabe
-                console.log(`Importiere Token: User=${tokenData.Username}, Issuer=${tokenData.Issuer || 'Nicht angegeben'}`);
-                console.log(`Konfiguration: Algorithm=${algorithm}, Digits=${tokenData.Digits || 6}, Period=${tokenData.Period || 30}`);
+                console.log(`Importiere Token: Name=${name}, Issuer=${issuer || 'Nicht angegeben'}`);
+                console.log(`Konfiguration: Algorithm=${algorithm}, Digits=${digits}, Period=${period}`);
+                console.log(`Secret-Länge: ${secret.length}`);
 
-                // Token-Daten transformieren in das Format des Models
+                // Token-Daten im Format des Models
                 const newToken = {
-                    name: tokenData.Username || 'Importierter Token',
+                    name: name,
                     secret: secret,
-                    issuer: tokenData.Issuer || '',
-                    type: 'totp', // Standard ist TOTP
+                    issuer: issuer,
+                    type: tokenType,
                     algorithm: algorithm,
-                    digits: parseInt(tokenData.Digits) || 6,
-                    period: parseInt(tokenData.Period) || 30,
-                    user: req.user.id // Zum aktuellen Benutzer zuweisen
+                    digits: digits,
+                    period: period,
+                    user: req.user.id
                 };
 
                 // Token in der Datenbank speichern
@@ -463,27 +531,23 @@ exports.generateOTPManagerCode = async (req, res, next) => {
         const token = await Token.findById(req.params.id);
 
         if (!token) {
-            return res.status(404).json({ message: 'Token nicht gefunden' });
+            return res.status(404).json({message: 'Token nicht gefunden'});
         }
 
         // Sicherstellen, dass der Token dem angemeldeten Benutzer gehört
         if (token.user.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Nicht berechtigt, auf diesen Token zuzugreifen' });
+            return res.status(403).json({message: 'Nicht berechtigt, auf diesen Token zuzugreifen'});
         }
 
         // Analyse und Normalisierung des Secret-Formats
-        let secret = token.secret.replace(/\s+/g, '');
+        let secret = token.secret.replace(/\s+/g, '').toUpperCase();
 
-        // Speziell für OTPManager
-        // Prüfen, ob wir eine Base32-Konvertierung vornehmen müssen
-        const base32Chars = /^[A-Z2-7]+=*$/i;
-        if (!base32Chars.test(secret)) {
-            // Nicht-standardkonforme Zeichen ersetzen
-            secret = secret.replace(/8/g, 'B').replace(/9/g, 'C')
-                .replace(/0/g, 'O').replace(/1/g, 'I')
-                .replace(/4/g, '4').replace(/5/g, '5')
-                .replace(/6/g, '6');
-        }
+        // Speziell für OTPManager Secret: 0->O, 1->I, 8->B, 9->C
+        secret = secret
+            .replace(/0/g, 'O')
+            .replace(/1/g, 'I')
+            .replace(/8/g, 'B')
+            .replace(/9/g, 'C');
 
         // Aktueller Zeitstempel in Sekunden
         const now = Math.floor(Date.now() / 1000);
@@ -499,92 +563,81 @@ exports.generateOTPManagerCode = async (req, res, next) => {
 
         // HMAC berechnen
         const crypto = require('crypto');
-        let key;
 
-        // Verschiedene Secret-Formate testen
-        const possibleKeys = [
-            Buffer.from(secret, 'base32'), // Standard Base32
-            Buffer.from(secret),           // Direkter Buffer
-            Buffer.from(secret, 'utf8'),   // UTF-8
-            Buffer.from(secret, 'ascii'),  // ASCII
-            Buffer.from(secret, 'hex')     // Hex
-        ];
+        // Base32-Dekodierung manuell durchführen
+        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        let bits = '';
 
-        // Mehrere Möglichkeiten ausprobieren
-        for (let keyAttempt of possibleKeys) {
-            try {
-                const hmac = crypto.createHmac('sha1', keyAttempt);
-                hmac.update(counter);
-                const digest = hmac.digest();
-
-                // Offset berechnen
-                const offset = digest[digest.length - 1] & 0x0f;
-
-                // Code berechnen (RFC 4226)
-                let binary = ((digest[offset] & 0x7f) << 24) |
-                    ((digest[offset + 1] & 0xff) << 16) |
-                    ((digest[offset + 2] & 0xff) << 8) |
-                    (digest[offset + 3] & 0xff);
-
-                // Auf die gewünschte Anzahl von Stellen reduzieren
-                let code = (binary % Math.pow(10, token.digits)).toString().padStart(token.digits, '0');
-
-                // Verbleibende Zeit berechnen
-                const remainingTime = token.period - (now % token.period);
-
-                // Code als Variante merken
-                key = keyAttempt;
-
-                // Alle drei möglichen Codes zurücksenden (für Vergleich mit der App)
-                // Die Frontend-Komponente kann dann den korrekten Code anzeigen
-                res.status(200).json({
-                    success: true,
-                    data: {
-                        code: code,
-                        remainingTime: remainingTime,
-                        alternativeCodes: possibleKeys.map(k => {
-                            try {
-                                const h = crypto.createHmac('sha1', k);
-                                h.update(counter);
-                                const d = h.digest();
-                                const o = d[d.length - 1] & 0x0f;
-                                const b = ((d[o] & 0x7f) << 24) |
-                                    ((d[o + 1] & 0xff) << 16) |
-                                    ((d[o + 2] & 0xff) << 8) |
-                                    (d[o + 3] & 0xff);
-                                return (b % Math.pow(10, token.digits)).toString().padStart(token.digits, '0');
-                            } catch (e) {
-                                return "------";
-                            }
-                        })
-                    }
-                });
-                return; // Beenden, wenn wir erfolgreich sind
-            } catch (e) {
-                // Nächsten Schlüssel versuchen
-                continue;
+        // Jedes Zeichen des Secrets in 5 Bits umwandeln
+        for (let i = 0; i < secret.length; i++) {
+            const index = base32Chars.indexOf(secret[i]);
+            if (index !== -1) {
+                bits += index.toString(2).padStart(5, '0');
             }
         }
 
-        // Wenn keiner der Versuche funktioniert hat
-        throw new Error("Konnte keinen gültigen Code generieren");
+        // Bits in Bytes umwandeln
+        const bytes = [];
+        for (let i = 0; i < bits.length; i += 8) {
+            if (i + 8 <= bits.length) {
+                bytes.push(parseInt(bits.substring(i, i + 8), 2));
+            }
+        }
 
-    } catch (err) {
-        console.error('OTPManager-spezifische Fehler:', err);
-        // Fallback zur einfachen Code-Generierung
-        const now = Math.floor(Date.now() / 1000);
-        const step = Math.floor(now / token.period);
-        const code = (step % Math.pow(10, token.digits)).toString().padStart(token.digits, '0');
+        // Secret-Key als Buffer
+        const secretKey = Buffer.from(bytes);
+
+        // HMAC-SHA1 berechnen
+        const hmac = crypto.createHmac('sha1', secretKey);
+        hmac.update(counter);
+        const digest = hmac.digest();
+
+        // Offset berechnen (RFC 4226)
+        const offset = digest[digest.length - 1] & 0x0f;
+
+        // Binary-Wert extrahieren
+        const binary = ((digest[offset] & 0x7f) << 24) |
+            ((digest[offset + 1] & 0xff) << 16) |
+            ((digest[offset + 2] & 0xff) << 8) |
+            (digest[offset + 3] & 0xff);
+
+        // Code berechnen (letzte n Stellen)
+        const code = (binary % Math.pow(10, token.digits)).toString().padStart(token.digits, '0');
+
+        // Verbleibende Zeit berechnen
         const remainingTime = token.period - (now % token.period);
 
-        res.status(200).json({
+        // Erfolgreiche Antwort
+        return res.status(200).json({
             success: true,
             data: {
                 code: code,
-                remainingTime: remainingTime,
-                message: "Fallback-Methode (Token möglicherweise inkorrekt)"
+                remainingTime: remainingTime
             }
         });
+    } catch (err) {
+        console.error('OTPManager-Fehler:', err);
+
+        // Fallback zur einfachen Code-Generierung
+        try {
+            const now = Math.floor(Date.now() / 1000);
+            const step = Math.floor(now / token.period);
+
+            // Sehr einfacher Code-Generierungsalgorithmus für Notfall-Fallback
+            const code = (step % Math.pow(10, token.digits)).toString().padStart(token.digits, '0');
+            const remainingTime = token.period - (now % token.period);
+
+            return res.status(200).json({
+                success: true,
+                data: {
+                    code: code,
+                    remainingTime: remainingTime,
+                    message: "Fallback-Methode aktiviert (Code möglicherweise nicht korrekt)"
+                }
+            });
+        } catch (fallbackError) {
+            next(err);
+        }
     }
 };
 
@@ -600,6 +653,314 @@ exports.deleteAllTokens = async (req, res, next) => {
         });
     } catch (err) {
         console.error('Fehler beim Löschen aller Tokens:', err);
+        next(err);
+    }
+};
+
+exports.debugTOTP = async (req, res, next) => {
+    try {
+        const token = await Token.findById(req.params.id);
+        if (!token) return res.status(404).json({message: 'Token nicht gefunden'});
+        if (token.user.toString() !== req.user.id) return res.status(403).json({message: 'Nicht berechtigt'});
+
+        // Originales Secret aus der Datenbank
+        const originalSecret = token.secret;
+
+        // Aktueller Zeitstempel und Counter
+        const now = Math.floor(Date.now() / 1000);
+        const step = Math.floor(now / token.period);
+        const counter = Buffer.alloc(8);
+        for (let i = 0; i < 8; i++) {
+            counter[7 - i] = (step >>> (i * 8)) & 0xff;
+        }
+
+        // Alle möglichen Secret-Interpretationen
+        const secretVariants = [];
+
+        // 1. Original Secret
+        secretVariants.push({
+            name: "Original",
+            secret: originalSecret
+        });
+
+        // 2. Normalisiert (Leerzeichen entfernt, Großbuchstaben)
+        const normalized = originalSecret.replace(/\s+/g, '').toUpperCase();
+        secretVariants.push({
+            name: "Normalisiert",
+            secret: normalized
+        });
+
+        // 3. OTPManager-Ersetzungen (0->O, 1->I, 8->B, 9->C)
+        const otpManagerFixed = normalized
+            .replace(/0/g, 'O')
+            .replace(/1/g, 'I')
+            .replace(/8/g, 'B')
+            .replace(/9/g, 'C');
+        secretVariants.push({
+            name: "OTPManager-Format",
+            secret: otpManagerFixed
+        });
+
+        // 4. Aegis/Raivo Format (könnte Base32-Padding haben)
+        let aegisFormat = normalized;
+        while (aegisFormat.length % 8 !== 0) {
+            aegisFormat += '=';
+        }
+        secretVariants.push({
+            name: "Aegis/Raivo-Format",
+            secret: aegisFormat
+        });
+
+        // 5. ASCII-kodiertes Secret (UTF-8 ohne Base32)
+        secretVariants.push({
+            name: "ASCII",
+            secret: normalized
+        });
+
+        // Für jede Secret-Variante alle möglichen Kodierungen ausprobieren
+        const results = [];
+
+        const crypto = require('crypto');
+        const encodings = ['ascii', 'utf8', 'base32', 'hex', 'binary'];
+
+        for (const variant of secretVariants) {
+            const variantResults = [];
+
+            for (const encoding of encodings) {
+                try {
+                    // Secret in Buffer konvertieren mit verschiedenen Kodierungen
+                    let secretBuffer;
+
+                    if (encoding === 'base32') {
+                        // Manuelle Base32-Dekodierung, da Node.js kein natives base32 hat
+                        // (Hier verwenden wir die base32-Bibliothek oder eine eigene Impl.)
+                        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+                        let bits = '';
+
+                        // Jedes Zeichen in 5 Bits umwandeln
+                        for (let i = 0; i < variant.secret.length; i++) {
+                            if (variant.secret[i] === '=') continue; // Padding ignorieren
+                            const val = base32Chars.indexOf(variant.secret[i]);
+                            if (val >= 0) {
+                                bits += val.toString(2).padStart(5, '0');
+                            }
+                        }
+
+                        // Bits in Bytes umwandeln
+                        const bytes = [];
+                        for (let i = 0; i < bits.length; i += 8) {
+                            if (i + 8 <= bits.length) {
+                                bytes.push(parseInt(bits.substr(i, 8), 2));
+                            }
+                        }
+
+                        secretBuffer = Buffer.from(bytes);
+                    } else {
+                        // Standardkodierungen
+                        secretBuffer = Buffer.from(variant.secret, encoding);
+                    }
+
+                    // HMAC berechnen
+                    const hmac = crypto.createHmac('sha1', secretBuffer);
+                    hmac.update(counter);
+                    const digest = hmac.digest();
+
+                    // TOTP-Code nach RFC 6238 berechnen
+                    const offset = digest[digest.length - 1] & 0x0f;
+                    const binary = ((digest[offset] & 0x7f) << 24) |
+                        ((digest[offset + 1] & 0xff) << 16) |
+                        ((digest[offset + 2] & 0xff) << 8) |
+                        (digest[offset + 3] & 0xff);
+
+                    const code = (binary % Math.pow(10, token.digits)).toString().padStart(token.digits, '0');
+
+                    variantResults.push({
+                        encoding: encoding,
+                        code: code,
+                        bufferLength: secretBuffer.length,
+                        bufferStart: secretBuffer.toString('hex').substring(0, 10) + '...',
+                    });
+                } catch (e) {
+                    variantResults.push({
+                        encoding: encoding,
+                        error: e.message
+                    });
+                }
+            }
+
+            results.push({
+                variant: variant.name,
+                secret: variant.secret,
+                results: variantResults
+            });
+        }
+
+        // Verbleibende Zeit
+        const remainingTime = token.period - (now % token.period);
+
+        // Auch die Ergebnisse der Standardbibliotheken hinzufügen
+        const standardResults = [];
+        try {
+            const authenticator = require('otplib').authenticator;
+            authenticator.options = {digits: token.digits, period: token.period};
+            standardResults.push({
+                library: 'otplib.authenticator',
+                code: authenticator.generate(originalSecret)
+            });
+        } catch (e) {
+            standardResults.push({
+                library: 'otplib.authenticator',
+                error: e.message
+            });
+        }
+
+        try {
+            const totp = require('otplib').totp;
+            totp.options = {digits: token.digits, period: token.period, algorithm: 'sha1'};
+            standardResults.push({
+                library: 'otplib.totp',
+                code: totp.generate(originalSecret)
+            });
+        } catch (e) {
+            standardResults.push({
+                library: 'otplib.totp',
+                error: e.message
+            });
+        }
+
+        // Token-Informationen und alle Ergebnisse zurückgeben
+        return res.status(200).json({
+            success: true,
+            tokenInfo: {
+                name: token.name,
+                issuer: token.issuer,
+                algorithm: token.algorithm,
+                digits: token.digits,
+                period: token.period,
+                type: token.type
+            },
+            timing: {
+                now: now,
+                step: step,
+                remainingTime: remainingTime
+            },
+            standardLibraries: standardResults,
+            variants: results
+        });
+    } catch (err) {
+        console.error('TOTP Debug error:', err);
+        next(err);
+    }
+};
+
+exports.directTOTP = async (req, res, next) => {
+    try {
+        const token = await Token.findById(req.params.id);
+        if (!token) return res.status(404).json({message: 'Token nicht gefunden'});
+        if (token.user.toString() !== req.user.id) return res.status(403).json({message: 'Nicht berechtigt'});
+
+        // Secret normalisieren und alle Leerzeichen entfernen
+        let secret = token.secret.replace(/\s+/g, '').toUpperCase();
+
+        // Base32-Alphabet und Dekodierung
+        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
+        // Bei Aegis/Authy/anderer App: Das Secret ist bereits Base32-kodiert
+        // Keine Ersetzungen notwendig - nur Base32-Validierung
+        const isValidBase32 = [...secret].every(char => base32Chars.includes(char) || char === '=');
+
+        if (!isValidBase32) {
+            // Bei nicht gültigem Base32: OTPManager-Ersetzungen durchführen
+            secret = secret
+                .replace(/0/g, 'O')
+                .replace(/1/g, 'I')
+                .replace(/8/g, 'B')
+                .replace(/9/g, 'C');
+        }
+
+        // Padding hinzufügen, wenn nötig
+        while (secret.length % 8 !== 0) {
+            secret += '=';
+        }
+
+        // Base32 zu Binär dekodieren
+        let bits = '';
+        for (let i = 0; i < secret.length; i++) {
+            const char = secret[i];
+            if (char === '=') continue; // Padding überspringen
+
+            const index = base32Chars.indexOf(char);
+            if (index === -1) {
+                throw new Error(`Ungültiger Base32-Charakter: ${char}`);
+            }
+
+            // 5 Bits für jeden Base32-Charakter
+            bits += index.toString(2).padStart(5, '0');
+        }
+
+        // Bits zu Bytes konvertieren
+        const bytes = [];
+        for (let i = 0; i < bits.length; i += 8) {
+            if (i + 8 <= bits.length) {
+                bytes.push(parseInt(bits.substring(i, i + 8), 2));
+            }
+        }
+
+        // Secret-Key als Buffer
+        const secretKey = Buffer.from(bytes);
+
+        // Aktuellen Zeitstempel berechnen
+        const now = Math.floor(Date.now() / 1000);
+        const counter = Math.floor(now / token.period);
+
+        // Counter als Buffer (8 Bytes, big-endian)
+        const counterBuffer = Buffer.alloc(8);
+        for (let i = 0; i < 8; i++) {
+            counterBuffer[7 - i] = (counter >>> (i * 8)) & 0xff;
+        }
+
+        // HMAC-SHA1 berechnen
+        const crypto = require('crypto');
+        const hmac = crypto.createHmac('sha1', secretKey);
+        hmac.update(counterBuffer);
+        const hmacResult = hmac.digest();
+
+        // Dynamic truncation (RFC 4226)
+        const offset = hmacResult[hmacResult.length - 1] & 0x0f;
+        const binary = ((hmacResult[offset] & 0x7f) << 24) |
+            ((hmacResult[offset + 1] & 0xff) << 16) |
+            ((hmacResult[offset + 2] & 0xff) << 8) |
+            (hmacResult[offset + 3] & 0xff);
+
+        // Letzten n Ziffern extrahieren
+        const otp = binary % Math.pow(10, token.digits);
+
+        // Mit führenden Nullen formatieren
+        const code = otp.toString().padStart(token.digits, '0');
+
+        // Verbleibende Zeit berechnen
+        const remainingTime = token.period - (now % token.period);
+
+        // Ergebnis zurückgeben
+        return res.status(200).json({
+            success: true,
+            data: {
+                code,
+                remainingTime,
+                secretInfo: {
+                    originalLength: token.secret.length,
+                    normalizedLength: secret.length,
+                    base32Valid: isValidBase32,
+                    // Zeige nur Anfang und Ende des Secrets zur Überprüfung
+                    originalStart: token.secret.substring(0, 3),
+                    originalEnd: token.secret.substring(token.secret.length - 3),
+                    normalizedStart: secret.substring(0, 3),
+                    normalizedEnd: secret.substring(secret.length - 3)
+                }
+            }
+        });
+    } catch (err) {
+        console.error('Direkte TOTP-Generierung fehlgeschlagen:', err);
         next(err);
     }
 };
