@@ -11,7 +11,10 @@ import {
     Search,
     Smartphone,
     Sparkles,
-    Users
+    Users,
+    Code,
+    Heading,
+    Copy
 } from 'lucide-react';
 
 // Komponenten importieren
@@ -75,7 +78,7 @@ function App() {
     // Analysiert eine Website über die Backend-API
     const analyzeWebsite = async () => {
         if (!url) {
-            setError('Bitte geben Sie eine URL ein');
+            setError('Bitte gib eine URL ein');
             return;
         }
 
@@ -166,12 +169,12 @@ function App() {
     // Generiert SEO-Vorschläge mit ChatGPT API
     const generateSuggestions = async () => {
         if (!apiKey) {
-            setError('Bitte geben Sie einen ChatGPT API-Key ein');
+            setError('Bitte gib einen ChatGPT API-Key ein');
             return;
         }
 
         if (!results) {
-            setError('Bitte analysieren Sie zuerst die Website');
+            setError('Bitte analysiere zuerst die Website');
             return;
         }
 
@@ -681,10 +684,7 @@ Konzentriere dich besonders auf Bereiche mit niedrigen Scores. Wenn Meta-Tags fe
                                     </div>
                                 )}
 
-                                {/* Weitere Tabs würden hier folgen... */}
-
-                                {/* Halten wir diese Implementierung kürzer - andere Tabs würden ähnlich angepasst werden */}
-
+                                {/* KI-Empfehlungen Tab */}
                                 {activeTab === 'ai' && (
                                     <div className="text-text-primary">
                                         {!suggestions && !isGenerating && (
@@ -712,7 +712,181 @@ Konzentriere dich besonders auf Bereiche mit niedrigen Scores. Wenn Meta-Tags fe
                                             </div>
                                         )}
 
-                                        {/* Weitere AI-Tab Inhalte hier... */}
+                                        {isGenerating && (
+                                            <div className="text-center py-8">
+                                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-blue mb-4"></div>
+                                                <p className="text-text-secondary">KI-Empfehlungen werden generiert...</p>
+                                            </div>
+                                        )}
+
+                                        {/* Anzeige der KI-Empfehlungen */}
+                                        {suggestions && !isGenerating && (
+                                            <div className="space-y-6">
+                                                {/* Meta Tags Empfehlungen */}
+                                                {suggestions.metaTags && (
+                                                    <div className="bg-bg-dark p-4 rounded-xl">
+                                                        <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                                                            <FileText size={18} className="mr-2 text-accent-blue"/> Empfohlene Meta-Tags
+                                                        </h3>
+
+                                                        {suggestions.metaTags.title && (
+                                                            <div className="mb-4">
+                                                                <div className="font-medium text-text-primary mb-1">Meta-Title</div>
+                                                                <div className="p-3 bg-card-bg rounded-lg border border-bg-darker">
+                                                                    <p className="text-text-primary">{suggestions.metaTags.title}</p>
+                                                                    <p className="text-xs text-text-secondary mt-1">
+                                                                        {suggestions.metaTags.title.length} Zeichen (Optimal: 50-60)
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {suggestions.metaTags.description && (
+                                                            <div className="mb-4">
+                                                                <div className="font-medium text-text-primary mb-1">Meta-Description</div>
+                                                                <div className="p-3 bg-card-bg rounded-lg border border-bg-darker">
+                                                                    <p className="text-text-primary">{suggestions.metaTags.description}</p>
+                                                                    <p className="text-xs text-text-secondary mt-1">
+                                                                        {suggestions.metaTags.description.length} Zeichen (Optimal: 150-160)
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {suggestions.metaTags.additionalTags && suggestions.metaTags.additionalTags.length > 0 && (
+                                                            <div>
+                                                                <div className="font-medium text-text-primary mb-1">Weitere Meta-Tags</div>
+                                                                {suggestions.metaTags.additionalTags.map((tag, index) => (
+                                                                    <div key={index} className="p-3 bg-card-bg rounded-lg border border-bg-darker mb-2">
+                                                                        <div className="flex justify-between">
+                                                                            <span className="font-medium text-accent-blue">{tag.name}</span>
+                                                                            <span className="text-text-secondary text-sm">{tag.content.length} Zeichen</span>
+                                                                        </div>
+                                                                        <p className="text-text-primary mt-1">{tag.content}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+
+                                                        <div className="mt-3">
+                                                            <button className="text-accent-blue hover:underline text-sm flex items-center">
+                                                                <Copy size={14} className="mr-1"/> Alle Meta-Tags kopieren
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Überschriften Empfehlungen */}
+                                                {suggestions.headings && (
+                                                    <div className="bg-bg-dark p-4 rounded-xl">
+                                                        <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                                                            <Heading size={18} className="mr-2 text-accent-blue"/> Empfohlene Überschriften
+                                                        </h3>
+
+                                                        {suggestions.headings.h1Suggestion && (
+                                                            <div className="mb-4">
+                                                                <div className="font-medium text-text-primary mb-1">H1-Überschrift</div>
+                                                                <div className="p-3 bg-card-bg rounded-lg border border-bg-darker">
+                                                                    <p className="text-text-primary font-medium">{suggestions.headings.h1Suggestion}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {suggestions.headings.headingStructure && (
+                                                            <div>
+                                                                <div className="font-medium text-text-primary mb-1">Überschriftenstruktur</div>
+                                                                <div className="p-3 bg-card-bg rounded-lg border border-bg-darker">
+                                                                    <p className="text-text-primary whitespace-pre-line">{suggestions.headings.headingStructure}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Content Empfehlungen */}
+                                                {suggestions.content && (
+                                                    <div className="bg-bg-dark p-4 rounded-xl">
+                                                        <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                                                            <FileText size={18} className="mr-2 text-accent-blue"/> Inhaltsverbesserungen
+                                                        </h3>
+
+                                                        {suggestions.content.suggestions && (
+                                                            <div className="mb-4">
+                                                                <div className="font-medium text-text-primary mb-1">Content-Vorschläge</div>
+                                                                <div className="p-3 bg-card-bg rounded-lg border border-bg-darker">
+                                                                    <p className="text-text-primary whitespace-pre-line">{suggestions.content.suggestions}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {suggestions.content.keywordOptimization && (
+                                                            <div>
+                                                                <div className="font-medium text-text-primary mb-1">Keyword-Optimierung</div>
+                                                                <div className="p-3 bg-card-bg rounded-lg border border-bg-darker">
+                                                                    <p className="text-text-primary whitespace-pre-line">{suggestions.content.keywordOptimization}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Technische Empfehlungen */}
+                                                {suggestions.technical && (
+                                                    <div className="bg-bg-dark p-4 rounded-xl">
+                                                        <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                                                            <Code size={18} className="mr-2 text-accent-blue"/> Technische Verbesserungen
+                                                        </h3>
+
+                                                        {suggestions.technical.performanceTips && (
+                                                            <div className="mb-4">
+                                                                <div className="font-medium text-text-primary mb-1">Performance-Tipps</div>
+                                                                <div className="p-3 bg-card-bg rounded-lg border border-bg-darker">
+                                                                    <p className="text-text-primary whitespace-pre-line">{suggestions.technical.performanceTips}</p>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {suggestions.technical.codeSnippets && suggestions.technical.codeSnippets.length > 0 && (
+                                                            <div>
+                                                                <div className="font-medium text-text-primary mb-1">Code-Snippets</div>
+                                                                {suggestions.technical.codeSnippets.map((snippet, index) => (
+                                                                    <div key={index} className="mb-3">
+                                                                        <div className="text-sm text-text-primary mb-1">{snippet.description}</div>
+                                                                        <div className="p-3 bg-card-bg rounded-lg border border-bg-darker font-mono text-sm overflow-x-auto">
+                                                                            <pre className="text-text-primary">{snippet.code}</pre>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {/* Neuen Vorschlag generieren Button */}
+                                                <div className="flex justify-center">
+                                                    <button
+                                                        onClick={generateSuggestions}
+                                                        className="px-6 py-3 bg-accent-blue text-white rounded-xl hover:bg-opacity-90 flex items-center transition-all duration-300"
+                                                    >
+                                                        Neue Empfehlungen generieren <Sparkles size={18} className="ml-2"/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Fallback für den Fall, dass suggestions keine bekannte Struktur hat */}
+                                        {suggestions && !isGenerating && !suggestions.metaTags && !suggestions.headings && !suggestions.content && !suggestions.technical && (
+                                            <div className="bg-bg-dark p-4 rounded-xl">
+                                                <h3 className="text-md font-semibold text-text-primary mb-3 flex items-center">
+                                                    <FileText size={18} className="mr-2 text-accent-blue"/> KI-Empfehlungen
+                                                </h3>
+                                                <div className="p-3 bg-card-bg rounded-lg border border-bg-darker">
+                                                    <pre className="text-text-primary whitespace-pre-wrap">
+                                                        {suggestions.rawResponse ? suggestions.rawResponse : JSON.stringify(suggestions, null, 2)}
+                                                    </pre>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
 
