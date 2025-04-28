@@ -48,7 +48,11 @@ const ServerTimeInfo = () => {
             }
         };
 
+        // Initial und dann alle 10 Sekunden die Serverzeit abrufen
         fetchServerTime();
+        const serverTimeInterval = setInterval(fetchServerTime, 10000);
+
+        return () => clearInterval(serverTimeInterval);
     }, []);
 
     // Lokale Zeit aktualisieren

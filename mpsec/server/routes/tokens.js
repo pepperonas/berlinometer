@@ -6,7 +6,9 @@ const {
     updateToken,
     deleteToken,
     generateCode,
+    generateTimeAdjustedCode,
     generateQRCode,
+    generateExtendedCode,
     importTokens,
     deleteAllTokens,
     generateSimpleCode,
@@ -40,5 +42,8 @@ router.get('/:id/simple-code', generateSimpleCode);
 router.get('/:id/otpmanager-code', generateOTPManagerCode);
 router.get('/:id/qrcode', generateQRCode);
 router.post('/import', importTokens);
+router.get('/:id/adjusted-code', generateTimeAdjustedCode);
+router.get('/:id/extended-code', require('../controllers/tokens').generateExtendedCode);
+
 
 module.exports = router;

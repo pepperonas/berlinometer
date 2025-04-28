@@ -8,6 +8,7 @@ import {
     Button,
     ButtonGroup,
     Card,
+    Input,
     Loader,
     LoaderContainer,
     PageHeader,
@@ -80,37 +81,6 @@ const ActionsContainer = styled.div`
     margin-top: ${({theme}) => theme.spacing.xl};
 `;
 
-const FallbackToggle = styled.div`
-    display: flex;
-    align-items: center;
-    margin-bottom: ${({theme}) => theme.spacing.md};
-    color: ${({theme}) => theme.colors.textSecondary};
-    font-size: ${({theme}) => theme.typography.fontSize.sm};
-`;
-
-const Toggle = styled.div`
-    position: relative;
-    width: 40px;
-    height: 20px;
-    border-radius: 10px;
-    background-color: ${({active, theme}) => active ? theme.colors.accentBlue : '#4a5568'};
-    margin-right: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-
-    &:after {
-        content: '';
-        position: absolute;
-        top: 2px;
-        left: ${({active}) => active ? '22px' : '2px'};
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background-color: white;
-        transition: all 0.3s ease;
-    }
-`;
-
 const TokenDetail = () => {
     const {id} = useParams();
     const navigate = useNavigate();
@@ -123,11 +93,68 @@ const TokenDetail = () => {
     const [showQRCode, setShowQRCode] = useState(false);
     const [qrCodeUrl, setQRCodeUrl] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [fallbackMode, setFallbackMode] = useState(false);
     const [errorCount, setErrorCount] = useState(0);
     const [codeGenerationAttempts, setCodeGenerationAttempts] = useState(0);
     const [isGeneratingCode, setIsGeneratingCode] = useState(false);
     const intervalRef = useRef(null);
+
+    // Zeitkorrigierte Codes Zustände
+    const [timeAdjustedCodes, setTimeAdjustedCodes] = useState(null);
+    const [showTimeAdjusted, setShowTimeAdjusted] = useState(false);
+    const [timeOffset, setTimeOffset] = useState(-3480); // -58 Minuten als Standard
+    const [isLoadingAdjusted, setIsLoadingAdjusted] = useState(false);
+    const [timeAdjustedError, setTimeAdjustedError] = useState('');
+
+    // Funktion zum Laden der zeitkorrigierten Codes
+    const fetchTimeAdjustedCodes = async () => {
+        setIsLoadingAdjusted(true);
+        setTimeAdjustedError('');
+
+        try {
+            const response = await api.get(`/tokens/${id}/adjusted-code?offset=${timeOffset}`);
+            if (response.data.success) {
+                setTimeAdjustedCodes(response.data.data);
+            } else {
+                throw new Error(response.data.message || 'Fehler beim Laden der zeitkorrigierten Codes');
+            }
+        } catch (err) {
+            console.error('Fehler beim Laden der zeitkorrigierten Codes:', err);
+            setTimeAdjustedError(
+                err.response?.data?.message ||
+                err.message ||
+                'Zeitkorrigierte Codes konnten nicht geladen werden'
+            );
+        } finally {
+            setIsLoadingAdjusted(false);
+        }
+    };
+
+    // Regelmäßige Aktualisierung der zeitkorrigierten Codes
+    useEffect(() => {
+        if (showTimeAdjusted && !timeAdjustedCodes) {
+            fetchTimeAdjustedCodes();
+        }
+
+        let intervalId;
+        if (showTimeAdjusted) {
+            intervalId = setInterval(fetchTimeAdjustedCodes, 15000); // Alle 15 Sekunden aktualisieren
+        }
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [showTimeAdjusted, timeOffset, id]);
+
+    // Funktion zum Ändern des Zeitoffsets
+    const handleOffsetChange = (e) => {
+        const newOffset = parseInt(e.target.value, 10);
+        setTimeOffset(newOffset);
+
+        // Codes neu laden, wenn der Offset geändert wird
+        if (showTimeAdjusted) {
+            fetchTimeAdjustedCodes();
+        }
+    };
 
     // Token-Daten laden
     useEffect(() => {
@@ -162,12 +189,7 @@ const TokenDetail = () => {
         setError('');
 
         try {
-            // Endpoint basierend auf Fallback-Modus wählen
-            const endpoint = fallbackMode ?
-                `/tokens/${id}/otpmanager-code` : // Bereits vorhandene Route verwenden
-                `/tokens/${id}/code`;              // Standard-Route
-
-            const response = await api.get(endpoint);
+            const response = await api.get(`/tokens/${id}/code`);
 
             if (response.data.success) {
                 setCode(response.data.data.code);
@@ -186,17 +208,8 @@ const TokenDetail = () => {
             // Fehlerversuche zählen
             setCodeGenerationAttempts(prev => prev + 1);
 
-            // Bei wiederholten Fehlern in den Fallback-Modus wechseln
-            if (codeGenerationAttempts >= 2 && !fallbackMode) {
-                setFallbackMode(true);
-                setError('Standard-Methode fehlgeschlagen, verwende alternative Methode...');
-                // Nach kurzer Verzögerung erneut versuchen
-                setTimeout(() => {
-                    setError('');
-                    generateCode();
-                }, 1000);
-            } else if (codeGenerationAttempts >= 4) {
-                // Bei zu vielen fehlgeschlagenen Versuchen einen dauerhaften Fehler anzeigen
+            // Bei zu vielen fehlgeschlagenen Versuchen einen dauerhaften Fehler anzeigen
+            if (codeGenerationAttempts >= 4) {
                 setError('Code konnte nicht generiert werden. Das Token-Secret könnte ungültig sein.');
             } else {
                 setError('Code konnte nicht generiert werden. Versuche es erneut...');
@@ -229,7 +242,7 @@ const TokenDetail = () => {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [token, fallbackMode]);
+    }, [token]);
 
     // QR-Code generieren
     const generateQRCode = async () => {
@@ -293,12 +306,6 @@ const TokenDetail = () => {
             </PageHeader>
 
             {error && <Alert type="error">{error}</Alert>}
-            {fallbackMode && (
-                <Alert type="info">
-                    Alternativer Generierungsmodus aktiv. Dies kann notwendig sein für manche
-                    Token-Formate.
-                </Alert>
-            )}
 
             <ServerTimeInfo />
 
@@ -317,23 +324,150 @@ const TokenDetail = () => {
                     <TokenMetaItem>Periode: {token.period}s</TokenMetaItem>
                 </TokenMetadata>
 
-                <FallbackToggle>
-                    <Toggle
-                        active={fallbackMode}
-                        onClick={() => {
-                            setFallbackMode(!fallbackMode);
-                            setCodeGenerationAttempts(0);
-                            setError('');
-                        }}
-                    />
-                    Alternativer Generierungsmodus {fallbackMode ? 'aktiv' : 'inaktiv'}
-                </FallbackToggle>
-
                 <TimeRemaining>
                     <ProgressBar progress={progress}/>
                 </TimeRemaining>
 
                 <TokenCode>{code || '------'}</TokenCode>
+
+                {/* Zeitkorrigierte Codes Abschnitt */}
+                <div style={{marginTop: '2rem', marginBottom: '2rem'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
+                        <h4 style={{margin: 0}}>Zeitkorrigierte Codes</h4>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setShowTimeAdjusted(!showTimeAdjusted);
+                                if (!showTimeAdjusted && !timeAdjustedCodes) {
+                                    fetchTimeAdjustedCodes();
+                                }
+                            }}
+                        >
+                            {showTimeAdjusted ? 'Ausblenden' : 'Anzeigen'}
+                        </Button>
+                    </div>
+
+                    {showTimeAdjusted && (
+                        <div style={{
+                            backgroundColor: 'rgba(104, 141, 177, 0.1)',
+                            padding: '1rem',
+                            borderRadius: '0.5rem',
+                            marginBottom: '1rem'
+                        }}>
+                            <div style={{marginBottom: '1rem'}}>
+                                <label htmlFor="timeOffset" style={{display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem'}}>
+                                    Zeitoffset (in Sekunden):
+                                </label>
+                                <div style={{display: 'flex', gap: '0.5rem'}}>
+                                    <Input
+                                        id="timeOffset"
+                                        type="number"
+                                        value={timeOffset}
+                                        onChange={handleOffsetChange}
+                                        style={{width: '150px'}}
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={fetchTimeAdjustedCodes}
+                                        disabled={isLoadingAdjusted}
+                                    >
+                                        Aktualisieren
+                                    </Button>
+                                </div>
+                                <div style={{fontSize: '0.8rem', marginTop: '0.5rem', color: '#9ca3af'}}>
+                                    {timeOffset} Sekunden entspricht {Math.round(timeOffset / 60)} Minuten
+                                </div>
+                            </div>
+
+                            {isLoadingAdjusted ? (
+                                <LoaderContainer>
+                                    <Loader size="30px" />
+                                </LoaderContainer>
+                            ) : timeAdjustedError ? (
+                                <Alert type="error">{timeAdjustedError}</Alert>
+                            ) : timeAdjustedCodes ? (
+                                <div>
+                                    <div style={{marginBottom: '1rem'}}>
+                                        <div style={{fontWeight: 'bold', fontSize: '1.2rem', textAlign: 'center', marginBottom: '0.5rem'}}>
+                                            Aktueller Zeitkorrigierter Code:
+                                        </div>
+                                        <TokenCode>
+                                            {timeAdjustedCodes.current.code || '------'}
+                                        </TokenCode>
+                                        <div style={{textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af'}}>
+                                            Gültig für: {timeAdjustedCodes.current.remainingTime} Sekunden
+                                        </div>
+                                        <div style={{textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af'}}>
+                                            Angepasste Zeit: {new Date(timeAdjustedCodes.current.timestamp * 1000).toLocaleString()}
+                                        </div>
+                                        <div style={{textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af'}}>
+                                            Serverzeit: {new Date(timeAdjustedCodes.current.actualTime * 1000).toLocaleString()}
+                                        </div>
+                                    </div>
+
+                                    {/* Vergangene und zukünftige Codes */}
+                                    <div style={{display: 'flex', gap: '1rem', marginTop: '1.5rem'}}>
+                                        {/* Vergangene Codes */}
+                                        <div style={{flex: 1}}>
+                                            <h5 style={{marginBottom: '0.5rem', fontSize: '0.9rem'}}>Vergangene Codes:</h5>
+                                            <div style={{
+                                                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                                                borderRadius: '0.3rem',
+                                                padding: '0.5rem',
+                                                maxHeight: '200px',
+                                                overflowY: 'auto'
+                                            }}>
+                                                {timeAdjustedCodes.past.slice(0, 5).map((pastCode, index) => (
+                                                    <div key={`past-${index}`} style={{
+                                                        padding: '0.3rem 0.5rem',
+                                                        borderBottom: index < 4 ? '1px solid rgba(156, 163, 175, 0.2)' : 'none',
+                                                        fontSize: '0.85rem'
+                                                    }}>
+                                                        <div style={{fontFamily: 'monospace', fontWeight: 'bold'}}>{pastCode.code}</div>
+                                                        <div style={{fontSize: '0.75rem', color: '#9ca3af'}}>
+                                                            Offset: {pastCode.offset}s
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Zukünftige Codes */}
+                                        <div style={{flex: 1}}>
+                                            <h5 style={{marginBottom: '0.5rem', fontSize: '0.9rem'}}>Zukünftige Codes:</h5>
+                                            <div style={{
+                                                backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                                                borderRadius: '0.3rem',
+                                                padding: '0.5rem',
+                                                maxHeight: '200px',
+                                                overflowY: 'auto'
+                                            }}>
+                                                {timeAdjustedCodes.future.slice(0, 5).map((futureCode, index) => (
+                                                    <div key={`future-${index}`} style={{
+                                                        padding: '0.3rem 0.5rem',
+                                                        borderBottom: index < 4 ? '1px solid rgba(156, 163, 175, 0.2)' : 'none',
+                                                        fontSize: '0.85rem'
+                                                    }}>
+                                                        <div style={{fontFamily: 'monospace', fontWeight: 'bold'}}>{futureCode.code}</div>
+                                                        <div style={{fontSize: '0.75rem', color: '#9ca3af'}}>
+                                                            Offset: +{futureCode.offset}s
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{textAlign: 'center', padding: '1rem'}}>
+                                    Klicke auf "Aktualisieren", um zeitkorrigierte Codes zu laden.
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
 
                 <div style={{textAlign: 'center', marginBottom: '1rem'}}>
                     <Button

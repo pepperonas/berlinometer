@@ -10,9 +10,11 @@ if (window.location.pathname.startsWith('/mpsec') ||
     baseURL = '/mpsec/api';
 }
 
-// DIREKTER API-ZUGRIFF (nur für Notfall-Debugging)
-// Wenn das Proxy nicht funktioniert, kannst du diesen Kommentar entfernen:
-// baseURL = 'http://localhost:5012/api';
+// DIREKTER API-ZUGRIFF (für Debugging, falls das Proxy nicht funktioniert)
+if (process.env.NODE_ENV === 'development') {
+    // Nur im Development-Modus direkt auf den API-Server zugreifen
+    baseURL = 'http://localhost:5012/api';
+}
 
 console.log('[DEBUG] API baseURL:', baseURL);
 

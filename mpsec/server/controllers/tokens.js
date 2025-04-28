@@ -1,13 +1,8 @@
 const Token = require('../models/Token');
-const { totp, authenticator } = require('otplib');
+const {totp, authenticator} = require('otplib');
+const crypto = require('crypto');
 
-// Hilfsfunktion: Base32-Validierung
-function isValidBase32(secret) {
-    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    return [...secret].every(char => base32Chars.includes(char) || char === '=');
-}
-
-// Hilfsfunktion: Base32-Dekodierung (RFC 4648)
+// Hilfsfunktion: Base32-Dekodierung
 function base32ToBytes(input) {
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     let bits = 0;
@@ -31,12 +26,18 @@ function base32ToBytes(input) {
     return Buffer.from(output);
 }
 
+// Hilfsfunktion: Base32-Validierung
+function isValidBase32(secret) {
+    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    return [...secret].every(char => base32Chars.includes(char) || char === '=');
+}
+
 // @desc    Alle Tokens eines Benutzers abrufen
 // @route   GET /api/tokens
 // @access  Private
 exports.getTokens = async (req, res, next) => {
     try {
-        const tokens = await Token.find({ user: req.user.id });
+        const tokens = await Token.find({user: req.user.id});
 
         res.status(200).json({
             success: true,
@@ -113,7 +114,7 @@ exports.createToken = async (req, res, next) => {
         req.body.digits = req.body.digits || 6;
         req.body.algorithm = (req.body.algorithm || 'SHA1').toUpperCase();
 
-        if (![30, 60].includes(req.body.period)) {
+        if (![30, 60, 90].includes(req.body.period)) {
             console.warn(`[TOTP] Ungültiger period-Wert: ${req.body.period}. Verwende Standardwert 30.`);
             req.body.period = 30;
         }
@@ -182,7 +183,7 @@ exports.updateToken = async (req, res, next) => {
         }
 
         // Parameter validieren
-        if (req.body.period && ![30, 60].includes(req.body.period)) {
+        if (req.body.period && ![30, 60, 90].includes(req.body.period)) {
             console.warn(`[TOTP] Ungültiger period-Wert: ${req.body.period}. Verwende Standardwert 30.`);
             req.body.period = 30;
         }
@@ -235,7 +236,7 @@ exports.deleteToken = async (req, res, next) => {
             });
         }
 
-        await Token.deleteOne({ _id: req.params.id });
+        await Token.deleteOne({_id: req.params.id});
 
         res.status(200).json({
             success: true,
@@ -247,125 +248,59 @@ exports.deleteToken = async (req, res, next) => {
     }
 };
 
-// @desc    TOTP-Code generieren
+// @desc    TOTP-Code generieren mit verbesserter Implementierung
 // @route   GET /api/tokens/:id/code
 // @access  Private
-const crypto = require('crypto');
-
-// TOTP-Code-Generierungsfunktionen (bereits überarbeitet in vorherigen Antworten)
 exports.generateCode = async (req, res, next) => {
     try {
         const token = await Token.findById(req.params.id);
 
         if (!token) {
-            return res.status(404).json({ message: 'Token nicht gefunden' });
+            return res.status(404).json({
+                success: false,
+                message: "Token nicht gefunden"
+            });
         }
 
         if (token.user.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Nicht berechtigt, auf diesen Token zuzugreifen' });
+            return res.status(403).json({
+                success: false,
+                message: "Nicht berechtigt, auf diesen Token zuzugreifen"
+            });
         }
 
         try {
-            let period = token.period || 30;
-            let digits = token.digits || 6;
-            let algorithm = (token.algorithm || 'SHA1').toLowerCase();
+            // Direkte TOTP-Implementierung verwenden
+            const pureTOTP = require("../utils/pureTOTP");
 
-            if (![30, 60].includes(period)) {
-                console.warn(`[TOTP] Ungültiger period-Wert: ${period}. Verwende Standardwert 30.`);
-                period = 30;
-            }
-            if (![6, 8].includes(digits)) {
-                console.warn(`[TOTP] Ungültiger digits-Wert: ${digits}. Verwende Standardwert 6.`);
-                digits = 6;
-            }
-            if (!['sha1', 'sha256', 'sha512'].includes(algorithm)) {
-                console.warn(`[TOTP] Ungültiger Algorithmus: ${algorithm}. Verwende Standardwert SHA1.`);
-                algorithm = 'sha1';
-            }
+            // TOTP generieren
+            const result = pureTOTP.generateTOTP(
+                token.secret,
+                token.digits || 6,
+                token.period || 30
+            );
 
-            const now = Math.floor(Date.now() / 1000);
-            const timeOffset = 0;
-            const adjustedTime = now + timeOffset;
-            const counter = Math.floor(adjustedTime / period);
-
-            console.log(`[TOTP] Token: ${token._id}, Name: ${token.name}, Timestamp: ${now}, Counter: ${counter}`);
-
-            let secret = token.secret.replace(/\s+/g, '').toUpperCase();
-
-            if (!isValidBase32(secret)) {
-                console.error(`[TOTP] Ungültige Zeichen im Secret: ${secret}`);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Ungültiges Secret-Format. Nur Base32-Zeichen (A-Z, 2-7) erlaubt.'
-                });
-            }
-
-            const secretKey = base32ToBytes(secret);
-            if (secretKey.length === 0) {
-                console.error(`[TOTP] Secret konnte nicht dekodiert werden: ${secret}`);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Ungültiges Secret-Format. Base32-Dekodierung fehlgeschlagen.'
-                });
-            }
-
-            console.log(`[TOTP] Secret-Länge in Bytes: ${secretKey.length}`);
-            console.log(`[TOTP] Secret-Bytes (Hex): ${secretKey.toString('hex').substring(0, 16)}...`);
-
-            const counterBuffer = Buffer.alloc(8);
-            for (let i = 0; i < 8; i++) {
-                counterBuffer[7 - i] = (counter >>> (i * 8)) & 0xff;
-            }
-
-            console.log(`[TOTP] Counter-Bytes: ${counterBuffer.toString('hex')}`);
-
-            const hmac = crypto.createHmac(algorithm, secretKey);
-            hmac.update(counterBuffer);
-            const digest = hmac.digest();
-
-            console.log(`[TOTP] HMAC-${algorithm.toUpperCase()} (Hex): ${digest.toString('hex').substring(0, 16)}...`);
-
-            const offset = digest[digest.length - 1] & 0x0f;
-            const binary = ((digest[offset] & 0x7f) << 24) |
-                ((digest[offset + 1] & 0xff) << 16) |
-                ((digest[offset + 2] & 0xff) << 8) |
-                (digest[offset + 3] & 0xff);
-
-            console.log(`[TOTP] Truncation Offset: ${offset}, Binary Value: ${binary}`);
-
-            const code = (binary % Math.pow(10, digits)).toString().padStart(digits, '0');
-
-            console.log(`[TOTP] Generierter Code: ${code}`);
-
-            const remainingTime = period - (now % period);
+            console.log(`[TOTP] Generierter Code für ${token.name}: ${result.code}`);
 
             return res.status(200).json({
                 success: true,
                 data: {
-                    code,
-                    remainingTime
+                    code: result.code,
+                    remainingTime: result.remainingTime
                 }
             });
-
         } catch (genError) {
-            console.error('Code-Generierungsfehler für Token:', token._id);
-            console.error('Token-Daten:', {
-                type: token.type,
-                algorithm: token.algorithm || 'SHA1',
-                digits: token.digits || 6,
-                period: token.period || 30,
-                secretPrefix: token.secret ? token.secret.substring(0, 3) + '...' : 'undefined'
-            });
-            console.error('Fehler:', genError);
+            console.error("Code-Generierungsfehler für Token:", token._id);
+            console.error("Fehler:", genError);
 
             return res.status(400).json({
                 success: false,
-                message: 'Code konnte nicht generiert werden. Möglicherweise ungültiges Secret oder Parameter.',
+                message: "Code konnte nicht generiert werden.",
                 error: genError.message
             });
         }
     } catch (err) {
-        console.error('Allgemeiner Fehler in generateCode:', err);
+        console.error("Allgemeiner Fehler in generateCode:", err);
         next(err);
     }
 };
@@ -378,83 +313,48 @@ exports.generateOTPManagerCode = async (req, res, next) => {
         const token = await Token.findById(req.params.id);
 
         if (!token) {
-            return res.status(404).json({ message: 'Token nicht gefunden' });
+            return res.status(404).json({message: 'Token nicht gefunden'});
         }
 
         if (token.user.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Nicht berechtigt, auf diesen Token zuzugreifen' });
+            return res.status(403).json({message: 'Nicht berechtigt, auf diesen Token zuzugreifen'});
         }
 
         try {
-            let period = token.period || 30;
+            // TOTP-Code generieren mit einfachem Algorithmus
+            let secret = token.secret.replace(/\s+/g, '').toUpperCase();
             let digits = token.digits || 6;
-            let algorithm = (token.algorithm || 'SHA1').toLowerCase();
+            let period = token.period || 30;
 
-            if (![30, 60].includes(period)) {
-                console.warn(`[TOTP] Ungültiger period-Wert: ${period}. Verwende Standardwert 30.`);
-                period = 30;
-            }
-            if (![6, 8].includes(digits)) {
-                console.warn(`[TOTP] Ungültiger digits-Wert: ${digits}. Verwende Standardwert 6.`);
-                digits = 6;
-            }
-            if (!['sha1', 'sha256', 'sha512'].includes(algorithm)) {
-                console.warn(`[TOTP] Ungültiger Algorithmus: ${algorithm}. Verwende Standardwert SHA1.`);
-                algorithm = 'sha1';
-            }
-
+            // Aktueller Zeitstempel
             const now = Math.floor(Date.now() / 1000);
             const counter = Math.floor(now / period);
 
-            console.log(`[TOTP] Token: ${token._id}, Name: ${token.name}, Timestamp: ${now}, Counter: ${counter}`);
-
-            let secret = token.secret.replace(/\s+/g, '').toUpperCase();
-
-            if (!isValidBase32(secret)) {
-                console.error(`[TOTP] Ungültige Zeichen im Secret: ${secret}`);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Ungültiges Secret-Format. Nur Base32-Zeichen (A-Z, 2-7) erlaubt.'
-                });
-            }
-
-            const secretKey = base32ToBytes(secret);
-            if (secretKey.length === 0) {
-                console.error(`[TOTP] Secret konnte nicht dekodiert werden: ${secret}`);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Ungültiges Secret-Format. Base32-Dekodierung fehlgeschlagen.'
-                });
-            }
-
-            console.log(`[TOTP] Secret-Länge in Bytes: ${secretKey.length}`);
-            console.log(`[TOTP] Secret-Bytes (Hex): ${secretKey.toString('hex').substring(0, 16)}...`);
-
+            // Counter als 8-Byte Buffer umwandeln (big-endian)
             const counterBuffer = Buffer.alloc(8);
             for (let i = 0; i < 8; i++) {
                 counterBuffer[7 - i] = (counter >>> (i * 8)) & 0xff;
             }
 
-            console.log(`[TOTP] Counter-Bytes: ${counterBuffer.toString('hex')}`);
-
-            const hmac = crypto.createHmac(algorithm, secretKey);
+            // HMAC-SHA1 berechnen
+            const secretBytes = base32ToBytes(secret);
+            const hmac = crypto.createHmac('sha1', Buffer.from(secretBytes));
             hmac.update(counterBuffer);
             const digest = hmac.digest();
 
-            console.log(`[TOTP] HMAC-${algorithm.toUpperCase()} (Hex): ${digest.toString('hex').substring(0, 16)}...`);
-
+            // Dynamisches Abschneiden (Dynamic Truncation)
             const offset = digest[digest.length - 1] & 0x0f;
+
+            // 4 Bytes extrahieren und in eine Zahl umwandeln
             const binary = ((digest[offset] & 0x7f) << 24) |
                 ((digest[offset + 1] & 0xff) << 16) |
                 ((digest[offset + 2] & 0xff) << 8) |
                 (digest[offset + 3] & 0xff);
 
-            console.log(`[TOTP] Truncation Offset: ${offset}, Binary Value: ${binary}`);
-
+            // Modulo für die gewünschte Anzahl an Stellen
             const code = (binary % Math.pow(10, digits)).toString().padStart(digits, '0');
 
-            console.log(`[TOTP] Generierter Code: ${code}`);
-
+            // Verbleibende Zeit berechnen
             const remainingTime = period - (now % period);
 
             return res.status(200).json({
@@ -465,24 +365,16 @@ exports.generateOTPManagerCode = async (req, res, next) => {
                     debug: {
                         timestamp: now,
                         counter,
-                        secretLength: secretKey.length,
+                        secretLength: secretBytes.length,
                         hmacOffset: offset,
-                        algorithm,
+                        algorithm: 'sha1',
                         period,
                         digits
                     }
                 }
             });
-
         } catch (genError) {
             console.error('Code-Generierungsfehler für Token:', token._id);
-            console.error('Token-Daten:', {
-                type: token.type,
-                algorithm: token.algorithm || 'SHA1',
-                digits: token.digits || 6,
-                period: token.period || 30,
-                secretPrefix: token.secret ? token.secret.substring(0, 3) + '...' : 'undefined'
-            });
             console.error('Fehler:', genError);
 
             return res.status(400).json({
@@ -505,85 +397,48 @@ exports.generateSimpleCode = async (req, res, next) => {
         const token = await Token.findById(req.params.id);
 
         if (!token) {
-            return res.status(404).json({ message: 'Token nicht gefunden' });
+            return res.status(404).json({message: 'Token nicht gefunden'});
         }
 
         if (token.user.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Nicht berechtigt, auf diesen Token zuzugreifen' });
+            return res.status(403).json({message: 'Nicht berechtigt, auf diesen Token zuzugreifen'});
         }
 
         try {
-            let period = token.period || 30;
-            let digits = token.digits || 6;
-            let algorithm = (token.algorithm || 'SHA1').toLowerCase();
-
-            if (![30, 60].includes(period)) {
-                console.warn(`[TOTP] Ungültiger period-Wert: ${period}. Verwende Standardwert 30.`);
-                period = 30;
-            }
-            if (![6, 8].includes(digits)) {
-                console.warn(`[TOTP] Ungültiger digits-Wert: ${digits}. Verwende Standardwert 6.`);
-                digits = 6;
-            }
-            if (!['sha1', 'sha256', 'sha512'].includes(algorithm)) {
-                console.warn(`[TOTP] Ungültiger Algorithmus: ${algorithm}. Verwende Standardwert SHA1.`);
-                algorithm = 'sha1';
-            }
-
-            const now = Math.floor(Date.now() / 1000);
-            const timeOffset = 0;
-            const adjustedTime = now + timeOffset;
-            const counter = Math.floor(adjustedTime / period);
-
-            console.log(`[TOTP] Token: ${token._id}, Name: ${token.name}, Timestamp: ${now}, Counter: ${counter}`);
-
+            // TOTP-Code generieren mit einfachem Algorithmus
             let secret = token.secret.replace(/\s+/g, '').toUpperCase();
+            let digits = token.digits || 6;
+            let period = token.period || 30;
 
-            if (!isValidBase32(secret)) {
-                console.error(`[TOTP] Ungültige Zeichen im Secret: ${secret}`);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Ungültiges Secret-Format. Nur Base32-Zeichen (A-Z, 2-7) erlaubt.'
-                });
-            }
+            // Aktueller Zeitstempel
+            const now = Math.floor(Date.now() / 1000);
+            const counter = Math.floor(now / period);
 
-            const secretKey = base32ToBytes(secret);
-            if (secretKey.length === 0) {
-                console.error(`[TOTP] Secret konnte nicht dekodiert werden: ${secret}`);
-                return res.status(400).json({
-                    success: false,
-                    message: 'Ungültiges Secret-Format. Base32-Dekodierung fehlgeschlagen.'
-                });
-            }
-
-            console.log(`[TOTP] Secret-Länge in Bytes: ${secretKey.length}`);
-            console.log(`[TOTP] Secret-Bytes (Hex): ${secretKey.toString('hex').substring(0, 16)}...`);
-
+            // Counter als 8-Byte Buffer umwandeln (big-endian)
             const counterBuffer = Buffer.alloc(8);
             for (let i = 0; i < 8; i++) {
                 counterBuffer[7 - i] = (counter >>> (i * 8)) & 0xff;
             }
 
-            console.log(`[TOTP] Counter-Bytes: ${counterBuffer.toString('hex')}`);
-
-            const hmac = crypto.createHmac(algorithm, secretKey);
+            // HMAC-SHA1 berechnen
+            const secretBytes = base32ToBytes(secret);
+            const hmac = crypto.createHmac('sha1', Buffer.from(secretBytes));
             hmac.update(counterBuffer);
             const digest = hmac.digest();
 
-            console.log(`[TOTP] HMAC-${algorithm.toUpperCase()} (Hex): ${digest.toString('hex').substring(0, 16)}...`);
-
+            // Dynamisches Abschneiden (Dynamic Truncation)
             const offset = digest[digest.length - 1] & 0x0f;
+
+            // 4 Bytes extrahieren und in eine Zahl umwandeln
             const binary = ((digest[offset] & 0x7f) << 24) |
                 ((digest[offset + 1] & 0xff) << 16) |
                 ((digest[offset + 2] & 0xff) << 8) |
                 (digest[offset + 3] & 0xff);
 
-            console.log(`[TOTP] Truncation Offset: ${offset}, Binary Value: ${binary}`);
-
+            // Modulo für die gewünschte Anzahl an Stellen
             const code = (binary % Math.pow(10, digits)).toString().padStart(digits, '0');
 
-            console.log(`[TOTP] Generierter Code: ${code}`);
-
+            // Verbleibende Zeit berechnen
             const remainingTime = period - (now % period);
 
             return res.status(200).json({
@@ -594,24 +449,16 @@ exports.generateSimpleCode = async (req, res, next) => {
                     debug: {
                         timestamp: now,
                         counter,
-                        secretLength: secretKey.length,
+                        secretLength: secretBytes.length,
                         hmacOffset: offset,
-                        algorithm,
+                        algorithm: 'sha1',
                         period,
                         digits
                     }
                 }
             });
-
         } catch (genError) {
             console.error('Code-Generierungsfehler für Token:', token._id);
-            console.error('Token-Daten:', {
-                type: token.type,
-                algorithm: token.algorithm || 'SHA1',
-                digits: token.digits || 6,
-                period: token.period || 30,
-                secretPrefix: token.secret ? token.secret.substring(0, 3) + '...' : 'undefined'
-            });
             console.error('Fehler:', genError);
 
             return res.status(400).json({
@@ -765,7 +612,7 @@ exports.importTokens = async (req, res, next) => {
                     digits = 6;
                 }
 
-                if (![30, 60].includes(period)) {
+                if (![30, 60, 90].includes(period)) {
                     console.warn(`Ungültiger period-Wert für ${name}: ${period}. Verwende Standardwert 30.`);
                     period = 30;
                 }
@@ -814,7 +661,7 @@ exports.importTokens = async (req, res, next) => {
 // @access  Private
 exports.deleteAllTokens = async (req, res, next) => {
     try {
-        const result = await Token.deleteMany({ user: req.user.id });
+        const result = await Token.deleteMany({user: req.user.id});
 
         res.status(200).json({
             success: true,
@@ -823,6 +670,127 @@ exports.deleteAllTokens = async (req, res, next) => {
         });
     } catch (err) {
         console.error('Fehler beim Löschen aller Tokens:', err);
+        next(err);
+    }
+};
+
+// @desc    Zeitkorrigierter TOTP-Code
+// @route   GET /api/tokens/:id/adjusted-code
+// @access  Private
+exports.generateTimeAdjustedCode = async (req, res, next) => {
+    try {
+        const token = await Token.findById(req.params.id);
+
+        if (!token) {
+            return res.status(404).json({
+                success: false,
+                message: "Token nicht gefunden"
+            });
+        }
+
+        if (token.user.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: "Nicht berechtigt, auf diesen Token zuzugreifen"
+            });
+        }
+
+        try {
+            // Zeitkorrigierten TOTP-Generator laden
+            const timeAdjustedTOTP = require("../utils/time-adjusted-totp");
+
+            // Parameter aus der Anfrage holen oder Standardwerte verwenden
+            const pastWindows = req.query.past ? parseInt(req.query.past) : 10;
+            const futureWindows = req.query.future ? parseInt(req.query.future) : 10;
+
+            // Benutzerdefinierten Zeitoffset verwenden, falls angegeben
+            const customOffset = req.query.offset ? parseInt(req.query.offset) : -3480;
+
+            // TOTP-Codes generieren
+            const result = timeAdjustedTOTP.generateExtendedTOTP(
+                token.secret,
+                token.digits || 6,
+                token.period || 30,
+                pastWindows,
+                futureWindows,
+                customOffset
+            );
+
+            console.log(`[TOTP] Zeitkorrigierte Codes für ${token.name} generiert. Aktueller Code: ${result.current.code}`);
+
+            return res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (genError) {
+            console.error("Code-Generierungsfehler für Token:", token._id);
+            console.error("Fehler:", genError);
+
+            return res.status(400).json({
+                success: false,
+                message: "Codes konnten nicht generiert werden.",
+                error: genError.message
+            });
+        }
+    } catch (err) {
+        console.error("Allgemeiner Fehler in generateTimeAdjustedCode:", err);
+        next(err);
+    }
+};
+
+exports.generateExtendedCode = async (req, res, next) => {
+    try {
+        const token = await Token.findById(req.params.id);
+
+        if (!token) {
+            return res.status(404).json({
+                success: false,
+                message: "Token nicht gefunden"
+            });
+        }
+
+        if (token.user.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: "Nicht berechtigt, auf diesen Token zuzugreifen"
+            });
+        }
+
+        try {
+            // Erweiterte TOTP-Implementierung verwenden
+            const extendedTOTP = require("../utils/extendedPureTOTP");
+
+            // Parameter aus der Anfrage holen oder Standardwerte verwenden
+            const pastWindows = req.query.past ? parseInt(req.query.past) : 10;
+            const futureWindows = req.query.future ? parseInt(req.query.future) : 10;
+
+            // TOTP-Codes generieren
+            const result = extendedTOTP.generateExtendedTOTP(
+                token.secret,
+                token.digits || 6,
+                token.period || 30,
+                pastWindows,
+                futureWindows
+            );
+
+            console.log(`[TOTP] Erweiterte Codes für ${token.name} generiert. Aktueller Code: ${result.current.code}`);
+
+            return res.status(200).json({
+                success: true,
+                data: result
+            });
+        } catch (genError) {
+            console.error("Code-Generierungsfehler für Token:", token._id);
+            console.error("Fehler:", genError);
+
+            return res.status(400).json({
+                success: false,
+                message: "Codes konnten nicht generiert werden.",
+                error: genError.message
+            });
+        }
+    } catch (err) {
+        console.error("Allgemeiner Fehler in generateExtendedCode:", err);
         next(err);
     }
 };
