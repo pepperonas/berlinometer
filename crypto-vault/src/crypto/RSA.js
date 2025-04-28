@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {Copy, Download, Key, RefreshCw, Upload, Save, FileText} from 'lucide-react';
+import {Copy, Download, Key, RefreshCw, Upload, Save, FileText, Lock, Shield} from 'lucide-react';
 
 // RSA-Komponente für CryptoVault
 export function RSAEncryption() {
@@ -18,6 +18,14 @@ export function RSAEncryption() {
     const [useExternalKey, setUseExternalKey] = useState(false);
     const [externalKeyLoaded, setExternalKeyLoaded] = useState(false);
     const [externalKeyObj, setExternalKeyObj] = useState(null);
+
+    // Zustände für Master-Passwort und Modals
+    const [masterPassword, setMasterPassword] = useState('');
+    const [confirmMasterPassword, setConfirmMasterPassword] = useState('');
+    const [showMasterPasswordModal, setShowMasterPasswordModal] = useState(false);
+    const [unlockPassword, setUnlockPassword] = useState('');
+    const [showUnlockModal, setShowUnlockModal] = useState(false);
+    const [selectedKeyForUnlock, setSelectedKeyForUnlock] = useState(null);
 
     // Refs für Datei-Upload
     const importFileRef = useRef(null);
@@ -81,6 +89,107 @@ export function RSAEncryption() {
         }
     };
 
+    // Funktion zum Verschlüsseln des privaten Schlüssels
+    const encryptPrivateKey = async (privateKey, password) => {
+        try {
+            // Password-based key derivation
+            const encoder = new TextEncoder();
+            const passwordKey = await crypto.subtle.importKey(
+                'raw',
+                encoder.encode(password),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveBits', 'deriveKey']
+            );
+
+            // Salz generieren
+            const salt = crypto.getRandomValues(new Uint8Array(16));
+
+            // Schlüssel ableiten
+            const aesKey = await crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt,
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                passwordKey,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['encrypt']
+            );
+
+            // IV generieren
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+
+            // Privaten Schlüssel verschlüsseln
+            const encryptedData = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv },
+                aesKey,
+                encoder.encode(privateKey)
+            );
+
+            // Ergebnis zusammenführen
+            const result = {
+                encrypted: btoa(String.fromCharCode(...new Uint8Array(encryptedData))),
+                salt: btoa(String.fromCharCode(...salt)),
+                iv: btoa(String.fromCharCode(...iv)),
+                isEncrypted: true
+            };
+
+            return result;
+        } catch (error) {
+            console.error('Fehler beim Verschlüsseln:', error);
+            throw error;
+        }
+    };
+
+    // Funktion zum Entschlüsseln des privaten Schlüssels
+    const decryptPrivateKey = async (encryptedData, password) => {
+        try {
+            // Parameter extrahieren
+            const encryptedBinary = Uint8Array.from(atob(encryptedData.encrypted), c => c.charCodeAt(0));
+            const salt = Uint8Array.from(atob(encryptedData.salt), c => c.charCodeAt(0));
+            const iv = Uint8Array.from(atob(encryptedData.iv), c => c.charCodeAt(0));
+
+            // Password-based key derivation
+            const encoder = new TextEncoder();
+            const passwordKey = await crypto.subtle.importKey(
+                'raw',
+                encoder.encode(password),
+                { name: 'PBKDF2' },
+                false,
+                ['deriveBits', 'deriveKey']
+            );
+
+            // Schlüssel ableiten
+            const aesKey = await crypto.subtle.deriveKey(
+                {
+                    name: 'PBKDF2',
+                    salt,
+                    iterations: 100000,
+                    hash: 'SHA-256'
+                },
+                passwordKey,
+                { name: 'AES-GCM', length: 256 },
+                false,
+                ['decrypt']
+            );
+
+            // Entschlüsseln
+            const decryptedData = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv },
+                aesKey,
+                encryptedBinary
+            );
+
+            return new TextDecoder().decode(decryptedData);
+        } catch (error) {
+            console.error('Fehler beim Entschlüsseln:', error);
+            throw error;
+        }
+    };
+
     // Importiere externen öffentlichen Schlüssel
     const importExternalPublicKey = async () => {
         if (!externalPublicKey.trim()) {
@@ -131,7 +240,7 @@ export function RSAEncryption() {
     };
 
     // Speichere Schlüsselpaar in localStorage
-    const saveKeyPair = () => {
+    const saveKeyPair = async () => {
         if (!keyPairName.trim()) {
             setError('Bitte einen Namen für das Schlüsselpaar eingeben');
             return;
@@ -142,21 +251,49 @@ export function RSAEncryption() {
             return;
         }
 
-        const newKeyPair = {
-            id: Date.now().toString(),
-            name: keyPairName,
-            publicKey: keyPair.publicKey,
-            privateKey: keyPair.privateKey,
-            keySize: keySize,
-            createdAt: new Date().toISOString()
-        };
+        // Wenn Master-Passwort gewünscht, Modal anzeigen
+        setShowMasterPasswordModal(true);
+    };
 
-        const updatedKeyPairs = [...savedKeyPairs, newKeyPair];
-        localStorage.setItem('rsaKeyPairs', JSON.stringify(updatedKeyPairs));
-        setSavedKeyPairs(updatedKeyPairs);
-        setKeyPairName('');
-        setInfo('Schlüsselpaar erfolgreich gespeichert');
-        setTimeout(() => setInfo(''), 3000);
+    // Fortsetzung der Speicherfunktion mit Passwortschutz
+    const continueKeyPairSave = async () => {
+        try {
+            let privateKeyToSave = keyPair.privateKey;
+            let encryptedData = null;
+
+            // Falls Passwort gesetzt wurde, den privaten Schlüssel verschlüsseln
+            if (masterPassword) {
+                if (masterPassword !== confirmMasterPassword) {
+                    setError('Die Passwörter stimmen nicht überein!');
+                    return;
+                }
+
+                encryptedData = await encryptPrivateKey(privateKeyToSave, masterPassword);
+                privateKeyToSave = null; // Originalen Schlüssel nicht speichern
+            }
+
+            const newKeyPair = {
+                id: Date.now().toString(),
+                name: keyPairName,
+                publicKey: keyPair.publicKey,
+                privateKey: encryptedData || privateKeyToSave,
+                isEncrypted: !!encryptedData,
+                keySize: keySize,
+                createdAt: new Date().toISOString()
+            };
+
+            const updatedKeyPairs = [...savedKeyPairs, newKeyPair];
+            localStorage.setItem('rsaKeyPairs', JSON.stringify(updatedKeyPairs));
+            setSavedKeyPairs(updatedKeyPairs);
+            setKeyPairName('');
+            setMasterPassword('');
+            setConfirmMasterPassword('');
+            setShowMasterPasswordModal(false);
+            setInfo('Schlüsselpaar erfolgreich gespeichert' + (encryptedData ? ' (mit Passwortschutz)' : ''));
+            setTimeout(() => setInfo(''), 3000);
+        } catch (err) {
+            setError(`Fehler beim Speichern: ${err.message}`);
+        }
     };
 
     // Lösche ein gespeichertes Schlüsselpaar
@@ -169,13 +306,60 @@ export function RSAEncryption() {
     // Lade ein gespeichertes Schlüsselpaar
     const loadKeyPair = async (savedKeyPair) => {
         try {
+            // Wenn der Schlüssel verschlüsselt ist, das Unlock-Modal anzeigen
+            if (savedKeyPair.isEncrypted) {
+                setSelectedKeyForUnlock(savedKeyPair);
+                setShowUnlockModal(true);
+                return;
+            }
+
+            // Sonst normal laden
+            await loadUnencryptedKeyPair(savedKeyPair);
+        } catch (err) {
+            setError(`Fehler beim Laden des Schlüsselpaars: ${err.message}`);
+            console.error(err);
+        }
+    };
+
+    // Fortsetzung des Ladens mit Passwort-Entschlüsselung
+    const continueKeyPairLoad = async () => {
+        try {
+            if (!selectedKeyForUnlock) return;
+
+            // Privaten Schlüssel entschlüsseln
+            const decryptedPrivateKey = await decryptPrivateKey(
+                selectedKeyForUnlock.privateKey,
+                unlockPassword
+            );
+
+            // Temporäres Objekt mit entschlüsseltem Schlüssel
+            const unlockedKeyPair = {
+                ...selectedKeyForUnlock,
+                privateKey: decryptedPrivateKey,
+                isEncrypted: false
+            };
+
+            // Laden wie gewohnt
+            await loadUnencryptedKeyPair(unlockedKeyPair);
+            setShowUnlockModal(false);
+            setUnlockPassword('');
+            setInfo('Verschlüsselter Schlüssel erfolgreich geladen');
+            setTimeout(() => setInfo(''), 3000);
+        } catch (err) {
+            setError('Falsches Passwort oder beschädigter Schlüssel');
+        }
+    };
+
+    // Die ursprüngliche Lade-Logik ausgelagert
+    const loadUnencryptedKeyPair = async (savedKeyPair) => {
+        try {
             setError('');
             setUseExternalKey(false);
             setExternalKeyLoaded(false);
 
             // Public Key importieren
             const publicKeyBinary = Uint8Array.from(atob(savedKeyPair.publicKey), c => c.charCodeAt(0));
-            const publicKey = await window.crypto.subtle.importKey(
+            const publicKey = await crypto.subtle.importKey(
                 "spki",
                 publicKeyBinary,
                 {
@@ -188,7 +372,7 @@ export function RSAEncryption() {
 
             // Private Key importieren
             const privateKeyBinary = Uint8Array.from(atob(savedKeyPair.privateKey), c => c.charCodeAt(0));
-            const privateKey = await window.crypto.subtle.importKey(
+            const privateKey = await crypto.subtle.importKey(
                 "pkcs8",
                 privateKeyBinary,
                 {
@@ -456,6 +640,110 @@ export function RSAEncryption() {
         setTimeout(() => setInfo(''), 2000);
     };
 
+    // Modal für Master-Passwort
+    const MasterPasswordModal = () => {
+        if (!showMasterPasswordModal) return null;
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+                    <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Privaten Schlüssel schützen</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                        Du kannst deinen privaten Schlüssel mit einem Passwort schützen. Dies wird empfohlen, wenn du die Schlüssel im Browser speicherst.
+                        Leer lassen, wenn kein Passwortschutz gewünscht wird.
+                    </p>
+
+                    <div className="mb-4">
+                        <label className="block mb-1 text-sm font-medium dark:text-gray-200">Master-Passwort:</label>
+                        <input
+                            type="password"
+                            value={masterPassword}
+                            onChange={(e) => setMasterPassword(e.target.value)}
+                            className="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                            placeholder="Leer lassen für keinen Schutz"
+                        />
+                    </div>
+
+                    {masterPassword && (
+                        <div className="mb-4">
+                            <label className="block mb-1 text-sm font-medium dark:text-gray-200">Passwort bestätigen:</label>
+                            <input
+                                type="password"
+                                value={confirmMasterPassword}
+                                onChange={(e) => setConfirmMasterPassword(e.target.value)}
+                                className="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                            />
+                        </div>
+                    )}
+
+                    <div className="flex justify-end space-x-2 mt-6">
+                        <button
+                            onClick={() => {
+                                setShowMasterPasswordModal(false);
+                                setMasterPassword('');
+                                setConfirmMasterPassword('');
+                            }}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded"
+                        >
+                            Abbrechen
+                        </button>
+                        <button
+                            onClick={continueKeyPairSave}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                        >
+                            {masterPassword ? 'Verschlüsseln & Speichern' : 'Ohne Schutz speichern'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Modal zum Entschlüsseln eines geschützten Schlüssels
+    const UnlockKeyModal = () => {
+        if (!showUnlockModal) return null;
+
+        return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+                    <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Geschützten Schlüssel entsperren</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                        Dieser Schlüssel ist passwortgeschützt. Bitte gib dein Master-Passwort ein, um den privaten Schlüssel zu entschlüsseln.
+                    </p>
+
+                    <div className="mb-4">
+                        <label className="block mb-1 text-sm font-medium dark:text-gray-200">Master-Passwort:</label>
+                        <input
+                            type="password"
+                            value={unlockPassword}
+                            onChange={(e) => setUnlockPassword(e.target.value)}
+                            className="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        />
+                    </div>
+
+                    <div className="flex justify-end space-x-2 mt-6">
+                        <button
+                            onClick={() => {
+                                setShowUnlockModal(false);
+                                setUnlockPassword('');
+                                setSelectedKeyForUnlock(null);
+                            }}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded"
+                        >
+                            Abbrechen
+                        </button>
+                        <button
+                            onClick={continueKeyPairLoad}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded"
+                        >
+                            Entsperren
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="max-w-4xl mx-auto">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
@@ -602,6 +890,28 @@ export function RSAEncryption() {
                                 {showAdvanced ? 'Weniger anzeigen' : 'Erweiterte Optionen'}
                             </button>
                         </div>
+
+                        {/* Public Key Aktionen */}
+                        {keyPair && (
+                            <div className="mt-4 mb-4 flex space-x-2">
+                                <button
+                                    onClick={() => copyToClipboard(keyPair?.publicKey || '')}
+                                    disabled={!keyPair}
+                                    className={`flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center justify-center ${!keyPair ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <Copy size={18} className="mr-2" />
+                                    Public Key kopieren
+                                </button>
+                                <button
+                                    onClick={() => exportKeys('public')}
+                                    disabled={!keyPair}
+                                    className={`flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center justify-center ${!keyPair ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <Download size={18} className="mr-2" />
+                                    Public Key exportieren
+                                </button>
+                            </div>
+                        )}
 
                         {showAdvanced && (
                             <div
@@ -776,8 +1086,9 @@ export function RSAEncryption() {
                         <button
                             onClick={saveKeyPair}
                             disabled={!keyPair}
-                            className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-r-md ${!keyPair ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-r-md flex items-center ${!keyPair ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
+                            <Lock size={18} className="mr-2" />
                             Aktuelles Schlüsselpaar speichern
                         </button>
                     </div>
@@ -788,10 +1099,16 @@ export function RSAEncryption() {
                             {savedKeyPairs.map(keyPair => (
                                 <div key={keyPair.id} className="p-3 flex items-center justify-between">
                                     <div>
-                                        <p className="font-medium dark:text-gray-100">{keyPair.name}</p>
+                                        <div className="flex items-center">
+                                            <p className="font-medium dark:text-gray-100">{keyPair.name}</p>
+                                            {keyPair.isEncrypted && (
+                                                <span className="ml-2 px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs">
+                                                    🔒 Geschützt
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {keyPair.keySize || 2048} Bit • Erstellt
-                                            am {new Date(keyPair.createdAt).toLocaleString()}
+                                            {keyPair.keySize || 2048} Bit • Erstellt am {new Date(keyPair.createdAt).toLocaleString()}
                                         </p>
                                     </div>
                                     <div>
@@ -799,7 +1116,7 @@ export function RSAEncryption() {
                                             onClick={() => loadKeyPair(keyPair)}
                                             className="px-3 py-1 bg-gray-200 dark:bg-gray-700 dark:text-gray-200 rounded-md mr-2 hover:bg-gray-300 dark:hover:bg-gray-600"
                                         >
-                                            Laden
+                                            {keyPair.isEncrypted ? 'Entsperren & Laden' : 'Laden'}
                                         </button>
                                         <button
                                             onClick={() => deleteKeyPair(keyPair.id)}
@@ -818,6 +1135,10 @@ export function RSAEncryption() {
                     )}
                 </div>
             )}
+
+            {/* Modals für Passwortschutz */}
+            <MasterPasswordModal />
+            <UnlockKeyModal />
         </div>
     );
 }
