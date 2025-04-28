@@ -16,6 +16,7 @@ import {
     TimeRemaining,
     TokenCode
 } from '../components/styled';
+import ServerTimeInfo from "../components/ServerTimeInfo";
 
 const TokenDetailCard = styled(Card)`
     margin-bottom: ${({theme}) => theme.spacing.xl};
@@ -298,6 +299,8 @@ const TokenDetail = () => {
                     Token-Formate.
                 </Alert>
             )}
+
+            <ServerTimeInfo />
 
             <TokenDetailCard>
                 <TokenHeader>

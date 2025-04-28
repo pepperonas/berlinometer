@@ -10,7 +10,8 @@ const {
     importTokens,
     deleteAllTokens,
     generateSimpleCode,
-    generateOTPManagerCode
+    generateOTPManagerCode,
+    getServerTime
 } = require('../controllers/tokens');
 const {protect} = require('../middleware/auth');
 
@@ -18,6 +19,9 @@ const router = express.Router();
 
 // Alle Routen schützen
 router.use(protect);
+
+// WICHTIG: Generische Routen VOR spezifischen mit IDs definieren!
+router.get('/servertime', getServerTime);  // Muss VOR den ID-Routen stehen!
 
 router
     .route('/')

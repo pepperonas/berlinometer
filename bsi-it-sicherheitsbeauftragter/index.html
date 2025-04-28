@@ -212,14 +212,6 @@
 
     <div class="search-container">
         <input type="text" id="searchInput" placeholder="Suche nach Fragen oder Antworten...">
-        <select id="categoryDropdown">
-            <option value="all">Alle Kategorien</option>
-            <option value="it-sicherheit">IT-Sicherheit</option>
-            <option value="backup">Backup</option>
-            <option value="zugriffsrechte">Zugriffsrechte</option>
-            <option value="notfall">Notfallmanagement</option>
-            <option value="risiko">Risikomanagement</option>
-        </select>
     </div>
 
     <div class="status-bar">
@@ -1875,7 +1867,7 @@
 
         function searchQuestions() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-            const selectedCategory = document.getElementById('categoryDropdown').value;
+            const selectedCategory = 'all';
 
             const container = document.getElementById('questionsListContainer');
             container.innerHTML = ''; // Container leeren
@@ -1946,18 +1938,9 @@
         // Event Listener für die Suche
         document.getElementById('searchInput').addEventListener('input', searchQuestions);
 
-        // Event Listener für Kategorie-Dropdown
-        document.getElementById('categoryDropdown').addEventListener('change', function () {
-            const selectedCategory = this.value;
-
-            // Wenn ein Suchtext vorhanden ist, Suche erneut ausführen
-            if (document.getElementById('searchInput').value.trim() !== '') {
-                searchQuestions();
-            } else {
-                // Ansonsten alle Fragen der ausgewählten Kategorie anzeigen
-                renderQuestionsByCategory(selectedCategory);
-            }
-        });
+        // document.getElementById('searchInput').addEventListener('click', function() {
+        //     this.select(); // Selektiert den gesamten Text im Input-Feld
+        // });
 
         // Initial alle Fragen anzeigen
         renderQuestionsByCategory('all');
