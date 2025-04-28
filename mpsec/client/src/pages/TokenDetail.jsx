@@ -8,7 +8,6 @@ import {
     Button,
     ButtonGroup,
     Card,
-    Input,
     Loader,
     LoaderContainer,
     PageHeader,
@@ -17,7 +16,6 @@ import {
     TimeRemaining,
     TokenCode
 } from '../components/styled';
-import ServerTimeInfo from "../components/ServerTimeInfo";
 
 const TokenDetailCard = styled(Card)`
     margin-bottom: ${({theme}) => theme.spacing.xl};
@@ -307,8 +305,6 @@ const TokenDetail = () => {
 
             {error && <Alert type="error">{error}</Alert>}
 
-            <ServerTimeInfo />
-
             <TokenDetailCard>
                 <TokenHeader>
                     <TokenInfo>
@@ -329,156 +325,6 @@ const TokenDetail = () => {
                 </TimeRemaining>
 
                 <TokenCode>{code || '------'}</TokenCode>
-
-                {/* Zeitkorrigierte Codes Abschnitt */}
-                <div style={{marginTop: '2rem', marginBottom: '2rem'}}>
-                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
-                        <h4 style={{margin: 0}}>Zeitkorrigierte Codes</h4>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                setShowTimeAdjusted(!showTimeAdjusted);
-                                if (!showTimeAdjusted && !timeAdjustedCodes) {
-                                    fetchTimeAdjustedCodes();
-                                }
-                            }}
-                        >
-                            {showTimeAdjusted ? 'Ausblenden' : 'Anzeigen'}
-                        </Button>
-                    </div>
-
-                    {showTimeAdjusted && (
-                        <div style={{
-                            backgroundColor: 'rgba(104, 141, 177, 0.1)',
-                            padding: '1rem',
-                            borderRadius: '0.5rem',
-                            marginBottom: '1rem'
-                        }}>
-                            <div style={{marginBottom: '1rem'}}>
-                                <label htmlFor="timeOffset" style={{display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem'}}>
-                                    Zeitoffset (in Sekunden):
-                                </label>
-                                <div style={{display: 'flex', gap: '0.5rem'}}>
-                                    <Input
-                                        id="timeOffset"
-                                        type="number"
-                                        value={timeOffset}
-                                        onChange={handleOffsetChange}
-                                        style={{width: '150px'}}
-                                    />
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={fetchTimeAdjustedCodes}
-                                        disabled={isLoadingAdjusted}
-                                    >
-                                        Aktualisieren
-                                    </Button>
-                                </div>
-                                <div style={{fontSize: '0.8rem', marginTop: '0.5rem', color: '#9ca3af'}}>
-                                    {timeOffset} Sekunden entspricht {Math.round(timeOffset / 60)} Minuten
-                                </div>
-                            </div>
-
-                            {isLoadingAdjusted ? (
-                                <LoaderContainer>
-                                    <Loader size="30px" />
-                                </LoaderContainer>
-                            ) : timeAdjustedError ? (
-                                <Alert type="error">{timeAdjustedError}</Alert>
-                            ) : timeAdjustedCodes ? (
-                                <div>
-                                    <div style={{marginBottom: '1rem'}}>
-                                        <div style={{fontWeight: 'bold', fontSize: '1.2rem', textAlign: 'center', marginBottom: '0.5rem'}}>
-                                            Aktueller Zeitkorrigierter Code:
-                                        </div>
-                                        <TokenCode>
-                                            {timeAdjustedCodes.current.code || '------'}
-                                        </TokenCode>
-                                        <div style={{textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af'}}>
-                                            Gültig für: {timeAdjustedCodes.current.remainingTime} Sekunden
-                                        </div>
-                                        <div style={{textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af'}}>
-                                            Angepasste Zeit: {new Date(timeAdjustedCodes.current.timestamp * 1000).toLocaleString()}
-                                        </div>
-                                        <div style={{textAlign: 'center', fontSize: '0.8rem', color: '#9ca3af'}}>
-                                            Serverzeit: {new Date(timeAdjustedCodes.current.actualTime * 1000).toLocaleString()}
-                                        </div>
-                                    </div>
-
-                                    {/* Vergangene und zukünftige Codes */}
-                                    <div style={{display: 'flex', gap: '1rem', marginTop: '1.5rem'}}>
-                                        {/* Vergangene Codes */}
-                                        <div style={{flex: 1}}>
-                                            <h5 style={{marginBottom: '0.5rem', fontSize: '0.9rem'}}>Vergangene Codes:</h5>
-                                            <div style={{
-                                                backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                                                borderRadius: '0.3rem',
-                                                padding: '0.5rem',
-                                                maxHeight: '200px',
-                                                overflowY: 'auto'
-                                            }}>
-                                                {timeAdjustedCodes.past.slice(0, 5).map((pastCode, index) => (
-                                                    <div key={`past-${index}`} style={{
-                                                        padding: '0.3rem 0.5rem',
-                                                        borderBottom: index < 4 ? '1px solid rgba(156, 163, 175, 0.2)' : 'none',
-                                                        fontSize: '0.85rem'
-                                                    }}>
-                                                        <div style={{fontFamily: 'monospace', fontWeight: 'bold'}}>{pastCode.code}</div>
-                                                        <div style={{fontSize: '0.75rem', color: '#9ca3af'}}>
-                                                            Offset: {pastCode.offset}s
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {/* Zukünftige Codes */}
-                                        <div style={{flex: 1}}>
-                                            <h5 style={{marginBottom: '0.5rem', fontSize: '0.9rem'}}>Zukünftige Codes:</h5>
-                                            <div style={{
-                                                backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                                                borderRadius: '0.3rem',
-                                                padding: '0.5rem',
-                                                maxHeight: '200px',
-                                                overflowY: 'auto'
-                                            }}>
-                                                {timeAdjustedCodes.future.slice(0, 5).map((futureCode, index) => (
-                                                    <div key={`future-${index}`} style={{
-                                                        padding: '0.3rem 0.5rem',
-                                                        borderBottom: index < 4 ? '1px solid rgba(156, 163, 175, 0.2)' : 'none',
-                                                        fontSize: '0.85rem'
-                                                    }}>
-                                                        <div style={{fontFamily: 'monospace', fontWeight: 'bold'}}>{futureCode.code}</div>
-                                                        <div style={{fontSize: '0.75rem', color: '#9ca3af'}}>
-                                                            Offset: +{futureCode.offset}s
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div style={{textAlign: 'center', padding: '1rem'}}>
-                                    Klicke auf "Aktualisieren", um zeitkorrigierte Codes zu laden.
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-
-                <div style={{textAlign: 'center', marginBottom: '1rem'}}>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRegenerateCode}
-                        disabled={isGeneratingCode}
-                    >
-                        {isGeneratingCode ? <Loader size="16px"/> : 'Code neu generieren'}
-                    </Button>
-                </div>
 
                 {!showQRCode ? (
                     <QRCodeContainer>
