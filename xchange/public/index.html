@@ -178,7 +178,7 @@
             gap: 10px;
         }
 
-        .download-btn, .delete-btn {
+        .download-btn, .delete-btn, .share-btn {
             border: none;
             background: none;
             cursor: pointer;
@@ -192,6 +192,15 @@
 
         .download-btn:hover {
             color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .share-btn {
+            color: var(--accent-blue);
+        }
+
+        .share-btn:hover {
+            color: var(--accent-green);
             transform: scale(1.1);
         }
 
@@ -257,6 +266,172 @@
             background-color: var(--error-color);
         }
 
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            border-radius: var(--radius-lg);
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            background-color: var(--background-darker);
+            color: var(--text-primary);
+            padding: 15px 20px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: var(--accent-red);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 10px 20px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .modal-btn-primary {
+            background-color: var(--accent-blue);
+            color: var(--text-primary);
+        }
+
+        .modal-btn-primary:hover {
+            background-color: var(--accent-color);
+        }
+
+        .modal-btn-secondary {
+            background-color: var(--background-darker);
+            color: var(--text-primary);
+        }
+
+        .modal-btn-secondary:hover {
+            background-color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            background-color: var(--background-darker);
+            border: 1px solid var(--background-darker);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-blue);
+            outline: none;
+        }
+
+        .share-link-container {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+            background-color: var(--background-darker);
+            border-radius: var(--radius);
+            padding: 10px;
+            position: relative;
+        }
+
+        .share-link {
+            flex-grow: 1;
+            padding: 8px 10px 8px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            color: var(--accent-blue);
+            margin-right: 10px;
+        }
+
+        .copy-btn {
+            background-color: var(--accent-blue);
+            color: var(--text-primary);
+            border: none;
+            border-radius: var(--radius);
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--accent-color);
+        }
+
+        .share-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .shared-badge {
+            display: inline-block;
+            background-color: var(--accent-green);
+            color: var(--background-darker);
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .file-item {
@@ -320,7 +495,7 @@
           rel="stylesheet">
 </head>
 <body>
-<div class="container">
+<div class="container" style="padding-bottom: 60px;">
     <header>
         <h1>xchange | Online Speicher</h1>
     </header>
@@ -362,7 +537,53 @@
     </div>
 </div>
 
+<!-- Share Modal -->
+<div class="modal" id="shareModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Datei teilen</h3>
+            <button class="modal-close" id="closeShareModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Erstelle einen Link, um die Datei <span id="shareFileName"></span> zu teilen:</p>
+
+            <div class="form-group">
+                <label for="expiryDays">Link gültig für (Tage):</label>
+                <select id="expiryDays" class="form-control">
+                    <option value="1">1 Tag</option>
+                    <option value="3">3 Tage</option>
+                    <option value="7" selected>7 Tage</option>
+                    <option value="14">14 Tage</option>
+                    <option value="30">30 Tage</option>
+                    <option value="-1">Unbegrenzt</option>
+                </select>
+            </div>
+
+            <div id="shareLinkContainer" style="display: none;">
+                <div class="share-link-container">
+                    <div class="share-link" id="shareLink"></div>
+                    <button class="copy-btn" id="copyShareLink">
+                        <i class="material-icons" style="font-size: 16px; vertical-align: text-top;">content_copy</i>
+                        Kopieren
+                    </button>
+                </div>
+                <div class="share-info">
+                    Der Link ist gültig bis <span id="expiryDate"></span>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="modal-btn modal-btn-secondary" id="cancelShareBtn">Abbrechen</button>
+            <button class="modal-btn modal-btn-primary" id="createShareBtn">Link erstellen</button>
+        </div>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
+
+<div style="position: fixed; bottom: 20px; width: 100%; text-align: center; z-index: 100;">
+    <span style="font-size: 12px; color: var(--text-secondary); opacity: 0.7;">Made with ❤️ by Martin Pfeffer</span>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -464,9 +685,20 @@
         const totalFiles = document.getElementById('totalFiles');
         const emptyMessage = document.getElementById('emptyMessage');
         const toast = document.getElementById('toast');
+        const shareModal = document.getElementById('shareModal');
+        const closeShareModal = document.getElementById('closeShareModal');
+        const cancelShareBtn = document.getElementById('cancelShareBtn');
+        const createShareBtn = document.getElementById('createShareBtn');
+        const shareFileName = document.getElementById('shareFileName');
+        const expiryDays = document.getElementById('expiryDays');
+        const shareLinkContainer = document.getElementById('shareLinkContainer');
+        const shareLink = document.getElementById('shareLink');
+        const expiryDate = document.getElementById('expiryDate');
+        const copyShareLink = document.getElementById('copyShareLink');
 
         // Datei-Array
         let files = [];
+        let currentFileId = null;
 
         // Event-Listener für Datei-Browse-Button
         browseBtn.addEventListener('click', function () {
@@ -509,6 +741,114 @@
             const dt = e.dataTransfer;
             const droppedFiles = dt.files;
             handleFiles(droppedFiles);
+        });
+
+        // Modal schließen
+        closeShareModal.addEventListener('click', function() {
+            shareModal.style.display = 'none';
+        });
+
+        cancelShareBtn.addEventListener('click', function() {
+            shareModal.style.display = 'none';
+        });
+
+        // Klick außerhalb des Modals schließt es
+        window.addEventListener('click', function(event) {
+            if (event.target === shareModal) {
+                shareModal.style.display = 'none';
+            }
+        });
+
+        // Share-Link erstellen
+        createShareBtn.addEventListener('click', function() {
+            if (!currentFileId) return;
+
+            const days = expiryDays.value;
+
+            checkAuth().then(() => {
+                if (!apiAvailable) {
+                    showToast('Teilen ist im Offline-Modus nicht verfügbar', 'error');
+                    return;
+                }
+
+                // Link-Container ausblenden während der Anfrage
+                shareLinkContainer.style.display = 'none';
+
+                // Button-Text ändern
+                createShareBtn.textContent = 'Wird erstellt...';
+                createShareBtn.disabled = true;
+
+                // API-Anfrage für Link-Generierung
+                fetch(appendSessionToUrl(`${API_BASE_URL}/create-share`), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fileId: currentFileId,
+                        expiryDays: days
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Link anzeigen
+                            shareLink.textContent = data.shareUrl;
+
+                            // Ablaufdatum formatieren oder unbegrenzte Gültigkeit anzeigen
+                            if (data.expiryDate) {
+                                const expiry = new Date(data.expiryDate);
+                                // Deutsches Datumsformat: TT.MM.YYYY SS:MM
+                                const day = expiry.getDate().toString().padStart(2, '0');
+                                const month = (expiry.getMonth() + 1).toString().padStart(2, '0');
+                                const year = expiry.getFullYear();
+                                const hours = expiry.getHours().toString().padStart(2, '0');
+                                const minutes = expiry.getMinutes().toString().padStart(2, '0');
+                                expiryDate.textContent = `${day}.${month}.${year} ${hours}:${minutes}`;
+                            } else {
+                                expiryDate.textContent = 'unbegrenzt';
+                            }
+
+                            // Link-Container anzeigen
+                            shareLinkContainer.style.display = 'block';
+
+                            // Button-Text zurücksetzen
+                            createShareBtn.textContent = 'Link erstellen';
+                            createShareBtn.disabled = false;
+
+                            // Dateien neu laden, um den Sharing-Status anzuzeigen
+                            loadFiles();
+                        } else {
+                            showToast('Fehler beim Erstellen des Links: ' + data.message, 'error');
+                            createShareBtn.textContent = 'Link erstellen';
+                            createShareBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fehler:', error);
+                        showToast('Verbindungsfehler beim Erstellen des Links', 'error');
+                        createShareBtn.textContent = 'Link erstellen';
+                        createShareBtn.disabled = false;
+                    });
+            }).catch(() => {
+                showToast('Nicht angemeldet - Teilen nicht möglich', 'error');
+            });
+        });
+
+        // Link kopieren
+        copyShareLink.addEventListener('click', function() {
+            const tempInput = document.createElement('input');
+            document.body.appendChild(tempInput);
+            tempInput.value = shareLink.textContent;
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            // Bestätigung anzeigen
+            this.innerHTML = '<i class="material-icons" style="font-size: 16px; vertical-align: text-top;">check</i> Kopiert!';
+            setTimeout(() => {
+                this.innerHTML = '<i class="material-icons" style="font-size: 16px; vertical-align: text-top;">content_copy</i> Kopieren';
+            }, 2000);
         });
 
         // Dateien verarbeiten
@@ -665,13 +1005,24 @@
 
                 // Datum formatieren
                 const uploadDate = new Date(file.uploadDate);
-                const formattedDate = uploadDate.toLocaleDateString() + ' ' +
-                    uploadDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                // Deutsches Datumsformat: TT.MM.YYYY SS:MM
+                const day = uploadDate.getDate().toString().padStart(2, '0');
+                const month = (uploadDate.getMonth() + 1).toString().padStart(2, '0');
+                const year = uploadDate.getFullYear();
+                const hours = uploadDate.getHours().toString().padStart(2, '0');
+                const minutes = uploadDate.getMinutes().toString().padStart(2, '0');
+                const formattedDate = `${day}.${month}.${year} ${hours}:${minutes}`;
+
+                // Shared-Badge für geteilte Dateien
+                const sharedBadge = file.isShared ? '<span class="shared-badge">Geteilt</span>' : '';
 
                 li.innerHTML = `
-                    <div class="file-name">${file.name}</div>
+                    <div class="file-name">${file.name}${sharedBadge}</div>
                     <div class="file-size">${fileSize}</div>
                     <div class="file-actions">
+                        <button class="share-btn" title="Teilen">
+                            <i class="material-icons">share</i>
+                        </button>
                         <button class="download-btn" title="Herunterladen">
                             <i class="material-icons">get_app</i>
                         </button>
@@ -680,6 +1031,27 @@
                         </button>
                     </div>
                 `;
+
+                // Event-Listener für Share
+                const shareBtn = li.querySelector('.share-btn');
+                shareBtn.addEventListener('click', () => {
+                    if (file.id.startsWith('local_')) {
+                        showToast('Teilen ist im Offline-Modus nicht verfügbar', 'error');
+                        return;
+                    }
+
+                    // Vorbereiten des Share-Modals
+                    currentFileId = file.id;
+                    shareFileName.textContent = file.name;
+
+                    // Link-Container zurücksetzen
+                    shareLinkContainer.style.display = 'none';
+                    createShareBtn.textContent = 'Link erstellen';
+                    createShareBtn.disabled = false;
+
+                    // Modal öffnen
+                    shareModal.style.display = 'flex';
+                });
 
                 // Event-Listener für Download
                 const downloadBtn = li.querySelector('.download-btn');

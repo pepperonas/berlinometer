@@ -20,6 +20,7 @@ const AUTH_CONFIG = {
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 const DB_FILE = path.join(__dirname, 'files.json');
 const SESSION_FILE = path.join(__dirname, 'sessions.json');
+const SHARE_FILE = path.join(__dirname, 'shares.json');
 
 // Verzeichnis erstellen, falls es nicht existiert
 if (!fs.existsSync(UPLOAD_DIR)) {
@@ -34,6 +35,11 @@ if (!fs.existsSync(DB_FILE)) {
 // Sessions-Datei initialisieren, falls sie nicht existiert
 if (!fs.existsSync(SESSION_FILE)) {
     fs.writeFileSync(SESSION_FILE, JSON.stringify({}));
+}
+
+// Shares-Datei initialisieren, falls sie nicht existiert
+if (!fs.existsSync(SHARE_FILE)) {
+    fs.writeFileSync(SHARE_FILE, JSON.stringify({}));
 }
 
 // Middleware
@@ -67,6 +73,26 @@ function saveFilesDb(files) {
         return true;
     } catch (error) {
         console.error('Fehler beim Speichern der Datenbankdatei:', error);
+        return false;
+    }
+}
+
+// Hilfsfunktionen für Share-Links
+function getSharesDb() {
+    try {
+        return JSON.parse(fs.readFileSync(SHARE_FILE, 'utf8'));
+    } catch (error) {
+        console.error('Fehler beim Lesen der Shares-Datei:', error);
+        return {};
+    }
+}
+
+function saveSharesDb(shares) {
+    try {
+        fs.writeFileSync(SHARE_FILE, JSON.stringify(shares, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Fehler beim Speichern der Shares-Datei:', error);
         return false;
     }
 }
@@ -180,6 +206,11 @@ function authMiddleware(req, res, next) {
         return next();
     }
 
+    // Prüfe auf Share-Endpoint - dieser ist ohne Auth erlaubt
+    if (req.path.startsWith(`${API_PREFIX}/share/`) && req.method === 'GET') {
+        return next();
+    }
+
     const sessionId = req.query.session || req.cookies?.sessionId;
 
     if (validateSession(sessionId)) {
@@ -189,7 +220,8 @@ function authMiddleware(req, res, next) {
     // Bei API-Anfragen mit ungültiger Session 401 zurückgeben
     if (req.path.startsWith(`${API_PREFIX}/files`) ||
         req.path.startsWith(`${API_PREFIX}/upload`) ||
-        req.path.startsWith(`${API_PREFIX}/download`)) {
+        req.path.startsWith(`${API_PREFIX}/download`) ||
+        req.path.startsWith(`${API_PREFIX}/create-share`)) {
         return res.status(401).json({success: false, message: 'Nicht authentifiziert'});
     }
 
@@ -429,7 +461,18 @@ app.get(`${API_PREFIX}/status`, (req, res) => {
 app.get(`${API_PREFIX}/files`, (req, res) => {
     try {
         const files = getFilesDb();
-        res.json({success: true, files});
+        const shares = getSharesDb();
+
+        // Füge Sharing-Status zu den Dateien hinzu
+        const filesWithShareInfo = files.map(file => {
+            const isShared = Object.values(shares).some(share => share.fileId === file.id);
+            return {
+                ...file,
+                isShared
+            };
+        });
+
+        res.json({success: true, files: filesWithShareInfo});
     } catch (error) {
         console.error('Fehler beim Auflisten der Dateien:', error);
         res.status(500).json({success: false, message: 'Serverfehler beim Auflisten der Dateien'});
@@ -536,6 +579,15 @@ app.delete(`${API_PREFIX}/files/:id`, (req, res) => {
             fs.unlinkSync(filePath);
         }
 
+        // Alle Shares für diese Datei löschen
+        const shares = getSharesDb();
+        Object.keys(shares).forEach(shareId => {
+            if (shares[shareId].fileId === fileId) {
+                delete shares[shareId];
+            }
+        });
+        saveSharesDb(shares);
+
         // Datei aus der Datenbank entfernen
         files.splice(fileIndex, 1);
         saveFilesDb(files);
@@ -544,6 +596,517 @@ app.delete(`${API_PREFIX}/files/:id`, (req, res) => {
     } catch (error) {
         console.error('Fehler beim Löschen der Datei:', error);
         res.status(500).json({success: false, message: 'Serverfehler beim Löschen der Datei'});
+    }
+});
+
+// Share-Link erstellen
+app.post(`${API_PREFIX}/create-share`, (req, res) => {
+    try {
+        const { fileId, expiryDays } = req.body;
+
+        if (!fileId) {
+            return res.status(400).json({success: false, message: 'Keine Datei-ID angegeben'});
+        }
+
+        // Überprüfen, ob die Datei existiert
+        const files = getFilesDb();
+        const fileInfo = files.find(file => file.id === fileId);
+
+        if (!fileInfo) {
+            return res.status(404).json({success: false, message: 'Datei nicht gefunden'});
+        }
+
+        // Share-ID generieren
+        const shareId = uuidv4();
+
+        // Ablaufdatum berechnen (Standard: 7 Tage, -1 für unbegrenzt)
+        const days = parseInt(expiryDays) || 7;
+        let expiryDate = null;
+        let expires = null;
+
+        if (days !== -1) {
+            expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + days);
+            expires = expiryDate.toISOString();
+        }
+
+        // Share in Datenbank speichern
+        const shares = getSharesDb();
+        shares[shareId] = {
+            fileId,
+            fileName: fileInfo.name,
+            fileSize: fileInfo.size,
+            fileType: fileInfo.type,
+            created: new Date().toISOString(),
+            expires: expires
+        };
+
+        saveSharesDb(shares);
+
+        // Basis-URL für den Share-Link
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const host = req.headers['x-forwarded-host'] || req.headers.host;
+        const baseUrl = `${protocol}://${host}${API_PREFIX}/share/${shareId}`;
+
+        res.json({
+            success: true,
+            shareId,
+            shareUrl: baseUrl,
+            expiryDate: expires,
+            fileName: fileInfo.name
+        });
+    } catch (error) {
+        console.error('Fehler beim Erstellen des Share-Links:', error);
+        res.status(500).json({success: false, message: 'Serverfehler beim Erstellen des Share-Links'});
+    }
+});
+
+// Share-Link abrufen (Download der geteilten Datei)
+app.get(`${API_PREFIX}/share/:shareId`, (req, res) => {
+    try {
+        const shareId = req.params.shareId;
+        const shares = getSharesDb();
+
+        // Überprüfen, ob der Share existiert
+        if (!shares[shareId]) {
+            return res.status(404).send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>xchange | Link ungültig</title>
+                    <style>
+                        :root {
+                            --background-dark: #2B2E3B;
+                            --background-darker: #252830;
+                            --card-background: #343845;
+                            --accent-blue: #688db1;
+                            --accent-red: #e16162;
+                            --text-primary: #d1d5db;
+                            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                            --radius-lg: 1rem;
+                        }
+                        
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                        }
+                        
+                        body {
+                            background-color: var(--background-dark);
+                            color: var(--text-primary);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 100vh;
+                            padding: 20px;
+                        }
+                        
+                        .error-container {
+                            background-color: var(--card-background);
+                            border-radius: var(--radius-lg);
+                            width: 100%;
+                            max-width: 500px;
+                            box-shadow: var(--shadow);
+                            text-align: center;
+                            padding: 40px 20px;
+                        }
+                        
+                        .error-icon {
+                            font-size: 60px;
+                            color: var(--accent-red);
+                            margin-bottom: 20px;
+                        }
+                        
+                        h1 {
+                            margin-bottom: 15px;
+                        }
+                        
+                        p {
+                            margin-bottom: 25px;
+                            opacity: 0.8;
+                        }
+                    </style>
+                    <link href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css"
+                          rel="stylesheet">
+                </head>
+                <body>
+                    <div class="error-container">
+                        <div class="error-icon">
+                            <i class="material-icons">error_outline</i>
+                        </div>
+                        <h1>Link ungültig oder abgelaufen</h1>
+                        <p>Der angeforderte Download-Link existiert nicht oder ist bereits abgelaufen.</p>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        const shareInfo = shares[shareId];
+
+        // Überprüfen, ob der Share abgelaufen ist (nur wenn ein Ablaufdatum gesetzt ist)
+        if (shareInfo.expires && new Date(shareInfo.expires) < new Date()) {
+            // Abgelaufenen Share löschen
+            delete shares[shareId];
+            saveSharesDb(shares);
+
+            return res.status(410).send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>xchange | Link abgelaufen</title>
+                    <style>
+                        :root {
+                            --background-dark: #2B2E3B;
+                            --background-darker: #252830;
+                            --card-background: #343845;
+                            --accent-blue: #688db1;
+                            --accent-red: #e16162;
+                            --text-primary: #d1d5db;
+                            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                            --radius-lg: 1rem;
+                        }
+                        
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                        }
+                        
+                        body {
+                            background-color: var(--background-dark);
+                            color: var(--text-primary);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 100vh;
+                            padding: 20px;
+                        }
+                        
+                        .error-container {
+                            background-color: var(--card-background);
+                            border-radius: var(--radius-lg);
+                            width: 100%;
+                            max-width: 500px;
+                            box-shadow: var(--shadow);
+                            text-align: center;
+                            padding: 40px 20px;
+                        }
+                        
+                        .error-icon {
+                            font-size: 60px;
+                            color: var(--accent-red);
+                            margin-bottom: 20px;
+                        }
+                        
+                        h1 {
+                            margin-bottom: 15px;
+                        }
+                        
+                        p {
+                            margin-bottom: 25px;
+                            opacity: 0.8;
+                        }
+                    </style>
+                    <link href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css"
+                          rel="stylesheet">
+                </head>
+                <body>
+                    <div class="error-container">
+                        <div class="error-icon">
+                            <i class="material-icons">access_time</i>
+                        </div>
+                        <h1>Link abgelaufen</h1>
+                        <p>Der angeforderte Download-Link ist leider abgelaufen.</p>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // Datei-Pfad ermitteln
+        const fileId = shareInfo.fileId;
+        const filePath = path.join(UPLOAD_DIR, fileId);
+
+        // Überprüfen, ob die Datei noch existiert
+        if (!fs.existsSync(filePath)) {
+            delete shares[shareId];
+            saveSharesDb(shares);
+
+            return res.status(404).send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>xchange | Datei nicht gefunden</title>
+                    <style>
+                        :root {
+                            --background-dark: #2B2E3B;
+                            --background-darker: #252830;
+                            --card-background: #343845;
+                            --accent-blue: #688db1;
+                            --accent-red: #e16162;
+                            --text-primary: #d1d5db;
+                            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                            --radius-lg: 1rem;
+                        }
+                        
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                        }
+                        
+                        body {
+                            background-color: var(--background-dark);
+                            color: var(--text-primary);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 100vh;
+                            padding: 20px;
+                        }
+                        
+                        .error-container {
+                            background-color: var(--card-background);
+                            border-radius: var(--radius-lg);
+                            width: 100%;
+                            max-width: 500px;
+                            box-shadow: var(--shadow);
+                            text-align: center;
+                            padding: 40px 20px;
+                        }
+                        
+                        .error-icon {
+                            font-size: 60px;
+                            color: var(--accent-red);
+                            margin-bottom: 20px;
+                        }
+                        
+                        h1 {
+                            margin-bottom: 15px;
+                        }
+                        
+                        p {
+                            margin-bottom: 25px;
+                            opacity: 0.8;
+                        }
+                    </style>
+                    <link href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css"
+                          rel="stylesheet">
+                </head>
+                <body>
+                    <div class="error-container">
+                        <div class="error-icon">
+                            <i class="material-icons">folder_off</i>
+                        </div>
+                        <h1>Datei nicht mehr verfügbar</h1>
+                        <p>Die angeforderte Datei existiert nicht mehr.</p>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // Wenn Accept-Header HTML enthält und kein direkter Download angefordert wurde,
+        // zeigen wir eine Download-Seite an
+        const acceptHeader = req.headers.accept || '';
+        const directDownload = req.query.dl === '1';
+
+        if (!directDownload && acceptHeader.includes('text/html')) {
+            // Dateigröße formatieren
+            const formatFileSize = (bytes) => {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            };
+
+            const fileSize = formatFileSize(shareInfo.fileSize);
+            let expiryInfo = '';
+
+            if (shareInfo.expires) {
+                const expiryDate = new Date(shareInfo.expires);
+                // Deutsches Datumsformat: TT.MM.YYYY SS:MM
+                const day = expiryDate.getDate().toString().padStart(2, '0');
+                const month = (expiryDate.getMonth() + 1).toString().padStart(2, '0');
+                const year = expiryDate.getFullYear();
+                const hours = expiryDate.getHours().toString().padStart(2, '0');
+                const minutes = expiryDate.getMinutes().toString().padStart(2, '0');
+                const formattedExpiryDate = `${day}.${month}.${year} ${hours}:${minutes}`;
+                expiryInfo = `Dieser Link ist gültig bis ${formattedExpiryDate}`;
+            } else {
+                expiryInfo = `Dieser Link ist unbegrenzt gültig`;
+            }
+
+            return res.send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>xchange | Download ${shareInfo.fileName}</title>
+                    <style>
+                        :root {
+                            --background-dark: #2B2E3B;
+                            --background-darker: #252830;
+                            --card-background: #343845;
+                            --accent-blue: #688db1;
+                            --accent-green: #9cb68f;
+                            --text-primary: #d1d5db;
+                            --text-secondary: #9ca3af;
+                            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                            --radius: 0.5rem;
+                            --radius-lg: 1rem;
+                        }
+                        
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                        }
+                        
+                        body {
+                            background-color: var(--background-dark);
+                            color: var(--text-primary);
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 100vh;
+                            padding: 20px;
+                            position: relative;
+                        }
+                        
+                        .download-container {
+                            background-color: var(--card-background);
+                            border-radius: var(--radius-lg);
+                            width: 100%;
+                            max-width: 500px;
+                            box-shadow: var(--shadow);
+                            overflow: hidden;
+                            margin-bottom: 60px;
+                        }
+                        
+                        .download-header {
+                            background-color: var(--background-darker);
+                            padding: 20px;
+                            text-align: center;
+                        }
+                        
+                        .download-content {
+                            padding: 30px;
+                            text-align: center;
+                        }
+                        
+                        .file-icon {
+                            font-size: 64px;
+                            color: var(--accent-blue);
+                            margin-bottom: 15px;
+                        }
+                        
+                        .file-name {
+                            font-size: 20px;
+                            margin-bottom: 5px;
+                            word-break: break-word;
+                        }
+                        
+                        .file-info {
+                            color: var(--text-secondary);
+                            margin-bottom: 20px;
+                        }
+                        
+                        .download-btn {
+                            display: inline-block;
+                            background-color: var(--accent-blue);
+                            color: var(--text-primary);
+                            text-decoration: none;
+                            padding: 12px 24px;
+                            border-radius: var(--radius);
+                            font-size: 16px;
+                            margin-top: 10px;
+                            transition: background-color 0.3s;
+                        }
+                        
+                        .download-btn:hover {
+                            background-color: #5a7a9a;
+                        }
+                        
+                        .expiry-info {
+                            margin-top: 20px;
+                            font-size: 14px;
+                            color: var(--text-secondary);
+                        }
+                        
+                        .powered-by {
+                            text-align: center;
+                            font-size: 12px;
+                            color: var(--text-secondary);
+                            opacity: 0.7;
+                            position: absolute;
+                            bottom: 20px;
+                            left: 0;
+                            width: 100%;
+                        }
+                    </style>
+                    <link href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css"
+                          rel="stylesheet">
+                </head>
+                <body>
+                    <div class="download-container">
+                        <div class="download-header">
+                            <h1>xchange | Datei-Download</h1>
+                        </div>
+                        <div class="download-content">
+                            <div class="file-icon">
+                                <i class="material-icons">insert_drive_file</i>
+                            </div>
+                            <h2 class="file-name">${shareInfo.fileName}</h2>
+                            <div class="file-info">${fileSize}</div>
+                            
+                            <a href="${API_PREFIX}/share/${shareId}?dl=1" class="download-btn">
+                                <i class="material-icons" style="vertical-align: middle; margin-right: 5px;">file_download</i>
+                                Download starten
+                            </a>
+                            
+                            <div class="expiry-info">
+                                ${expiryInfo}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="powered-by">
+                        Made with ❤️ by Martin Pfeffer
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // Datei zum Download anbieten
+        res.download(filePath, shareInfo.fileName, (err) => {
+            if (err) {
+                console.error('Fehler beim Herunterladen der geteilten Datei:', err);
+                res.status(500).send('Fehler beim Herunterladen der Datei');
+            }
+        });
+    } catch (error) {
+        console.error('Fehler beim Verarbeiten des Share-Links:', error);
+        res.status(500).send('Ein Serverfehler ist aufgetreten');
     }
 });
 
