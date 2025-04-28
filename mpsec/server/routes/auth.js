@@ -1,7 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken'); // Import hinzufügen
-const { register, login, getMe } = require('../controllers/auth');
-const { protect } = require('../middleware/auth');
+const {register, login, getMe} = require('../controllers/auth');
+const {protect} = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -17,11 +17,15 @@ router.get('/test-token', (req, res) => {
         jti: 'test123'
     };
     try {
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '30d' });
-        res.json({ success: true, token });
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '30d'});
+        res.json({success: true, token});
     } catch (err) {
         console.error('Test-Token Error:', err.name, err.message);
-        res.status(500).json({ success: false, message: 'Fehler beim Generieren des Tokens', details: err.message });
+        res.status(500).json({
+            success: false,
+            message: 'Fehler beim Generieren des Tokens',
+            details: err.message
+        });
     }
 });
 
