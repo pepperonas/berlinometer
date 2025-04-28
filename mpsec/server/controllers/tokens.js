@@ -1,5 +1,5 @@
 const Token = require('../models/Token');
-const {totp, authenticator} = require('otplib');
+const { totp, authenticator } = require('otplib');
 const crypto = require('crypto');
 
 // Hilfsfunktion: Base32-Dekodierung
@@ -28,8 +28,8 @@ function base32ToBytes(input) {
 
 // Hilfsfunktion: Base32-Validierung
 function isValidBase32(secret) {
-    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    return [...secret].every(char => base32Chars.includes(char) || char === '=');
+    const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567=';
+    return [...secret].every(char => base32Chars.includes(char.toUpperCase()));
 }
 
 // @desc    Alle Tokens eines Benutzers abrufen
@@ -248,6 +248,138 @@ exports.deleteToken = async (req, res, next) => {
     }
 };
 
+// @desc    OTP-Code für einen Token generieren
+// @route   GET /api/tokens/:id/code
+// @access  Private
+// @route   GET /api/tokens/:id/code
+// @access  Private
+exports.generateCode = async (req, res, next) => {
+    try {
+        console.log(`[OTP] Generiere Code für Token ID: ${req.params.id}`);
+
+        const token = await Token.findById(req.params.id);
+
+        if (!token) {
+            console.log(`[OTP] Token nicht gefunden: ${req.params.id}`);
+            return res.status(404).json({
+                success: false,
+                message: 'Token nicht gefunden'
+            });
+        }
+
+        if (token.user.toString() !== req.user.id) {
+            console.log(`[OTP] Zugriff verweigert für User ${req.user.id} auf Token ${req.params.id}`);
+            return res.status(403).json({
+                success: false,
+                message: 'Nicht berechtigt, auf diesen Token zuzugreifen'
+            });
+        }
+
+        // TOTP-Konfiguration
+        if (token.type === 'totp') {
+            console.log(`[OTP] Token gefunden: ${token.name}, Algorithm: ${token.algorithm}, Digits: ${token.digits}, Period: ${token.period}`);
+
+            // Secret validieren
+            const secret = token.secret.trim().replace(/\s+/g, '');
+
+            if (!isValidBase32(secret)) {
+                console.error(`[OTP] Ungültiges Secret-Format: ${secret.substring(0, 5)}...`);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Ungültiges Secret-Format für OTP-Generierung'
+                });
+            }
+
+            console.log(`[OTP] Secret validiert, Länge: ${secret.length}`);
+
+            try {
+                // KORRIGIERT: Korrekte Formatierung des Algorithmus
+                let algorithm;
+                if (token.algorithm === 'SHA1') algorithm = 'sha1';
+                else if (token.algorithm === 'SHA256') algorithm = 'sha256';
+                else if (token.algorithm === 'SHA512') algorithm = 'sha512';
+                else algorithm = 'sha1'; // Fallback
+
+                // Eigene Instanz von TOTP erstellen mit expliziten Optionen
+                const totpOptions = {
+                    digits: token.digits,
+                    algorithm: algorithm, // Verwende die korrekt formatierte Version
+                    period: token.period,
+                    encoding: 'base32'
+                };
+
+                console.log(`[OTP] TOTP-Optionen: ${JSON.stringify(totpOptions)}`);
+
+                // OTP generieren
+                let code;
+                try {
+                    // Versuch 1: Mit totp.create
+                    const totpInstance = totp.create({
+                        secret: secret,
+                        ...totpOptions
+                    });
+                    code = totpInstance.generate();
+                    console.log(`[OTP] Code mit totp.create generiert: ${code}`);
+                } catch (totpError) {
+                    console.error(`[OTP] Fehler bei totp.create: ${totpError.message}`);
+
+                    // Versuch 2: Direkt mit authenticator
+                    try {
+                        // Standardeinstellungen für authenticator
+                        authenticator.options = {
+                            digits: token.digits,
+                            algorithm: algorithm, // Korrekt formatiert
+                            period: token.period,
+                            window: 0
+                        };
+
+                        code = authenticator.generate(secret);
+                        console.log(`[OTP] Code mit authenticator generiert: ${code}`);
+                    } catch (authError) {
+                        console.error(`[OTP] Fehler bei authenticator: ${authError.message}`);
+                        throw authError;
+                    }
+                }
+
+                // Aktuelle Zeit
+                const now = Math.floor(Date.now() / 1000);
+
+                // Verbleibende Zeit
+                const remainingTime = token.period - (now % token.period);
+
+                // Antwort senden
+                res.status(200).json({
+                    success: true,
+                    data: {
+                        code,
+                        remainingTime,
+                        timestamp: now,
+                        algorithm: token.algorithm,
+                        digits: token.digits,
+                        period: token.period
+                    }
+                });
+            } catch (otpError) {
+                console.error(`[OTP] Fehler bei OTP-Generierung: ${otpError.message}`);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Fehler bei der Code-Generierung',
+                    error: process.env.NODE_ENV === 'development' ? otpError.message : undefined
+                });
+            }
+        } else {
+            // HOTP-Unterstützung könnte hier hinzugefügt werden
+            console.log(`[OTP] Nicht unterstützter Token-Typ: ${token.type}`);
+            return res.status(400).json({
+                success: false,
+                message: 'Nicht-TOTP-Token werden aktuell nicht unterstützt'
+            });
+        }
+    } catch (err) {
+        console.error('[OTP] Allgemeiner Fehler:', err);
+        next(err);
+    }
+};
 
 // @desc    QR-Code für Token generieren
 // @route   GET /api/tokens/:id/qrcode
@@ -292,6 +424,170 @@ exports.generateQRCode = async (req, res, next) => {
         });
     } catch (err) {
         console.error('Fehler beim Generieren des QR-Codes:', err);
+        next(err);
+    }
+};
+
+// @desc    Serverzeit abrufen
+// @route   GET /api/tokens/servertime
+// @access  Private
+exports.getServerTime = async (req, res, next) => {
+    try {
+        const serverTime = Math.floor(Date.now() / 1000);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                serverTime
+            }
+        });
+    } catch (err) {
+        console.error('Fehler beim Abrufen der Serverzeit:', err);
+        next(err);
+    }
+};
+
+// @desc    Zeitkorrigierte OTP-Codes generieren
+// @route   GET /api/tokens/:id/adjusted-code
+// @access  Private
+exports.generateAdjustedCode = async (req, res, next) => {
+    try {
+        const token = await Token.findById(req.params.id);
+
+        if (!token) {
+            return res.status(404).json({
+                success: false,
+                message: 'Token nicht gefunden'
+            });
+        }
+
+        if (token.user.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Nicht berechtigt, auf diesen Token zuzugreifen'
+            });
+        }
+
+        // Zeitversatz abfragen (default: -3480 Sekunden, ca. -58 Minuten)
+        const offset = parseInt(req.query.offset || -3480);
+
+        if (isNaN(offset)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ungültiger Zeitversatz-Parameter'
+            });
+        }
+
+        // TOTP-Konfiguration
+        if (token.type === 'totp') {
+            // Secret validieren
+            const secret = token.secret.trim().replace(/\s+/g, '');
+
+            if (!isValidBase32(secret)) {
+                console.error(`[OTP] Ungültiges Secret-Format für zeitkorrigierte Codes: ${secret.substring(0, 5)}...`);
+                return res.status(400).json({
+                    success: false,
+                    message: 'Ungültiges Secret-Format für OTP-Generierung'
+                });
+            }
+
+            try {
+                // Aktuelle Zeit abrufen
+                const actualTime = Math.floor(Date.now() / 1000);
+
+                // Codes für verschiedene Zeitoffsets generieren
+                const pastCodes = [];
+                const futureCodes = [];
+
+                // KORRIGIERT: Korrekte Formatierung des Algorithmus
+                let algorithm;
+                if (token.algorithm === 'SHA1') algorithm = 'sha1';
+                else if (token.algorithm === 'SHA256') algorithm = 'sha256';
+                else if (token.algorithm === 'SHA512') algorithm = 'sha512';
+                else algorithm = 'sha1'; // Fallback
+
+                // TOTP-Optionen
+                const totpOptions = {
+                    digits: token.digits,
+                    algorithm: algorithm, // Verwende die korrekt formatierte Version
+                    period: token.period,
+                    encoding: 'base32'
+                };
+
+                console.log(`[OTP Adjusted] TOTP-Optionen: ${JSON.stringify(totpOptions)}`);
+
+                // TOTP-Instanz erstellen
+                const totpInstance = totp.create({
+                    secret: secret,
+                    ...totpOptions
+                });
+
+                // Vorherige Codes (-5 bis -1 Perioden)
+                for (let i = 5; i >= 1; i--) {
+                    const pastOffset = -i * token.period;
+                    const timestamp = actualTime + offset + pastOffset;
+                    // Hinweis: timestamp muss in Millisekunden übergeben werden
+                    const pastCode = totpInstance.generate(timestamp * 1000);
+                    pastCodes.push({
+                        code: pastCode,
+                        offset: pastOffset,
+                        timestamp
+                    });
+                }
+
+                // Aktueller Code
+                const currentTimestamp = actualTime + offset;
+                const currentCode = totpInstance.generate(currentTimestamp * 1000);
+                const remainingTime = token.period - (currentTimestamp % token.period);
+
+                // Zukünftige Codes (+1 bis +5 Perioden)
+                for (let i = 1; i <= 5; i++) {
+                    const futureOffset = i * token.period;
+                    const timestamp = actualTime + offset + futureOffset;
+                    const futureCode = totpInstance.generate(timestamp * 1000);
+                    futureCodes.push({
+                        code: futureCode,
+                        offset: futureOffset,
+                        timestamp
+                    });
+                }
+
+                res.status(200).json({
+                    success: true,
+                    data: {
+                        current: {
+                            code: currentCode,
+                            remainingTime,
+                            timestamp: currentTimestamp,
+                            actualTime
+                        },
+                        past: pastCodes,
+                        future: futureCodes,
+                        config: {
+                            algorithm: token.algorithm,
+                            digits: token.digits,
+                            period: token.period,
+                            appliedOffset: offset
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error('Fehler beim Generieren zeitkorrigierter OTP-Codes:', err);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Fehler bei der zeitkorrigierten Code-Generierung',
+                    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+                });
+            }
+        } else {
+            // HOTP-Unterstützung könnte hier hinzugefügt werden
+            return res.status(400).json({
+                success: false,
+                message: 'Nicht-TOTP-Token werden aktuell nicht unterstützt'
+            });
+        }
+    } catch (err) {
+        console.error('Fehler beim Generieren zeitkorrigierter OTP-Codes:', err);
         next(err);
     }
 };
