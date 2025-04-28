@@ -1,6 +1,6 @@
 const express = require('express');
-const jwt = require('jsonwebtoken'); // Import hinzufügen
-const {register, login, getMe} = require('../controllers/auth');
+const jwt = require('jsonwebtoken');
+const {register, login, getMe, changePassword} = require('../controllers/auth');
 const {protect} = require('../middleware/auth');
 
 const router = express.Router();
@@ -8,6 +8,7 @@ const router = express.Router();
 router.post('/register', register);
 router.post('/login', login);
 router.get('/me', protect, getMe);
+router.post('/change-password', protect, changePassword);
 
 // Temporärer Test-Endpunkt
 router.get('/test-token', (req, res) => {

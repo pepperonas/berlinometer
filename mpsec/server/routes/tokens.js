@@ -1,3 +1,4 @@
+
 const express = require('express');
 const {
     getTokens,
@@ -10,7 +11,8 @@ const {
     importTokens,
     deleteAllTokens,
     getServerTime,
-    generateAdjustedCode
+    generateAdjustedCode,
+    reorderTokens
 } = require('../controllers/tokens');
 const {protect} = require('../middleware/auth');
 
@@ -27,6 +29,9 @@ router
 
 // Wichtig: Serverzeit-Route vor den ID-Routen definieren
 router.get('/servertime', getServerTime);
+
+// Route für die Aktualisierung der Reihenfolge
+router.put('/reorder', reorderTokens);
 
 router
     .route('/:id')

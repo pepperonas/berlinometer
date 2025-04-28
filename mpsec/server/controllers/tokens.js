@@ -37,7 +37,7 @@ function isValidBase32(secret) {
 // @access  Private
 exports.getTokens = async (req, res, next) => {
     try {
-        const tokens = await Token.find({user: req.user.id});
+        const tokens = await Token.find({user: req.user.id}).sort('position');
 
         res.status(200).json({
             success: true,
@@ -742,6 +742,53 @@ exports.deleteAllTokens = async (req, res, next) => {
         });
     } catch (err) {
         console.error('Fehler beim Löschen aller Tokens:', err);
+        next(err);
+    }
+};
+
+exports.reorderTokens = async (req, res, next) => {
+    try {
+        const { tokenOrder } = req.body;
+
+        if (!tokenOrder || !Array.isArray(tokenOrder)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Ungültige Daten für die Reihenfolge'
+            });
+        }
+
+        console.log(`Aktualisiere Reihenfolge für ${tokenOrder.length} Tokens`);
+
+        // Für jedes Token im Array die Position aktualisieren
+        const updatePromises = tokenOrder.map(async (item, index) => {
+            // Sicherstellen, dass der Token dem angemeldeten Benutzer gehört
+            const token = await Token.findOne({
+                _id: item.id,
+                user: req.user.id
+            });
+
+            if (!token) {
+                console.log(`Token ${item.id} nicht gefunden oder gehört nicht diesem Benutzer`);
+                return null;
+            }
+
+            return Token.updateOne(
+                { _id: item.id, user: req.user.id },
+                { $set: { position: index } }
+            );
+        });
+
+        // Alle Updates ausführen
+        const results = await Promise.all(updatePromises);
+        const validUpdates = results.filter(update => update !== null);
+
+        res.status(200).json({
+            success: true,
+            message: `${validUpdates.length} Tokens neu angeordnet`,
+            count: validUpdates.length
+        });
+    } catch (err) {
+        console.error('Fehler beim Aktualisieren der Reihenfolge:', err);
         next(err);
     }
 };

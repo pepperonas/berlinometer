@@ -11,7 +11,8 @@ import Dashboard from './pages/Dashboard';
 import TokenDetail from './pages/TokenDetail';
 import AddToken from './pages/AddToken';
 import EditToken from './pages/EditToken';
-import ImportTokens from './pages/ImportTokens'; // Neue Import-Seite
+import ImportTokens from './pages/ImportTokens';
+import Profile from './pages/Profile'; // Neue Profilseite
 
 // Importiere Komponenten
 import Layout from './components/Layout';
@@ -31,6 +32,7 @@ function App() {
                         <Route element={<PrivateRoute/>}>
                             <Route element={<Layout/>}>
                                 <Route path="/dashboard" element={<Dashboard/>}/>
+                                <Route path="/profile" element={<Profile/>}/>
                                 <Route path="/tokens/add" element={<AddToken/>}/>
                                 <Route path="/tokens/import" element={<ImportTokens/>}/>
                                 <Route path="/tokens/:id" element={<TokenDetail/>}/>

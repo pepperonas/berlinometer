@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
 // @desc    Benutzer registrieren
 // @route   POST /api/auth/register
@@ -151,6 +152,54 @@ exports.getMe = async (req, res, next) => {
     res.status(500).json({
       success: false,
       message: 'Fehler beim Abrufen der Benutzerinformationen',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+};
+
+// @desc    Passwort ändern
+// @route   POST /api/auth/change-password
+// @access  Private
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Bitte gib aktuelles und neues Passwort ein'
+      });
+    }
+
+    // Benutzer mit Passwort holen
+    const user = await User.findById(req.user.id).select('+password');
+
+    // Überprüfen, ob das aktuelle Passwort korrekt ist
+    const isMatch = await user.matchPassword(currentPassword);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Aktuelles Passwort ist nicht korrekt'
+      });
+    }
+
+    // Wenn das aktuelle Passwort stimmt, dann das neue Passwort setzen
+    user.password = newPassword;
+    await user.save();
+
+    console.log('Passwort geändert für Benutzer:', { id: user._id, username: user.username });
+
+    // Erfolgsantwort senden
+    res.status(200).json({
+      success: true,
+      message: 'Passwort erfolgreich geändert'
+    });
+  } catch (err) {
+    console.error('Fehler beim Ändern des Passworts:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fehler beim Ändern des Passworts',
       error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
   }

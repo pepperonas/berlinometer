@@ -21,7 +21,7 @@ const Logo = styled(Link)`
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   color: ${({ theme }) => theme.colors.textPrimary};
   text-decoration: none;
-  
+
   span {
     color: ${({ theme }) => theme.colors.accentBlue};
   }
@@ -37,6 +37,12 @@ const UserInfo = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transitions.default};
+
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const Username = styled.span`
@@ -53,32 +59,36 @@ const Header = () => {
     navigate('/login');
   };
 
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
   return (
-    <HeaderContainer>
-      <Container>
-        <HeaderContent>
-          <Logo to="/dashboard">
-            <span>MP</span>Sec
-          </Logo>
-          
-          {user && (
-            <UserSection>
-              <UserInfo>
-                <Avatar>{user.username[0]}</Avatar>
-                <Username>{user.username}</Username>
-              </UserInfo>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleLogout}
-              >
-                Abmelden
-              </Button>
-            </UserSection>
-          )}
-        </HeaderContent>
-      </Container>
-    </HeaderContainer>
+      <HeaderContainer>
+        <Container>
+          <HeaderContent>
+            <Logo to="/dashboard">
+              <span>MP</span>Sec
+            </Logo>
+
+            {user && (
+                <UserSection>
+                  <UserInfo onClick={handleProfileClick}>
+                    <Avatar>{user.username[0]}</Avatar>
+                    <Username>{user.username}</Username>
+                  </UserInfo>
+                  <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleLogout}
+                  >
+                    Abmelden
+                  </Button>
+                </UserSection>
+            )}
+          </HeaderContent>
+        </Container>
+      </HeaderContainer>
   );
 };
 
