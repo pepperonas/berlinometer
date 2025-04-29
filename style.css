@@ -100,3 +100,35 @@ body.sun-mode {
 body.rain-mode {
     background-color: #2a2d3e; /* Dunklerer Hintergrund */
 }
+
+.footer-buttons {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.copyright {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+}
+
+.legal-links {
+    display: flex;
+    align-items: center;
+    font-size: 0.75rem;
+    gap: 1rem;
+}
+
+.legal-links a {
+    color: var(--blue);
+    text-decoration: none;
+    transition: text-decoration 0.3s ease;
+}
+
+.legal-links a:hover {
+    text-decoration: underline;
+}

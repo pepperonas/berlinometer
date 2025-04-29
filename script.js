@@ -51,8 +51,8 @@ class Cloud {
         this.y = Math.random() * (weatherCanvas.height * 0.6);
         this.width = Math.random() * 200 + 100;
         this.height = this.width * 0.6;
-        this.speed = Math.random() * 0.5 + 0.1;
-        this.opacity = Math.random() * 0.4 + 0.1;
+        this.speed = Math.random() * 0.7 + 0.2;
+        this.opacity = Math.random() * 0.4 + 0.16;
     }
 
     draw() {
@@ -97,7 +97,7 @@ class Sunbeam {
         this.baseWidth = Math.random() * 3 + 2;    // Mittlere Breite
         this.widthVariation = 1;                // Maximale Breitenabweichung
         this.width = this.baseWidth + (Math.random() * 2 - 1) * this.widthVariation;
-        this.speed = 0.0001;
+        this.speed = 0.01;
         this.opacity = Math.random() * 0.3 + 0.4;
         this.opacityVariation = 0.1;
         this.fanning = Math.random() * 0.1 - 0.05; // Leichte Fächerung
@@ -360,10 +360,10 @@ function switchAnimation(type) {
 }
 
 // Event-Listener für Animation-Dropdown
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const animationSelector = document.getElementById('animationSelector');
     if (animationSelector) {
-        animationSelector.addEventListener('change', function() {
+        animationSelector.addEventListener('change', function () {
             switchAnimation(this.value);
         });
     }
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Fenstergrößenänderung berücksichtigen
-window.addEventListener('resize', function() {
+window.addEventListener('resize', function () {
     // Bestehende Resize-Funktion bleibt erhalten
     resizeCanvas();
 
