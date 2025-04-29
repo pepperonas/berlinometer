@@ -1,5 +1,5 @@
-import React, {useEffect, useState, useRef} from 'react';
-import {Copy, Download, Key, RefreshCw, Upload, Save, FileText, Lock, Shield} from 'lucide-react';
+import React, {useEffect, useRef, useState} from 'react';
+import {Copy, Download, FileText, Key, Lock, RefreshCw, Save, Upload} from 'lucide-react';
 
 // RSA-Komponente für CryptoVault
 export function RSAEncryption() {
@@ -97,7 +97,7 @@ export function RSAEncryption() {
             const passwordKey = await crypto.subtle.importKey(
                 'raw',
                 encoder.encode(password),
-                { name: 'PBKDF2' },
+                {name: 'PBKDF2'},
                 false,
                 ['deriveBits', 'deriveKey']
             );
@@ -114,7 +114,7 @@ export function RSAEncryption() {
                     hash: 'SHA-256'
                 },
                 passwordKey,
-                { name: 'AES-GCM', length: 256 },
+                {name: 'AES-GCM', length: 256},
                 false,
                 ['encrypt']
             );
@@ -124,7 +124,7 @@ export function RSAEncryption() {
 
             // Privaten Schlüssel verschlüsseln
             const encryptedData = await crypto.subtle.encrypt(
-                { name: 'AES-GCM', iv },
+                {name: 'AES-GCM', iv},
                 aesKey,
                 encoder.encode(privateKey)
             );
@@ -157,7 +157,7 @@ export function RSAEncryption() {
             const passwordKey = await crypto.subtle.importKey(
                 'raw',
                 encoder.encode(password),
-                { name: 'PBKDF2' },
+                {name: 'PBKDF2'},
                 false,
                 ['deriveBits', 'deriveKey']
             );
@@ -171,14 +171,14 @@ export function RSAEncryption() {
                     hash: 'SHA-256'
                 },
                 passwordKey,
-                { name: 'AES-GCM', length: 256 },
+                {name: 'AES-GCM', length: 256},
                 false,
                 ['decrypt']
             );
 
             // Entschlüsseln
             const decryptedData = await crypto.subtle.decrypt(
-                { name: 'AES-GCM', iv },
+                {name: 'AES-GCM', iv},
                 aesKey,
                 encryptedBinary
             );
@@ -656,16 +656,20 @@ export function RSAEncryption() {
         if (!showMasterPasswordModal) return null;
 
         return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
-                    <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Privaten Schlüssel schützen</h3>
+                    <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Privaten Schlüssel
+                        schützen</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Du kannst deinen privaten Schlüssel mit einem Passwort schützen. Dies wird empfohlen, wenn du die Schlüssel im Browser speicherst.
+                        Du kannst deinen privaten Schlüssel mit einem Passwort schützen. Dies wird
+                        empfohlen, wenn du die Schlüssel im Browser speicherst.
                         Leer lassen, wenn kein Passwortschutz gewünscht wird.
                     </p>
 
                     <div className="mb-4">
-                        <label className="block mb-1 text-sm font-medium dark:text-gray-200">Master-Passwort:</label>
+                        <label
+                            className="block mb-1 text-sm font-medium dark:text-gray-200">Master-Passwort:</label>
                         <input
                             type="password"
                             value={masterPassword}
@@ -677,7 +681,8 @@ export function RSAEncryption() {
 
                     {masterPassword && (
                         <div className="mb-4">
-                            <label className="block mb-1 text-sm font-medium dark:text-gray-200">Passwort bestätigen:</label>
+                            <label className="block mb-1 text-sm font-medium dark:text-gray-200">Passwort
+                                bestätigen:</label>
                             <input
                                 type="password"
                                 value={confirmMasterPassword}
@@ -715,15 +720,19 @@ export function RSAEncryption() {
         if (!showUnlockModal) return null;
 
         return (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
-                    <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Geschützten Schlüssel entsperren</h3>
+                    <h3 className="text-lg font-bold mb-4 dark:text-gray-100">Geschützten Schlüssel
+                        entsperren</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        Dieser Schlüssel ist passwortgeschützt. Bitte gib dein Master-Passwort ein, um den privaten Schlüssel zu entschlüsseln.
+                        Dieser Schlüssel ist passwortgeschützt. Bitte gib dein Master-Passwort ein,
+                        um den privaten Schlüssel zu entschlüsseln.
                     </p>
 
                     <div className="mb-4">
-                        <label className="block mb-1 text-sm font-medium dark:text-gray-200">Master-Passwort:</label>
+                        <label
+                            className="block mb-1 text-sm font-medium dark:text-gray-200">Master-Passwort:</label>
                         <input
                             type="password"
                             value={unlockPassword}
@@ -758,7 +767,8 @@ export function RSAEncryption() {
     return (
         <div className="max-w-4xl mx-auto">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-                <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">RSA Verschlüsselung</h3>
+                <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">RSA
+                    Verschlüsselung</h3>
 
                 <div className="mb-6">
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
@@ -791,7 +801,8 @@ export function RSAEncryption() {
                 </div>
 
                 {mode === 'encrypt' && (
-                    <div className="mb-4 p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                    <div
+                        className="mb-4 p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                         <div className="flex items-center mb-2">
                             <input
                                 type="checkbox"
@@ -800,14 +811,16 @@ export function RSAEncryption() {
                                 onChange={(e) => setUseExternalKey(e.target.checked)}
                                 className="mr-2"
                             />
-                            <label htmlFor="useExternalKey" className="font-medium dark:text-gray-200">
+                            <label htmlFor="useExternalKey"
+                                   className="font-medium dark:text-gray-200">
                                 Mit fremdem öffentlichen Schlüssel verschlüsseln
                             </label>
                         </div>
 
                         {useExternalKey && (
                             <div className="mt-2">
-                                <label className="block mb-1 text-sm font-medium dark:text-gray-200">
+                                <label
+                                    className="block mb-1 text-sm font-medium dark:text-gray-200">
                                     Öffentlicher Schlüssel (PEM oder Base64):
                                 </label>
                                 <div className="flex mb-2">
@@ -823,7 +836,7 @@ export function RSAEncryption() {
                                         disabled={!externalPublicKey.trim()}
                                         className="px-3 bg-blue-600 text-white rounded-r-md flex items-center justify-center"
                                     >
-                                        <Upload size={18} className="mr-1" />
+                                        <Upload size={18} className="mr-1"/>
                                         Importieren
                                     </button>
                                 </div>
@@ -834,7 +847,7 @@ export function RSAEncryption() {
                                         onClick={() => importPemFileRef.current.click()}
                                         className="px-3 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md flex items-center text-sm"
                                     >
-                                        <FileText size={16} className="mr-1" />
+                                        <FileText size={16} className="mr-1"/>
                                         PEM-Datei importieren
                                     </button>
                                     <input
@@ -842,7 +855,7 @@ export function RSAEncryption() {
                                         ref={importPemFileRef}
                                         onChange={handlePemFileUpload}
                                         accept=".pem,.key,.cert"
-                                        style={{ display: 'none' }}
+                                        style={{display: 'none'}}
                                     />
                                 </div>
 
@@ -870,7 +883,8 @@ export function RSAEncryption() {
                     </div>
 
                     <div>
-                        <label className="block mb-2 font-medium dark:text-gray-200">Ergebnis</label>
+                        <label
+                            className="block mb-2 font-medium dark:text-gray-200">Ergebnis</label>
                         <div className="relative">
                           <textarea
                               value={outputText}
@@ -910,7 +924,7 @@ export function RSAEncryption() {
                                     disabled={!keyPair}
                                     className={`flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center justify-center ${!keyPair ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    <Copy size={18} className="mr-2" />
+                                    <Copy size={18} className="mr-2"/>
                                     Public Key kopieren
                                 </button>
                                 <button
@@ -918,7 +932,7 @@ export function RSAEncryption() {
                                     disabled={!keyPair}
                                     className={`flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center justify-center ${!keyPair ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
-                                    <Download size={18} className="mr-2" />
+                                    <Download size={18} className="mr-2"/>
                                     Public Key exportieren
                                 </button>
                             </div>
@@ -946,7 +960,8 @@ export function RSAEncryption() {
                                 {keyPair && (
                                     <>
                                         <div className="mb-4">
-                                            <label className="block mb-1 text-sm font-medium dark:text-gray-200">Öffentlicher
+                                            <label
+                                                className="block mb-1 text-sm font-medium dark:text-gray-200">Öffentlicher
                                                 Schlüssel:</label>
                                             <div className="relative">
                                               <textarea
@@ -961,21 +976,24 @@ export function RSAEncryption() {
                                                         className="p-1 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 mr-1"
                                                         title="In Zwischenablage kopieren"
                                                     >
-                                                        <Copy size={14} className="dark:text-gray-200"/>
+                                                        <Copy size={14}
+                                                              className="dark:text-gray-200"/>
                                                     </button>
                                                     <button
                                                         onClick={() => exportKeys('public')}
                                                         className="p-1 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
                                                         title="Als .pem-Datei exportieren"
                                                     >
-                                                        <Download size={14} className="dark:text-gray-200"/>
+                                                        <Download size={14}
+                                                                  className="dark:text-gray-200"/>
                                                     </button>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block mb-1 text-sm font-medium dark:text-gray-200">Privater
+                                            <label
+                                                className="block mb-1 text-sm font-medium dark:text-gray-200">Privater
                                                 Schlüssel:</label>
                                             <div className="relative">
                                               <textarea
@@ -990,7 +1008,8 @@ export function RSAEncryption() {
                                                         className="p-1 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
                                                         title="Als .pem-Datei exportieren"
                                                     >
-                                                        <Download size={14} className="dark:text-gray-200"/>
+                                                        <Download size={14}
+                                                                  className="dark:text-gray-200"/>
                                                     </button>
                                                 </div>
                                             </div>
@@ -1055,7 +1074,8 @@ export function RSAEncryption() {
             {!useExternalKey && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold dark:text-gray-100">Gespeicherte Schlüsselpaare</h3>
+                        <h3 className="text-lg font-semibold dark:text-gray-100">Gespeicherte
+                            Schlüsselpaare</h3>
 
                         {/* Export/Import Buttons */}
                         <div className="flex space-x-2">
@@ -1064,7 +1084,7 @@ export function RSAEncryption() {
                                 disabled={savedKeyPairs.length === 0}
                                 className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center text-sm ${savedKeyPairs.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                <Save size={16} className="mr-1" />
+                                <Save size={16} className="mr-1"/>
                                 Alle exportieren
                             </button>
 
@@ -1072,7 +1092,7 @@ export function RSAEncryption() {
                                 onClick={() => importFileRef.current.click()}
                                 className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center text-sm"
                             >
-                                <Upload size={16} className="mr-1" />
+                                <Upload size={16} className="mr-1"/>
                                 Importieren
                             </button>
                             <input
@@ -1080,7 +1100,7 @@ export function RSAEncryption() {
                                 ref={importFileRef}
                                 onChange={handleFileUpload}
                                 accept=".json"
-                                style={{ display: 'none' }}
+                                style={{display: 'none'}}
                             />
                         </div>
                     </div>
@@ -1099,7 +1119,7 @@ export function RSAEncryption() {
                             disabled={!keyPair}
                             className={`px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-r-md flex items-center ${!keyPair ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <Lock size={18} className="mr-2" />
+                            <Lock size={18} className="mr-2"/>
                             Aktuelles Schlüsselpaar speichern
                         </button>
                     </div>
@@ -1108,18 +1128,21 @@ export function RSAEncryption() {
                         <div
                             className="border rounded-md divide-y dark:divide-gray-700 dark:border-gray-700">
                             {savedKeyPairs.map(keyPair => (
-                                <div key={keyPair.id} className="p-3 flex items-center justify-between">
+                                <div key={keyPair.id}
+                                     className="p-3 flex items-center justify-between">
                                     <div>
                                         <div className="flex items-center">
                                             <p className="font-medium dark:text-gray-100">{keyPair.name}</p>
                                             {keyPair.isEncrypted && (
-                                                <span className="ml-2 px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs">
+                                                <span
+                                                    className="ml-2 px-1.5 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs">
                                                     🔒 Geschützt
                                                 </span>
                                             )}
                                         </div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {keyPair.keySize || 2048} Bit • Erstellt am {new Date(keyPair.createdAt).toLocaleString()}
+                                            {keyPair.keySize || 2048} Bit • Erstellt
+                                            am {new Date(keyPair.createdAt).toLocaleString()}
                                         </p>
                                     </div>
                                     <div>
@@ -1147,9 +1170,44 @@ export function RSAEncryption() {
                 </div>
             )}
 
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">Hinweise zur
+                    RSA-Verschlüsselung</h3>
+
+                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                    <li>• <strong className="dark:text-white">RSA</strong> ist ein asymmetrisches
+                        Verschlüsselungsverfahren mit zwei verschiedenen Schlüsseln: Der <strong
+                            className="dark:text-white">öffentliche
+                            Schlüssel</strong> verschlüsselt, der <strong
+                            className="dark:text-white">private Schlüssel</strong> entschlüsselt.
+                    </li>
+                    <li>• Der öffentliche Schlüssel kann sicher weitergegeben werden. Den privaten
+                        Schlüssel solltest du niemals mit anderen teilen und idealerweise mit einem
+                        Passwort geschützt speichern.
+                    </li>
+                    <li>• RSA kann nur begrenzte Textlängen verschlüsseln (abhängig von der
+                        Schlüsselgröße). Bei 2048 Bit sind dies etwa 245 Bytes. Für längere Texte
+                        ist AES besser geeignet.
+                    </li>
+                    <li>• Die empfohlene Schlüsselgröße beträgt mindestens 2048 Bit. 4096 Bit bietet
+                        zusätzliche Sicherheit, jedoch auf Kosten der Geschwindigkeit.
+                    </li>
+                    <li>• RSA ist rechenintensiver als AES. Für große Datenmengen ist eine hybride
+                        Verschlüsselung (RSA für AES-Schlüsselaustausch, AES für Daten) effizienter.
+                    </li>
+                    <li>• Die exportierten Schlüssel sind im <strong
+                        className="dark:text-white">PEM-Format</strong> und können mit anderen
+                        Krypto-Bibliotheken und Tools wie OpenSSL verwendet werden.
+                    </li>
+                    <li>• Es ist sinnvoll, exportierte private Schlüssel zusätzlich mit einem
+                        Passwort zu schützen, bevor sie gespeichert oder übertragen werden.
+                    </li>
+                </ul>
+            </div>
+
             {/* Modals für Passwortschutz */}
-            <MasterPasswordModal />
-            <UnlockKeyModal />
+            <MasterPasswordModal/>
+            <UnlockKeyModal/>
         </div>
     );
 }

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Copy, Eye, EyeOff, RefreshCw, Download, Save } from 'lucide-react';
+import React, {useEffect, useState} from 'react';
+import {Copy, Eye, EyeOff, RefreshCw, Save} from 'lucide-react';
 
 // AES-Komponente für CryptoVault
 export function AESEncryption() {
@@ -171,7 +171,7 @@ export function AESEncryption() {
             const pemContent = pemHeader + formattedKey + pemFooter;
 
             // Download-Link erstellen
-            const blob = new Blob([pemContent], { type: 'text/plain' });
+            const blob = new Blob([pemContent], {type: 'text/plain'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -283,7 +283,7 @@ export function AESEncryption() {
                 const key = await crypto.subtle.importKey(
                     'raw',
                     passwordBuffer,
-                    { name: 'AES-GCM', length: keySize },
+                    {name: 'AES-GCM', length: keySize},
                     false,
                     ['encrypt']
                 );
@@ -291,7 +291,7 @@ export function AESEncryption() {
                 // Text verschlüsseln
                 const encodedText = new TextEncoder().encode(inputText);
                 const encryptedBuffer = await crypto.subtle.encrypt(
-                    { name: 'AES-GCM', iv },
+                    {name: 'AES-GCM', iv},
                     key,
                     encodedText
                 );
@@ -322,14 +322,14 @@ export function AESEncryption() {
                     const key = await crypto.subtle.importKey(
                         'raw',
                         passwordBuffer,
-                        { name: 'AES-GCM', length: keySize },
+                        {name: 'AES-GCM', length: keySize},
                         false,
                         ['decrypt']
                     );
 
                     // Text entschlüsseln
                     const decryptedBuffer = await crypto.subtle.decrypt(
-                        { name: 'AES-GCM', iv },
+                        {name: 'AES-GCM', iv},
                         key,
                         encryptedData
                     );
@@ -351,12 +351,15 @@ export function AESEncryption() {
     return (
         <div className="max-w-4xl mx-auto">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-                <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">AES Verschlüsselung mit IV</h3>
+                <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">AES Verschlüsselung
+                    mit IV</h3>
 
                 <div className="mb-6">
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                        AES (Advanced Encryption Standard) ist ein symmetrischer Verschlüsselungsalgorithmus,
-                        der weltweit für sichere Kommunikation verwendet wird. Diese Implementierung nutzt AES-GCM mit IV
+                        AES (Advanced Encryption Standard) ist ein symmetrischer
+                        Verschlüsselungsalgorithmus,
+                        der weltweit für sichere Kommunikation verwendet wird. Diese Implementierung
+                        nutzt AES-GCM mit IV
                         (Initialization Vector) für zusätzliche Sicherheit.
                     </p>
                 </div>
@@ -390,7 +393,8 @@ export function AESEncryption() {
                     </div>
 
                     <div>
-                        <label className="block mb-2 font-medium dark:text-gray-200">Ergebnis</label>
+                        <label
+                            className="block mb-2 font-medium dark:text-gray-200">Ergebnis</label>
                         <div className="relative">
               <textarea
                   value={outputText}
@@ -403,7 +407,7 @@ export function AESEncryption() {
                                     className="absolute top-2 right-2 p-1 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
                                     title="In Zwischenablage kopieren"
                                 >
-                                    <Copy size={16} className="dark:text-gray-200" />
+                                    <Copy size={16} className="dark:text-gray-200"/>
                                 </button>
                             )}
                         </div>
@@ -411,7 +415,8 @@ export function AESEncryption() {
                 </div>
 
                 <div className="mt-6">
-                    <label className="block mb-2 font-medium dark:text-gray-200">Passwort / Schlüssel</label>
+                    <label className="block mb-2 font-medium dark:text-gray-200">Passwort /
+                        Schlüssel</label>
                     <div className="flex">
                         <div className="relative flex-1">
                             <input
@@ -425,7 +430,7 @@ export function AESEncryption() {
                                 onClick={() => setShowPassword(!showPassword)}
                                 className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
                             >
-                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
                             </button>
                         </div>
                         <button
@@ -433,7 +438,7 @@ export function AESEncryption() {
                             className="ml-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center dark:text-gray-200"
                             title="Zufälligen Schlüssel generieren"
                         >
-                            <RefreshCw size={18} />
+                            <RefreshCw size={18}/>
                         </button>
                     </div>
 
@@ -452,13 +457,15 @@ export function AESEncryption() {
                 </div>
 
                 {error && (
-                    <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-md">
+                    <div
+                        className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-md">
                         {error}
                     </div>
                 )}
 
                 {info && (
-                    <div className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md">
+                    <div
+                        className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-md">
                         {info}
                     </div>
                 )}
@@ -476,7 +483,8 @@ export function AESEncryption() {
             {/* Gespeicherte Schlüssel */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold dark:text-gray-100">Gespeicherte Schlüssel</h3>
+                    <h3 className="text-lg font-semibold dark:text-gray-100">Gespeicherte
+                        Schlüssel</h3>
 
                     {/* Export Buttons */}
                     <div className="flex space-x-2">
@@ -485,7 +493,7 @@ export function AESEncryption() {
                             disabled={savedKeys.length === 0}
                             className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center text-sm ${savedKeys.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <Save size={16} className="mr-1" />
+                            <Save size={16} className="mr-1"/>
                             Alle exportieren
                         </button>
                     </div>
@@ -508,13 +516,15 @@ export function AESEncryption() {
                 </div>
 
                 {savedKeys.length > 0 ? (
-                    <div className="border rounded-md divide-y dark:divide-gray-700 dark:border-gray-600">
+                    <div
+                        className="border rounded-md divide-y dark:divide-gray-700 dark:border-gray-600">
                         {savedKeys.map(key => (
                             <div key={key.id} className="p-3 flex items-center justify-between">
                                 <div>
                                     <p className="font-medium dark:text-gray-100">{key.name}</p>
                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        {key.keySize} Bit • Erstellt am {new Date(key.createdAt).toLocaleString()}
+                                        {key.keySize} Bit • Erstellt
+                                        am {new Date(key.createdAt).toLocaleString()}
                                     </p>
                                 </div>
                                 <div>
@@ -546,6 +556,38 @@ export function AESEncryption() {
                     </p>
                 )}
             </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">Hinweise zur
+                    AES-Verschlüsselung</h3>
+
+                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                    <li>• <strong className="dark:text-white">AES-GCM</strong> ist ein moderner,
+                        sicherer Verschlüsselungsalgorithmus mit Authentifizierung, der
+                        einen <strong className="dark:text-white">Initialization Vector
+                            (IV)</strong> verwendet, um die Einzigartigkeit jeder Verschlüsselung zu
+                        gewährleisten.
+                    </li>
+                    <li>• Längere Schlüssel (192, 256 Bit) bieten mehr Sicherheit, können aber mehr
+                        Rechenleistung erfordern. 256 Bit gilt als zukunftssicher.
+                    </li>
+                    <li>• Der Initialization Vector wird automatisch bei jeder Verschlüsselung
+                        erzeugt und im verschlüsselten Text gespeichert, daher ist er nicht separat
+                        zu speichern.
+                    </li>
+                    <li>• Es gibt keine Möglichkeit, ein verlorenes Passwort oder einen verlorenen
+                        Schlüssel wiederherzustellen. Bewahre deine Schlüssel sicher auf!
+                    </li>
+                    <li>• Für maximale Sicherheit solltest du zufällig generierte Schlüssel statt
+                        einfacher Passwörter verwenden, da diese resistenter gegen Wörterbuch- und
+                        Brute-Force-Angriffe sind.
+                    </li>
+                    <li>• Der verschlüsselte Text ist Base64-kodiert und kann sicher in E-Mails,
+                        Datenbanken oder Textdateien gespeichert werden.
+                    </li>
+                </ul>
+            </div>
+
         </div>
     );
 }
