@@ -18,6 +18,7 @@ export function FileEncryption() {
 
     const fileInputRef = useRef(null);
     const dropAreaRef = useRef(null);
+    const importKeysRef = useRef(null);
 
     // Lade gespeicherte Schlüssel beim Start
     // Verwende einen separaten localStorage-Key für Dateiverschlüsselungsschlüssel
@@ -275,6 +276,79 @@ export function FileEncryption() {
 
         setInfo('Alle Datei-Verschlüsselungsschlüssel wurden erfolgreich exportiert');
         setTimeout(() => setInfo(''), 3000);
+    };
+
+    // Datei-Upload-Handler für JSON-Import von Dateiverschlüsselungsschlüsseln
+    const handleKeysImport = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            try {
+                const content = e.target.result;
+                const importedKeys = JSON.parse(content);
+
+                // Validierung der importierten Daten
+                if (!Array.isArray(importedKeys)) {
+                    throw new Error('Ungültiges Dateiformat. Erwartet ein Array von Schlüsseln.');
+                }
+
+                // Prüfe, ob jeder Schlüssel die erforderlichen Eigenschaften hat
+                importedKeys.forEach(key => {
+                    if (!key.id || !key.name || !key.value || !key.createdAt) {
+                        throw new Error('Ungültiges Schlüssel-Format in der Datei.');
+                    }
+                });
+
+                // Nur Datei-Verschlüsselungsschlüssel importieren oder markieren
+                let fileEncryptionKeys = importedKeys.filter(key => key.type === 'file-encryption');
+
+                // Wenn keine spezifischen Typen angegeben sind, prüfen wir, ob es sich um reine Dateischlüssel handelt
+                if (fileEncryptionKeys.length === 0 && importedKeys.length > 0) {
+                    // Wenn keine expliziten Typen gesetzt sind, markieren wir sie als Dateiverschlüsselungsschlüssel
+                    fileEncryptionKeys = importedKeys.map(key => ({
+                        ...key,
+                        type: 'file-encryption'
+                    }));
+                }
+
+                // Importierte Schlüssel zu vorhandenen hinzufügen, Duplikate vermeiden
+                const existingIds = new Set(savedKeys.map(key => key.id));
+                const newKeys = fileEncryptionKeys.filter(key => !existingIds.has(key.id));
+
+                if (newKeys.length === 0) {
+                    setInfo('Keine neuen Dateiverschlüsselungsschlüssel zum Importieren gefunden');
+                } else {
+                    // Aktualisierte Schlüssel
+                    const updatedKeys = [...savedKeys, ...newKeys];
+
+                    // In separaten localStorage-Key für Dateiverschlüsselungsschlüssel speichern
+                    localStorage.setItem('fileEncryptionKeys', JSON.stringify(updatedKeys));
+
+                    // State aktualisieren
+                    setSavedKeys(updatedKeys);
+                    setInfo(`${newKeys.length} Dateiverschlüsselungsschlüssel erfolgreich importiert`);
+                }
+
+                setTimeout(() => setInfo(''), 3000);
+            } catch (err) {
+                setError(`Fehler beim Importieren der Schlüssel: ${err.message}`);
+                console.error(err);
+            }
+
+            // Zurücksetzen des Datei-Inputs
+            event.target.value = null;
+        };
+
+        reader.onerror = () => {
+            setError('Fehler beim Lesen der Datei');
+            // Zurücksetzen des Datei-Inputs
+            event.target.value = null;
+        };
+
+        reader.readAsText(file);
     };
 
     // Verschlüssele eine einzelne Datei
@@ -810,6 +884,20 @@ export function FileEncryption() {
                             <Save size={16} className="mr-1" />
                             Alle exportieren
                         </button>
+                        <button
+                            onClick={() => importKeysRef.current.click()}
+                            className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center text-sm"
+                        >
+                            <Upload size={16} className="mr-1" />
+                            Importieren
+                        </button>
+                        <input
+                            type="file"
+                            ref={importKeysRef}
+                            onChange={handleKeysImport}
+                            accept=".json"
+                            style={{display: 'none'}}
+                        />
                     </div>
                 </div>
 

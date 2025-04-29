@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Copy, Eye, EyeOff, RefreshCw, Save} from 'lucide-react';
+import React, {useEffect, useState, useRef} from 'react';
+import {Copy, Eye, EyeOff, RefreshCw, Save, Upload} from 'lucide-react';
 
 // AES-Komponente für CryptoVault
 export function AESEncryption() {
@@ -13,6 +13,7 @@ export function AESEncryption() {
     const [keyName, setKeyName] = useState('');
     const [error, setError] = useState('');
     const [info, setInfo] = useState('');
+    const importFileRef = useRef(null);
 
     // Lade gespeicherte Schlüssel beim Start mit verbesserter Fehlerbehandlung
     useEffect(() => {
@@ -226,6 +227,87 @@ export function AESEncryption() {
             setError(`Fehler beim Exportieren: ${err.message}`);
             setTimeout(() => setError(''), 3000);
         }
+    };
+
+    // Datei-Upload-Handler für JSON-Import von AES-Schlüsseln
+    const handleFileUpload = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            try {
+                const content = e.target.result;
+                const importedKeys = JSON.parse(content);
+
+                // Validierung der importierten Daten
+                if (!Array.isArray(importedKeys)) {
+                    throw new Error('Ungültiges Dateiformat. Erwartet ein Array von Schlüsseln.');
+                }
+
+                // Prüfe, ob jeder Schlüssel die erforderlichen Eigenschaften hat
+                importedKeys.forEach(key => {
+                    if (!key.id || !key.name || !key.value || !key.createdAt) {
+                        throw new Error('Ungültiges Schlüssel-Format in der Datei.');
+                    }
+                });
+
+                // Nur Textencryption-Schlüssel importieren (Dateiverschlüsselungsschlüssel ausfiltern)
+                const textEncryptionKeys = importedKeys.filter(key => !key.type || key.type === 'text-encryption');
+
+                // Importierte Schlüssel zu vorhandenen hinzufügen, Duplikate vermeiden
+                const existingIds = new Set(savedKeys.map(key => key.id));
+                const newKeys = textEncryptionKeys.filter(key => !existingIds.has(key.id));
+
+                if (newKeys.length === 0) {
+                    setInfo('Keine neuen AES-Schlüssel zum Importieren gefunden');
+                } else {
+                    // Bestehende Schlüssel laden
+                    let allKeys = [];
+                    try {
+                        const storedKeys = localStorage.getItem('aesKeys');
+                        if (storedKeys) {
+                            allKeys = JSON.parse(storedKeys);
+                        }
+                    } catch (e) {
+                        console.error('Fehler beim Laden bestehender Schlüssel:', e);
+                        allKeys = [];
+                    }
+
+                    // Filtere File-Encryption-Schlüssel heraus
+                    const fileEncryptionKeys = allKeys.filter(key => key.type === 'file-encryption');
+                    const textEncryptionKeys = allKeys.filter(key => !key.type || key.type === 'text-encryption');
+
+                    // Neue Schlüssel hinzufügen und mit Dateiverschlüsselungsschlüsseln zusammenführen
+                    const updatedTextKeys = [...textEncryptionKeys, ...newKeys];
+                    const updatedAllKeys = [...fileEncryptionKeys, ...updatedTextKeys];
+
+                    // In localStorage speichern
+                    localStorage.setItem('aesKeys', JSON.stringify(updatedAllKeys));
+
+                    // State aktualisieren (nur mit relevanten Schlüsseln für diese Komponente)
+                    setSavedKeys([...savedKeys, ...newKeys]);
+                    setInfo(`${newKeys.length} AES-Schlüssel erfolgreich importiert`);
+                }
+
+                setTimeout(() => setInfo(''), 3000);
+            } catch (err) {
+                setError(`Fehler beim Importieren der Schlüssel: ${err.message}`);
+                console.error(err);
+            }
+
+            // Zurücksetzen des Datei-Inputs
+            event.target.value = null;
+        };
+
+        reader.onerror = () => {
+            setError('Fehler beim Lesen der Datei');
+            // Zurücksetzen des Datei-Inputs
+            event.target.value = null;
+        };
+
+        reader.readAsText(file);
     };
 
     // Generiere zufälligen AES Schlüssel
@@ -496,6 +578,20 @@ export function AESEncryption() {
                             <Save size={16} className="mr-1"/>
                             Alle exportieren
                         </button>
+                        <button
+                            onClick={() => importFileRef.current.click()}
+                            className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center text-sm"
+                        >
+                            <Upload size={16} className="mr-1"/>
+                            Importieren
+                        </button>
+                        <input
+                            type="file"
+                            ref={importFileRef}
+                            onChange={handleFileUpload}
+                            accept=".json"
+                            style={{display: 'none'}}
+                        />
                     </div>
                 </div>
 
