@@ -128,6 +128,14 @@ const documentsData = [
                 "tags": ["bsi", "standards", "sicherheit", "richtlinien"]
             },
             {
+                id: 'einwegfunktionen',
+                name: 'Einwegfunktionen',
+                path: 'it-security/einwegfunktionen.html',
+                description: 'Eine Demonstration von Einwegfunktionen und Falltürfunktionen mit praktischen Beispielen.',
+                category: 'Kryptographie',
+                tags: ['verschlüsselung', 'rsa', 'sicherheit', 'grundlagen']
+            },
+            {
                 id: 'rsa-v1',
                 name: 'RSA-Verschlüsselung V1',
                 path: 'it-security/rsa-erklaerung-v1.html',
@@ -153,6 +161,7 @@ const documentSources = {
     'james-bond': 'ai/james-bond-data.html',
     'seo-checklist': 'development/seo-checklist.html',
     'bsi-standards': 'it-security/bsi-standards-uebersicht.html',
+    'einwegfunktionen': 'it-security/einwegfunktionen.html',
     'rsa-v1': 'it-security/rsa-erklaerung-v1.html',
     'rsa-v2': 'it-security/rsa-erklaerung-v2.html'
 };
