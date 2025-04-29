@@ -405,6 +405,17 @@ export function RSAEncryption() {
             return;
         }
 
+        // Wenn es sich um einen privaten Schlüssel handelt, zeige eine Warnung
+        if (type === 'private') {
+            if (!window.confirm(
+                'WARNUNG: Der private Schlüssel wird unverschlüsselt exportiert. ' +
+                'Dies kann ein Sicherheitsrisiko darstellen, wenn die Datei in falsche Hände gerät. ' +
+                'Bist du sicher, dass du fortfahren möchtest?'
+            )) {
+                return;
+            }
+        }
+
         const key = type === 'public' ? keyPair.publicKey : keyPair.privateKey;
         const filename = type === 'public' ? 'public_key.pem' : 'private_key.pem';
 

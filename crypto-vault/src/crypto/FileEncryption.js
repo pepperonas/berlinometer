@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { File, Upload, Download, Trash2, Save, RefreshCw, Archive, FileText, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
+import { File, Upload, Download, Trash2, Save, RefreshCw, Archive, FileText, Eye, EyeOff } from 'lucide-react';
 
 // FileEncryption Komponente für CryptoVault
 export function FileEncryption() {
@@ -15,14 +15,14 @@ export function FileEncryption() {
     const [savedKeys, setSavedKeys] = useState([]);
     const [keyName, setKeyName] = useState('');
     const [processingProgress, setProcessingProgress] = useState({});
-    const [expandedSettings, setExpandedSettings] = useState(false);
 
     const fileInputRef = useRef(null);
     const dropAreaRef = useRef(null);
 
     // Lade gespeicherte Schlüssel beim Start
+    // Verwende einen separaten localStorage-Key für Dateiverschlüsselungsschlüssel
     React.useEffect(() => {
-        const keys = JSON.parse(localStorage.getItem('aesKeys') || '[]');
+        const keys = JSON.parse(localStorage.getItem('fileEncryptionKeys') || '[]');
         setSavedKeys(keys);
     }, []);
 
@@ -160,11 +160,13 @@ export function FileEncryption() {
             name: keyName,
             value: password,
             keySize: keySize,
+            type: 'file-encryption',
             createdAt: new Date().toISOString()
         };
 
         const updatedKeys = [...savedKeys, newKey];
-        localStorage.setItem('aesKeys', JSON.stringify(updatedKeys));
+        // Speichere im separaten localStorage-Key für Dateiverschlüsselungsschlüssel
+        localStorage.setItem('fileEncryptionKeys', JSON.stringify(updatedKeys));
         setSavedKeys(updatedKeys);
         setKeyName('');
         setInfo('Schlüssel erfolgreich gespeichert');
@@ -174,7 +176,8 @@ export function FileEncryption() {
     // Lösche einen gespeicherten Schlüssel
     const deleteKey = (id) => {
         const updatedKeys = savedKeys.filter(key => key.id !== id);
-        localStorage.setItem('aesKeys', JSON.stringify(updatedKeys));
+        // Speichere im separaten localStorage-Key für Dateiverschlüsselungsschlüssel
+        localStorage.setItem('fileEncryptionKeys', JSON.stringify(updatedKeys));
         setSavedKeys(updatedKeys);
     };
 
@@ -182,6 +185,96 @@ export function FileEncryption() {
     const loadKey = (key) => {
         setPassword(key.value);
         setKeySize(key.keySize);
+    };
+
+    // Exportiere einen einzelnen AES-Schlüssel im PEM-ähnlichen Format
+    const exportKey = (key) => {
+        try {
+            // Warnung anzeigen, da AES-Schlüssel sensibel sind
+            if (!window.confirm(
+                'WARNUNG: Der AES-Schlüssel wird unverschlüsselt exportiert. ' +
+                'Dies kann ein Sicherheitsrisiko darstellen, wenn die Datei in falsche Hände gerät. ' +
+                'Bist du sicher, dass du fortfahren möchtest?'
+            )) {
+                return;
+            }
+
+            // AES-Schlüssel im PEM-ähnlichen Format
+            const pemHeader = '-----BEGIN AES KEY-----\n';
+            const pemFooter = '\n-----END AES KEY-----';
+
+            // Key-Informationen in JSON umwandeln
+            const keyData = {
+                alg: 'AES',
+                key: key.value,
+                size: key.keySize,
+                created: key.createdAt,
+                type: 'file-encryption' // Typ zur Unterscheidung hinzufügen
+            };
+
+            // Base64-Kodierung
+            const jsonStr = JSON.stringify(keyData);
+            const base64Data = btoa(jsonStr);
+
+            // Base64 in 64-Zeichen-Zeilen aufteilen
+            let formattedKey = '';
+            for (let i = 0; i < base64Data.length; i += 64) {
+                formattedKey += base64Data.slice(i, i + 64) + '\n';
+            }
+
+            const pemContent = pemHeader + formattedKey + pemFooter;
+
+            // Download-Link erstellen
+            const blob = new Blob([pemContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `file_aes_key_${key.name.replace(/\s+/g, '_')}.pem`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            setInfo('AES-Schlüssel erfolgreich exportiert');
+            setTimeout(() => setInfo(''), 3000);
+        } catch (err) {
+            setError(`Fehler beim Exportieren des Schlüssels: ${err.message}`);
+            setTimeout(() => setError(''), 3000);
+        }
+    };
+
+    // Exportiere alle AES-Schlüssel als JSON
+    const exportAllKeys = () => {
+        if (savedKeys.length === 0) {
+            setError('Keine Schlüssel zum Exportieren vorhanden');
+            return;
+        }
+
+        // Warnung anzeigen, da AES-Schlüssel sensibel sind
+        if (!window.confirm(
+            'WARNUNG: Die AES-Schlüssel für die Dateiverschlüsselung werden unverschlüsselt exportiert. ' +
+            'Dies kann ein Sicherheitsrisiko darstellen, wenn die Datei in falsche Hände gerät. ' +
+            'Bist du sicher, dass du fortfahren möchtest?'
+        )) {
+            return;
+        }
+
+        // Schlüssel in JSON umwandeln
+        const keysData = JSON.stringify(savedKeys, null, 2);
+
+        // Download-Link erstellen
+        const blob = new Blob([keysData], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cryptovault_file_aes_keys.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        setInfo('Alle Datei-Verschlüsselungsschlüssel wurden erfolgreich exportiert');
+        setTimeout(() => setInfo(''), 3000);
     };
 
     // Verschlüssele eine einzelne Datei
@@ -528,94 +621,19 @@ export function FileEncryption() {
                         </button>
                     </div>
 
-                    <div className="flex items-center mt-2 justify-between">
-                        <div className="flex items-center">
-                            <span className="mr-2 text-sm dark:text-gray-300">Schlüsselgröße:</span>
-                            <select
-                                value={keySize}
-                                onChange={(e) => setKeySize(Number(e.target.value))}
-                                className="p-1 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                            >
-                                <option value={128}>128 Bit</option>
-                                <option value={192}>192 Bit</option>
-                                <option value={256}>256 Bit</option>
-                            </select>
-                        </div>
-
-                        <button
-                            onClick={() => setExpandedSettings(!expandedSettings)}
-                            className="flex items-center text-blue-600 dark:text-blue-400 text-sm"
+                    <div className="flex items-center mt-2">
+                        <span className="mr-2 text-sm dark:text-gray-300">Schlüsselgröße:</span>
+                        <select
+                            value={keySize}
+                            onChange={(e) => setKeySize(Number(e.target.value))}
+                            className="p-1 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                         >
-                            {expandedSettings ? (
-                                <>
-                                    <ChevronUp size={16} className="mr-1" />
-                                    Gespeicherte Schlüssel ausblenden
-                                </>
-                            ) : (
-                                <>
-                                    <ChevronDown size={16} className="mr-1" />
-                                    Gespeicherte Schlüssel anzeigen
-                                </>
-                            )}
-                        </button>
+                            <option value={128}>128 Bit</option>
+                            <option value={192}>192 Bit</option>
+                            <option value={256}>256 Bit</option>
+                        </select>
                     </div>
                 </div>
-
-                {/* Gespeicherte Schlüssel */}
-                {expandedSettings && (
-                    <div className="mb-6 p-4 border rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-                        <h4 className="font-medium mb-3 dark:text-gray-100">Gespeicherte Schlüssel</h4>
-
-                        <div className="flex mb-4">
-                            <input
-                                type="text"
-                                value={keyName}
-                                onChange={(e) => setKeyName(e.target.value)}
-                                className="flex-1 p-2 border rounded-l-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                                placeholder="Schlüsselname"
-                            />
-                            <button
-                                onClick={saveKey}
-                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-r-md"
-                            >
-                                Aktuellen Schlüssel speichern
-                            </button>
-                        </div>
-
-                        {savedKeys.length > 0 ? (
-                            <div className="border rounded-md divide-y dark:divide-gray-700 dark:border-gray-600">
-                                {savedKeys.map(key => (
-                                    <div key={key.id} className="p-3 flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium dark:text-gray-100">{key.name}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                {key.keySize} Bit • Erstellt am {new Date(key.createdAt).toLocaleString()}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <button
-                                                onClick={() => loadKey(key)}
-                                                className="px-3 py-1 bg-gray-200 dark:bg-gray-700 dark:text-gray-200 rounded-md mr-2"
-                                            >
-                                                Laden
-                                            </button>
-                                            <button
-                                                onClick={() => deleteKey(key.id)}
-                                                className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-md"
-                                            >
-                                                Löschen
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-gray-500 dark:text-gray-400 text-center py-2">
-                                Keine gespeicherten Schlüssel vorhanden
-                            </p>
-                        )}
-                    </div>
-                )}
 
                 {/* Drag & Drop Bereich */}
                 <div
@@ -777,13 +795,86 @@ export function FileEncryption() {
                 )}
             </div>
 
+            {/* Gespeicherte Schlüssel */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold dark:text-gray-100">Gespeicherte Schlüssel</h3>
+
+                    {/* Export Button */}
+                    <div className="flex space-x-2">
+                        <button
+                            onClick={exportAllKeys}
+                            disabled={savedKeys.length === 0}
+                            className={`px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center text-sm ${savedKeys.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                            <Save size={16} className="mr-1" />
+                            Alle exportieren
+                        </button>
+                    </div>
+                </div>
+
+                <div className="flex mb-4">
+                    <input
+                        type="text"
+                        value={keyName}
+                        onChange={(e) => setKeyName(e.target.value)}
+                        className="flex-1 p-2 border rounded-l-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        placeholder="Schlüsselname"
+                    />
+                    <button
+                        onClick={saveKey}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-r-md"
+                    >
+                        Aktuellen Schlüssel speichern
+                    </button>
+                </div>
+
+                {savedKeys.length > 0 ? (
+                    <div className="border rounded-md divide-y dark:divide-gray-700 dark:border-gray-600">
+                        {savedKeys.map(key => (
+                            <div key={key.id} className="p-3 flex items-center justify-between">
+                                <div>
+                                    <p className="font-medium dark:text-gray-100">{key.name}</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        {key.keySize} Bit • Erstellt am {new Date(key.createdAt).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div>
+                                    <button
+                                        onClick={() => loadKey(key)}
+                                        className="px-3 py-1 bg-gray-200 dark:bg-gray-700 dark:text-gray-200 rounded-md mr-2 hover:bg-gray-300 dark:hover:bg-gray-600"
+                                    >
+                                        Laden
+                                    </button>
+                                    {/*<button*/}
+                                    {/*    onClick={() => exportKey(key)}*/}
+                                    {/*    className="px-3 py-1 bg-gray-200 dark:bg-gray-700 dark:text-gray-200 rounded-md mr-2 hover:bg-gray-300 dark:hover:bg-gray-600"*/}
+                                    {/*>*/}
+                                    {/*    Exportieren*/}
+                                    {/*</button>*/}
+                                    <button
+                                        onClick={() => deleteKey(key.id)}
+                                        className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-md"
+                                    >
+                                        Löschen
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-gray-500 dark:text-gray-400 text-center py-4">
+                        Keine gespeicherten Schlüssel vorhanden
+                    </p>
+                )}
+            </div>
+
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">Hinweise zur Dateiverschlüsselung</h3>
 
                 <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
                     <li>• Die Dateiverschlüsselung verwendet <strong className="dark:text-white">AES-GCM mit 256-Bit</strong> Schlüsseln und einen sicheren Initialization Vector (IV).</li>
                     <li>• Verschlüsselte Dateien erhalten die Dateiendung <strong className="dark:text-white">.enc</strong> und können nur mit dem gleichen Passwort entschlüsselt werden.</li>
-                    <li>• Es gibt keine Möglichkeit, das Passwort wiederherzustellen. Bewahren Sie Ihre Passwörter oder Schlüssel sicher auf!</li>
                     <li>• Um verschlüsselte Dateien zu entschlüsseln, wechseln Sie zum "Dateien entschlüsseln"-Modus und laden Sie die .enc-Dateien hoch.</li>
                     <li>• Für maximale Sicherheit sollten Sie einen zufällig generierten Schlüssel verwenden und diesen sicher speichern.</li>
                 </ul>
