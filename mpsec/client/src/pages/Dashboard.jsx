@@ -18,8 +18,20 @@ import {
   FormGroup,
   TokenCode,
   ProgressBar,
-  TimeRemaining
+  TimeRemaining,
+  Grid as StyledGrid
 } from '../components/styled';
+import {
+  AddIcon,
+  ImportIcon,
+  SortIcon,
+  SaveIcon,
+  DetailsIcon,
+  DeleteIcon,
+  CancelIcon,
+  LoadingIcon,
+  CopyIcon
+} from '../components/Icons';
 
 // Toast-Komponente für Benachrichtigungen
 const Toast = styled.div`
@@ -44,6 +56,7 @@ const EmptyState = styled.div`
 
 const TokenCard = styled(Card)`
   transition: ${({ theme }) => theme.transitions.default};
+  cursor: default;
 
   &:hover {
     box-shadow: ${({ theme }) => theme.shadows.lg};
@@ -94,6 +107,21 @@ const ActionContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: ${({ theme }) => theme.spacing.lg};
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    & > div:first-child {
+      margin-bottom: ${({ theme }) => theme.spacing.md};
+      width: 100%;
+    }
+
+    & > button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 `;
 
 const DeleteConfirmation = styled.div`
@@ -116,6 +144,35 @@ const CardTokenCode = styled(TokenCode)`
   font-size: ${({ theme }) => theme.typography.fontSize.lg};
   margin: ${({ theme }) => theme.spacing.md} 0;
   padding: ${({ theme }) => theme.spacing.md};
+  position: relative;
+
+  &:hover .copy-icon {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    font-size: ${({ theme }) => theme.typography.fontSize.md};
+    letter-spacing: 0.15em;
+  }
+`;
+
+const CopyIconContainer = styled.div`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: ${({ theme }) => theme.colors.backgroundDarker};
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 1;
+  }
 `;
 
 const TokenTimeRemaining = styled(TimeRemaining)`
@@ -124,10 +181,10 @@ const TokenTimeRemaining = styled(TimeRemaining)`
 `;
 
 // Grid mit Drag-and-Drop-Funktionalität
-const DraggableGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: ${({ theme }) => theme.spacing.lg};
+const DraggableGrid = styled(StyledGrid)`
+  @media (max-width: 768px) {
+    padding: 0 ${({ theme }) => theme.spacing.xs};
+  }
 `;
 
 // Expliziter Drag-Handle für bessere Benutzbarkeit
@@ -175,6 +232,31 @@ const ReorderNotice = styled.div`
 
   span {
     margin-right: ${({ theme }) => theme.spacing.sm};
+  }
+`;
+
+// Layout-Komponenten für den PageHeader
+const ResponsivePageHeader = styled(PageHeader)`
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    & > h1 {
+      margin-bottom: ${({ theme }) => theme.spacing.md};
+    }
+  }
+`;
+
+const ResponsiveButtonGroup = styled(ButtonGroup)`
+  @media (max-width: 768px) {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: ${({ theme }) => theme.spacing.xs};
+    
+    & > * {
+      width: 100%;
+    }
   }
 `;
 
@@ -296,24 +378,15 @@ const Dashboard = () => {
         });
   };
 
-  // Verhindern, dass ein Klick auf den Details-Button zur Card-Navigation führt
+  // Entfernt: Card-Klick leitet nicht mehr zur Detailseite weiter
+
+  // Navigation zur Token-Detailseite (nur über den Details-Button)
   const handleDetailsClick = (e, tokenId) => {
     if (isReordering) {
       e.preventDefault();
-      e.stopPropagation();
       return;
     }
 
-    e.preventDefault();
-    e.stopPropagation();
-    navigate(`/tokens/${tokenId}`);
-  };
-
-  const handleCardClick = (e, tokenId) => {
-    if (isReordering) {
-      e.preventDefault();
-      return;
-    }
     navigate(`/tokens/${tokenId}`);
   };
 
@@ -409,38 +482,51 @@ const Dashboard = () => {
 
   return (
       <>
-        <PageHeader>
+        <ResponsivePageHeader>
           <PageTitle>Deine 2FA-Tokens</PageTitle>
-          <ButtonGroup>
+          <ResponsiveButtonGroup>
             <Button
                 as={Link}
                 to="/tokens/add"
                 variant="primary"
+                iconOnly
             >
-              Neuen Token hinzufügen
+              <AddIcon />
+              <span className="button-text">Neuen Token hinzufügen</span>
             </Button>
             <Button
                 as={Link}
                 to="/tokens/import"
                 variant="outline"
+                iconOnly
             >
-              Tokens importieren
+              <ImportIcon />
+              <span className="button-text">Tokens importieren</span>
             </Button>
             {tokens.length > 1 && (
                 <ToggleOrderingButton
                     variant={isReordering ? "success" : "outline"}
                     onClick={toggleReordering}
                     disabled={isSavingOrder}
+                    iconOnly
                 >
                   {isReordering
                       ? isSavingOrder
-                          ? 'Speichere...'
-                          : 'Sortierung speichern'
-                      : 'Sortierung ändern'}
+                          ? <LoadingIcon />
+                          : <SaveIcon />
+                      : <SortIcon />
+                  }
+                  <span className="button-text">
+                {isReordering
+                    ? isSavingOrder
+                        ? 'Speichere...'
+                        : 'Sortierung speichern'
+                    : 'Sortierung ändern'}
+              </span>
                 </ToggleOrderingButton>
             )}
-          </ButtonGroup>
-        </PageHeader>
+          </ResponsiveButtonGroup>
+        </ResponsivePageHeader>
 
         {error && <Alert type="error">{error}</Alert>}
         {deleteMessage && <Alert type="success">{deleteMessage}</Alert>}
@@ -470,8 +556,10 @@ const Dashboard = () => {
                         variant="danger"
                         onClick={() => setShowDeleteConfirm(true)}
                         disabled={tokens.length === 0}
+                        iconOnly
                     >
-                      Alle Tokens löschen
+                      <DeleteIcon />
+                      <span className="button-text">Alle Tokens löschen</span>
                     </Button>
                 ) : null}
               </ActionContainer>
@@ -485,15 +573,19 @@ const Dashboard = () => {
                           variant="danger"
                           onClick={handleDeleteAll}
                           disabled={isDeleting}
+                          iconOnly
                       >
-                        {isDeleting ? <Loader size="20px" /> : 'Ja, alle löschen'}
+                        {isDeleting ? <LoadingIcon /> : <DeleteIcon />}
+                        <span className="button-text">{isDeleting ? 'Wird gelöscht...' : 'Ja, alle löschen'}</span>
                       </Button>
                       <Button
                           variant="outline"
                           onClick={() => setShowDeleteConfirm(false)}
                           disabled={isDeleting}
+                          iconOnly
                       >
-                        Abbrechen
+                        <CancelIcon />
+                        <span className="button-text">Abbrechen</span>
                       </Button>
                     </ButtonGroup>
                   </DeleteConfirmation>
@@ -510,15 +602,19 @@ const Dashboard = () => {
                     as={Link}
                     to="/tokens/add"
                     variant="primary"
+                    iconOnly
                 >
-                  Token hinzufügen
+                  <AddIcon />
+                  <span className="button-text">Token hinzufügen</span>
                 </Button>
                 <Button
                     as={Link}
                     to="/tokens/import"
                     variant="outline"
+                    iconOnly
                 >
-                  Tokens importieren
+                  <ImportIcon />
+                  <span className="button-text">Tokens importieren</span>
                 </Button>
               </ButtonGroup>
             </EmptyState>
@@ -542,14 +638,13 @@ const Dashboard = () => {
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     isDragging={snapshot.isDragging}
-                                    onClick={(e) => handleCardClick(e, token._id)}
                                 >
                                   {isReordering && (
                                       <DragHandle
                                           {...provided.dragHandleProps}
                                       />
                                   )}
-                                  <CardContent>
+                                  <CardContent style={{ cursor: 'default' }}>
                                     <TokenName>{token.name}</TokenName>
                                     {token.issuer && <TokenIssuer>{token.issuer}</TokenIssuer>}
 
@@ -561,6 +656,9 @@ const Dashboard = () => {
                                               style={{ cursor: 'pointer' }}
                                           >
                                             {tokenCodes[token._id].code || '------'}
+                                            <CopyIconContainer className="copy-icon">
+                                              <CopyIcon />
+                                            </CopyIconContainer>
                                           </CardTokenCode>
                                           <TokenTimeRemaining>
                                             <ProgressBar progress={tokenCodes[token._id].progress || 0} />
@@ -579,8 +677,10 @@ const Dashboard = () => {
                                           variant="outline"
                                           size="sm"
                                           onClick={(e) => handleDetailsClick(e, token._id)}
+                                          iconOnly
                                       >
-                                        Details
+                                        <DetailsIcon />
+                                        <span className="button-text">Details</span>
                                       </DetailsButton>
                                     </TokenInfo>
                                   </CardContent>

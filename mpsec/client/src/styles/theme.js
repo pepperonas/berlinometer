@@ -1,6 +1,6 @@
 export const theme = {
   colors: {
-    backgroundDark: '#2B2E3B',
+    backgroundDark: '#2C2E3B',
     backgroundDarker: '#252830',
     cardBackground: '#343845',
     accentBlue: '#688db1',
@@ -48,5 +48,13 @@ export const theme = {
       medium: 500,
       bold: 700
     }
+  },
+  // Breakpoints für responsive Design
+  breakpoints: {
+    xs: '320px',
+    sm: '480px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px'
   }
 };

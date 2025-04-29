@@ -35,11 +35,11 @@ export const CardFooter = styled.div`
   margin-top: ${({ theme }) => theme.spacing.lg};
 `;
 
-export const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: ${({ theme }) => theme.spacing.lg};
-`;
+// export const Grid = styled.div`
+//   display: grid;
+//   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+//   gap: ${({ theme }) => theme.spacing.lg};
+// `;
 
 // Formular-Komponenten
 export const Form = styled.form`
@@ -119,65 +119,65 @@ export const ErrorMessage = styled.p`
 `;
 
 // Button-Komponenten
-export const Button = styled.button`
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: ${({ theme, size }) => 
-    size === 'sm' ? `${theme.spacing.xs} ${theme.spacing.md}` : 
-    size === 'lg' ? `${theme.spacing.md} ${theme.spacing.xl}` : 
-    `${theme.spacing.sm} ${theme.spacing.lg}`
-  };
-  background-color: ${({ theme, variant }) => 
-    variant === 'primary' ? theme.colors.accentBlue :
-    variant === 'success' ? theme.colors.accentGreen :
-    variant === 'danger' ? theme.colors.accentRed :
-    'transparent'
-  };
-  color: ${({ theme, variant }) => 
-    variant === 'outline' ? theme.colors.textPrimary : '#fff'
-  };
-  border: ${({ theme, variant }) => 
-    variant === 'outline' ? `1px solid ${theme.colors.textSecondary}` : 'none'
-  };
-  border-radius: ${({ theme }) => theme.borderRadius.md};
-  font-size: ${({ theme, size }) => 
-    size === 'sm' ? theme.typography.fontSize.sm :
-    size === 'lg' ? theme.typography.fontSize.lg :
-    theme.typography.fontSize.md
-  };
-  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-  cursor: pointer;
-  transition: ${({ theme }) => theme.transitions.default};
-
-  &:hover {
-    background-color: ${({ theme, variant }) => 
-      variant === 'primary' ? '#597ba0' :
-      variant === 'success' ? '#8aa580' :
-      variant === 'danger' ? '#d04e4f' :
-      'rgba(156, 163, 175, 0.1)'
-    };
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px ${({ theme, variant }) => 
-      variant === 'primary' ? 'rgba(104, 141, 177, 0.5)' :
-      variant === 'success' ? 'rgba(156, 182, 143, 0.5)' :
-      variant === 'danger' ? 'rgba(225, 97, 98, 0.5)' :
-      'rgba(156, 163, 175, 0.5)'
-    };
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  & > svg {
-    margin-right: ${({ theme }) => theme.spacing.xs};
-  }
-`;
+// export const Button = styled.button`
+//   display: inline-flex;
+//   align-items: center;
+//   justify-content: center;
+//   padding: ${({ theme, size }) =>
+//     size === 'sm' ? `${theme.spacing.xs} ${theme.spacing.md}` :
+//     size === 'lg' ? `${theme.spacing.md} ${theme.spacing.xl}` :
+//     `${theme.spacing.sm} ${theme.spacing.lg}`
+//   };
+//   background-color: ${({ theme, variant }) =>
+//     variant === 'primary' ? theme.colors.accentBlue :
+//     variant === 'success' ? theme.colors.accentGreen :
+//     variant === 'danger' ? theme.colors.accentRed :
+//     'transparent'
+//   };
+//   color: ${({ theme, variant }) =>
+//     variant === 'outline' ? theme.colors.textPrimary : '#fff'
+//   };
+//   border: ${({ theme, variant }) =>
+//     variant === 'outline' ? `1px solid ${theme.colors.textSecondary}` : 'none'
+//   };
+//   border-radius: ${({ theme }) => theme.borderRadius.md};
+//   font-size: ${({ theme, size }) =>
+//     size === 'sm' ? theme.typography.fontSize.sm :
+//     size === 'lg' ? theme.typography.fontSize.lg :
+//     theme.typography.fontSize.md
+//   };
+//   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+//   cursor: pointer;
+//   transition: ${({ theme }) => theme.transitions.default};
+//
+//   &:hover {
+//     background-color: ${({ theme, variant }) =>
+//       variant === 'primary' ? '#597ba0' :
+//       variant === 'success' ? '#8aa580' :
+//       variant === 'danger' ? '#d04e4f' :
+//       'rgba(156, 163, 175, 0.1)'
+//     };
+//   }
+//
+//   &:focus {
+//     outline: none;
+//     box-shadow: 0 0 0 3px ${({ theme, variant }) =>
+//       variant === 'primary' ? 'rgba(104, 141, 177, 0.5)' :
+//       variant === 'success' ? 'rgba(156, 182, 143, 0.5)' :
+//       variant === 'danger' ? 'rgba(225, 97, 98, 0.5)' :
+//       'rgba(156, 163, 175, 0.5)'
+//     };
+//   }
+//
+//   &:disabled {
+//     opacity: 0.6;
+//     cursor: not-allowed;
+//   }
+//
+//   & > svg {
+//     margin-right: ${({ theme }) => theme.spacing.xs};
+//   }
+// `;
 
 export const ButtonGroup = styled.div`
   display: flex;
@@ -306,4 +306,96 @@ export const Badge = styled.span`
   };
   text-transform: uppercase;
   letter-spacing: 0.05em;
+`;
+
+export const Button = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ theme, size }) =>
+    size === 'sm' ? `${theme.spacing.xs} ${theme.spacing.sm}` :
+        size === 'lg' ? `${theme.spacing.md} ${theme.spacing.xl}` :
+            `${theme.spacing.sm} ${theme.spacing.lg}`
+};
+  background-color: ${({ theme, variant }) =>
+    variant === 'primary' ? theme.colors.accentBlue :
+        variant === 'success' ? theme.colors.accentGreen :
+            variant === 'danger' ? theme.colors.accentRed :
+                'transparent'
+};
+  color: ${({ theme, variant }) =>
+    variant === 'outline' ? theme.colors.textPrimary : '#fff'
+};
+  border: ${({ theme, variant }) =>
+    variant === 'outline' ? `1px solid ${theme.colors.textSecondary}` : 'none'
+};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  font-size: ${({ theme, size }) =>
+    size === 'sm' ? theme.typography.fontSize.sm :
+        size === 'lg' ? theme.typography.fontSize.lg :
+            theme.typography.fontSize.md
+};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  cursor: pointer;
+  transition: ${({ theme }) => theme.transitions.default};
+
+  &:hover {
+    background-color: ${({ theme, variant }) =>
+    variant === 'primary' ? '#597ba0' :
+        variant === 'success' ? '#8aa580' :
+            variant === 'danger' ? '#d04e4f' :
+                'rgba(156, 163, 175, 0.1)'
+};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px ${({ theme, variant }) =>
+    variant === 'primary' ? 'rgba(104, 141, 177, 0.5)' :
+        variant === 'success' ? 'rgba(156, 182, 143, 0.5)' :
+            variant === 'danger' ? 'rgba(225, 97, 98, 0.5)' :
+                'rgba(156, 163, 175, 0.5)'
+};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  svg {
+    margin-right: ${({ theme, iconOnly }) => iconOnly ? '0' : theme.spacing.xs};
+  }
+  
+  @media (max-width: 768px) {
+    padding: ${({ theme, size }) =>
+    size === 'sm' ? `${theme.spacing.xs} ${theme.spacing.xs}` :
+        size === 'lg' ? `${theme.spacing.sm} ${theme.spacing.md}` :
+            `${theme.spacing.xs} ${theme.spacing.sm}`
+};
+    
+    .button-text {
+      display: none;
+    }
+    
+    svg {
+      margin-right: 0;
+    }
+  }
+`;
+
+export const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: ${({ theme }) => theme.spacing.lg};
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: ${({ theme }) => theme.spacing.md};
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
 `;
