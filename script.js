@@ -1,3 +1,391 @@
+const weatherCanvas = document.getElementById("weatherCanvas");
+const weatherCtx = weatherCanvas ? weatherCanvas.getContext('2d') : null;
+let currentAnimation = "code"; // Standard-Animation
+let weatherAnimationId = null;
+
+// Wetter-Animationsklassen
+// Regentropfen-Klasse
+class Raindrop {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * weatherCanvas.width;
+        this.y = Math.random() * -100;
+        this.length = Math.random() * 20 + 10;
+        this.speed = Math.random() * 10 + 5;
+        this.opacity = Math.random() * 0.2 + 0.1;
+        this.width = Math.random() * 1.5 + 0.5;
+    }
+
+    draw() {
+        weatherCtx.beginPath();
+        weatherCtx.moveTo(this.x, this.y);
+        weatherCtx.lineTo(this.x, this.y + this.length);
+        weatherCtx.lineWidth = this.width;
+        weatherCtx.strokeStyle = `rgba(142, 197, 252, ${this.opacity})`;
+        weatherCtx.stroke();
+    }
+
+    update() {
+        this.y += this.speed;
+
+        // Wenn Regentropfen unten aus dem Bild fällt, neue Position generieren
+        if (this.y > weatherCanvas.height) {
+            this.reset();
+        }
+
+        this.draw();
+    }
+}
+
+// Wolken-Klasse (für schönes Wetter)
+class Cloud {
+    constructor() {
+        this.reset();
+    }
+
+    reset() {
+        this.x = Math.random() * weatherCanvas.width - weatherCanvas.width;
+        this.y = Math.random() * (weatherCanvas.height * 0.6);
+        this.width = Math.random() * 200 + 100;
+        this.height = this.width * 0.6;
+        this.speed = Math.random() * 0.5 + 0.1;
+        this.opacity = Math.random() * 0.4 + 0.1;
+    }
+
+    draw() {
+        weatherCtx.beginPath();
+        weatherCtx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+
+        // Wolkenform zeichnen
+        const radius = this.height / 2;
+
+        // Mittlerer Kreis
+        weatherCtx.arc(this.x + this.width / 2, this.y + radius, radius, 0, Math.PI * 2);
+        // Linker Kreis
+        weatherCtx.arc(this.x + radius, this.y + radius, radius * 0.7, 0, Math.PI * 2);
+        // Rechter Kreis
+        weatherCtx.arc(this.x + this.width - radius, this.y + radius, radius * 0.7, 0, Math.PI * 2);
+
+        weatherCtx.fill();
+    }
+
+    update() {
+        this.x += this.speed;
+
+        // Wenn Wolke rechts aus dem Bild wandert, neue Position am linken Rand
+        if (this.x > weatherCanvas.width) {
+            this.x = -this.width;
+            this.y = Math.random() * (weatherCanvas.height * 0.6);
+        }
+
+        this.draw();
+    }
+}
+
+// Sonnenstrahl-Klasse
+class Sunbeam {
+    constructor() {
+        this.centerX = weatherCanvas.width * 0.1; // Sonne am linken oberen Rand
+        this.centerY = weatherCanvas.height * 0.1;
+        this.angle = Math.random() * Math.PI * 2;
+        this.baseLength = Math.random() * 100 + 80;  // Mittlere Länge
+        this.lengthVariation = 30;               // Maximale Abweichung
+        this.length = this.baseLength + (Math.random() * 2 - 1) * this.lengthVariation;
+        this.baseWidth = Math.random() * 3 + 2;    // Mittlere Breite
+        this.widthVariation = 1;                // Maximale Breitenabweichung
+        this.width = this.baseWidth + (Math.random() * 2 - 1) * this.widthVariation;
+        this.speed = 0.0001;
+        this.opacity = Math.random() * 0.3 + 0.4;
+        this.opacityVariation = 0.1;
+        this.fanning = Math.random() * 0.1 - 0.05; // Leichte Fächerung
+        this.xOffset = Math.random() * 10 - 5;
+        this.yOffset = Math.random() * 10 - 5;
+    }
+
+    draw() {
+        const startX = this.centerX + this.xOffset;
+        const startY = this.centerY + this.yOffset;
+        const endX = startX + Math.cos(this.angle) * this.length;
+        const endY = startY + Math.sin(this.angle) * this.length;
+
+        // Farbverlauf für weichere Kanten
+        let gradient = weatherCtx.createLinearGradient(startX, startY, endX, endY);
+        gradient.addColorStop(0, `rgba(255, 235, 59, ${this.opacity})`);
+        gradient.addColorStop(1, `rgba(255, 215, 0, 0)`);
+
+        weatherCtx.beginPath();
+        weatherCtx.moveTo(startX, startY);
+        weatherCtx.lineTo(endX, endY);
+        weatherCtx.strokeStyle = gradient;
+        weatherCtx.lineWidth = this.width;
+        weatherCtx.stroke();
+    }
+
+    update() {
+        this.angle += this.speed + this.fanning;
+        this.opacity += (Math.random() * 0.02 - 0.01) * this.opacityVariation;
+        this.opacity = Math.max(0, Math.min(this.opacity, 0.5)); // Opazität begrenzen
+
+        // Zufällige Variation von Länge und Breite
+        this.length = this.baseLength + (Math.random() * 2 - 1) * this.lengthVariation;
+        this.width = this.baseWidth + (Math.random() * 2 - 1) * this.widthVariation;
+
+        this.draw();
+    }
+}
+
+// Sonnenschein-Klasse (zentraler Kreis)
+class Sun {
+    constructor() {
+        this.x = weatherCanvas.width * 0.1;
+        this.y = weatherCanvas.height * 0.1;
+        this.radius = 40;
+        this.glow = 20;
+        this.pulseSpeed = 0.02;
+        this.pulseAmount = 5;
+        this.pulseAngle = 0;
+    }
+
+    draw() {
+        // Pulsierende Größe
+        const pulseRadius = this.radius + Math.sin(this.pulseAngle) * this.pulseAmount;
+
+        // Äußeres Glühen
+        const gradient = weatherCtx.createRadialGradient(
+            this.x, this.y, pulseRadius - this.glow,
+            this.x, this.y, pulseRadius + this.glow
+        );
+        gradient.addColorStop(0, 'rgba(255, 215, 0, 0.8)');
+        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+
+        weatherCtx.beginPath();
+        weatherCtx.fillStyle = gradient;
+        weatherCtx.arc(this.x, this.y, pulseRadius + this.glow, 0, Math.PI * 2);
+        weatherCtx.fill();
+
+        // Sonne selbst
+        weatherCtx.beginPath();
+        weatherCtx.fillStyle = 'rgba(255, 235, 59, 1)';
+        weatherCtx.arc(this.x, this.y, pulseRadius, 0, Math.PI * 2);
+        weatherCtx.fill();
+    }
+
+    update() {
+        this.pulseAngle += this.pulseSpeed;
+        if (this.pulseAngle > Math.PI * 2) {
+            this.pulseAngle = 0;
+        }
+
+        this.draw();
+    }
+}
+
+// Wetter-Animation Variablen
+let raindrops = [];
+let clouds = [];
+let sunbeams = [];
+let sun = null;
+let isRaining = true;
+
+// Anzahl der Elemente
+const raindropCount = 200;
+const cloudCount = 10;
+const sunbeamCount = 12;
+
+// Hintergrundbeleuchtung (Blitze) - nur für Regen
+function createLightning() {
+    if (Math.random() < 0.003) { // Selten blitzen
+        let opacity = Math.random() * 0.2 + 0.1;
+        let duration = Math.random() * 100 + 50;
+
+        // Hintergrundblitz erstellen
+        weatherCanvas.style.backgroundColor = `rgba(255, 255, 255, ${opacity})`;
+
+        // Nach kurzer Zeit zurücksetzen
+        setTimeout(() => {
+            weatherCanvas.style.backgroundColor = 'transparent';
+        }, duration);
+    }
+}
+
+// Wetter-Animationen initialisieren
+function initWeatherAnimations() {
+    if (!weatherCanvas) return;
+
+    resizeWeatherCanvas();
+
+    // Regentropfen erzeugen
+    raindrops = [];
+    for (let i = 0; i < raindropCount; i++) {
+        raindrops.push(new Raindrop());
+    }
+
+    // Wolken erzeugen
+    clouds = [];
+    for (let i = 0; i < cloudCount; i++) {
+        clouds.push(new Cloud());
+    }
+
+    // Sonnenstrahlen erzeugen
+    sunbeams = [];
+    for (let i = 0; i < sunbeamCount; i++) {
+        sunbeams.push(new Sunbeam());
+    }
+
+    // Sonne erzeugen
+    sun = new Sun();
+}
+
+// Wetter-Canvas auf Fenstergröße setzen
+function resizeWeatherCanvas() {
+    if (!weatherCanvas) return;
+
+    weatherCanvas.width = window.innerWidth;
+    weatherCanvas.height = window.innerHeight;
+}
+
+// Regen zeichnen
+function drawRain() {
+    // Dunklerer Hintergrund für Regenwetter
+    weatherCtx.fillStyle = 'rgba(26, 29, 42, 0.6)';
+    weatherCtx.fillRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+
+    // Blitze erstellen
+    createLightning();
+
+    // Regentropfen zeichnen
+    raindrops.forEach(drop => {
+        drop.update();
+    });
+}
+
+// Sonnenschein zeichnen
+function drawSunshine() {
+    // Dunklerer blauer Hintergrund für Sonnenwetter
+    let gradient = weatherCtx.createLinearGradient(0, 0, 0, weatherCanvas.height);
+    gradient.addColorStop(0, '#1e5486'); // Dunkleres Himmelblau oben
+    gradient.addColorStop(1, '#2c6ca9'); // Dunkleres Blau unten
+
+    weatherCtx.fillStyle = gradient;
+    weatherCtx.fillRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+
+    // Sonne zeichnen
+    sun.update();
+
+    // Sonnenstrahlen zeichnen
+    sunbeams.forEach(beam => {
+        beam.update();
+    });
+
+    // Wolken zeichnen
+    clouds.forEach(cloud => {
+        cloud.update();
+    });
+}
+
+// Wetter-Animation
+function animateWeather() {
+    if (!weatherCanvas) return;
+
+    weatherCtx.clearRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+
+    if (isRaining) {
+        drawRain();
+    } else {
+        drawSunshine();
+    }
+
+    weatherAnimationId = requestAnimationFrame(animateWeather);
+}
+
+// Wetter-Animation starten
+function startWeatherAnimation() {
+    if (!weatherCanvas) return;
+
+    if (!weatherAnimationId) {
+        animateWeather();
+    }
+}
+
+// Wetter-Animation stoppen
+function stopWeatherAnimation() {
+    if (weatherAnimationId) {
+        cancelAnimationFrame(weatherAnimationId);
+        weatherAnimationId = null;
+        // Canvas leeren
+        if (weatherCanvas) {
+            weatherCtx.clearRect(0, 0, weatherCanvas.width, weatherCanvas.height);
+        }
+    }
+}
+
+// Animation wechseln
+function switchAnimation(type) {
+    // Aktuelle Animation stoppen
+    if (currentAnimation === "sun" || currentAnimation === "rain") {
+        stopWeatherAnimation();
+        if (weatherCanvas) weatherCanvas.style.display = "none";
+    }
+
+    // Code-Animation anhalten/fortsetzen
+    if (type === "code") {
+        if (canvas) canvas.style.display = "block";
+        document.body.classList.remove("sun-mode", "rain-mode");
+        currentAnimation = "code";
+    } else {
+        if (canvas) canvas.style.display = "none";
+
+        // Wetteranimation starten
+        if (weatherCanvas) {
+            weatherCanvas.style.display = "block";
+            initWeatherAnimations();
+
+            if (type === "sun") {
+                isRaining = false;
+                document.body.classList.remove("rain-mode");
+                document.body.classList.add("sun-mode");
+            } else if (type === "rain") {
+                isRaining = true;
+                document.body.classList.remove("sun-mode");
+                document.body.classList.add("rain-mode");
+            }
+
+            startWeatherAnimation();
+            currentAnimation = type;
+        }
+    }
+}
+
+// Event-Listener für Animation-Dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const animationSelector = document.getElementById('animationSelector');
+    if (animationSelector) {
+        animationSelector.addEventListener('change', function() {
+            switchAnimation(this.value);
+        });
+    }
+
+    // Beim ersten Laden Code-Animation anzeigen
+    switchAnimation("code");
+});
+
+// Fenstergrößenänderung berücksichtigen
+window.addEventListener('resize', function() {
+    // Bestehende Resize-Funktion bleibt erhalten
+    resizeCanvas();
+
+    // Für Wetteranimation
+    resizeWeatherCanvas();
+
+    // Bei Wetter-Animation Objekte neu initialisieren
+    if (currentAnimation === "sun" || currentAnimation === "rain") {
+        initWeatherAnimations();
+    }
+});
+
 // Eine Liste von Code-Fragmenten für die Animation
 const codeFragments = [
     "if (x > 0)", "function()", "return true;", "for(i=0;i<10;i++)", "while(true)",

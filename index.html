@@ -342,12 +342,20 @@
 </head>
 <body>
 <canvas id="canvas"></canvas>
+<canvas id="weatherCanvas"></canvas>
 <header>
     <h1>🪩 mrx3k1.de</h1>
     <h2 id="app-count">Entdecke meine App-Sammlung</h2>
 
     <div class="search-container">
         <input type="text" id="app-search" placeholder="Apps suchen..." autocomplete="off">
+        <div class="animation-controls">
+            <select id="animationSelector" class="animation-dropdown">
+                <option value="code">Code Animation</option>
+                <option value="sun">Sonne</option>
+                <option value="rain">Regen</option>
+            </select>
+        </div>
     </div>
 
     <div class="category-nav">
