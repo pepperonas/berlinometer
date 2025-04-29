@@ -49,7 +49,7 @@ Benutzeroberfläche und unterstützt sowohl Text- als auch Dateiverschlüsselung
 1. Repository klonen:
 
 ```bash
-git clone https://github.com/username/crypto-vault.git
+git clone https://github.com/pepperonas/crypto-vault.git
 cd crypto-vault
 ```
 
