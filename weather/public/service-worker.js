@@ -1,4 +1,4 @@
-const CACHE_NAME = 'weather-app-v1';
+const CACHE_NAME = 'weather-app-v2'; // Version erhöht
 const urlsToCache = [
     '/weather',
     '/weather/index.html',
@@ -28,33 +28,47 @@ const urlsToCache = [
     'https://openweathermap.org/img/wn/50n@2x.png'
 ];
 
-// Installation: Cache wichtige Ressourcen
+// Service Worker selbst aktualisieren, falls eine neue Version verfügbar ist
 self.addEventListener('install', event => {
+    console.log('Service Worker installiert');
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then(cache => {
+                console.log('Cache geöffnet');
                 return cache.addAll(urlsToCache);
+            })
+            .then(() => {
+                // Force activation (überspringe waiting)
+                return self.skipWaiting();
             })
     );
 });
 
 // Aktivierung: Alte Caches löschen
 self.addEventListener('activate', event => {
+    console.log('Service Worker aktiviert');
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.filter(cacheName => {
                     return cacheName !== CACHE_NAME;
                 }).map(cacheName => {
+                    console.log('Lösche alten Cache:', cacheName);
                     return caches.delete(cacheName);
                 })
             );
+        }).then(() => {
+            // Übernimm Kontrolle über alle Clients
+            return self.clients.claim();
         })
     );
 });
 
 // Fetch-Handling: Strategien für verschiedene Anfragen
 self.addEventListener('fetch', event => {
+    // Ignoriere nicht-GET-Requests
+    if (event.request.method !== 'GET') return;
+
     const requestUrl = new URL(event.request.url);
 
     // Für API-Anfragen: Network-First-Strategie

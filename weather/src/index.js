@@ -16,7 +16,7 @@ root.render(
 // Service Worker registrieren
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/weather/service-worker.js')
+        navigator.serviceWorker.register('/weather/service-worker.js', { scope: '/weather/' })
             .then(registration => {
                 console.log('Service Worker erfolgreich registriert mit Scope:', registration.scope);
             })

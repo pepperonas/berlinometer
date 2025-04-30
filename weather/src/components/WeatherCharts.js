@@ -1,14 +1,24 @@
-import React, { useContext } from 'react';
-import { ThemeContext } from '../context/ThemeContext';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import React, {useContext} from 'react';
+import {ThemeContext} from '../context/ThemeContext';
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Line,
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis
+} from 'recharts';
 
-function WeatherCharts({ forecast }) {
-    const { darkMode } = useContext(ThemeContext);
+function WeatherCharts({forecast}) {
+    const {darkMode} = useContext(ThemeContext);
 
     // Hilfsfunktion zum Formatieren des Datums/Uhrzeit
     const formatXAxis = (timestamp) => {
         const date = new Date(timestamp * 1000);
-        return date.toLocaleDateString('de-DE', { weekday: 'short' }) + ' ' +
+        return date.toLocaleDateString('de-DE', {weekday: 'short'}) + ' ' +
             date.getHours() + 'h';
     };
 
@@ -62,8 +72,9 @@ function WeatherCharts({ forecast }) {
             <div style={chartStyle} className="mb-4">
                 <h3 className={`text-lg font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Temperaturverlauf</h3>
                 <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#4B5563' : '#E5E7EB'} />
+                    <LineChart data={chartData} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+                        <CartesianGrid strokeDasharray="3 3"
+                                       stroke={darkMode ? '#4B5563' : '#E5E7EB'}/>
                         <XAxis
                             dataKey="time"
                             tickFormatter={formatXAxis}
@@ -74,7 +85,10 @@ function WeatherCharts({ forecast }) {
                             stroke={darkMode ? '#9CA3AF' : '#6B7280'}
                         />
                         <Tooltip
-                            contentStyle={{ backgroundColor: darkMode ? '#2C2E3B' : '#FFFFFF', borderColor: darkMode ? '#4B5563' : '#E5E7EB' }}
+                            contentStyle={{
+                                backgroundColor: darkMode ? '#2C2E3B' : '#FFFFFF',
+                                borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                            }}
                             labelFormatter={value => formatXAxis(value)}
                             formatter={(value) => [`${value}°C`, 'Temperatur']}
                         />
@@ -83,8 +97,8 @@ function WeatherCharts({ forecast }) {
                             dataKey="temp"
                             stroke={colors.temp}
                             strokeWidth={2}
-                            dot={{ r: 2, fill: colors.temp }}
-                            activeDot={{ r: 4 }}
+                            dot={{r: 2, fill: colors.temp}}
+                            activeDot={{r: 4}}
                         />
                     </LineChart>
                 </ResponsiveContainer>
@@ -94,8 +108,9 @@ function WeatherCharts({ forecast }) {
             <div style={chartStyle} className="mb-4">
                 <h3 className={`text-lg font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Niederschlag</h3>
                 <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#4B5563' : '#E5E7EB'} />
+                    <BarChart data={chartData} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+                        <CartesianGrid strokeDasharray="3 3"
+                                       stroke={darkMode ? '#4B5563' : '#E5E7EB'}/>
                         <XAxis
                             dataKey="time"
                             tickFormatter={formatXAxis}
@@ -106,7 +121,10 @@ function WeatherCharts({ forecast }) {
                             stroke={darkMode ? '#9CA3AF' : '#6B7280'}
                         />
                         <Tooltip
-                            contentStyle={{ backgroundColor: darkMode ? '#2C2E3B' : '#FFFFFF', borderColor: darkMode ? '#4B5563' : '#E5E7EB' }}
+                            contentStyle={{
+                                backgroundColor: darkMode ? '#2C2E3B' : '#FFFFFF',
+                                borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                            }}
                             labelFormatter={value => formatXAxis(value)}
                             formatter={(value) => [`${value} mm`, 'Niederschlag']}
                         />
@@ -123,8 +141,9 @@ function WeatherCharts({ forecast }) {
             <div style={chartStyle}>
                 <h3 className={`text-lg font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Windgeschwindigkeit</h3>
                 <ResponsiveContainer width="100%" height={200}>
-                    <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#4B5563' : '#E5E7EB'} />
+                    <LineChart data={chartData} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+                        <CartesianGrid strokeDasharray="3 3"
+                                       stroke={darkMode ? '#4B5563' : '#E5E7EB'}/>
                         <XAxis
                             dataKey="time"
                             tickFormatter={formatXAxis}
@@ -135,7 +154,10 @@ function WeatherCharts({ forecast }) {
                             stroke={darkMode ? '#9CA3AF' : '#6B7280'}
                         />
                         <Tooltip
-                            contentStyle={{ backgroundColor: darkMode ? '#2C2E3B' : '#FFFFFF', borderColor: darkMode ? '#4B5563' : '#E5E7EB' }}
+                            contentStyle={{
+                                backgroundColor: darkMode ? '#2C2E3B' : '#FFFFFF',
+                                borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                            }}
                             labelFormatter={value => formatXAxis(value)}
                             formatter={(value) => [`${value} km/h`, 'Wind']}
                         />
@@ -144,8 +166,8 @@ function WeatherCharts({ forecast }) {
                             dataKey="wind"
                             stroke={colors.wind}
                             strokeWidth={2}
-                            dot={{ r: 2, fill: colors.wind }}
-                            activeDot={{ r: 4 }}
+                            dot={{r: 2, fill: colors.wind}}
+                            activeDot={{r: 4}}
                         />
                     </LineChart>
                 </ResponsiveContainer>

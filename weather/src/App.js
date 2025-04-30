@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import axios from 'axios';
 import WeatherCard from './components/WeatherCard';
 import SearchBar from './components/SearchBar';
@@ -6,7 +6,7 @@ import Forecast from './components/Forecast';
 import LoadingSpinner from './components/LoadingSpinner';
 import ThemeSwitch from './components/ThemeSwitch';
 import OfflineNotice from './components/OfflineNotice';
-import { ThemeContext } from './context/ThemeContext';
+import {ThemeContext} from './context/ThemeContext';
 import WeatherCharts from "./components/WeatherCharts";
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [isOnline, setIsOnline] = useState(navigator.onLine);
-    const { darkMode } = useContext(ThemeContext);
+    const {darkMode} = useContext(ThemeContext);
 
     const API_KEY = '21027f5e389230401529c52f24f6887e';
     const API_URL = 'https://api.openweathermap.org/data/2.5';
@@ -41,7 +41,19 @@ function App() {
     // Initial Wetterdaten laden
     useEffect(() => {
         fetchWeather(location);
-    }, []);
+        updateServiceWorker(); // Aktualisiere Service Worker bei App-Start
+    }, [location]);
+
+    const updateServiceWorker = () => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                for (let registration of registrations) {
+                    registration.update();
+                    console.log('Service Worker aktualisiert');
+                }
+            });
+        }
+    };
 
     const fetchWeather = async (city) => {
         setLoading(true);
@@ -106,17 +118,19 @@ function App() {
     }, [isOnline, weather, forecast]);
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-primary text-white' : 'bg-white text-gray-800'}`}>
+        <div
+            className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-primary text-white' : 'bg-white text-gray-800'}`}>
             <div className="container mx-auto px-4 py-4 sm:py-8 max-w-5xl">
                 <div className="flex justify-between items-center mb-4 sm:mb-8">
                     <h1 className={`text-2xl sm:text-4xl font-bold tracking-tight ${darkMode ? 'text-blue-300' : 'text-blue-500'}`}>
                         Wetter App
                     </h1>
-                    <ThemeSwitch />
+                    <ThemeSwitch/>
                 </div>
 
                 {!isOnline && (
-                    <div className={`border px-3 py-2 rounded-lg shadow-sm mb-4 text-sm ${darkMode ? 'bg-yellow-800 border-yellow-700 text-yellow-200' : 'bg-yellow-50 border-yellow-200 text-yellow-700'}`}>
+                    <div
+                        className={`border px-3 py-2 rounded-lg shadow-sm mb-4 text-sm ${darkMode ? 'bg-yellow-800 border-yellow-700 text-yellow-200' : 'bg-yellow-50 border-yellow-200 text-yellow-700'}`}>
                         Du bist offline. Es werden gespeicherte Daten angezeigt.
                     </div>
                 )}
@@ -137,7 +151,7 @@ function App() {
                         {weather && <WeatherCard weather={weather}/>}
 
                         {!isOnline && !weather && !forecast && (
-                            <OfflineNotice />
+                            <OfflineNotice/>
                         )}
 
                         {forecast && (
@@ -175,7 +189,8 @@ function App() {
                     </div>
                 )}
 
-                <div className={`mt-8 pt-4 pb-2 text-center text-m ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                <div
+                    className={`mt-8 pt-4 pb-2 text-center text-m ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     Made with ❤️ by Martin Pfeffer
                 </div>
             </div>
