@@ -1,0 +1,87 @@
+/* Diese Datei enthält ergänzende Styles zur Material UI Theme */
+
+.loader {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+/* Animation für die Karten */
+.event-card {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.event-date {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.event-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.event-venue {
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
+.event-interested {
+  background-color: rgba(255, 72, 72, 0.2);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.search-input {
+  flex-grow: 1;
+}
+
+/* Message-Animation */
+.message-enter {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.message-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.message-exit {
+  opacity: 1;
+}
+
+.message-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+  }
+
+  .filter-bar > * {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
