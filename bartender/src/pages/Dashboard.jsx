@@ -192,22 +192,22 @@ const Dashboard = () => {
       
       {/* Diagramme */}
       <Grid container spacing={3} mb={4}>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} lg={8}>
           <SalesChart data={salesData} />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} lg={4}>
           <ExpensesPieChart data={expensesData} />
         </Grid>
       </Grid>
       
       {/* Top-Getränke und Bestandswarnung */}
       <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} lg={6}>
           <TopSellingItems items={topSellingDrinks || []} />
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} lg={6}>
           <Card>
-            <CardContent sx={{ p: 0 }}>
+            <CardContent sx={{ padding: 0 }}>
               <Box p={2}>
                 <Typography variant="h6" gutterBottom display="flex" alignItems="center">
                   <InventoryIcon sx={{ mr: 1, color: 'warning.main' }} />

@@ -4,7 +4,7 @@
  * In einer echten Anwendung würden hier die API-Aufrufe stehen.
  * Für die Entwicklung nutzen wir Mock-Daten.
  */
-import { drinks, staff, finances, dashboardData, inventory, suppliers } from './mockData';
+import { drinks, staff, finances, dashboardData, inventory, suppliers, sales, posFormats } from './mockData';
 
 // Hilfsfunktion für simulierte API-Verzögerung
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -254,6 +254,16 @@ export const inventoryApi = {
     return simulateApiCall(item, !item && 'Inventarposition nicht gefunden');
   },
   
+  create: async (itemData) => {
+    const newItem = {
+      ...itemData,
+      id: 'inv' + (inventory.length + 1),
+    };
+    
+    inventory.push(newItem);
+    return simulateApiCall(newItem);
+  },
+  
   update: async (id, itemData) => {
     const index = inventory.findIndex(i => i.id === id);
     if (index === -1) {
@@ -315,3 +325,205 @@ export const suppliersApi = {
     return simulateApiCall({ success: true });
   },
 };
+
+// API für Verkäufe
+export const salesApi = {
+  getAll: async () => {
+    return simulateApiCall(sales);
+  },
+  
+  getByDate: async (startDate, endDate) => {
+    const filteredSales = sales.filter(sale => {
+      const saleDate = new Date(sale.date);
+      return saleDate >= new Date(startDate) && saleDate <= new Date(endDate);
+    });
+    return simulateApiCall(filteredSales);
+  },
+  
+  getById: async (id) => {
+    const sale = sales.find(s => s.id === id);
+    return simulateApiCall(sale, !sale && 'Verkauf nicht gefunden');
+  },
+  
+  create: async (saleData) => {
+    // Berechne die Gesamtsumme, wenn nicht angegeben
+    if (!saleData.total) {
+      saleData.total = saleData.items.reduce(
+        (sum, item) => sum + (item.quantity * item.pricePerUnit), 0
+      );
+    }
+    
+    const newSale = {
+      ...saleData,
+      id: 'sale' + (sales.length + 1),
+      date: saleData.date || new Date().toISOString(),
+    };
+    
+    sales.push(newSale);
+    
+    // Aktualisiere Lagerbestand für verkaufte Getränke, die im Lager geführt werden
+    for (const item of newSale.items) {
+      const drink = drinks.find(d => d.id === item.drinkId);
+      if (drink && drink.stock > 0) {
+        drink.stock = Math.max(0, drink.stock - item.quantity);
+      }
+    }
+    
+    return simulateApiCall(newSale);
+  },
+  
+  update: async (id, saleData) => {
+    const index = sales.findIndex(s => s.id === id);
+    if (index === -1) {
+      return simulateApiCall(null, 'Verkauf nicht gefunden');
+    }
+    
+    // Berechne die Gesamtsumme neu, wenn Items aktualisiert wurden
+    if (saleData.items) {
+      saleData.total = saleData.items.reduce(
+        (sum, item) => sum + (item.quantity * item.pricePerUnit), 0
+      );
+    }
+    
+    const updatedSale = { ...sales[index], ...saleData };
+    sales[index] = updatedSale;
+    
+    return simulateApiCall(updatedSale);
+  },
+  
+  delete: async (id) => {
+    const index = sales.findIndex(s => s.id === id);
+    if (index === -1) {
+      return simulateApiCall(null, 'Verkauf nicht gefunden');
+    }
+    
+    sales.splice(index, 1);
+    return simulateApiCall({ success: true });
+  },
+  
+  // Import von Kassensystem-Daten
+  importFromPOS: async (fileData, format) => {
+    try {
+      let importedSales = [];
+      
+      // Verarbeitung je nach Format
+      switch (format) {
+        case 'csv':
+          // CSV-Verarbeitung
+          const lines = fileData.trim().split('\n');
+          const headers = lines[0].split(',');
+          
+          for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            const saleItem = {};
+            
+            headers.forEach((header, index) => {
+              if (header === 'datum' || header === 'date') {
+                saleItem.date = values[index];
+              } else if (header === 'produkt' || header === 'product' || header === 'name') {
+                saleItem.name = values[index];
+              } else if (header === 'menge' || header === 'quantity') {
+                saleItem.quantity = parseFloat(values[index]);
+              } else if (header === 'preis' || header === 'price') {
+                saleItem.pricePerUnit = parseFloat(values[index]);
+              }
+            });
+            
+            // Gruppiere nach Datum
+            const existingSale = importedSales.find(s => s.date === saleItem.date);
+            if (existingSale) {
+              existingSale.items.push({
+                name: saleItem.name,
+                quantity: saleItem.quantity,
+                pricePerUnit: saleItem.pricePerUnit,
+                drinkId: findDrinkIdByName(saleItem.name)
+              });
+            } else {
+              importedSales.push({
+                date: saleItem.date,
+                items: [{
+                  name: saleItem.name,
+                  quantity: saleItem.quantity,
+                  pricePerUnit: saleItem.pricePerUnit,
+                  drinkId: findDrinkIdByName(saleItem.name)
+                }],
+                paymentMethod: 'cash', // Standard: Bargeld
+                staffId: 'staff1', // Standard: Erster Mitarbeiter
+                notes: 'Importiert aus Kassensystem'
+              });
+            }
+          }
+          break;
+          
+        case 'json':
+          // JSON-Verarbeitung
+          const jsonData = JSON.parse(fileData);
+          
+          if (Array.isArray(jsonData)) {
+            // Format: [{ date, items: [{ name, quantity, price }] }]
+            importedSales = jsonData.map(sale => ({
+              date: sale.date,
+              items: sale.items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                pricePerUnit: item.price,
+                drinkId: findDrinkIdByName(item.name)
+              })),
+              paymentMethod: sale.paymentMethod || 'cash',
+              staffId: sale.staffId || 'staff1',
+              notes: sale.notes || 'Importiert aus Kassensystem'
+            }));
+          } else {
+            // Format: { date, items: [{ name, quantity, price }] }
+            importedSales = [{
+              date: jsonData.date,
+              items: jsonData.items.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                pricePerUnit: item.price,
+                drinkId: findDrinkIdByName(item.name)
+              })),
+              paymentMethod: jsonData.paymentMethod || 'cash',
+              staffId: jsonData.staffId || 'staff1',
+              notes: jsonData.notes || 'Importiert aus Kassensystem'
+            }];
+          }
+          break;
+          
+        case 'excel':
+          // Excel-Format würde in einer realen App eine externe Bibliothek 
+          // wie ExcelJS oder SheetJS verwenden
+          return simulateApiCall(null, 'Excel-Import noch nicht implementiert');
+          
+        default:
+          return simulateApiCall(null, 'Unbekanntes Dateiformat');
+      }
+      
+      // Berechne Gesamtsummen für jeden Import
+      importedSales.forEach(sale => {
+        sale.total = sale.items.reduce((sum, item) => sum + (item.quantity * item.pricePerUnit), 0);
+      });
+      
+      // Speichere alle importierten Verkäufe
+      const createdSales = [];
+      for (const saleData of importedSales) {
+        const newSale = await salesApi.create(saleData);
+        createdSales.push(newSale);
+      }
+      
+      return simulateApiCall(createdSales);
+    } catch (error) {
+      return simulateApiCall(null, 'Fehler beim Import: ' + error.message);
+    }
+  }
+};
+
+// Hilfsfunktion, um Getränke-ID anhand des Namens zu finden
+function findDrinkIdByName(name) {
+  const drink = drinks.find(d => 
+    d.name.toLowerCase() === name.toLowerCase() ||
+    d.name.toLowerCase().includes(name.toLowerCase()) ||
+    name.toLowerCase().includes(d.name.toLowerCase())
+  );
+  return drink ? drink.id : null;
+}

@@ -25,7 +25,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions
+  DialogActions,
+  MenuItem
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,8 +39,10 @@ import {
   ArrowDownward as ArrowDownwardIcon
 } from '@mui/icons-material';
 
-import { inventoryApi } from '../services/api';
+import { inventoryApi, suppliersApi } from '../services/api';
 import { formatCurrency } from '../utils/helpers';
+import { INVENTORY_CATEGORIES } from '../utils/constants';
+import { alpha } from '@mui/material/styles';
 
 const Inventory = () => {
   const theme = useTheme();
@@ -52,6 +55,12 @@ const Inventory = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [orderBy, setOrderBy] = useState('name');
   const [order, setOrder] = useState('asc');
+  
+  // Dialog-Status für Bearbeitung
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [currentItem, setCurrentItem] = useState(null);
+  const [suppliers, setSuppliers] = useState([]);
+  const [savingInventory, setSavingInventory] = useState(false);
   
   // Inventar laden
   const loadInventory = async () => {
@@ -69,9 +78,21 @@ const Inventory = () => {
     }
   };
 
-  // Beim ersten Laden das Inventar laden
+  // Beim ersten Laden das Inventar und Lieferanten laden
   useEffect(() => {
     loadInventory();
+    
+    // Lieferanten laden für den Bearbeitungsdialog
+    const loadSuppliers = async () => {
+      try {
+        const data = await suppliersApi.getAll();
+        setSuppliers(data);
+      } catch (err) {
+        console.error('Error loading suppliers:', err);
+      }
+    };
+    
+    loadSuppliers();
   }, []);
 
   // Sortierung ändern
@@ -178,6 +199,40 @@ const Inventory = () => {
     return new Date(dateString).toLocaleDateString('de-DE', options);
   };
   
+  // Dialog für Bearbeitung öffnen
+  const handleEditClick = (item) => {
+    setCurrentItem(item);
+    setEditDialogOpen(true);
+  };
+  
+  // Dialog schließen
+  const handleCloseDialog = () => {
+    setEditDialogOpen(false);
+    setCurrentItem(null);
+  };
+  
+  // Inventar-Element speichern (aktualisieren oder erstellen)
+  const handleSaveInventory = async (updatedItem) => {
+    setSavingInventory(true);
+    
+    try {
+      if (currentItem.id) {
+        // Bestehenden Eintrag aktualisieren
+        await inventoryApi.update(currentItem.id, updatedItem);
+      } else {
+        // Neuen Eintrag erstellen
+        await inventoryApi.create(updatedItem);
+      }
+      loadInventory(); // Neu laden nach dem Speichern
+      handleCloseDialog();
+    } catch (err) {
+      console.error('Error saving inventory item:', err);
+      setError('Fehler beim Speichern des Inventars');
+    } finally {
+      setSavingInventory(false);
+    }
+  };
+  
   return (
     <Box sx={{ flexGrow: 1, pb: 4 }}>
       {/* Seitenkopf */}
@@ -203,6 +258,18 @@ const Inventory = () => {
           <Button 
             variant="contained" 
             startIcon={<AddIcon />}
+            onClick={() => {
+              setCurrentItem({
+                name: '',
+                category: 'spirits',
+                quantity: 0,
+                unit: 'Flaschen',
+                minQuantity: 0,
+                lastOrderDate: new Date().toISOString().split('T')[0],
+                supplier: suppliers.length > 0 ? suppliers[0].name : '',
+              });
+              setEditDialogOpen(true);
+            }}
           >
             Inventar hinzufügen
           </Button>
@@ -440,7 +507,11 @@ const Inventory = () => {
                       <TableCell align="right">
                         <Box>
                           <Tooltip title="Bearbeiten">
-                            <IconButton size="small" color="primary">
+                            <IconButton 
+                              size="small" 
+                              color="primary"
+                              onClick={() => handleEditClick(item)}
+                            >
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
@@ -488,13 +559,136 @@ const Inventory = () => {
           labelDisplayedRows={({ from, to, count }) => `${from}–${to} von ${count}`}
         />
       </Paper>
+      
+      {/* Bearbeitungsdialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {currentItem?.id ? 'Inventar bearbeiten' : 'Neues Inventar hinzufügen'}
+        </DialogTitle>
+        <DialogContent dividers>
+          {currentItem && (
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Name"
+                  fullWidth
+                  value={currentItem.name}
+                  onChange={(e) => setCurrentItem({...currentItem, name: e.target.value})}
+                  margin="normal"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  select
+                  label="Kategorie"
+                  fullWidth
+                  value={currentItem.category}
+                  onChange={(e) => setCurrentItem({...currentItem, category: e.target.value})}
+                  margin="normal"
+                >
+                  {INVENTORY_CATEGORIES.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Menge"
+                  fullWidth
+                  type="number"
+                  value={currentItem.quantity}
+                  onChange={(e) => setCurrentItem({...currentItem, quantity: Number(e.target.value)})}
+                  margin="normal"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">{currentItem.unit}</InputAdornment>,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Einheit"
+                  fullWidth
+                  value={currentItem.unit}
+                  onChange={(e) => setCurrentItem({...currentItem, unit: e.target.value})}
+                  margin="normal"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Mindestbestand"
+                  fullWidth
+                  type="number"
+                  value={currentItem.minQuantity}
+                  onChange={(e) => setCurrentItem({...currentItem, minQuantity: Number(e.target.value)})}
+                  margin="normal"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">{currentItem.unit}</InputAdornment>,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Box display="flex" alignItems="flex-start">
+                  <TextField
+                    select
+                    label="Lieferant"
+                    fullWidth
+                    value={currentItem.supplier}
+                    onChange={(e) => setCurrentItem({...currentItem, supplier: e.target.value})}
+                    margin="normal"
+                  >
+                    {suppliers.map((supplier) => (
+                      <MenuItem key={supplier.id} value={supplier.name}>
+                        {supplier.name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{ ml: 1, mt: 2, height: 40, whiteSpace: 'nowrap' }}
+                    onClick={() => window.open('/suppliers', '_blank')}
+                  >
+                    Verwalten
+                  </Button>
+                </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  label="Letzte Bestellung"
+                  fullWidth
+                  type="date"
+                  value={new Date(currentItem.lastOrderDate).toISOString().split('T')[0]}
+                  onChange={(e) => setCurrentItem({...currentItem, lastOrderDate: e.target.value})}
+                  margin="normal"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                />
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Abbrechen</Button>
+          <Button 
+            onClick={() => handleSaveInventory(currentItem)} 
+            variant="contained" 
+            color="primary"
+            disabled={savingInventory}
+          >
+            {savingInventory ? 'Wird gespeichert...' : 'Speichern'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
-
-// alpha-Funktion, die in Material-UI vorhanden ist, hier definiert
-function alpha(color, value) {
-  return color + value.toString(16).padStart(2, '0');
-}
 
 export default Inventory;

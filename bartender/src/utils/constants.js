@@ -11,6 +11,14 @@ export const DRINK_CATEGORIES = [
   { id: 'softDrinks', name: 'Alkoholfreie Getränke' },
 ];
 
+// Inventarkategorien
+export const INVENTORY_CATEGORIES = [
+  { id: 'beer', name: 'Bier' },
+  { id: 'wine', name: 'Wein' },
+  { id: 'spirits', name: 'Spirituosen' },
+  { id: 'softDrinks', name: 'Alkoholfrei' },
+];
+
 // Personalrollen
 export const STAFF_ROLES = [
   { id: 'bartender', name: 'Barkeeper' },
@@ -48,3 +56,11 @@ export const STATUS = {
   PENDING: 'pending',
   COMPLETED: 'completed',
 };
+
+// Zahlungsmethoden
+export const PAYMENT_METHODS = [
+  { id: 'cash', name: 'Bargeld' },
+  { id: 'card', name: 'Kartenzahlung' },
+  { id: 'mobile', name: 'Mobile Payment' },
+  { id: 'invoice', name: 'Rechnung' },
+];

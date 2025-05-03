@@ -23,7 +23,7 @@ const TopSellingItems = ({ items, title = "Meistverkaufte Getränke" }) => {
         flexDirection: 'column',
       }}
     >
-      <CardContent sx={{ flexGrow: 1, p: 0 }}>
+      <CardContent sx={{ flexGrow: 1, padding: 0 }}>
         <Box p={2}>
           <Typography variant="h6" component="div" gutterBottom>
             {title}

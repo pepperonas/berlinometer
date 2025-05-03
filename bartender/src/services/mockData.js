@@ -448,3 +448,89 @@ export const suppliers = [
     notes: 'Liefert auch Samstags (Aufpreis)',
   },
 ];
+
+// Verkaufsdaten
+export const sales = [
+  {
+    id: 'sale1',
+    date: '2023-05-01T19:45:00',
+    items: [
+      { drinkId: 'drink1', name: 'Mojito', quantity: 3, pricePerUnit: 8.50 },
+      { drinkId: 'drink4', name: 'Gin Tonic', quantity: 2, pricePerUnit: 7.50 }
+    ],
+    total: 40.50,
+    paymentMethod: 'cash',
+    staffId: 'staff1',
+    notes: ''
+  },
+  {
+    id: 'sale2',
+    date: '2023-05-01T20:30:00',
+    items: [
+      { drinkId: 'drink2', name: 'Bier vom Fass', quantity: 5, pricePerUnit: 3.80 },
+      { drinkId: 'drink5', name: 'Cola', quantity: 2, pricePerUnit: 2.80 }
+    ],
+    total: 24.60,
+    paymentMethod: 'card',
+    staffId: 'staff2',
+    notes: ''
+  },
+  {
+    id: 'sale3',
+    date: '2023-05-02T18:15:00',
+    items: [
+      { drinkId: 'drink3', name: 'Hauswein Rot', quantity: 2, pricePerUnit: 4.50 },
+      { drinkId: 'drink8', name: 'Aperol Spritz', quantity: 3, pricePerUnit: 6.90 }
+    ],
+    total: 29.70,
+    paymentMethod: 'cash',
+    staffId: 'staff1',
+    notes: 'Stammtisch'
+  },
+  {
+    id: 'sale4',
+    date: '2023-05-02T21:00:00',
+    items: [
+      { drinkId: 'drink1', name: 'Mojito', quantity: 4, pricePerUnit: 8.50 },
+      { drinkId: 'drink7', name: 'Aperol Spritz', quantity: 2, pricePerUnit: 6.90 }
+    ],
+    total: 47.80,
+    paymentMethod: 'card',
+    staffId: 'staff3',
+    notes: 'Geburtstag'
+  },
+  {
+    id: 'sale5',
+    date: '2023-05-03T20:00:00',
+    items: [
+      { drinkId: 'drink2', name: 'Bier vom Fass', quantity: 10, pricePerUnit: 3.80 },
+      { drinkId: 'drink8', name: 'Mineralwasser', quantity: 5, pricePerUnit: 2.50 }
+    ],
+    total: 50.50,
+    paymentMethod: 'cash',
+    staffId: 'staff2',
+    notes: 'Fußballabend'
+  }
+];
+
+// Kassensystem-Export-Formate
+export const posFormats = [
+  {
+    id: 'csv',
+    name: 'CSV-Format',
+    description: 'Standardformat mit Komma-getrennten Werten',
+    example: 'datum,produkt,menge,preis\n2023-05-01,Mojito,3,8.50\n2023-05-01,Gin Tonic,2,7.50'
+  },
+  {
+    id: 'json',
+    name: 'JSON-Format',
+    description: 'Strukturiertes Datenformat',
+    example: '{"date":"2023-05-01","items":[{"name":"Mojito","quantity":3,"price":8.50},{"name":"Gin Tonic","quantity":2,"price":7.50}]}'
+  },
+  {
+    id: 'excel',
+    name: 'Excel-Format',
+    description: 'Microsoft Excel Dateien (.xlsx)',
+    example: 'Tabelle mit Spalten für Datum, Produkt, Menge, Preis'
+  }
+];

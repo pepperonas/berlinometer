@@ -64,6 +64,17 @@ const Layout = ({ children }) => {
                 boxShadow: darkMode 
                   ? '0 4px 6px rgba(0,0,0,0.3)' 
                   : '0 2px 10px rgba(0,0,0,0.08)',
+                width: '100%',
+              },
+            },
+          },
+          MuiCardContent: {
+            styleOverrides: {
+              root: {
+                padding: '16px 24px',
+                '&:last-child': {
+                  paddingBottom: '24px',
+                },
               },
             },
           },
@@ -100,8 +111,9 @@ const Layout = ({ children }) => {
           component="main"
           sx={{
             flexGrow: 1,
-            p: 3,
+            p: { xs: 2, sm: 3 },
             width: { sm: `calc(100% - 240px)` },
+            maxWidth: '100%',
             bgcolor: 'background.default',
             overflow: 'auto',
           }}

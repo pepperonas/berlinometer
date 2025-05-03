@@ -15,6 +15,7 @@ import {
   People as StaffIcon,
   AttachMoney as FinancesIcon,
   Inventory as InventoryIcon,
+  LocalShipping as SuppliersIcon,
   BarChart as ReportsIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material';
@@ -27,6 +28,7 @@ const menuItems = [
   { text: 'Personal', icon: <StaffIcon />, path: '/staff' },
   { text: 'Finanzen', icon: <FinancesIcon />, path: '/finances' },
   { text: 'Inventar', icon: <InventoryIcon />, path: '/inventory' },
+  { text: 'Lieferanten', icon: <SuppliersIcon />, path: '/suppliers' },
   { text: 'Berichte', icon: <ReportsIcon />, path: '/reports' },
 ];
 
