@@ -210,3 +210,5 @@ dist
 .pnp.*
 /jackson/public/assets/songs/
 /waiworinao/rockyou.txt
+
+**/.claude/settings.local.json
