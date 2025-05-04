@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 
 // @route   POST /api/auth/register
 // @desc    Benutzer registrieren
@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
 
     // Prüfen, ob Benutzer bereits existiert
     let user = await User.findOne({ email });
-    
+
     if (user) {
       console.log('User with email already exists:', email);
       return res.status(400).json({
@@ -35,7 +35,7 @@ router.post('/register', async (req, res) => {
         error: 'Ein Benutzer mit dieser E-Mail existiert bereits'
       });
     }
-    
+
     // Neuen Benutzer erstellen
     user = new User({
       name,
@@ -44,11 +44,11 @@ router.post('/register', async (req, res) => {
       // Standardmäßig inaktiv, bis Admin aktiviert
       active: false
     });
-    
+
     await user.save();
-    
+
     console.log('New user registered successfully:', user._id);
-    
+
     res.status(201).json({
       success: true,
       message: 'Registrierung erfolgreich! Dein Konto wird vom Administrator aktiviert.',
@@ -73,71 +73,98 @@ router.post('/register', async (req, res) => {
 // @access  Public
 router.post('/login', async (req, res) => {
   try {
+    console.log('Login attempt with email:', req.body.email);
     const { email, password } = req.body;
-    
+
     // Validierung der Eingaben
     if (!email || !password) {
+      console.log('Email or password missing');
       return res.status(400).json({
         success: false,
         error: 'Bitte gib E-Mail und Passwort ein'
       });
     }
-    
+
+    console.log('Finding user in database...');
+
     // Benutzer in DB suchen mit Passwort
-    const user = await User.findOne({ email }).select('+password');
-    
-    if (!user) {
-      return res.status(401).json({
+    try {
+      // Timeout für die findOne-Operation
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Database query timeout')), 8000);
+      });
+
+      // Eigentliche Datenbankabfrage
+      const findUserPromise = User.findOne({ email }).select('+password');
+
+      // Race zwischen Timeout und Datenbankabfrage
+      const user = await Promise.race([findUserPromise, timeoutPromise]);
+
+      console.log('User found:', !!user);
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          error: 'Ungültige Anmeldedaten'
+        });
+      }
+
+      // Passwort überprüfen
+      const isMatch = await user.matchPassword(password);
+
+      console.log('Password match:', isMatch);
+
+      if (!isMatch) {
+        return res.status(401).json({
+          success: false,
+          error: 'Ungültige Anmeldedaten'
+        });
+      }
+
+      // Überprüfen, ob das Konto aktiviert ist
+      if (!user.active) {
+        return res.status(401).json({
+          success: false,
+          error: 'Dein Konto wurde noch nicht aktiviert'
+        });
+      }
+
+      // Erfolgreich angemeldet, Token erstellen
+      const token = user.getSignedJwtToken();
+
+      // Token in Cookie speichern
+      const options = {
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 Tag
+        httpOnly: true
+      };
+
+      // Secure Cookie nur in Produktion
+      if (process.env.NODE_ENV === 'production') {
+        options.secure = true;
+      }
+
+      console.log('Login successful, sending response');
+
+      res.status(200)
+          .cookie('token', token, options)
+          .json({
+            success: true,
+            token,
+            user: {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              active: user.active
+            }
+          });
+    } catch (dbError) {
+      console.error('Database error during login:', dbError);
+      res.status(500).json({
         success: false,
-        error: 'Ungültige Anmeldedaten'
+        error: 'Datenbankfehler bei der Anmeldung: ' + dbError.message
       });
     }
-    
-    // Passwort überprüfen
-    const isMatch = await user.matchPassword(password);
-    
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        error: 'Ungültige Anmeldedaten'
-      });
-    }
-    
-    // Überprüfen, ob das Konto aktiviert ist
-    if (!user.active) {
-      return res.status(401).json({
-        success: false,
-        error: 'Dein Konto wurde noch nicht aktiviert'
-      });
-    }
-    
-    // Erfolgreich angemeldet, Token erstellen
-    const token = user.getSignedJwtToken();
-    
-    // Token in Cookie speichern
-    const options = {
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 Tag
-      httpOnly: true
-    };
-    
-    // Secure Cookie nur in Produktion
-    if (process.env.NODE_ENV === 'production') {
-      options.secure = true;
-    }
-    
-    res.status(200)
-      .cookie('token', token, options)
-      .json({
-        success: true,
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          active: user.active
-        }
-      });
   } catch (err) {
     console.error('Error in login:', err);
     res.status(500).json({
@@ -153,7 +180,7 @@ router.post('/login', async (req, res) => {
 router.get('/me', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    
+
     res.status(200).json({
       success: true,
       data: {
@@ -183,7 +210,7 @@ router.post('/logout', (req, res) => {
     expires: new Date(Date.now() + 10 * 1000), // Sofort ablaufen (10 Sekunden)
     httpOnly: true
   });
-  
+
   res.status(200).json({
     success: true,
     data: {}
@@ -200,9 +227,9 @@ router.put('/change-password', protect, async (req, res) => {
       hasCurrentPassword: !!req.body.currentPassword,
       hasNewPassword: !!req.body.newPassword
     });
-    
+
     const { currentPassword, newPassword } = req.body;
-    
+
     // Validierung
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
@@ -210,44 +237,44 @@ router.put('/change-password', protect, async (req, res) => {
         error: 'Bitte gib das aktuelle und neue Passwort ein'
       });
     }
-    
+
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
         error: 'Das neue Passwort muss mindestens 6 Zeichen lang sein'
       });
     }
-    
+
     // Benutzer mit Passwort aus DB holen
     const user = await User.findById(req.user._id).select('+password');
-    
+
     console.log('User found:', !!user);
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'Benutzer nicht gefunden'
       });
     }
-    
+
     // Aktuelles Passwort überprüfen
     const isMatch = await user.matchPassword(currentPassword);
-    
+
     console.log('Password match:', isMatch);
-    
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,
         error: 'Das aktuelle Passwort ist falsch'
       });
     }
-    
+
     // Neues Passwort setzen
     user.password = newPassword;
     await user.save();
-    
+
     console.log('Password changed successfully for user:', user._id);
-    
+
     res.status(200).json({
       success: true,
       message: 'Passwort erfolgreich geändert',
@@ -273,7 +300,7 @@ router.post('/change-password', protect, async (req, res) => {
   try {
     console.log('POST Change password request received');
     const { currentPassword, newPassword } = req.body;
-    
+
     // Validierung
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
@@ -281,38 +308,38 @@ router.post('/change-password', protect, async (req, res) => {
         error: 'Bitte gib das aktuelle und neue Passwort ein'
       });
     }
-    
+
     if (newPassword.length < 6) {
       return res.status(400).json({
         success: false,
         error: 'Das neue Passwort muss mindestens 6 Zeichen lang sein'
       });
     }
-    
+
     // Benutzer mit Passwort aus DB holen
     const user = await User.findById(req.user._id).select('+password');
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'Benutzer nicht gefunden'
       });
     }
-    
+
     // Aktuelles Passwort überprüfen
     const isMatch = await user.matchPassword(currentPassword);
-    
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,
         error: 'Das aktuelle Passwort ist falsch'
       });
     }
-    
+
     // Neues Passwort setzen
     user.password = newPassword;
     await user.save();
-    
+
     res.status(200).json({
       success: true,
       message: 'Passwort erfolgreich geändert',
