@@ -4,7 +4,7 @@
 import axios from 'axios';
 
 // Basis URL für API-Anfragen
-const API_URL = process.env.REACT_APP_API_URL || '/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5024/api';
 
 // Axios-Instance mit Konfiguration
 const api = axios.create({
@@ -256,31 +256,41 @@ export const dashboardApi = {
       { id: 5, name: 'Moscow Mule', amount: 65, revenue: 552.5 }
     ];
   },
-  getExpensesData: async () => {
+  getExpensesData: async (period = 'monthly') => {
     console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return { 
-      labels: ['Miete', 'Personal', 'Einkauf', 'Marketing', 'Sonstiges'],
-      datasets: [
-        {
-          data: [30, 40, 20, 5, 5],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.7)',
-            'rgba(54, 162, 235, 0.7)',
-            'rgba(255, 206, 86, 0.7)',
-            'rgba(75, 192, 192, 0.7)',
-            'rgba(153, 102, 255, 0.7)'
-          ],
-          borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)'
-          ],
-          borderWidth: 1
-        }
+    
+    // Beispieldaten für verschiedene Zeiträume
+    const data = {
+      monthly: [
+        { name: 'Miete', value: 1200, percent: 0.30 },
+        { name: 'Personal', value: 1600, percent: 0.40 },
+        { name: 'Einkauf', value: 800, percent: 0.20 },
+        { name: 'Marketing', value: 200, percent: 0.05 },
+        { name: 'Sonstiges', value: 200, percent: 0.05 }
+      ],
+      quarterly: [
+        { name: 'Miete', value: 3600, percent: 0.32 },
+        { name: 'Personal', value: 4200, percent: 0.38 },
+        { name: 'Einkauf', value: 2400, percent: 0.22 },
+        { name: 'Marketing', value: 550, percent: 0.05 },
+        { name: 'Sonstiges', value: 350, percent: 0.03 }
+      ],
+      yearly: [
+        { name: 'Miete', value: 14400, percent: 0.33 },
+        { name: 'Personal', value: 16500, percent: 0.37 },
+        { name: 'Einkauf', value: 9800, percent: 0.22 },
+        { name: 'Marketing', value: 2200, percent: 0.05 },
+        { name: 'Sonstiges', value: 1500, percent: 0.03 }
       ]
     };
+    
+    // Wenn ein bestimmter Zeitraum angefordert wird, geben wir nur diesen zurück
+    if (period in data) {
+      return data[period];
+    }
+    
+    // Andernfalls geben wir alle Daten zurück
+    return data;
   }
 };
 

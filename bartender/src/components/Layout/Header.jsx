@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   AppBar, 
   Toolbar, 
@@ -9,7 +10,9 @@ import {
   Avatar,
   Menu,
   MenuItem,
-  Tooltip
+  Tooltip,
+  ListItemIcon,
+  Divider
 } from '@mui/material';
 import { 
   Notifications as NotificationsIcon,
@@ -17,12 +20,17 @@ import {
   LightMode as LightModeIcon,
   MoreVert as MoreIcon,
   Menu as MenuIcon,
-  ChevronLeft as ChevronLeftIcon
+  Settings as SettingsIcon,
+  Logout as LogoutIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
+import { useAuth } from '../../context/AuthContext';
 
 const Header = ({ toggleTheme, darkMode, toggleSidebar }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
+  const { currentUser, logout } = useAuth();
+  const navigate = useNavigate();
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -43,6 +51,20 @@ const Header = ({ toggleTheme, darkMode, toggleSidebar }) => {
   const handleMobileMenuOpen = (event) => {
     setMobileMoreAnchorEl(event.currentTarget);
   };
+  
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+  
+  const handleSettings = () => {
+    handleMenuClose();
+    navigate('/settings');
+  };
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -54,10 +76,45 @@ const Header = ({ toggleTheme, darkMode, toggleSidebar }) => {
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       open={isMenuOpen}
       onClose={handleMenuClose}
+      PaperProps={{
+        elevation: 0,
+        sx: {
+          overflow: 'visible',
+          filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+          mt: 1.5,
+          width: 220,
+          '& .MuiAvatar-root': {
+            width: 32,
+            height: 32,
+            ml: -0.5,
+            mr: 1,
+          }
+        },
+      }}
     >
-      <MenuItem onClick={handleMenuClose}>Profil</MenuItem>
-      <MenuItem onClick={handleMenuClose}>Mein Konto</MenuItem>
-      <MenuItem onClick={handleMenuClose}>Abmelden</MenuItem>
+      {currentUser && (
+        <Box sx={{ px: 2, py: 1 }}>
+          <Typography variant="subtitle1" noWrap fontWeight="medium">
+            {currentUser.name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" noWrap>
+            {currentUser.email}
+          </Typography>
+        </Box>
+      )}
+      <Divider />
+      <MenuItem onClick={handleSettings}>
+        <ListItemIcon>
+          <SettingsIcon fontSize="small" />
+        </ListItemIcon>
+        Einstellungen
+      </MenuItem>
+      <MenuItem onClick={handleLogout}>
+        <ListItemIcon>
+          <LogoutIcon fontSize="small" />
+        </ListItemIcon>
+        Abmelden
+      </MenuItem>
     </Menu>
   );
 
@@ -86,6 +143,18 @@ const Header = ({ toggleTheme, darkMode, toggleSidebar }) => {
         </IconButton>
         <p>{darkMode ? 'Heller Modus' : 'Dunkler Modus'}</p>
       </MenuItem>
+      <MenuItem onClick={handleSettings}>
+        <IconButton size="large" color="inherit">
+          <SettingsIcon />
+        </IconButton>
+        <p>Einstellungen</p>
+      </MenuItem>
+      <MenuItem onClick={handleLogout}>
+        <IconButton size="large" color="inherit">
+          <LogoutIcon />
+        </IconButton>
+        <p>Abmelden</p>
+      </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
           size="large"
@@ -93,7 +162,7 @@ const Header = ({ toggleTheme, darkMode, toggleSidebar }) => {
           aria-haspopup="true"
           color="inherit"
         >
-          <Avatar alt="Benutzer" src="/static/images/avatar/1.jpg" sx={{ width: 32, height: 32 }} />
+          <Avatar alt={currentUser?.name || "Benutzer"} src="/static/images/avatar/1.jpg" sx={{ width: 32, height: 32 }} />
         </IconButton>
         <p>Profil</p>
       </MenuItem>
@@ -155,7 +224,13 @@ const Header = ({ toggleTheme, darkMode, toggleSidebar }) => {
               onClick={handleProfileMenuOpen}
               color="inherit"
             >
-              <Avatar alt="Benutzer" src="/static/images/avatar/1.jpg" sx={{ width: 32, height: 32 }} />
+              <Avatar 
+                alt={currentUser?.name || "Benutzer"} 
+                src="/static/images/avatar/1.jpg" 
+                sx={{ width: 32, height: 32 }}
+              >
+                {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
+              </Avatar>
             </IconButton>
           </Tooltip>
         </Box>

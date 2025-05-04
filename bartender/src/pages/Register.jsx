@@ -35,6 +35,7 @@ const Register = () => {
   
   const handleRegister = async (e) => {
     e.preventDefault();
+    console.log('Register form submitted');
     
     // Validierung
     if (!name || !email || !password || !confirmPassword) {
@@ -57,17 +58,55 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      const result = await register(name, email, password);
+      console.log('About to call register function with:', { name, email, password: '***HIDDEN***' });
       
-      if (!result.success) {
-        setError(result.error || 'Registrierung fehlgeschlagen');
-      } else {
-        setSuccess(result.message || 'Registrierung erfolgreich! Dein Konto wird vom Administrator aktiviert.');
-        // Formular zurücksetzen
-        setName('');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+      // Direkter API-Aufruf ohne über AuthContext zu gehen
+      try {
+        console.log('Trying direct fetch to API');
+        const response = await fetch('http://localhost:5024/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name,
+            email,
+            password
+          })
+        });
+        
+        console.log('Direct API registration response status:', response.status);
+        
+        const data = await response.json();
+        console.log('Direct API registration response data:', data);
+        
+        if (data.success) {
+          setSuccess(data.message || 'Registrierung erfolgreich! Dein Konto wird vom Administrator aktiviert.');
+          // Formular zurücksetzen
+          setName('');
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
+        } else {
+          setError(data.error || 'Registrierung fehlgeschlagen');
+        }
+      } catch (directApiError) {
+        console.error('Direct API registration error:', directApiError);
+        
+        // Fallback auf AuthContext
+        console.log('Falling back to AuthContext.register');
+        const result = await register(name, email, password);
+        
+        if (!result.success) {
+          setError(result.error || 'Registrierung fehlgeschlagen');
+        } else {
+          setSuccess(result.message || 'Registrierung erfolgreich! Dein Konto wird vom Administrator aktiviert.');
+          // Formular zurücksetzen
+          setName('');
+          setEmail('');
+          setPassword('');
+          setConfirmPassword('');
+        }
       }
     } catch (err) {
       setError('Ein unerwarteter Fehler ist aufgetreten');

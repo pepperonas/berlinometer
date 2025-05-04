@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -20,7 +20,8 @@ import {
   Tab,
   Tabs,
   Alert,
-  Snackbar
+  Snackbar,
+  CircularProgress
 } from '@mui/material';
 import {
   Save as SaveIcon,
@@ -32,18 +33,24 @@ import {
   Storage as StorageIcon,
   CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Beispiel-Einstellungen
+  const { currentUser, updateProfile } = useAuth();
+  
+  // User Settings
   const [settings, setSettings] = useState({
     // Profilsettings
-    username: 'Demo Benutzer',
-    email: 'demo@example.com',
+    username: '',
+    email: '',
     password: '',
     confirmPassword: '',
+    currentPassword: '',
     
     // Geschäftssettings
     businessName: 'Meine Bar',
@@ -71,6 +78,17 @@ const Settings = () => {
     anonymousUsage: true
   });
   
+  // Load current user data
+  useEffect(() => {
+    if (currentUser) {
+      setSettings(prev => ({
+        ...prev,
+        username: currentUser.name || '',
+        email: currentUser.email || ''
+      }));
+    }
+  }, [currentUser]);
+  
   // Formularänderungen verarbeiten
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -83,13 +101,72 @@ const Settings = () => {
   // Tab wechseln
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+    setError('');
+  };
+  
+  // Validate password change
+  const validatePasswordChange = () => {
+    if (settings.password && !settings.currentPassword) {
+      setError('Bitte geben Sie Ihr aktuelles Passwort ein');
+      return false;
+    }
+    
+    if (settings.password && settings.password.length < 6) {
+      setError('Das neue Passwort muss mindestens 6 Zeichen lang sein');
+      return false;
+    }
+    
+    if (settings.password !== settings.confirmPassword) {
+      setError('Die Passwörter stimmen nicht überein');
+      return false;
+    }
+    
+    return true;
   };
   
   // Einstellungen speichern
-  const handleSave = () => {
-    // Hier würde die API-Anfrage zum Speichern stattfinden
-    console.log('Saving settings:', settings);
-    setSaveSuccess(true);
+  const handleSave = async () => {
+    if (activeTab === 0 && settings.password) {
+      // Wenn im Profil-Tab und Passwort-Änderung
+      if (!validatePasswordChange()) {
+        return;
+      }
+    }
+    
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      // Build update data
+      const userData = {
+        name: settings.username
+      };
+      
+      if (settings.password && settings.currentPassword) {
+        userData.currentPassword = settings.currentPassword;
+        userData.newPassword = settings.password;
+      }
+      
+      const result = await updateProfile(userData);
+      
+      if (result.success) {
+        setSaveSuccess(true);
+        // Clear sensitive fields
+        setSettings(prev => ({
+          ...prev,
+          password: '',
+          confirmPassword: '',
+          currentPassword: ''
+        }));
+      } else {
+        setError(result.error || 'Fehler beim Aktualisieren der Einstellungen');
+      }
+    } catch (err) {
+      console.error('Save error:', err);
+      setError('Ein unerwarteter Fehler ist aufgetreten');
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   // Snackbar schließen
@@ -137,6 +214,12 @@ const Settings = () => {
           </Typography>
           <Divider sx={{ mb: 3 }} />
           
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+          
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <TextField
@@ -145,6 +228,8 @@ const Settings = () => {
                 name="username"
                 value={settings.username}
                 onChange={handleChange}
+                disabled={isLoading}
+                required
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -153,11 +238,31 @@ const Settings = () => {
                 label="E-Mail"
                 name="email"
                 value={settings.email}
-                onChange={handleChange}
+                disabled={true}
                 type="email"
+                helperText="Die E-Mail-Adresse kann nicht geändert werden"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Passwort ändern
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                Lassen Sie diese Felder leer, wenn Sie Ihr Passwort nicht ändern möchten.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <TextField
+                fullWidth
+                label="Aktuelles Passwort"
+                name="currentPassword"
+                value={settings.currentPassword}
+                onChange={handleChange}
+                type="password"
+                disabled={isLoading}
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="Neues Passwort"
@@ -165,9 +270,11 @@ const Settings = () => {
                 value={settings.password}
                 onChange={handleChange}
                 type="password"
+                disabled={isLoading}
+                helperText="Mindestens 6 Zeichen"
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
                 label="Passwort bestätigen"
@@ -175,6 +282,7 @@ const Settings = () => {
                 value={settings.confirmPassword}
                 onChange={handleChange}
                 type="password"
+                disabled={isLoading}
               />
             </Grid>
           </Grid>
@@ -548,10 +656,11 @@ const Settings = () => {
           <Button 
             variant="contained" 
             color="primary"
-            startIcon={<SaveIcon />}
+            startIcon={isLoading ? <CircularProgress size={24} color="inherit" /> : <SaveIcon />}
             onClick={handleSave}
+            disabled={isLoading}
           >
-            Einstellungen speichern
+            {isLoading ? 'Wird gespeichert...' : 'Einstellungen speichern'}
           </Button>
         </Box>
       </Paper>

@@ -56,16 +56,27 @@ const ExpensesPieChart = ({ data }) => {
 
   // Filterdaten nach Zeitraum
   const getFilteredData = () => {
+    if (!data) {
+      return []; // Return empty array if data is null or undefined
+    }
+    
+    let filteredData;
     switch (timeRange) {
       case 'month':
-        return data.monthly;
+        filteredData = data.monthly;
+        break;
       case 'quarter':
-        return data.quarterly;
+        filteredData = data.quarterly;
+        break;
       case 'year':
-        return data.yearly;
+        filteredData = data.yearly;
+        break;
       default:
-        return data.monthly;
+        filteredData = data.monthly;
     }
+    
+    // Ensure we always return an array
+    return Array.isArray(filteredData) ? filteredData : [];
   };
 
   // Formatierung für Tooltip

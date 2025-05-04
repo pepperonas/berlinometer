@@ -45,21 +45,21 @@ const Dashboard = () => {
     
     try {
       // Parallele API-Aufrufe
-      const [statsData, weeklyData, topDrinks, monthlyExpenses, lowStock] = await Promise.all([
+      const [statsData, weeklyData, topDrinks, lowStock] = await Promise.all([
         dashboardApi.getStats(),
         dashboardApi.getSalesData('weekly'),
         dashboardApi.getTopSellingDrinks(),
-        dashboardApi.getExpensesData('monthly'),
         inventoryApi.getLowStock()
       ]);
       
       // Parallele API-Aufrufe für monatliche und jährliche Daten
-      const [monthlyData, yearlyData, quarterlyExpenses, yearlyExpenses] = await Promise.all([
+      const [monthlyData, yearlyData] = await Promise.all([
         dashboardApi.getSalesData('monthly'),
-        dashboardApi.getSalesData('yearly'),
-        dashboardApi.getExpensesData('quarterly'),
-        dashboardApi.getExpensesData('yearly')
+        dashboardApi.getSalesData('yearly')
       ]);
+      
+      // Alle Ausgabendaten auf einmal abrufen
+      const allExpensesData = await dashboardApi.getExpensesData();
       
       setStats(statsData);
       setSalesData({
@@ -68,11 +68,7 @@ const Dashboard = () => {
         yearly: yearlyData
       });
       setTopSellingDrinks(topDrinks);
-      setExpensesData({
-        monthly: monthlyExpenses,
-        quarterly: quarterlyExpenses,
-        yearly: yearlyExpenses
-      });
+      setExpensesData(allExpensesData);
       setLowStockItems(lowStock);
       
     } catch (err) {
