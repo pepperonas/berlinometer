@@ -1,13 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
-// Standard-Benutzer für die Demo
-const DEFAULT_USER = {
-  id: 'user1',
-  name: 'Demo Benutzer',
-  email: 'demo@example.com',
-  role: 'admin',
-  avatar: null,
-};
+// API Basis-URL - für Entwicklung fest auf den Backend-Server setzen
+const API_URL = 'http://localhost:5024/api';
+
+// Konfiguriere Axios für Cookies
+axios.defaults.withCredentials = true;
 
 // Erstellen eines Kontext für die Authentifizierung
 const AuthContext = createContext();
@@ -19,22 +17,39 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Simuliert das Laden eines Benutzers beim App-Start
+  // Laden des Benutzers beim App-Start
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // In einer echten App würde hier z.B. ein Token überprüft werden
-        // und der Benutzer von der API geladen werden
+        setLoading(true);
         
-        // Simulation einer API-Verzögerung
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Token aus dem localStorage holen
+        const token = localStorage.getItem('token');
         
-        // Zu Demozwecken verwenden wir einen Standard-Benutzer
-        setCurrentUser(DEFAULT_USER);
-        setLoading(false);
+        if (!token) {
+          setCurrentUser(null);
+          setLoading(false);
+          return;
+        }
+        
+        // Setze Authorization Header für alle Anfragen
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        // Benutzer von der API laden
+        const response = await axios.get(`${API_URL}/auth/me`);
+        
+        if (response.data.success) {
+          setCurrentUser(response.data.data);
+        } else {
+          // Token ist ungültig
+          localStorage.removeItem('token');
+          setCurrentUser(null);
+        }
       } catch (err) {
         console.error('Fehler beim Laden des Benutzers:', err);
-        setError('Benutzer konnte nicht geladen werden.');
+        localStorage.removeItem('token');
+        setCurrentUser(null);
+      } finally {
         setLoading(false);
       }
     };
@@ -42,64 +57,109 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  // Simuliert eine Anmeldung
+  // Anmeldung via API
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
     
     try {
-      // Simulierte Verzögerung
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password
+      });
       
-      // In einer echten App würde hier ein API-Aufruf stattfinden
-      if (email === 'demo@example.com' && password === 'password') {
-        setCurrentUser(DEFAULT_USER);
+      if (response.data.success) {
+        // Token im localStorage speichern
+        localStorage.setItem('token', response.data.token);
+        
+        // Setze Authorization Header für alle Anfragen
+        axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        
+        setCurrentUser(response.data.user);
         return { success: true };
       } else {
-        throw new Error('Ungültige Anmeldeinformationen');
+        throw new Error(response.data.error || 'Anmeldung fehlgeschlagen');
       }
     } catch (err) {
-      setError(err.message);
-      return { success: false, error: err.message };
+      const errorMessage = err.response?.data?.error || err.message || 'Unbekannter Fehler bei der Anmeldung';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
   };
 
-  // Simuliert eine Abmeldung
+  // Registrierung via API
+  const register = async (name, email, password) => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await axios.post(`${API_URL}/auth/register`, {
+        name,
+        email,
+        password
+      });
+      
+      if (response.data.success) {
+        return {
+          success: true,
+          message: response.data.message || 'Registrierung erfolgreich! Dein Konto wird vom Administrator aktiviert.'
+        };
+      } else {
+        throw new Error(response.data.error || 'Registrierung fehlgeschlagen');
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || err.message || 'Unbekannter Fehler bei der Registrierung';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Abmeldung via API
   const logout = async () => {
     setLoading(true);
     
     try {
-      // Simulierte Verzögerung
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await axios.post(`${API_URL}/auth/logout`);
       
-      // In einer echten App würden hier Token gelöscht werden
+      // Token entfernen
+      localStorage.removeItem('token');
+      
+      // Entferne Authorization Header
+      delete axios.defaults.headers.common['Authorization'];
+      
       setCurrentUser(null);
       return { success: true };
     } catch (err) {
-      setError('Fehler bei der Abmeldung');
-      return { success: false, error: 'Fehler bei der Abmeldung' };
+      const errorMessage = 'Fehler bei der Abmeldung';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
   };
 
-  // Simuliert eine Aktualisierung des Benutzerprofils
+  // Benutzeraktualisierung via API
   const updateProfile = async (userData) => {
     setLoading(true);
     setError(null);
     
     try {
-      // Simulierte Verzögerung
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await axios.put(`${API_URL}/users/${currentUser.id}`, userData);
       
-      // Aktualisieren des Benutzers mit den neuen Daten
-      setCurrentUser(prev => ({ ...prev, ...userData }));
-      return { success: true };
+      if (response.data.success) {
+        setCurrentUser(prev => ({ ...prev, ...response.data.data }));
+        return { success: true };
+      } else {
+        throw new Error(response.data.error || 'Aktualisierung fehlgeschlagen');
+      }
     } catch (err) {
-      setError('Fehler beim Aktualisieren des Profils');
-      return { success: false, error: 'Fehler beim Aktualisieren des Profils' };
+      const errorMessage = err.response?.data?.error || err.message || 'Fehler beim Aktualisieren des Profils';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -110,6 +170,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    register,
     logout,
     updateProfile,
   };

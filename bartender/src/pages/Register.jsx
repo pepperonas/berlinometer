@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Paper, 
   Typography, 
   TextField, 
   Button, 
-  Link, 
   Container,
   InputAdornment,
   IconButton,
@@ -17,49 +16,62 @@ import {
 import { 
   Visibility, 
   VisibilityOff, 
-  Lock as LockIcon 
+  PersonAdd as PersonAddIcon 
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
-const Login = () => {
-  const [email, setEmail] = useState('demo@example.com');
-  const [password, setPassword] = useState('password');
+const Register = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const { currentUser, login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
   
-  // Weiterleitungs-Hook, falls der Benutzer bereits angemeldet ist
-  useEffect(() => {
-    if (currentUser) {
-      navigate('/');
-    }
-  }, [currentUser, navigate]);
-  
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      setError('Bitte E-Mail und Passwort eingeben');
+    // Validierung
+    if (!name || !email || !password || !confirmPassword) {
+      setError('Bitte alle Felder ausfüllen');
+      return;
+    }
+    
+    if (password !== confirmPassword) {
+      setError('Passwörter stimmen nicht überein');
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Passwort muss mindestens 6 Zeichen lang sein');
       return;
     }
     
     setError('');
+    setSuccess('');
     setIsSubmitting(true);
     
     try {
-      const result = await login(email, password);
+      const result = await register(name, email, password);
       
       if (!result.success) {
-        setError(result.error || 'Anmeldung fehlgeschlagen');
+        setError(result.error || 'Registrierung fehlgeschlagen');
       } else {
-        navigate('/');
+        setSuccess(result.message || 'Registrierung erfolgreich! Dein Konto wird vom Administrator aktiviert.');
+        // Formular zurücksetzen
+        setName('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
       }
     } catch (err) {
       setError('Ein unerwarteter Fehler ist aufgetreten');
-      console.error('Login error:', err);
+      console.error('Registration error:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -99,15 +111,15 @@ const Login = () => {
               mb: 2,
             }}
           >
-            <LockIcon sx={{ color: 'white', fontSize: 32 }} />
+            <PersonAddIcon sx={{ color: 'white', fontSize: 32 }} />
           </Box>
           
           <Typography component="h1" variant="h5" fontWeight="bold" mb={1}>
-            Bartender
+            Account erstellen
           </Typography>
           
           <Typography variant="subtitle1" color="text.secondary" mb={3}>
-            Bar Management System
+            Registriere dich für Bartender
           </Typography>
           
           {error && (
@@ -116,7 +128,27 @@ const Login = () => {
             </Alert>
           )}
           
-          <Box component="form" onSubmit={handleLogin} noValidate sx={{ width: '100%' }}>
+          {success && (
+            <Alert severity="success" sx={{ width: '100%', mb: 3 }}>
+              {success}
+            </Alert>
+          )}
+          
+          <Box component="form" onSubmit={handleRegister} noValidate sx={{ width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="name"
+              label="Name"
+              name="name"
+              autoComplete="name"
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              sx={{ mb: 2 }}
+            />
+            
             <TextField
               margin="normal"
               required
@@ -125,7 +157,6 @@ const Login = () => {
               label="E-Mail Adresse"
               name="email"
               autoComplete="email"
-              autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               sx={{ mb: 2 }}
@@ -139,7 +170,7 @@ const Login = () => {
               label="Passwort"
               type={showPassword ? 'text' : 'password'}
               id="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               InputProps={{
@@ -155,6 +186,20 @@ const Login = () => {
                   </InputAdornment>
                 ),
               }}
+              sx={{ mb: 2 }}
+            />
+            
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="confirmPassword"
+              label="Passwort bestätigen"
+              type={showPassword ? 'text' : 'password'}
+              id="confirmPassword"
+              autoComplete="new-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               sx={{ mb: 3 }}
             />
             
@@ -172,17 +217,14 @@ const Login = () => {
               {isSubmitting ? (
                 <CircularProgress size={24} sx={{ color: 'white' }} />
               ) : (
-                'Anmelden'
+                'Registrieren'
               )}
             </Button>
             
             <Box sx={{ mt: 2, textAlign: 'center' }}>
-              <Link href="#" variant="body2" sx={{ fontWeight: 'medium', mr: 2 }}>
-                Passwort vergessen?
-              </Link>
-              <Link to="/register" style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="primary" sx={{ fontWeight: 'medium', display: 'inline' }}>
-                  Neu hier? Registrieren
+              <Link to="/login" style={{ textDecoration: 'none' }}>
+                <Typography variant="body2" color="primary" sx={{ fontWeight: 'medium' }}>
+                  Du hast bereits einen Account? Anmelden
                 </Typography>
               </Link>
             </Box>
@@ -195,7 +237,7 @@ const Login = () => {
           </Typography>
           
           <Typography variant="caption" color="text.secondary" align="center" mt={1}>
-            Hinweis: Für Demo-Zwecke sind E-Mail und Passwort bereits ausgefüllt.
+            Hinweis: Nach der Registrierung muss dein Konto vom Administrator aktiviert werden.
           </Typography>
         </Paper>
       </Container>
@@ -203,4 +245,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

@@ -225,10 +225,117 @@ export const dashboardApi = {
   // Methoden für Dashboard werden später implementiert
   getStats: async () => {
     console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return { revenue: 0, customers: 0, orders: 0, avg: 0 };
+    return { 
+      revenue: { value: "12.450 €", trend: 5.2, trendDescription: "vs. letzter Monat" },
+      profit: { value: "4.230 €", trend: 3.8, trendDescription: "vs. letzter Monat" },
+      customers: { value: "485", trend: -2.3, trendDescription: "vs. letzter Monat" },
+      avgOrder: { value: "25,60 €", trend: 1.5, trendDescription: "vs. letzter Monat" }
+    };
   },
   getSalesData: async () => {
     console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return {
+      labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'],
+      datasets: [
+        {
+          label: 'Umsatz',
+          data: [12, 19, 13, 15, 22, 27],
+          borderColor: 'rgba(53, 162, 235, 0.8)',
+          backgroundColor: 'rgba(53, 162, 235, 0.5)',
+        }
+      ]
+    };
+  },
+  getTopSellingDrinks: async () => {
+    console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return [
+      { id: 1, name: 'Mojito', amount: 125, revenue: 1062.5 },
+      { id: 2, name: 'Gin Tonic', amount: 98, revenue: 735 },
+      { id: 3, name: 'Cuba Libre', amount: 87, revenue: 652.5 },
+      { id: 4, name: 'Aperol Spritz', amount: 76, revenue: 532 },
+      { id: 5, name: 'Moscow Mule', amount: 65, revenue: 552.5 }
+    ];
+  },
+  getExpensesData: async () => {
+    console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return { 
+      labels: ['Miete', 'Personal', 'Einkauf', 'Marketing', 'Sonstiges'],
+      datasets: [
+        {
+          data: [30, 40, 20, 5, 5],
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 206, 86, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(153, 102, 255, 0.7)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)',
+            'rgba(75, 192, 192, 1)',
+            'rgba(153, 102, 255, 1)'
+          ],
+          borderWidth: 1
+        }
+      ]
+    };
+  }
+};
+
+// Placeholder für Inventar-API
+export const inventoryApi = {
+  getAll: async () => {
+    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
     return [];
+  },
+  getById: async (id) => {
+    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return {};
+  },
+  create: async (data) => {
+    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return data;
+  },
+  update: async (id, data) => {
+    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return data;
+  },
+  delete: async (id) => {
+    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return { success: true };
+  },
+  getLowStock: async () => {
+    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return [
+      { id: 1, name: 'Rum', category: 'spirits', quantity: 2, minQuantity: 5, unit: 'Flaschen' },
+      { id: 2, name: 'Gin', category: 'spirits', quantity: 1, minQuantity: 4, unit: 'Flaschen' },
+      { id: 3, name: 'Tonic Water', category: 'softDrinks', quantity: 8, minQuantity: 24, unit: 'Flaschen' }
+    ];
+  }
+};
+
+// Placeholder für Lieferanten-API
+export const suppliersApi = {
+  getAll: async () => {
+    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return [];
+  },
+  getById: async (id) => {
+    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return {};
+  },
+  create: async (data) => {
+    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return data;
+  },
+  update: async (id, data) => {
+    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return data;
+  },
+  delete: async (id) => {
+    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
+    return { success: true };
   }
 };

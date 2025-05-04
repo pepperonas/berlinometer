@@ -16,6 +16,7 @@ import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Sales from './pages/Sales';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 
 // Geschützte Route Komponente
@@ -39,6 +40,7 @@ function App() {
             <Router basename="/bartender">
                 <Routes>
                     <Route path="/login" element={<Login/>}/>
+                    <Route path="/register" element={<Register/>}/>
 
                     <Route path="/" element={
                         <ProtectedRoute>
