@@ -212,3 +212,4 @@ dist
 /waiworinao/rockyou.txt
 
 **/.claude/settings.local.json
+/bartender/.env.production

@@ -1,27 +1,8 @@
 #!/bin/bash
-echo "Starting MongoDB and Bartender Server..."
+echo "Starting Bartender Server with production configuration..."
 
-# Check if MongoDB is installed
-if ! command -v mongod &> /dev/null; then
-    echo "MongoDB is not installed. Please install MongoDB first."
-    echo "For macOS: brew install mongodb-community"
-    echo "For Ubuntu: sudo apt install mongodb"
-    exit 1
-fi
-
-# Check if MongoDB is running
-if ! pgrep -x "mongod" > /dev/null; then
-    echo "Starting MongoDB..."
-    mkdir -p ~/data/db
-    mongod --dbpath ~/data/db --fork --logpath ~/data/db/mongodb.log
-    if [ $? -ne 0 ]; then
-        echo "Failed to start MongoDB. Please check your MongoDB installation."
-        exit 1
-    fi
-    echo "MongoDB started successfully."
-else
-    echo "MongoDB is already running."
-fi
+# Set the working directory
+cd "$(dirname "$0")"
 
 # Install dependencies if needed
 if [ ! -d "node_modules" ]; then
@@ -33,10 +14,17 @@ if [ ! -d "node_modules" ]; then
     fi
 fi
 
+# Check if .env.server exists
+if [ ! -f ".env.server" ]; then
+    echo "ERROR: .env.server configuration file not found!"
+    echo "Please create an .env.server file based on .env-examples/.env.server.example"
+    exit 1
+fi
+
 # Create admin user if needed
 echo "Checking for admin user..."
-node server/scripts/create-admin.js
+node -r dotenv/config server/scripts/create-admin.js dotenv_config_path=.env.server
 
-# Start server
-echo "Starting Bartender server..."
-node server.js
+# Start server with production configuration
+echo "Starting Bartender server with production settings..."
+node -r dotenv/config server.js dotenv_config_path=.env.server

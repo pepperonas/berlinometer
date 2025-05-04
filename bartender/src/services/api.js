@@ -4,7 +4,17 @@
 import axios from 'axios';
 
 // Basis URL für API-Anfragen
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5024/api';
+// Überprüfe, ob wir im Development oder Production sind
+const isLocalhost = 
+  window.location.hostname === 'localhost' || 
+  window.location.hostname === '127.0.0.1';
+
+// In Development: lokale URL mit Port
+// In Production: relative URL (/api) ohne Domain
+const API_URL = process.env.REACT_APP_API_URL || 
+  (isLocalhost ? 'http://localhost:5024/api' : '/api');
+
+console.log(`API Service using URL: ${API_URL} (${isLocalhost ? 'development' : 'production'} mode)`);
 
 // Axios-Instance mit Konfiguration
 const api = axios.create({
