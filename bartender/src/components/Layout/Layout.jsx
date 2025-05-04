@@ -7,6 +7,7 @@ import Sidebar from './Sidebar';
 const Layout = ({ children }) => {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const [darkMode, setDarkMode] = useState(prefersDarkMode);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   
   const theme = React.useMemo(
     () =>
@@ -101,21 +102,29 @@ const Layout = ({ children }) => {
     setDarkMode(!darkMode);
   };
 
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', minHeight: '100vh' }}>
         <CssBaseline />
-        <Header toggleTheme={toggleTheme} darkMode={darkMode} />
-        <Sidebar />
+        <Header toggleTheme={toggleTheme} darkMode={darkMode} toggleSidebar={toggleSidebar} />
+        <Sidebar open={sidebarOpen} />
         <Box
           component="main"
           sx={{
             flexGrow: 1,
             p: { xs: 2, sm: 3 },
-            width: { sm: `calc(100% - 240px)` },
+            width: { sm: sidebarOpen ? `calc(100% - 240px)` : '100%' },
             maxWidth: '100%',
             bgcolor: 'background.default',
             overflow: 'auto',
+            transition: theme.transitions.create(['width', 'margin'], {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.leavingScreen,
+            }),
           }}
         >
           <Toolbar sx={{ mb: 2 }} /> {/* Spacer for fixed AppBar with extra margin */}

@@ -14,6 +14,7 @@ import Inventory from './pages/Inventory';
 import Suppliers from './pages/Suppliers';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Sales from './pages/Sales';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
 
@@ -107,6 +108,14 @@ function App() {
                         <ProtectedRoute>
                             <Layout>
                                 <Reports/>
+                            </Layout>
+                        </ProtectedRoute>
+                    }/>
+
+                    <Route path="/sales" element={
+                        <ProtectedRoute>
+                            <Layout>
+                                <Sales/>
                             </Layout>
                         </ProtectedRoute>
                     }/>

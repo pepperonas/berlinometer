@@ -15,10 +15,12 @@ import {
   Notifications as NotificationsIcon,
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
-  MoreVert as MoreIcon
+  MoreVert as MoreIcon,
+  Menu as MenuIcon,
+  ChevronLeft as ChevronLeftIcon
 } from '@mui/icons-material';
 
-const Header = ({ toggleTheme, darkMode }) => {
+const Header = ({ toggleTheme, darkMode, toggleSidebar }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
 
@@ -111,6 +113,15 @@ const Header = ({ toggleTheme, darkMode }) => {
       }}
     >
       <Toolbar>
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="toggle sidebar"
+          onClick={toggleSidebar}
+          sx={{ mr: 2 }}
+        >
+          <MenuIcon />
+        </IconButton>
         <Typography
           variant="h6"
           noWrap
