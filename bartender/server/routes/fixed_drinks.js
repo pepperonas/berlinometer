@@ -2,19 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Drink = require('../models/Drink');
 
-// @route   GET /api/drinks
-// @desc    Alle Getränke erhalten
-// @access  Public
-router.get('/', async (req, res) => {
-  try {
-    const drinks = await Drink.find().sort({ name: 1 });
-    res.json(drinks);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
-
+// WICHTIG: Spezifische Routen VOR dynamischen Routen definieren
 // @route   GET /api/drinks/popular/list
 // @desc    Beliebte Getränke erhalten
 // @access  Public
@@ -22,6 +10,19 @@ router.get('/popular/list', async (req, res) => {
   try {
     const popularDrinks = await Drink.find({ popular: true });
     res.json(popularDrinks);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET /api/drinks
+// @desc    Alle Getränke erhalten
+// @access  Public
+router.get('/', async (req, res) => {
+  try {
+    const drinks = await Drink.find().sort({ name: 1 });
+    res.json(drinks);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
