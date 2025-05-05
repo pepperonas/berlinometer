@@ -31,24 +31,44 @@ app.use(morgan('dev')); // Logging middleware
 // Routen mit /api-Präfix für direkte Anfragen
 app.use('/api/drinks', require('./server/routes/drinks'));
 app.use('/api/staff', require('./server/routes/staff'));
-app.use('/api/sales', require('./server/routes/sales'));
+// Alte Sales-Route wird durch die verbesserte ersetzt
+// app.use('/api/sales', require('./server/routes/sales'));
+// Neue verbesserte Sales-Route verwenden
+app.use('/api/sales', require('./server/routes/better_sales'));
 app.use('/api/auth', require('./server/routes/auth'));
 app.use('/api/users', require('./server/routes/users'));
 app.use('/api/inventory', require('./server/routes/inventory'));
 app.use('/api/suppliers', require('./server/routes/suppliers'));
 app.use('/api/dashboard', require('./server/routes/dashboard'));
+// Debug-Route für Finanzen-API
+app.get('/api/finances/test', (req, res) => {
+  console.log('Finances-Test-Endpunkt aufgerufen');
+  res.json({ message: 'Finances-API ist aktiv', time: new Date() });
+});
+
+// Eigentliche Finanzen-Routen
+app.use('/api/finances', require('./server/routes/finances'));
 
 // In Production brauchen wir auch Routen ohne /api-Präfix für Proxy-Weiterleitungen
 if (process.env.NODE_ENV === 'production') {
   console.log('Registering routes without /api prefix for production environment');
   app.use('/drinks', require('./server/routes/drinks'));
   app.use('/staff', require('./server/routes/staff'));
-  app.use('/sales', require('./server/routes/sales'));
+  // Auch für Production die verbesserte Sales-Route verwenden
+  app.use('/sales', require('./server/routes/better_sales'));
   app.use('/auth', require('./server/routes/auth'));
   app.use('/users', require('./server/routes/users'));
   app.use('/inventory', require('./server/routes/inventory'));
   app.use('/suppliers', require('./server/routes/suppliers'));
   app.use('/dashboard', require('./server/routes/dashboard'));
+  
+  // Debug-Route für Finanzen-API in Production
+  app.get('/finances/test', (req, res) => {
+    console.log('Finances-Test-Endpunkt in Production aufgerufen');
+    res.json({ message: 'Finances-API ist aktiv (Production)', time: new Date() });
+  });
+  
+  app.use('/finances', require('./server/routes/finances'));
 }
 
 // Basis API-Endpunkte - mit und ohne /api prefix, um flexibel zu sein

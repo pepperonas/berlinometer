@@ -363,14 +363,20 @@ const Sales = () => {
       console.log(`Importing ${importData.length} bytes in ${importFormat} format`);
       const importedSales = await salesApi.importFromPOS(importData, importFormat);
       
-      console.log(`Import successful, ${importedSales.length} sales imported`);
+      // Log more detailed information about the response
+      console.log(`Import response received, ${importedSales.length} sales imported`);
+      if (importedSales.length > 0) {
+        console.log(`First imported sale: ${JSON.stringify(importedSales[0], null, 2)}`);
+      } else {
+        console.warn("No sales were returned from the import call - this may be an error");
+      }
       
       // Erfolgsmeldung anzeigen
       let message = `${importedSales.length} Verkäufe erfolgreich importiert!`;
       
       // Neuladen aller Verkäufe
       const salesData = await salesApi.getAll();
-      console.log(`Reloaded ${salesData.length} sales after import`);
+      console.log(`Reloaded ${salesData.length} sales after import (${importedSales.length} were just imported)`);
       setSales(salesData);
       
       // Dialog schließen

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Typography, 
@@ -8,19 +8,103 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Divider
+  Divider,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import { 
   Description as ReportIcon,
   PictureAsPdf as PdfIcon,
   TableChart as TableIcon,
   Print as PrintIcon,
-  Share as ShareIcon
+  Share as ShareIcon,
+  Info as InfoIcon
 } from '@mui/icons-material';
+import { salesApi, financesApi, dashboardApi } from '../services/api';
 
 const Reports = () => {
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentReport, setCurrentReport] = useState(null);
+  
+  // Snackbar schließen
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+  
+  // Dialog öffnen
+  const handleOpenDialog = (reportType) => {
+    setCurrentReport(reportType);
+    setDialogOpen(true);
+  };
+  
+  // Dialog schließen
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+  };
+  
+  // Report generieren
+  const generateReport = (reportType, format) => {
+    // Info-Nachricht anzeigen
+    setSnackbar({
+      open: true,
+      message: `Der ${reportType}-Bericht wird generiert... (noch nicht implementiert)`,
+      severity: 'info'
+    });
+    
+    // Dialog schließen
+    handleCloseDialog();
+    
+    // Hier würde die eigentliche Reportgenerierung passieren
+    // ...
+  };
+  
   return (
     <Box sx={{ flexGrow: 1, pb: 4 }}>
+      {/* Snackbar für Benachrichtigungen */}
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+      
+      {/* Dialog zur Bestätigung */}
+      <Dialog open={dialogOpen} onClose={handleCloseDialog}>
+        <DialogTitle>Report generieren</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Bitte wählen Sie das Format für den {currentReport} Report:
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Abbrechen</Button>
+          <Button 
+            onClick={() => generateReport(currentReport, 'pdf')} 
+            variant="contained" 
+            startIcon={<PdfIcon />}
+          >
+            PDF
+          </Button>
+          <Button 
+            onClick={() => generateReport(currentReport, 'excel')} 
+            variant="outlined" 
+            startIcon={<TableIcon />}
+          >
+            Excel
+          </Button>
+        </DialogActions>
+      </Dialog>
+    
       {/* Seitenkopf */}
       <Box mb={4}>
         <Typography variant="h4" component="h1" fontWeight="bold" gutterBottom>
@@ -58,6 +142,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
+                        onClick={() => handleOpenDialog('Monatsabschluss')}
                       >
                         PDF
                       </Button>
@@ -65,6 +150,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
+                        onClick={() => handleOpenDialog('Monatsabschluss')}
                       >
                         Excel
                       </Button>
@@ -87,6 +173,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
+                        onClick={() => handleOpenDialog('Jahresübersicht')}
                       >
                         PDF
                       </Button>
@@ -94,6 +181,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
+                        onClick={() => handleOpenDialog('Jahresübersicht')}
                       >
                         Excel
                       </Button>
@@ -130,6 +218,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
+                        onClick={() => handleOpenDialog('Getränkeverkäufe')}
                       >
                         PDF
                       </Button>
@@ -137,6 +226,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
+                        onClick={() => handleOpenDialog('Getränkeverkäufe')}
                       >
                         Excel
                       </Button>
@@ -159,6 +249,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
+                        onClick={() => handleOpenDialog('Stunden- und Tagesvergleich')}
                       >
                         PDF
                       </Button>
@@ -166,6 +257,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
+                        onClick={() => handleOpenDialog('Stunden- und Tagesvergleich')}
                       >
                         Excel
                       </Button>
@@ -202,6 +294,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
+                        onClick={() => handleOpenDialog('Bestandsübersicht')}
                       >
                         PDF
                       </Button>
@@ -209,6 +302,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
+                        onClick={() => handleOpenDialog('Bestandsübersicht')}
                       >
                         Excel
                       </Button>
@@ -231,6 +325,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
+                        onClick={() => handleOpenDialog('Bestandsbewegungen')}
                       >
                         PDF
                       </Button>
@@ -238,6 +333,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
+                        onClick={() => handleOpenDialog('Bestandsbewegungen')}
                       >
                         Excel
                       </Button>
@@ -274,6 +370,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
+                        onClick={() => handleOpenDialog('Arbeitszeitübersicht')}
                       >
                         PDF
                       </Button>
@@ -281,6 +378,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
+                        onClick={() => handleOpenDialog('Arbeitszeitübersicht')}
                       >
                         Excel
                       </Button>
@@ -303,6 +401,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
+                        onClick={() => handleOpenDialog('Personalkosten')}
                       >
                         PDF
                       </Button>
@@ -310,6 +409,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
+                        onClick={() => handleOpenDialog('Personalkosten')}
                       >
                         Excel
                       </Button>
@@ -334,24 +434,34 @@ const Reports = () => {
               <Button 
                 variant="outlined" 
                 startIcon={<PrintIcon />}
+                onClick={() => handleOpenDialog('Gesamtübersicht')}
               >
                 Drucken
               </Button>
               <Button 
                 variant="outlined" 
                 startIcon={<TableIcon />}
+                onClick={() => handleOpenDialog('Gesamtübersicht')}
               >
                 Als Excel exportieren
               </Button>
               <Button 
                 variant="outlined" 
                 startIcon={<PdfIcon />}
+                onClick={() => handleOpenDialog('Gesamtübersicht')}
               >
                 Als PDF exportieren
               </Button>
               <Button 
                 variant="outlined" 
                 startIcon={<ShareIcon />}
+                onClick={() => {
+                  setSnackbar({
+                    open: true,
+                    message: 'E-Mail-Funktion noch nicht implementiert',
+                    severity: 'warning'
+                  });
+                }}
               >
                 Per E-Mail senden
               </Button>

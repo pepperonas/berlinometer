@@ -130,6 +130,13 @@ const TransactionList = ({
     .filter(transaction => {
       if (!searchTerm) return true;
       
+      // Sicherstellen, dass alle Felder existieren
+      if (!transaction || !transaction.description || !transaction.category || 
+          transaction.amount === undefined || !transaction.date) {
+        console.warn('Ungültige Transaktion:', transaction);
+        return false;
+      }
+      
       const searchLower = searchTerm.toLowerCase();
       return (
         transaction.description.toLowerCase().includes(searchLower) ||
@@ -240,18 +247,18 @@ const TransactionList = ({
           <TableBody>
             {paginatedTransactions.length > 0 ? (
               paginatedTransactions.map((transaction) => (
-                <React.Fragment key={transaction.id}>
+                <React.Fragment key={transaction.id || transaction._id}>
                   <TableRow
                     hover
                     sx={{ 
                       '&:last-child td, &:last-child th': { border: 0 },
                       cursor: 'pointer',
                     }}
-                    onClick={() => toggleExpandRow(transaction.id)}
+                    onClick={() => toggleExpandRow(transaction.id || transaction._id)}
                   >
                     <TableCell padding="checkbox">
                       <IconButton size="small">
-                        {expandedRows[transaction.id] ? (
+                        {expandedRows[transaction.id || transaction._id] ? (
                           <KeyboardArrowUpIcon fontSize="small" />
                         ) : (
                           <KeyboardArrowDownIcon fontSize="small" />
@@ -299,7 +306,7 @@ const TransactionList = ({
                         <IconButton 
                           size="small" 
                           color="error"
-                          onClick={() => onDelete(transaction.id)}
+                          onClick={() => onDelete(transaction.id || transaction._id)}
                         >
                           <DeleteIcon fontSize="small" />
                         </IconButton>
@@ -310,7 +317,7 @@ const TransactionList = ({
                   {/* Erweiterte Zeile mit zusätzlichen Details */}
                   <TableRow>
                     <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
-                      <Collapse in={expandedRows[transaction.id]} timeout="auto" unmountOnExit>
+                      <Collapse in={expandedRows[transaction.id || transaction._id]} timeout="auto" unmountOnExit>
                         <Box sx={{ margin: 2 }}>
                           <Typography variant="subtitle2" gutterBottom component="div">
                             Details
@@ -322,7 +329,7 @@ const TransactionList = ({
                                   ID
                                 </TableCell>
                                 <TableCell sx={{ borderBottom: 'none' }}>
-                                  {transaction.id}
+                                  {transaction.id || transaction._id}
                                 </TableCell>
                               </TableRow>
                               <TableRow>

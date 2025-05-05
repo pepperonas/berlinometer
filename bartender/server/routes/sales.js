@@ -319,8 +319,10 @@ router.post('/import', async (req, res) => {
             });
           }
           
-          // Daten nach Datum gruppieren
-          const salesByDate = {};
+          // In this updated approach, we'll create a unique key for each sale
+          // instead of grouping by date, to ensure we create individual sales records
+          // This better matches the expected UI behavior
+          const salesRecords = [];
           
           // Daten verarbeiten (ab der zweiten Zeile, nach dem Header)
           for (let i = 1; i < lines.length; i++) {
@@ -359,27 +361,32 @@ router.post('/import', async (req, res) => {
               date = new Date(); // Fallback auf aktuelles Datum
             }
             
-            // Datum als Key verwenden (als ISO-String)
-            const dateKey = date.toISOString().split('T')[0];
+            // Creating a new sale record for each row
+            const saleRecord = {
+              date: date.toISOString(),
+              items: [{
+                name: drinkName,
+                quantity,
+                pricePerUnit: price
+              }],
+              paymentMethod: payment.toLowerCase().includes('karte') ? 'card' : 'cash',
+              staffId: '',
+              notes: notes
+            };
             
-            // Wenn dieses Datum noch nicht existiert, initialisieren
-            if (!salesByDate[dateKey]) {
-              salesByDate[dateKey] = {
-                date: date.toISOString(),
-                items: [],
-                paymentMethod: payment.toLowerCase().includes('karte') ? 'card' : 'cash',
-                staffId: '',
-                notes: notes
-              };
-            }
-            
-            // Artikel hinzufügen
-            salesByDate[dateKey].items.push({
-              name: drinkName,
-              quantity,
-              pricePerUnit: price
-            });
+            // Add this record to our list of sales to create
+            console.log(`Prepared sale record for ${drinkName}, qty: ${quantity}, price: ${price}`);
+            salesRecords.push(saleRecord);
           }
+          
+          // Replace salesByDate with salesRecords in the following code
+          const salesByDate = {}; 
+          // Assign each record a unique key
+          salesRecords.forEach((record, index) => {
+            const uniqueKey = `sale_${index}`;
+            salesByDate[uniqueKey] = record;
+            console.log(`Assigned key ${uniqueKey} to sale with ${record.items.length} items`);
+          });
           
           // Verkäufe erstellen
           for (const dateKey of Object.keys(salesByDate)) {
@@ -554,7 +561,13 @@ router.post('/import', async (req, res) => {
       return saleObj;
     });
     
-    console.log(`Successfully imported ${importedSales.length} sales`);
+    console.log(`Successfully imported ${importedSales.length} sales with IDs: ${importedSales.map(s => s._id).join(', ')}`);
+    
+    // Return the correct list of imported sales
+    if (importedSales.length === 0) {
+      console.warn('No sales were imported - this is probably an error');
+    }
+    
     res.json(formattedSales);
   } catch (err) {
     console.error('Import error:', err);

@@ -54,6 +54,16 @@ const EXPENSE_CATEGORIES = [
   { id: 'other', name: 'Sonstiges' },
 ];
 
+// Einnahmenkategorien
+const INCOME_CATEGORIES = [
+  { id: 'bar', name: 'Bar' },
+  { id: 'food', name: 'Essen' },
+  { id: 'events', name: 'Veranstaltungen' },
+  { id: 'merchandise', name: 'Merchandise' },
+  { id: 'gifts', name: 'Gutscheine' },
+  { id: 'other', name: 'Sonstiges' },
+];
+
 // Monate
 const MONTHS = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
@@ -85,6 +95,7 @@ module.exports = {
   INVENTORY_UNITS,
   STAFF_ROLES,
   EXPENSE_CATEGORIES,
+  INCOME_CATEGORIES,
   MONTHS,
   DATE_FORMAT,
   STATUS,

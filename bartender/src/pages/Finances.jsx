@@ -138,9 +138,17 @@ const Finances = () => {
   
   // Lösch-Dialog öffnen
   const handleDeleteConfirm = (id, type) => {
+    console.log(`Öffne Löschdialog für ${type} mit ID ${id}`);
+    
     const item = type === 'expense' 
-      ? expenses.find(e => e.id === id)
-      : income.find(i => i.id === id);
+      ? expenses.find(e => e.id === id || e._id === id)
+      : income.find(i => i.id === id || i._id === id);
+    
+    if (!item) {
+      console.error(`${type} mit ID ${id} nicht gefunden!`);
+      setError(`${type === 'expense' ? 'Ausgabe' : 'Einnahme'} zum Löschen nicht gefunden.`);
+      return;
+    }
       
     setItemToDelete(item);
     setDeleteType(type);
@@ -149,22 +157,58 @@ const Finances = () => {
   
   // Item löschen
   const handleDelete = async () => {
-    if (!itemToDelete) return;
+    if (!itemToDelete) {
+      console.error('Löschen nicht möglich: Kein Item zum Löschen ausgewählt');
+      setError('Fehler: Kein Element zum Löschen ausgewählt');
+      return;
+    }
     
+    console.log(`Lösche ${deleteType}:`, itemToDelete);
     setLoading(true);
+    
     try {
+      let result;
       if (deleteType === 'expense') {
-        await financesApi.deleteExpense(itemToDelete.id);
+        console.log(`Rufe deleteExpense(${itemToDelete.id}) auf`);
+        result = await financesApi.deleteExpense(itemToDelete.id);
+        console.log('Ergebnis des Löschvorgangs (Ausgabe):', result);
       } else {
-        await financesApi.deleteIncome(itemToDelete.id);
+        console.log(`Rufe deleteIncome(${itemToDelete.id}) auf`);
+        result = await financesApi.deleteIncome(itemToDelete.id);
+        console.log('Ergebnis des Löschvorgangs (Einnahme):', result);
+      }
+      
+      // Prüfen, ob der Löschvorgang erfolgreich war
+      if (!result || !result.success) {
+        throw new Error('Löschvorgang lieferte kein Erfolgsergebnis zurück');
       }
       
       setDeleteConfirm(false);
       setItemToDelete(null);
-      loadFinances();
+      
+      // UI sofort aktualisieren, ohne auf loadFinances zu warten
+      if (deleteType === 'expense') {
+        // Ausgabe aus dem lokalen State entfernen
+        setExpenses(prevExpenses => 
+          prevExpenses.filter(expense => expense.id !== itemToDelete.id && expense._id !== itemToDelete.id)
+        );
+      } else {
+        // Einnahme aus dem lokalen State entfernen
+        setIncome(prevIncome => 
+          prevIncome.filter(inc => inc.id !== itemToDelete.id && inc._id !== itemToDelete.id)
+        );
+      }
+      
+      // Im Hintergrund komplett neu laden
+      loadFinances().catch(err => {
+        console.error('Fehler beim Neuladen der Finanzdaten nach dem Löschen:', err);
+      });
+      
+      // Status zurücksetzen
+      setLoading(false);
     } catch (err) {
-      console.error('Error deleting item:', err);
-      setError(`Fehler beim Löschen der ${deleteType === 'expense' ? 'Ausgabe' : 'Einnahme'}`);
+      console.error('Fehler beim Löschen des Elements:', err);
+      setError(`Fehler beim Löschen der ${deleteType === 'expense' ? 'Ausgabe' : 'Einnahme'}: ${err.message || 'Unbekannter Fehler'}`);
       setLoading(false);
     }
   };

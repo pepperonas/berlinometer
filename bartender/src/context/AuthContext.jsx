@@ -7,12 +7,24 @@ const isLocalhost =
   window.location.hostname === 'localhost' || 
   window.location.hostname === '127.0.0.1';
 
-// In Development: lokale URL mit Port
-// In Production: relative URL (/api) ohne Domain
-const API_URL = process.env.REACT_APP_API_URL || 
-  (isLocalhost ? 'http://localhost:5024/api' : '/api');
+// Base Path ermitteln (für Subpaths wie /bartender)
+const basePath = (() => {
+  // Wenn wir im Production sind und die URL einen Pfad enthält, extrahieren wir diesen
+  if (!isLocalhost) {
+    const pathMatch = window.location.pathname.match(/^\/([^\/]+)/);
+    if (pathMatch && pathMatch[1]) {
+      return `/${pathMatch[1]}`;
+    }
+  }
+  return '';
+})();
 
-console.log(`Using API URL: ${API_URL} (${isLocalhost ? 'development' : 'production'} mode)`);
+// In Development: lokale URL mit Port
+// In Production: relative URL (basePath + /api) ohne Domain
+const API_URL = process.env.REACT_APP_API_URL || 
+  (isLocalhost ? 'http://localhost:5024/api' : `${basePath}/api`);
+
+console.log(`Using API URL: ${API_URL} (${isLocalhost ? 'development' : 'production'} mode, basePath: '${basePath}')`);
 
 // Konfiguriere Axios für Cookies
 axios.defaults.withCredentials = true;

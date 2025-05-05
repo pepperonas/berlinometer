@@ -1,0 +1,107 @@
+// Dies sind MongoDB Abfragen, die du in der MongoDB Query Console ausführen kannst
+// Kopiere diese Abfragen in die MongoDB Query Console und führe sie aus
+
+// 1. Erstelle Collections (falls noch nicht vorhanden)
+db.createCollection("expenses")
+db.createCollection("incomes")
+
+// 2. Füge Beispiel-Ausgaben ein (führe dies nur aus, wenn keine Ausgaben vorhanden sind)
+db.expenses.insertMany([
+  {
+    category: 'rent',
+    amount: 1500,
+    date: new Date(2023, 10, 1),
+    description: 'Monatsmiete November',
+    recurring: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    category: 'utilities',
+    amount: 350,
+    date: new Date(2023, 10, 5),
+    description: 'Strom und Wasser',
+    recurring: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    category: 'inventory',
+    amount: 750,
+    date: new Date(2023, 10, 10),
+    description: 'Neue Gläser und Barequipment',
+    recurring: false,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    category: 'salaries',
+    amount: 3200,
+    date: new Date(2023, 10, 15),
+    description: 'Gehälter Personal November',
+    recurring: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    category: 'marketing',
+    amount: 200,
+    date: new Date(2023, 10, 20),
+    description: 'Social Media Werbung',
+    recurring: false,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+])
+
+// 3. Füge Beispiel-Einnahmen ein (führe dies nur aus, wenn keine Einnahmen vorhanden sind)
+db.incomes.insertMany([
+  {
+    category: 'bar',
+    amount: 2800,
+    date: new Date(2023, 10, 30),
+    description: 'Bar-Einnahmen November',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    category: 'food',
+    amount: 1200,
+    date: new Date(2023, 10, 30),
+    description: 'Essen-Verkäufe November',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    category: 'events',
+    amount: 800,
+    date: new Date(2023, 10, 25),
+    description: 'Firmenfeier Schmidt GmbH',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    category: 'merchandise',
+    amount: 150,
+    date: new Date(2023, 10, 28),
+    description: 'T-Shirt und Gläser Verkauf',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    category: 'gifts',
+    amount: 300,
+    date: new Date(2023, 10, 15),
+    description: 'Gutschein-Verkäufe',
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+])
+
+// 4. Prüfe, ob die Daten erfolgreich eingefügt wurden
+db.expenses.find().sort({date: -1}).limit(3)
+db.incomes.find().sort({date: -1}).limit(3)
+
+// 5. Zähle die Einträge
+db.expenses.count()
+db.incomes.count()

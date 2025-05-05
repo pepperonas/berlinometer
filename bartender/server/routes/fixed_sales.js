@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Sale = require('../models/Sale');
 const Drink = require('../models/Drink');
+const Staff = require('../models/Staff');
+const mongoose = require('mongoose');
 const { PAYMENT_METHODS } = require('../utils/constants');
 
 // WICHTIG: Spezifische Routen VOR dynamischen Routen (mit :parameter) definieren!

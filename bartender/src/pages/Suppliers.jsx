@@ -87,7 +87,7 @@ const Suppliers = () => {
   const handleAddClick = () => {
     setCurrentSupplier({
       name: '',
-      contact: '',
+      contact: '', // Im Frontend verwenden wir weiterhin contact (wird im handleSaveSupplier zu contactPerson gemappt)
       phone: '',
       email: '',
       address: '',
@@ -98,7 +98,16 @@ const Suppliers = () => {
   
   // Dialog für Bearbeiten öffnen
   const handleEditClick = (supplier) => {
-    setCurrentSupplier(supplier);
+    // Format für das Frontend vorbereiten
+    const formattedSupplier = {
+      ...supplier,
+      id: supplier._id || supplier.id, // Sicherstellen dass die ID verfügbar ist
+      contact: supplier.contactPerson || supplier.contact || '', // contactPerson vom Backend zu contact im Frontend mappen
+      address: typeof supplier.address === 'string' 
+        ? supplier.address 
+        : supplier.address?.street || ''
+    };
+    setCurrentSupplier(formattedSupplier);
     setDialogOpen(true);
   };
   
@@ -115,18 +124,34 @@ const Suppliers = () => {
     setSaving(true);
     
     try {
+      // Formatieren der Daten für das Backend
+      const supplierData = {
+        name: currentSupplier.name,
+        contactPerson: currentSupplier.contact, // Frontend -> Backend Mapping
+        email: currentSupplier.email,
+        phone: currentSupplier.phone,
+        notes: currentSupplier.notes,
+        // Adresse als einfachen String senden
+        address: {
+          street: currentSupplier.address
+        },
+        active: true
+      };
+      
+      console.log('Sending to backend:', supplierData);
+      
       if (currentSupplier.id) {
         // Bestehenden Lieferanten aktualisieren
-        await suppliersApi.update(currentSupplier.id, currentSupplier);
+        await suppliersApi.update(currentSupplier.id, supplierData);
       } else {
         // Neuen Lieferanten erstellen
-        await suppliersApi.create(currentSupplier);
+        await suppliersApi.create(supplierData);
       }
       loadSuppliers();
       handleCloseDialog();
     } catch (err) {
       console.error('Error saving supplier:', err);
-      setError('Fehler beim Speichern des Lieferanten');
+      setError('Fehler beim Speichern des Lieferanten: ' + (err.response?.data?.error || err.message));
     } finally {
       setSaving(false);
     }
@@ -157,10 +182,10 @@ const Suppliers = () => {
     
     const searchLower = searchTerm.toLowerCase();
     return (
-      supplier.name.toLowerCase().includes(searchLower) ||
-      supplier.contact.toLowerCase().includes(searchLower) ||
-      supplier.email.toLowerCase().includes(searchLower) ||
-      supplier.phone.toLowerCase().includes(searchLower)
+      supplier.name?.toLowerCase().includes(searchLower) ||
+      (supplier.contact?.toLowerCase().includes(searchLower) || supplier.contactPerson?.toLowerCase().includes(searchLower)) ||
+      (supplier.email?.toLowerCase()?.includes(searchLower) || '') ||
+      (supplier.phone?.toLowerCase()?.includes(searchLower) || '')
     );
   });
   
@@ -278,23 +303,27 @@ const Suppliers = () => {
                           </Typography>
                         )}
                       </TableCell>
-                      <TableCell>{supplier.contact}</TableCell>
+                      <TableCell>{supplier.contact || supplier.contactPerson}</TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center">
                           <PhoneIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                          {supplier.phone}
+                          {supplier.phone || ''}
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center">
                           <EmailIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                          {supplier.email}
+                          {supplier.email || ''}
                         </Box>
                       </TableCell>
                       <TableCell>
                         <Box display="flex" alignItems="center">
                           <LocationIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                          {supplier.address}
+                          {typeof supplier.address === 'string' 
+                            ? supplier.address 
+                            : supplier.address?.street 
+                              ? `${supplier.address.street}${supplier.address.city ? ', ' + supplier.address.city : ''}`
+                              : ''}
                         </Box>
                       </TableCell>
                       <TableCell align="right">
@@ -312,7 +341,7 @@ const Suppliers = () => {
                             <IconButton 
                               size="small" 
                               color="error"
-                              onClick={() => handleDeleteSupplier(supplier.id)}
+                              onClick={() => handleDeleteSupplier(supplier._id || supplier.id)}
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
