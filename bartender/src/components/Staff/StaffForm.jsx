@@ -26,6 +26,21 @@ import { de } from 'date-fns/locale';
 import { STAFF_ROLES } from '../../utils/constants';
 
 const StaffForm = ({ initialValues, onSubmit, onCancel }) => {
+  // Debug-Ausgabe für initialValues
+  console.log('StaffForm empfangene initialValues:', initialValues);
+  
+  // Vorbereiten der initialValues mit Standardwerten
+  const preparedInitialValues = initialValues ? {
+    ...initialValues,
+    // Sicherstellen, dass hourlyRate und hoursPerWeek numerische Werte sind
+    hourlyRate: initialValues.hourlyRate !== undefined ? Number(initialValues.hourlyRate) : '',
+    hoursPerWeek: initialValues.hoursPerWeek !== undefined ? Number(initialValues.hoursPerWeek) : '',
+    // Startdatum als Date-Objekt umwandeln, falls es ein String ist
+    startDate: initialValues.startDate ? new Date(initialValues.startDate) : null,
+  } : null;
+
+  console.log('Verarbeitete initialValues:', preparedInitialValues);
+  
   const [values, setValues] = useState({
     name: '',
     role: '',
@@ -35,9 +50,7 @@ const StaffForm = ({ initialValues, onSubmit, onCancel }) => {
     phone: '',
     email: '',
     isActive: true,
-    ...initialValues,
-    // Startdatum als Date-Objekt umwandeln, falls es ein String ist
-    startDate: initialValues?.startDate ? new Date(initialValues.startDate) : null,
+    ...(preparedInitialValues || {}),
   });
 
   const [errors, setErrors] = useState({});

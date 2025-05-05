@@ -67,10 +67,70 @@ const Staff = () => {
     
     try {
       const data = await staffApi.getAll();
-      setStaff(data);
+      console.log('Geladene Mitarbeiter:', data);
+      
+      // Daten für das Frontend formatieren
+      const processedStaff = data.map(staffMember => {
+        // Berechne hourlyRate und hoursPerWeek falls nicht vorhanden
+        let hourlyRate = staffMember.hourlyRate;
+        let hoursPerWeek = staffMember.hoursPerWeek;
+        
+        // Konvertiere beide Werte zu Zahlen, falls sie als Strings vorliegen
+        if (hourlyRate !== undefined) {
+          hourlyRate = typeof hourlyRate === 'string' ? parseFloat(hourlyRate) : hourlyRate;
+        }
+        
+        if (hoursPerWeek !== undefined) {
+          hoursPerWeek = typeof hoursPerWeek === 'string' ? parseFloat(hoursPerWeek) : hoursPerWeek;
+        }
+        
+        // Wenn salary existiert aber hourlyRate oder hoursPerWeek nicht oder 0 sind, führe eine umgekehrte Berechnung durch
+        if (staffMember.salary && (hourlyRate === undefined || hourlyRate === 0 || hoursPerWeek === undefined || hoursPerWeek === 0)) {
+          // Standardwert für hoursPerWeek: 40 Stunden
+          const standardHoursPerWeek = 40;
+          
+          if ((!hoursPerWeek || hoursPerWeek === 0) && (!hourlyRate || hourlyRate === 0)) {
+            // Wenn beide fehlen oder 0 sind, nutze Standardstunden und berechne hourlyRate
+            hoursPerWeek = standardHoursPerWeek;
+            hourlyRate = parseFloat((staffMember.salary / (hoursPerWeek * 4.33)).toFixed(2));
+          } else if (!hourlyRate || hourlyRate === 0) {
+            // Wenn nur hourlyRate fehlt oder 0 ist, berechne es
+            hourlyRate = parseFloat((staffMember.salary / (hoursPerWeek * 4.33)).toFixed(2));
+          } else if (!hoursPerWeek || hoursPerWeek === 0) {
+            // Wenn nur hoursPerWeek fehlt oder 0 ist, berechne es
+            hoursPerWeek = parseFloat((staffMember.salary / (hourlyRate * 4.33)).toFixed(2));
+          }
+        }
+        
+        const processedData = {
+          ...staffMember,
+          id: staffMember._id || staffMember.id, // Beide ID-Formate unterstützen
+          role: staffMember.position || staffMember.role, // Backend nutzt 'position', Frontend 'role'
+          isActive: staffMember.active !== undefined ? staffMember.active : true, // Backend nutzt 'active', Frontend 'isActive'
+          hourlyRate: hourlyRate || 0,
+          hoursPerWeek: hoursPerWeek || 0
+        };
+        
+        console.log('Verarbeitete Mitarbeiterdaten:', {
+          name: processedData.name,
+          original: {
+            hourlyRate: staffMember.hourlyRate,
+            hoursPerWeek: staffMember.hoursPerWeek,
+            salary: staffMember.salary
+          },
+          processed: {
+            hourlyRate: processedData.hourlyRate,
+            hoursPerWeek: processedData.hoursPerWeek
+          }
+        });
+        
+        return processedData;
+      });
+      
+      setStaff(processedStaff);
     } catch (err) {
       console.error('Error loading staff:', err);
-      setError('Fehler beim Laden der Mitarbeiterdaten');
+      setError(`Fehler beim Laden der Mitarbeiterdaten: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -83,6 +143,7 @@ const Staff = () => {
 
   // Mitarbeiter hinzufügen/bearbeiten Dialog öffnen
   const handleOpenForm = (staffMember = null) => {
+    console.log('Öffne Formular mit Daten:', staffMember);
     setCurrentStaff(staffMember);
     setOpenForm(true);
   };
@@ -97,9 +158,12 @@ const Staff = () => {
   const handleSaveForm = async (values) => {
     setLoading(true);
     try {
+      console.log('Sende formatierte Daten an API:', values);
+      
       if (currentStaff) {
         // Mitarbeiter aktualisieren
-        await staffApi.update(currentStaff.id, values);
+        const staffId = currentStaff._id || currentStaff.id;
+        await staffApi.update(staffId, values);
       } else {
         // Neuen Mitarbeiter erstellen
         await staffApi.create(values);
@@ -109,7 +173,7 @@ const Staff = () => {
       handleCloseForm();
     } catch (err) {
       console.error('Error saving staff:', err);
-      setError('Fehler beim Speichern des Mitarbeiters');
+      setError(`Fehler beim Speichern des Mitarbeiters: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -117,9 +181,15 @@ const Staff = () => {
 
   // Lösch-Dialog öffnen
   const handleDeleteConfirm = (staffId) => {
-    const staffMember = staff.find(s => s.id === staffId);
-    setStaffToDelete(staffMember);
-    setDeleteConfirm(true);
+    // MongoDB verwendet _id statt id
+    const staffMember = staff.find(s => s._id === staffId || s.id === staffId);
+    if (staffMember) {
+      setStaffToDelete(staffMember);
+      setDeleteConfirm(true);
+    } else {
+      console.error('Mitarbeiter nicht gefunden:', staffId);
+      setError('Mitarbeiter nicht gefunden');
+    }
   };
 
   // Mitarbeiter löschen
@@ -128,13 +198,15 @@ const Staff = () => {
     
     setLoading(true);
     try {
-      await staffApi.delete(staffToDelete.id);
+      // Verwende entweder _id oder id, je nachdem was verfügbar ist
+      const staffId = staffToDelete._id || staffToDelete.id;
+      await staffApi.delete(staffId);
       setDeleteConfirm(false);
       setStaffToDelete(null);
       loadStaff();
     } catch (err) {
       console.error('Error deleting staff:', err);
-      setError('Fehler beim Löschen des Mitarbeiters');
+      setError(`Fehler beim Löschen des Mitarbeiters: ${err.message}`);
     } finally {
       setLoading(false);
     }

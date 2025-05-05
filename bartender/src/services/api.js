@@ -178,20 +178,34 @@ export const salesApi = {
   
   create: async (saleData) => {
     try {
+      console.log('API sendet Verkaufsdaten:', JSON.stringify(saleData, null, 2));
       const response = await api.post('/sales', saleData);
+      console.log('API Antwort:', response.data);
       return response.data;
     } catch (error) {
       console.error('Fehler beim Erstellen des Verkaufs:', error);
+      console.error('Response data:', error.response?.data);
+      // Detaillierte Fehlermeldung zurückgeben, wenn verfügbar
+      if (error.response?.data?.error) {
+        error.message = error.response.data.error;
+      }
       throw error;
     }
   },
   
   update: async (id, saleData) => {
     try {
+      console.log(`API aktualisiert Verkauf ${id}:`, JSON.stringify(saleData, null, 2));
       const response = await api.put(`/sales/${id}`, saleData);
+      console.log('API Antwort:', response.data);
       return response.data;
     } catch (error) {
       console.error(`Fehler beim Aktualisieren des Verkaufs mit ID ${id}:`, error);
+      console.error('Response data:', error.response?.data);
+      // Detaillierte Fehlermeldung zurückgeben, wenn verfügbar
+      if (error.response?.data?.error) {
+        error.message = error.response.data.error;
+      }
       throw error;
     }
   },
@@ -230,132 +244,180 @@ export const financesApi = {
   }
 };
 
-// Placeholder für Dashboard-API (kann später implementiert werden)
+// Dashboard-API mit echten Endpunkten
 export const dashboardApi = {
-  // Methoden für Dashboard werden später implementiert
   getStats: async () => {
-    console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return { 
-      revenue: { value: "12.450 €", trend: 5.2, trendDescription: "vs. letzter Monat" },
-      profit: { value: "4.230 €", trend: 3.8, trendDescription: "vs. letzter Monat" },
-      customers: { value: "485", trend: -2.3, trendDescription: "vs. letzter Monat" },
-      avgOrder: { value: "25,60 €", trend: 1.5, trendDescription: "vs. letzter Monat" }
-    };
-  },
-  getSalesData: async () => {
-    console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return {
-      labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'],
-      datasets: [
-        {
-          label: 'Umsatz',
-          data: [12, 19, 13, 15, 22, 27],
-          borderColor: 'rgba(53, 162, 235, 0.8)',
-          backgroundColor: 'rgba(53, 162, 235, 0.5)',
-        }
-      ]
-    };
-  },
-  getTopSellingDrinks: async () => {
-    console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return [
-      { id: 1, name: 'Mojito', amount: 125, revenue: 1062.5 },
-      { id: 2, name: 'Gin Tonic', amount: 98, revenue: 735 },
-      { id: 3, name: 'Cuba Libre', amount: 87, revenue: 652.5 },
-      { id: 4, name: 'Aperol Spritz', amount: 76, revenue: 532 },
-      { id: 5, name: 'Moscow Mule', amount: 65, revenue: 552.5 }
-    ];
-  },
-  getExpensesData: async (period = 'monthly') => {
-    console.warn('Dashboard-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    
-    // Beispieldaten für verschiedene Zeiträume
-    const data = {
-      monthly: [
-        { name: 'Miete', value: 1200, percent: 0.30 },
-        { name: 'Personal', value: 1600, percent: 0.40 },
-        { name: 'Einkauf', value: 800, percent: 0.20 },
-        { name: 'Marketing', value: 200, percent: 0.05 },
-        { name: 'Sonstiges', value: 200, percent: 0.05 }
-      ],
-      quarterly: [
-        { name: 'Miete', value: 3600, percent: 0.32 },
-        { name: 'Personal', value: 4200, percent: 0.38 },
-        { name: 'Einkauf', value: 2400, percent: 0.22 },
-        { name: 'Marketing', value: 550, percent: 0.05 },
-        { name: 'Sonstiges', value: 350, percent: 0.03 }
-      ],
-      yearly: [
-        { name: 'Miete', value: 14400, percent: 0.33 },
-        { name: 'Personal', value: 16500, percent: 0.37 },
-        { name: 'Einkauf', value: 9800, percent: 0.22 },
-        { name: 'Marketing', value: 2200, percent: 0.05 },
-        { name: 'Sonstiges', value: 1500, percent: 0.03 }
-      ]
-    };
-    
-    // Wenn ein bestimmter Zeitraum angefordert wird, geben wir nur diesen zurück
-    if (period in data) {
-      return data[period];
+    try {
+      const response = await api.get('/dashboard/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Dashboard-Statistiken:', error);
+      // Fallback zu Beispieldaten im Fehlerfall
+      return { 
+        revenue: { value: "0,00 €", trend: 0, trendDescription: "vs. letzter Monat" },
+        profit: { value: "0,00 €", trend: 0, trendDescription: "vs. letzter Monat" },
+        customers: { value: "0", trend: 0, trendDescription: "vs. letzter Monat" },
+        avgOrder: { value: "0,00 €", trend: 0, trendDescription: "vs. letzter Monat" }
+      };
     }
-    
-    // Andernfalls geben wir alle Daten zurück
-    return data;
+  },
+  
+  getSalesData: async () => {
+    try {
+      const response = await api.get('/dashboard/sales-data');
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Umsatzdaten:', error);
+      // Fallback zu Beispieldaten im Fehlerfall
+      return {
+        labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'],
+        datasets: [
+          {
+            label: 'Umsatz',
+            data: [0, 0, 0, 0, 0, 0],
+            borderColor: 'rgba(53, 162, 235, 0.8)',
+            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+          }
+        ]
+      };
+    }
+  },
+  
+  getTopSellingDrinks: async () => {
+    try {
+      const response = await api.get('/dashboard/top-selling');
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen der meistverkauften Getränke:', error);
+      // Fallback zu leerer Liste im Fehlerfall
+      return [];
+    }
+  },
+  
+  getExpensesData: async (period = 'monthly') => {
+    try {
+      const response = await api.get(`/dashboard/expenses-data?period=${period}`);
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Ausgabendaten:', error);
+      // Fallback zu leerer Liste im Fehlerfall
+      return [];
+    }
   }
 };
 
-// Placeholder für Inventar-API
+// Inventar-API mit echten Endpunkten
 export const inventoryApi = {
   getAll: async () => {
-    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return [];
+    try {
+      const response = await api.get('/inventory');
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen aller Inventareinträge:', error);
+      return [];
+    }
   },
+  
   getById: async (id) => {
-    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return {};
+    try {
+      const response = await api.get(`/inventory/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Fehler beim Abrufen des Inventareintrags mit ID ${id}:`, error);
+      return {};
+    }
   },
+  
   create: async (data) => {
-    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return data;
+    try {
+      const response = await api.post('/inventory', data);
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Erstellen des Inventareintrags:', error);
+      throw error;
+    }
   },
+  
   update: async (id, data) => {
-    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return data;
+    try {
+      const response = await api.put(`/inventory/${id}`, data);
+      return response.data;
+    } catch (error) {
+      console.error(`Fehler beim Aktualisieren des Inventareintrags mit ID ${id}:`, error);
+      throw error;
+    }
   },
+  
   delete: async (id) => {
-    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return { success: true };
+    try {
+      const response = await api.delete(`/inventory/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Fehler beim Löschen des Inventareintrags mit ID ${id}:`, error);
+      throw error;
+    }
   },
+  
   getLowStock: async () => {
-    console.warn('Inventar-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return [
-      { id: 1, name: 'Rum', category: 'spirits', quantity: 2, minQuantity: 5, unit: 'Flaschen' },
-      { id: 2, name: 'Gin', category: 'spirits', quantity: 1, minQuantity: 4, unit: 'Flaschen' },
-      { id: 3, name: 'Tonic Water', category: 'softDrinks', quantity: 8, minQuantity: 24, unit: 'Flaschen' }
-    ];
+    try {
+      const response = await api.get('/inventory/low-stock');
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen von Inventareinträgen mit niedrigem Bestand:', error);
+      return [];
+    }
   }
 };
 
-// Placeholder für Lieferanten-API
+// Lieferanten-API mit echten Endpunkten
 export const suppliersApi = {
   getAll: async () => {
-    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return [];
+    try {
+      const response = await api.get('/suppliers');
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Abrufen aller Lieferanten:', error);
+      return [];
+    }
   },
+  
   getById: async (id) => {
-    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return {};
+    try {
+      const response = await api.get(`/suppliers/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Fehler beim Abrufen des Lieferanten mit ID ${id}:`, error);
+      return {};
+    }
   },
+  
   create: async (data) => {
-    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return data;
+    try {
+      const response = await api.post('/suppliers', data);
+      return response.data;
+    } catch (error) {
+      console.error('Fehler beim Erstellen des Lieferanten:', error);
+      throw error;
+    }
   },
+  
   update: async (id, data) => {
-    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return data;
+    try {
+      const response = await api.put(`/suppliers/${id}`, data);
+      return response.data;
+    } catch (error) {
+      console.error(`Fehler beim Aktualisieren des Lieferanten mit ID ${id}:`, error);
+      throw error;
+    }
   },
+  
   delete: async (id) => {
-    console.warn('Lieferanten-API noch nicht implementiert, wird später durch echte MongoDB-Endpunkte ersetzt.');
-    return { success: true };
+    try {
+      const response = await api.delete(`/suppliers/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Fehler beim Löschen des Lieferanten mit ID ${id}:`, error);
+      throw error;
+    }
   }
 };

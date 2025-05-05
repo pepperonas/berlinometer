@@ -41,7 +41,7 @@ import {
 
 import { inventoryApi, suppliersApi } from '../services/api';
 import { formatCurrency } from '../utils/helpers';
-import { INVENTORY_CATEGORIES } from '../utils/constants';
+import { INVENTORY_CATEGORIES, INVENTORY_UNITS } from '../utils/constants';
 import { alpha } from '@mui/material/styles';
 
 const Inventory = () => {
@@ -69,7 +69,29 @@ const Inventory = () => {
     
     try {
       const data = await inventoryApi.getAll();
-      setInventory(data);
+      console.log('Loaded inventory items:', data);
+      
+      if (data && data.length > 0) {
+        // Process each item to ensure lastOrderDate is formatted correctly
+        const processedData = data.map(item => {
+          // Ensure each item has a lastOrderDate
+          if (!item.lastOrderDate) {
+            console.log(`Item ${item.name} has no lastOrderDate, setting to today`);
+            item.lastOrderDate = new Date().toISOString();
+          }
+          
+          // Log details about supplier references
+          console.log(`Item (${item.name}): supplier=${item.supplier}, lastOrderDate=${item.lastOrderDate}`);
+          
+          return item;
+        });
+        
+        console.log('Available suppliers for lookup:', suppliers);
+        setInventory(processedData);
+      } else {
+        console.log('No inventory items loaded or empty data.');
+        setInventory([]);
+      }
     } catch (err) {
       console.error('Error loading inventory:', err);
       setError('Fehler beim Laden des Inventars');
@@ -78,21 +100,50 @@ const Inventory = () => {
     }
   };
 
+  // Lieferanten laden
+  const loadSuppliers = async () => {
+    try {
+      const data = await suppliersApi.getAll();
+      console.log('Loaded suppliers:', data);
+      
+      if (Array.isArray(data) && data.length > 0) {
+        setSuppliers(data);
+      } else {
+        console.warn('No suppliers found or invalid data format');
+        // If suppliers API returns empty, create a placeholder supplier for testing
+        setSuppliers([
+          { _id: '1', id: '1', name: 'Test Supplier 1' },
+          { _id: '2', id: '2', name: 'Test Supplier 2' }
+        ]);
+      }
+      // Return the supplier data for external use
+      return Array.isArray(data) && data.length > 0 ? data : [
+        { _id: '1', id: '1', name: 'Test Supplier 1' },
+        { _id: '2', id: '2', name: 'Test Supplier 2' }
+      ];
+    } catch (err) {
+      console.error('Error loading suppliers:', err);
+      // If error occurs, create a placeholder supplier for testing
+      const fallbackSuppliers = [
+        { _id: '1', id: '1', name: 'Test Supplier 1' },
+        { _id: '2', id: '2', name: 'Test Supplier 2' }
+      ];
+      setSuppliers(fallbackSuppliers);
+      return fallbackSuppliers;
+    }
+  };
+  
   // Beim ersten Laden das Inventar und Lieferanten laden
   useEffect(() => {
-    loadInventory();
-    
-    // Lieferanten laden für den Bearbeitungsdialog
-    const loadSuppliers = async () => {
-      try {
-        const data = await suppliersApi.getAll();
-        setSuppliers(data);
-      } catch (err) {
-        console.error('Error loading suppliers:', err);
-      }
+    // Sequenzielle Ausführung: Erst Lieferanten, dann Inventar laden
+    const initializeData = async () => {
+      // Load suppliers first
+      await loadSuppliers();
+      // Then load inventory with suppliers available for reference
+      await loadInventory();
     };
     
-    loadSuppliers();
+    initializeData();
   }, []);
 
   // Sortierung ändern
@@ -195,13 +246,52 @@ const Inventory = () => {
   
   // Datum formatieren
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    return new Date(dateString).toLocaleDateString('de-DE', options);
+    if (!dateString) return 'Keine Angabe';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date provided to formatDate:', dateString);
+        return 'Ungültiges Datum';
+      }
+      
+      const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+      return date.toLocaleDateString('de-DE', options);
+    } catch (error) {
+      console.error('Error formatting date:', error, dateString);
+      return 'Fehler beim Formatieren';
+    }
   };
   
   // Dialog für Bearbeitung öffnen
   const handleEditClick = (item) => {
-    setCurrentItem(item);
+    // Create a safe copy of the item with proper data conversion
+    const editItem = {
+      id: item._id, // Make sure to use _id from MongoDB as our id field
+      name: item.name,
+      category: item.category,
+      quantity: item.quantity,
+      unit: item.unit,
+      minQuantity: item.minQuantity,
+      costPerUnit: item.costPerUnit || 0,
+      lastOrderDate: item.lastOrderDate ? 
+        // Parse the date carefully to avoid invalid date errors
+        (typeof item.lastOrderDate === 'string' ? 
+          // If it's in ISO format with a 'T', split at 'T'
+          (item.lastOrderDate.includes('T') ? 
+            item.lastOrderDate.split('T')[0] : 
+            // Otherwise use it as is if it's a valid date string
+            (isNaN(Date.parse(item.lastOrderDate)) ? 
+              new Date().toISOString().split('T')[0] : 
+              item.lastOrderDate)) : 
+          // Default to today if all else fails
+          new Date().toISOString().split('T')[0]) : 
+        new Date().toISOString().split('T')[0],
+      supplier: item.supplier || (suppliers.length > 0 ? suppliers[0]._id || suppliers[0].id : ''),
+    };
+    
+    console.log('Editing item:', editItem);
+    setCurrentItem(editItem);
     setEditDialogOpen(true);
   };
   
@@ -214,20 +304,83 @@ const Inventory = () => {
   // Inventar-Element speichern (aktualisieren oder erstellen)
   const handleSaveInventory = async (updatedItem) => {
     setSavingInventory(true);
+    setError(null);
     
     try {
-      if (currentItem.id) {
-        // Bestehenden Eintrag aktualisieren
-        await inventoryApi.update(currentItem.id, updatedItem);
+      // Werte in korrekten Typen umwandeln
+      const processedItem = {
+        ...updatedItem,
+        quantity: parseInt(updatedItem.quantity || 0, 10),
+        minQuantity: parseInt(updatedItem.minQuantity || 0, 10),
+        costPerUnit: parseFloat(updatedItem.costPerUnit || 0),
+        // Ensure supplier is properly handled (convert empty string to null)
+        supplier: updatedItem.supplier && updatedItem.supplier.trim() !== '' ? updatedItem.supplier : null,
+        // Make sure lastOrderDate is included
+        lastOrderDate: updatedItem.lastOrderDate || new Date().toISOString().split('T')[0],
+      };
+      
+      // Eingabevalidierung
+      if (!processedItem.name || processedItem.name.trim() === '') {
+        setError('Bitte geben Sie einen Namen an');
+        setSavingInventory(false);
+        return;
+      }
+      
+      if (!processedItem.unit || processedItem.unit.trim() === '') {
+        setError('Bitte wählen Sie eine Einheit aus');
+        setSavingInventory(false);
+        return;
+      }
+      
+      console.log('Saving inventory item:', processedItem);
+      
+      // Remove id from the processed item to avoid MongoDB errors
+      const { id, ...itemToSave } = processedItem;
+      
+      // Additional debug info to check what we're actually sending
+      console.log('Item to save:', JSON.stringify(itemToSave, null, 2));
+      console.log('Contains supplier field:', itemToSave.hasOwnProperty('supplier'));
+      console.log('Supplier value:', itemToSave.supplier);
+      console.log('Contains lastOrderDate field:', itemToSave.hasOwnProperty('lastOrderDate'));
+      console.log('lastOrderDate value:', itemToSave.lastOrderDate);
+      
+      // Convert lastOrderDate to ISO string if it's a valid date
+      if (itemToSave.lastOrderDate) {
+        const parsedDate = new Date(itemToSave.lastOrderDate);
+        if (!isNaN(parsedDate.getTime())) {
+          itemToSave.lastOrderDate = parsedDate.toISOString();
+          console.log('Converted lastOrderDate to ISO format:', itemToSave.lastOrderDate);
+        } else {
+          console.warn('Invalid lastOrderDate provided, using current date');
+          itemToSave.lastOrderDate = new Date().toISOString();
+        }
       } else {
+        console.warn('No lastOrderDate provided, using current date');
+        itemToSave.lastOrderDate = new Date().toISOString();
+      }
+      
+      if (id) {
+        console.log(`Updating inventory item with ID: ${id}`);
+        // Bestehenden Eintrag aktualisieren
+        const response = await inventoryApi.update(id, itemToSave);
+        console.log('Update response:', response);
+      } else {
+        console.log('Creating new inventory item');
         // Neuen Eintrag erstellen
-        await inventoryApi.create(updatedItem);
+        const response = await inventoryApi.create(itemToSave);
+        console.log('Create response:', response);
       }
       loadInventory(); // Neu laden nach dem Speichern
       handleCloseDialog();
     } catch (err) {
       console.error('Error saving inventory item:', err);
-      setError('Fehler beim Speichern des Inventars');
+      
+      // Zeige spezifischen Fehler vom Backend an, falls verfügbar
+      if (err.response && err.response.data && err.response.data.error) {
+        setError('Fehler: ' + err.response.data.error);
+      } else {
+        setError('Fehler beim Speichern des Inventars: ' + (err.message || 'Unbekannter Fehler'));
+      }
     } finally {
       setSavingInventory(false);
     }
@@ -261,12 +414,13 @@ const Inventory = () => {
             onClick={() => {
               setCurrentItem({
                 name: '',
-                category: 'spirits',
+                category: INVENTORY_CATEGORIES[0].id, // Use first category from constants
                 quantity: 0,
-                unit: 'Flaschen',
+                unit: INVENTORY_UNITS[0].id, // Use first unit from constants
                 minQuantity: 0,
+                costPerUnit: 0,
                 lastOrderDate: new Date().toISOString().split('T')[0],
-                supplier: suppliers.length > 0 ? suppliers[0].name : '',
+                supplier: suppliers.length > 0 ? (suppliers[0]._id || suppliers[0].id) : '',
               });
               setEditDialogOpen(true);
             }}
@@ -502,8 +656,44 @@ const Inventory = () => {
                       <TableCell align="center">
                         {item.minQuantity} {item.unit}
                       </TableCell>
-                      <TableCell>{item.supplier}</TableCell>
-                      <TableCell>{formatDate(item.lastOrderDate)}</TableCell>
+                      <TableCell>
+                        {item.supplier ? 
+                          // Try to find supplier by _id first, then id
+                          (() => {
+                            // Check if the supplier exists in the list
+                            const supplierObj = suppliers.find(s => 
+                              s._id === item.supplier || 
+                              s.id === item.supplier || 
+                              s._id?.toString() === item.supplier.toString()
+                            );
+                            
+                            // If found, return the name
+                            if (supplierObj) {
+                              return supplierObj.name;
+                            } else {
+                              // Otherwise show supplier ID and refresh button
+                              return (
+                                <Box display="flex" alignItems="center">
+                                  <Typography component="span" mr={1}>
+                                    Lieferant #{item.supplier.toString().substring(0, 6)}...
+                                  </Typography>
+                                  <Tooltip title="Lieferanten neu laden">
+                                    <IconButton 
+                                      size="small" 
+                                      onClick={() => loadSuppliers()}
+                                    >
+                                      <RefreshIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Box>
+                              );
+                            }
+                          })() : 
+                          'Nicht zugewiesen'}
+                      </TableCell>
+                      <TableCell>
+                        {formatDate(item.lastOrderDate)}
+                      </TableCell>
                       <TableCell align="right">
                         <Box>
                           <Tooltip title="Bearbeiten">
@@ -566,6 +756,12 @@ const Inventory = () => {
         onClose={handleCloseDialog}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          style: {
+            maxHeight: '90vh', // 90% of viewport height
+            padding: '8px'
+          },
+        }}
       >
         <DialogTitle>
           {currentItem?.id ? 'Inventar bearbeiten' : 'Neues Inventar hinzufügen'}
@@ -590,6 +786,15 @@ const Inventory = () => {
                   value={currentItem.category}
                   onChange={(e) => setCurrentItem({...currentItem, category: e.target.value})}
                   margin="normal"
+                  SelectProps={{
+                    MenuProps: {
+                      PaperProps: {
+                        style: {
+                          maxHeight: '300px',
+                        },
+                      },
+                    },
+                  }}
                 >
                   {INVENTORY_CATEGORIES.map((category) => (
                     <MenuItem key={category.id} value={category.id}>
@@ -613,12 +818,28 @@ const Inventory = () => {
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
+                  select
                   label="Einheit"
                   fullWidth
                   value={currentItem.unit}
                   onChange={(e) => setCurrentItem({...currentItem, unit: e.target.value})}
                   margin="normal"
-                />
+                  SelectProps={{
+                    MenuProps: {
+                      PaperProps: {
+                        style: {
+                          maxHeight: '300px',
+                        },
+                      },
+                    },
+                  }}
+                >
+                  {INVENTORY_UNITS.map((unit) => (
+                    <MenuItem key={unit.id} value={unit.id}>
+                      {unit.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -634,17 +855,50 @@ const Inventory = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Kosten pro Einheit"
+                  fullWidth
+                  type="number"
+                  value={currentItem.costPerUnit || 0}
+                  onChange={(e) => setCurrentItem({...currentItem, costPerUnit: Number(e.target.value)})}
+                  margin="normal"
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
                 <Box display="flex" alignItems="flex-start">
                   <TextField
                     select
                     label="Lieferant"
                     fullWidth
-                    value={currentItem.supplier}
-                    onChange={(e) => setCurrentItem({...currentItem, supplier: e.target.value})}
+                    value={currentItem.supplier || ''}
+                    onChange={(e) => {
+                      console.log('Supplier dropdown changed to:', e.target.value);
+                      console.log('Available suppliers:', suppliers);
+                      
+                      // Log the selected supplier for debugging
+                      const selectedSupplier = suppliers.find(s => (s._id || s.id) === e.target.value);
+                      console.log('Selected supplier:', selectedSupplier);
+                      setCurrentItem({...currentItem, supplier: e.target.value});
+                    }}
                     margin="normal"
+                    SelectProps={{
+                      MenuProps: {
+                        PaperProps: {
+                          style: {
+                            maxHeight: '300px',
+                          },
+                        },
+                      },
+                    }}
                   >
+                    <MenuItem value="">
+                      <em>Kein Lieferant</em>
+                    </MenuItem>
                     {suppliers.map((supplier) => (
-                      <MenuItem key={supplier.id} value={supplier.name}>
+                      <MenuItem key={supplier._id || supplier.id} value={supplier._id || supplier.id}>
                         {supplier.name}
                       </MenuItem>
                     ))}
@@ -664,7 +918,20 @@ const Inventory = () => {
                   label="Letzte Bestellung"
                   fullWidth
                   type="date"
-                  value={new Date(currentItem.lastOrderDate).toISOString().split('T')[0]}
+                  value={
+                    // If lastOrderDate exists and is a valid date string
+                    currentItem.lastOrderDate ? 
+                      // If it contains 'T' (ISO format), split at 'T'
+                      (typeof currentItem.lastOrderDate === 'string' ? 
+                        // Handle various date formats
+                        (currentItem.lastOrderDate.includes('T') ? 
+                          currentItem.lastOrderDate.split('T')[0] : 
+                          currentItem.lastOrderDate) : 
+                        // Last resort, use current date
+                        new Date().toISOString().split('T')[0]) : 
+                      // If no date exists, use current date
+                      new Date().toISOString().split('T')[0]
+                  }
                   onChange={(e) => setCurrentItem({...currentItem, lastOrderDate: e.target.value})}
                   margin="normal"
                   InputLabelProps={{

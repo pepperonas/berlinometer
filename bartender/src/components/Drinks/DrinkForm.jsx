@@ -117,9 +117,8 @@ const DrinkForm = ({ initialValues, onSubmit, onCancel }) => {
       newErrors.price = 'Bitte geben Sie einen gültigen Preis ein';
     }
     
-    if (!values.cost) {
-      newErrors.cost = 'Kosten sind erforderlich';
-    } else if (isNaN(parseFloat(values.cost)) || parseFloat(values.cost) < 0) {
+    // Cost ist optional, da es vom Backend ignoriert wird
+    if (values.cost && (isNaN(parseFloat(values.cost)) || parseFloat(values.cost) < 0)) {
       newErrors.cost = 'Bitte geben Sie gültige Kosten ein';
     }
     
@@ -132,14 +131,20 @@ const DrinkForm = ({ initialValues, onSubmit, onCancel }) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // Numerische Werte konvertieren
+      // Numerische Werte konvertieren und richtig formatieren
       const formattedValues = {
         ...values,
         price: parseFloat(values.price),
+        // Das cost-Feld wird jetzt im Backend unterstützt
         cost: parseFloat(values.cost),
         stock: parseInt(values.stock, 10),
+        // Zutaten im richtigen Format (Client-seitige Konvertierung)
+        ingredients: values.ingredients.map(ingredient => {
+          return typeof ingredient === 'object' ? ingredient : { name: ingredient };
+        }),
       };
       
+      console.log('Sende formatierte Daten an API:', formattedValues);
       onSubmit(formattedValues);
     }
   };

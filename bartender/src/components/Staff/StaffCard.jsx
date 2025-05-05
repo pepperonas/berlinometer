@@ -48,7 +48,9 @@ const StaffCard = ({ staff, onDelete, onEdit }) => {
   };
   
   // Berechnung des monatlichen Gehalts (geschätzt)
-  const estimatedMonthlySalary = (staff.hourlyRate * staff.hoursPerWeek * 4).toFixed(0);
+  // Wenn das Backend salary bereitstellt, verwenden wir das, ansonsten berechnen wir es aus hourlyRate und hoursPerWeek
+  const estimatedMonthlySalary = staff.salary || 
+    (staff.hourlyRate && staff.hoursPerWeek ? (staff.hourlyRate * staff.hoursPerWeek * 4.33).toFixed(0) : 0);
   
   // Avatar Initialen generieren
   const getInitials = (name) => {
@@ -86,7 +88,7 @@ const StaffCard = ({ staff, onDelete, onEdit }) => {
       }}
     >
       <CardActionArea 
-        onClick={() => navigate(`/staff/${staff.id}`)}
+        onClick={() => navigate(`/staff/${staff._id || staff.id}`)}
         sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
       >
         <CardContent sx={{ p: 0 }}>
@@ -158,31 +160,39 @@ const StaffCard = ({ staff, onDelete, onEdit }) => {
               </Typography>
               
               <Grid container spacing={1}>
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Stundenlohn:
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" fontWeight="medium">
-                    {formatCurrency(staff.hourlyRate)}
-                  </Typography>
-                </Grid>
+                {staff.hourlyRate && (
+                  <>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Stundenlohn:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" fontWeight="medium">
+                        {formatCurrency(staff.hourlyRate)}
+                      </Typography>
+                    </Grid>
+                  </>
+                )}
+                
+                {staff.hoursPerWeek && (
+                  <>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" color="text.secondary">
+                        Stunden/Woche:
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="body2" fontWeight="medium">
+                        {staff.hoursPerWeek} h
+                      </Typography>
+                    </Grid>
+                  </>
+                )}
                 
                 <Grid item xs={6}>
                   <Typography variant="body2" color="text.secondary">
-                    Stunden/Woche:
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="body2" fontWeight="medium">
-                    {staff.hoursPerWeek} h
-                  </Typography>
-                </Grid>
-                
-                <Grid item xs={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    Monatlich (ca.):
+                    {staff.salary ? 'Monatliches Gehalt:' : 'Monatlich (ca.):'}
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
@@ -223,7 +233,7 @@ const StaffCard = ({ staff, onDelete, onEdit }) => {
             color="error"
             onClick={(e) => {
               e.stopPropagation();
-              onDelete(staff.id);
+              onDelete(staff._id || staff.id);
             }}
           >
             <DeleteIcon fontSize="small" />

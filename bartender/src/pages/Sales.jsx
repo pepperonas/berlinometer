@@ -122,12 +122,19 @@ const Sales = () => {
           staffApi.getAll()
         ]);
         
-        setSales(salesData);
+        console.log('Sales data loaded:', salesData);
+        console.log('Drinks data loaded:', drinksData);
+        console.log('Staff data loaded:', staffData);
+        
+        // Sicherstellen, dass die salesData ein Array ist
+        const processedSalesData = Array.isArray(salesData) ? salesData : [];
+        
+        setSales(processedSalesData);
         setDrinks(drinksData);
         setStaff(staffData);
       } catch (err) {
         console.error('Error loading data:', err);
-        setError('Fehler beim Laden der Daten');
+        setError('Fehler beim Laden der Daten: ' + (err.message || err));
       } finally {
         setLoading(false);
       }
@@ -211,12 +218,41 @@ const Sales = () => {
     const newItems = [...selectedItems];
     
     if (field === 'drinkId') {
-      const selectedDrink = drinks.find(d => d.id === value);
+      // Prüfe ob die ID gültig ist
+      if (!value || value === '') {
+        newItems[index] = {
+          ...newItems[index],
+          drinkId: '',
+          name: '',
+          pricePerUnit: 0
+        };
+      } else {
+        // Finde das ausgewählte Getränk und aktualisiere die Werte
+        const selectedDrink = drinks.find(d => d._id === value || d.id === value);
+        
+        if (selectedDrink) {
+          // Verwende bevorzugt die MongoDB _id, wenn verfügbar
+          const drinkId = selectedDrink._id || selectedDrink.id;
+          
+          newItems[index] = {
+            ...newItems[index],
+            drinkId: drinkId,
+            name: selectedDrink.name,
+            pricePerUnit: selectedDrink.price,
+            quantity: newItems[index].quantity || 1
+          };
+          
+          console.log('Ausgewähltes Getränk:', selectedDrink.name, 'ID:', drinkId);
+        } else {
+          console.warn('Getränk nicht gefunden für ID:', value);
+        }
+      }
+    } else if (field === 'quantity' || field === 'pricePerUnit') {
+      // Stelle sicher, dass numerische Werte korrekt konvertiert werden
+      const numValue = parseFloat(value);
       newItems[index] = {
         ...newItems[index],
-        drinkId: value,
-        name: selectedDrink.name,
-        pricePerUnit: selectedDrink.price
+        [field]: isNaN(numValue) ? 0 : numValue
       };
     } else {
       newItems[index] = {
@@ -225,6 +261,7 @@ const Sales = () => {
       };
     }
     
+    console.log('Aktualisierte Verkaufspositionen:', newItems);
     setSelectedItems(newItems);
   };
   
@@ -237,7 +274,7 @@ const Sales = () => {
   
   // Verkauf speichern
   const handleSaveSale = async () => {
-    if (selectedItems.length === 0 || selectedItems.some(item => !item.drinkId)) {
+    if (selectedItems.length === 0 || selectedItems.some(item => !item.drinkId || item.drinkId === '')) {
       setError('Bitte wählen Sie mindestens ein Getränk aus');
       return;
     }
@@ -245,11 +282,19 @@ const Sales = () => {
     setLoading(true);
     
     try {
+      // Daten vorbereiten und sicherstellen, dass alle Felder korrekt formatiert sind
       const saleData = {
         ...currentSale,
-        items: selectedItems,
+        items: selectedItems.map(item => ({
+          ...item,
+          drinkId: item.drinkId,
+          quantity: parseFloat(item.quantity) || 1,
+          pricePerUnit: parseFloat(item.pricePerUnit) || 0
+        })),
         total: parseFloat(calculateTotal())
       };
+      
+      console.log('Sende Verkaufsdaten:', saleData);
       
       if (currentSale.id) {
         await salesApi.update(currentSale.id, saleData);
@@ -264,7 +309,7 @@ const Sales = () => {
       handleCloseDialog();
     } catch (err) {
       console.error('Error saving sale:', err);
-      setError('Fehler beim Speichern des Verkaufs');
+      setError('Fehler beim Speichern des Verkaufs: ' + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
     }
@@ -314,16 +359,30 @@ const Sales = () => {
     setImportLoading(true);
     
     try {
-      await salesApi.importFromPOS(importData, importFormat);
+      // Importieren mit Fehlerbehandlung
+      console.log(`Importing ${importData.length} bytes in ${importFormat} format`);
+      const importedSales = await salesApi.importFromPOS(importData, importFormat);
       
-      // Daten neu laden
+      console.log(`Import successful, ${importedSales.length} sales imported`);
+      
+      // Erfolgsmeldung anzeigen
+      let message = `${importedSales.length} Verkäufe erfolgreich importiert!`;
+      
+      // Neuladen aller Verkäufe
       const salesData = await salesApi.getAll();
+      console.log(`Reloaded ${salesData.length} sales after import`);
       setSales(salesData);
       
+      // Dialog schließen
       handleCloseImportDialog();
+      
+      // Temporary success message
+      setError(null);
+      alert(message);
     } catch (err) {
       console.error('Error importing data:', err);
-      setError('Fehler beim Importieren der Daten');
+      const errorMsg = err.response?.data?.message || err.message || 'Unbekannter Fehler';
+      setError(`Fehler beim Importieren der Daten: ${errorMsg}`);
     } finally {
       setImportLoading(false);
     }
@@ -552,7 +611,7 @@ const Sales = () => {
                   </TableRow>
                 ) : paginatedSales.length > 0 ? (
                   paginatedSales.map((sale) => (
-                    <TableRow key={sale.id} hover>
+                    <TableRow key={sale._id || sale.id} hover>
                       <TableCell>{formatDate(sale.date)}</TableCell>
                       <TableCell>
                         <Box>
@@ -581,7 +640,7 @@ const Sales = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        {staff.find(s => s.id === sale.staffId)?.name || sale.staffId}
+                        {staff.find(s => s.id === sale.staffId || s._id === sale.staffId)?.name || sale.staffId}
                       </TableCell>
                       <TableCell>{sale.notes}</TableCell>
                       <TableCell align="right">
@@ -590,7 +649,10 @@ const Sales = () => {
                             <IconButton 
                               size="small" 
                               color="primary"
-                              onClick={() => handleEditSale(sale)}
+                              onClick={() => {
+                                console.log('Editing sale:', sale);
+                                handleEditSale(sale);
+                              }}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
@@ -599,7 +661,7 @@ const Sales = () => {
                             <IconButton 
                               size="small" 
                               color="error"
-                              onClick={() => handleDeleteSale(sale.id)}
+                              onClick={() => handleDeleteSale(sale._id || sale.id)}
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
@@ -929,6 +991,15 @@ const Sales = () => {
           {currentSale?.id ? 'Verkauf bearbeiten' : 'Neuen Verkauf erfassen'}
         </DialogTitle>
         <DialogContent dividers>
+          {error && (
+            <Alert 
+              severity="error" 
+              sx={{ mb: 3 }}
+              onClose={() => setError(null)}
+            >
+              {error}
+            </Alert>
+          )}
           {currentSale && (
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
@@ -990,11 +1061,15 @@ const Sales = () => {
                             <MenuItem value="">
                               <em>Bitte wählen</em>
                             </MenuItem>
-                            {drinks.map((drink) => (
-                              <MenuItem key={drink.id} value={drink.id}>
-                                {drink.name} ({parseFloat(drink.price).toFixed(2)}€)
-                              </MenuItem>
-                            ))}
+                            {drinks.map((drink) => {
+                              // Verwende bevorzugt die MongoDB _id, wenn verfügbar
+                              const drinkId = drink._id || drink.id;
+                              return (
+                                <MenuItem key={drinkId} value={drinkId}>
+                                  {drink.name} ({parseFloat(drink.price).toFixed(2)}€)
+                                </MenuItem>
+                              );
+                            })}
                           </Select>
                         </FormControl>
                       </Grid>
@@ -1093,7 +1168,7 @@ const Sales = () => {
             onClick={handleSaveSale} 
             variant="contained" 
             color="primary"
-            disabled={loading || selectedItems.length === 0 || selectedItems.some(item => !item.drinkId)}
+            disabled={loading || selectedItems.length === 0 || selectedItems.some(item => !item.drinkId || item.drinkId === '')}
           >
             {loading ? 'Wird gespeichert...' : 'Speichern'}
           </Button>
@@ -1137,17 +1212,134 @@ const Sales = () => {
               </Box>
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                label="Daten eingeben oder einfügen"
-                value={importData}
-                onChange={(e) => setImportData(e.target.value)}
-                fullWidth
-                multiline
-                rows={6}
-                placeholder={`Fügen Sie hier Ihre ${
-                  importFormat === 'csv' ? 'CSV' : importFormat === 'json' ? 'JSON' : 'Excel'
-                } Daten ein...`}
-              />
+              <Box
+                component="div"
+                sx={{
+                  border: '2px dashed',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  p: 2,
+                  position: 'relative',
+                  minHeight: '150px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    borderColor: 'primary.main',
+                    bgcolor: 'action.hover'
+                  }
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.style.borderColor = 'primary.main';
+                  e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.04)';
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.style.borderColor = '';
+                  e.currentTarget.style.backgroundColor = '';
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.currentTarget.style.borderColor = '';
+                  e.currentTarget.style.backgroundColor = '';
+                  
+                  if (e.dataTransfer.files.length) {
+                    const file = e.dataTransfer.files[0];
+                    
+                    // Prüfen, ob es sich um CSV oder JSON handelt
+                    if (file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv')) {
+                      setImportFormat('csv');
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setImportData(ev.target.result);
+                      };
+                      reader.readAsText(file);
+                    } else if (file.type === 'application/json' || file.name.toLowerCase().endsWith('.json')) {
+                      setImportFormat('json');
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setImportData(ev.target.result);
+                      };
+                      reader.readAsText(file);
+                    } else {
+                      // Nicht unterstütztes Format
+                      setError(`Dateiformat nicht unterstützt: ${file.type || file.name.split('.').pop()}`);
+                    }
+                  } else if (e.dataTransfer.items && e.dataTransfer.items.length) {
+                    // Versuchen, Text aus der Zwischenablage zu bekommen
+                    for (const item of e.dataTransfer.items) {
+                      if (item.kind === 'string') {
+                        item.getAsString((text) => {
+                          setImportData(text);
+                        });
+                        break;
+                      }
+                    }
+                  }
+                }}
+              >
+                <input
+                  type="file"
+                  accept=".csv,.json"
+                  id="file-upload"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    if (e.target.files.length) {
+                      const file = e.target.files[0];
+                      if (file.name.toLowerCase().endsWith('.csv')) {
+                        setImportFormat('csv');
+                      } else if (file.name.toLowerCase().endsWith('.json')) {
+                        setImportFormat('json');
+                      }
+                      
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        setImportData(ev.target.result);
+                      };
+                      reader.readAsText(file);
+                    }
+                  }}
+                />
+                
+                <Box sx={{ textAlign: 'center', mb: 2 }}>
+                  <UploadIcon color="action" sx={{ fontSize: 48, mb: 1, color: 'text.secondary' }} />
+                  <Typography variant="body1" gutterBottom>
+                    Dateien hier ablegen oder
+                  </Typography>
+                  <Button 
+                    variant="outlined" 
+                    component="label" 
+                    htmlFor="file-upload"
+                    size="small"
+                  >
+                    Datei auswählen
+                  </Button>
+                  <Typography variant="caption" display="block" color="text.secondary" mt={1}>
+                    Akzeptierte Formate: CSV, JSON
+                  </Typography>
+                </Box>
+                
+                <Divider sx={{ width: '100%', my: 2 }} />
+                
+                <TextField
+                  label="Daten eingeben oder einfügen"
+                  value={importData}
+                  onChange={(e) => setImportData(e.target.value)}
+                  fullWidth
+                  multiline
+                  rows={6}
+                  placeholder={`Fügen Sie hier Ihre ${
+                    importFormat === 'csv' ? 'CSV' : importFormat === 'json' ? 'JSON' : 'Excel'
+                  } Daten ein...`}
+                  sx={{ mt: 1 }}
+                />
+              </Box>
             </Grid>
           </Grid>
         </DialogContent>
@@ -1157,7 +1349,7 @@ const Sales = () => {
             onClick={handleImportData} 
             variant="contained" 
             color="primary"
-            disabled={importLoading || !importData.trim()}
+            disabled={importLoading || !importData.trim() || (importFormat === 'excel')}
           >
             {importLoading ? 'Wird importiert...' : 'Importieren'}
           </Button>

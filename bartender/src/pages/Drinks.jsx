@@ -67,10 +67,23 @@ const Drinks = () => {
     
     try {
       const data = await drinksApi.getAll();
-      setDrinks(data);
+      console.log('Geladene Getränke:', data);
+      
+      // Stellen sicher, dass jedes Getränk ein isActive-Feld hat
+      const processedDrinks = data.map(drink => ({
+        ...drink,
+        // Setze isActive auf true, wenn es nicht explizit false ist
+        isActive: drink.isActive === false ? false : true,
+        // Stellen sicher, dass ingredients korrekt formatiert ist
+        ingredients: Array.isArray(drink.ingredients) 
+          ? drink.ingredients
+          : []
+      }));
+      
+      setDrinks(processedDrinks);
     } catch (err) {
       console.error('Error loading drinks:', err);
-      setError('Fehler beim Laden der Getränke');
+      setError(`Fehler beim Laden der Getränke: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -83,7 +96,23 @@ const Drinks = () => {
 
   // Getränk hinzufügen/bearbeiten Dialog öffnen
   const handleOpenForm = (drink = null) => {
-    setCurrentDrink(drink);
+    // Wenn ein Getränk bearbeitet wird, formatieren wir die Daten richtig
+    if (drink) {
+      // MongoDB verwendet _id statt id
+      const formattedDrink = {
+        ...drink,
+        id: drink._id || drink.id, // Unterstütze beide ID-Formate
+        // Stellen sicher, dass ingredients richtig formatiert sind
+        ingredients: Array.isArray(drink.ingredients) 
+          ? drink.ingredients.map(ing => typeof ing === 'object' ? ing.name : ing)
+          : [],
+        // Setze isActive, auch wenn das Backend es nicht verwendet
+        isActive: drink.isActive !== undefined ? drink.isActive : true
+      };
+      setCurrentDrink(formattedDrink);
+    } else {
+      setCurrentDrink(null);
+    }
     setOpenForm(true);
   };
 
@@ -97,19 +126,30 @@ const Drinks = () => {
   const handleSaveForm = async (values) => {
     setLoading(true);
     try {
+      // Die Zutaten im korrekten Format bereitstellen
+      const formattedValues = {
+        ...values,
+        ingredients: Array.isArray(values.ingredients) 
+          ? values.ingredients.map(ing => typeof ing === 'object' ? ing : { name: ing })
+          : []
+      };
+      
+      console.log('Sende folgende Daten an API:', formattedValues);
+      
       if (currentDrink) {
         // Getränk aktualisieren
-        await drinksApi.update(currentDrink.id, values);
+        const drinkId = currentDrink._id || currentDrink.id;
+        await drinksApi.update(drinkId, formattedValues);
       } else {
         // Neues Getränk erstellen
-        await drinksApi.create(values);
+        await drinksApi.create(formattedValues);
       }
       
       loadDrinks();
       handleCloseForm();
     } catch (err) {
       console.error('Error saving drink:', err);
-      setError('Fehler beim Speichern des Getränks');
+      setError(`Fehler beim Speichern des Getränks: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -117,9 +157,15 @@ const Drinks = () => {
 
   // Lösch-Dialog öffnen
   const handleDeleteConfirm = (drinkId) => {
-    const drink = drinks.find(d => d.id === drinkId);
-    setDrinkToDelete(drink);
-    setDeleteConfirm(true);
+    // MongoDB verwendet _id statt id
+    const drink = drinks.find(d => d._id === drinkId || d.id === drinkId);
+    if (drink) {
+      setDrinkToDelete(drink);
+      setDeleteConfirm(true);
+    } else {
+      console.error('Getränk nicht gefunden:', drinkId);
+      setError('Getränk nicht gefunden');
+    }
   };
 
   // Getränk löschen
@@ -128,13 +174,15 @@ const Drinks = () => {
     
     setLoading(true);
     try {
-      await drinksApi.delete(drinkToDelete.id);
+      // Verwende entweder _id oder id, je nachdem was verfügbar ist
+      const drinkId = drinkToDelete._id || drinkToDelete.id;
+      await drinksApi.delete(drinkId);
       setDeleteConfirm(false);
       setDrinkToDelete(null);
       loadDrinks();
     } catch (err) {
       console.error('Error deleting drink:', err);
-      setError('Fehler beim Löschen des Getränks');
+      setError(`Fehler beim Löschen des Getränks: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -142,8 +190,9 @@ const Drinks = () => {
 
   // Filter anwenden
   const filteredDrinks = drinks.filter(drink => {
-    // Aktiv-Filter
-    if (filters.onlyActive && !drink.isActive) {
+    // Aktiv-Filter - Da das isActive Feld nicht im Backend-Schema existiert,
+    // behandeln wir alle Getränke als aktiv, wenn nicht explizit auf false gesetzt
+    if (filters.onlyActive && drink.isActive === false) {
       return false;
     }
     
@@ -153,7 +202,7 @@ const Drinks = () => {
     }
     
     // Auf Lager-Filter
-    if (filters.onlyInStock && drink.stock <= 0) {
+    if (filters.onlyInStock && (!drink.stock || drink.stock <= 0)) {
       return false;
     }
     
@@ -163,22 +212,33 @@ const Drinks = () => {
     }
     
     // Preis-Filter
-    if (filters.minPrice && drink.price < parseFloat(filters.minPrice)) {
+    if (filters.minPrice && (!drink.price || drink.price < parseFloat(filters.minPrice))) {
       return false;
     }
     
-    if (filters.maxPrice && drink.price > parseFloat(filters.maxPrice)) {
+    if (filters.maxPrice && (!drink.price || drink.price > parseFloat(filters.maxPrice))) {
       return false;
     }
     
     // Suchfilter
     if (filters.search) {
-      return (
-        drink.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        drink.ingredients.some(ingredient => 
-          ingredient.toLowerCase().includes(filters.search.toLowerCase())
-        )
-      );
+      // Getränkename suchen
+      const nameMatch = drink.name.toLowerCase().includes(filters.search.toLowerCase());
+      
+      // Suche in Zutaten, berücksichtige beide Formate (Array von Objekten oder Strings)
+      let ingredientsMatch = false;
+      if (Array.isArray(drink.ingredients)) {
+        ingredientsMatch = drink.ingredients.some(ingredient => {
+          if (typeof ingredient === 'string') {
+            return ingredient.toLowerCase().includes(filters.search.toLowerCase());
+          } else if (typeof ingredient === 'object' && ingredient.name) {
+            return ingredient.name.toLowerCase().includes(filters.search.toLowerCase());
+          }
+          return false;
+        });
+      }
+      
+      return nameMatch || ingredientsMatch;
     }
     
     return true;

@@ -34,8 +34,9 @@ const DrinkCard = ({ drink, onDelete, onEdit }) => {
     }
   };
   
-  // Gewinnmarge berechnen
-  const marginPercent = ((drink.price - drink.cost) / drink.price * 100).toFixed(0);
+  // Gewinnmarge berechnen (wir haben kein cost-Feld mehr, zeigen daher einen Standardwert)
+  const cost = drink.cost || 0; // Fallback für den Fall, dass kein cost-Feld vorhanden ist
+  const marginPercent = ((drink.price - cost) / drink.price * 100).toFixed(0);
   
   // Kategorie-Farbe
   const getCategoryColor = (category) => {
@@ -64,7 +65,7 @@ const DrinkCard = ({ drink, onDelete, onEdit }) => {
       }}
     >
       <CardActionArea 
-        onClick={() => navigate(`/drinks/${drink.id}`)}
+        onClick={() => navigate(`/drinks/${drink._id || drink.id}`)}
         sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
       >
         <CardContent sx={{ flexGrow: 1, pb: 1 }}>
@@ -92,7 +93,11 @@ const DrinkCard = ({ drink, onDelete, onEdit }) => {
           <Box display="flex" alignItems="center" mt={2}>
             <DrinkIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
             <Typography variant="body2" color="text.secondary">
-              {drink.ingredients?.join(', ')}
+              {Array.isArray(drink.ingredients) 
+                ? drink.ingredients.map(ing => 
+                    typeof ing === 'object' && ing.name ? ing.name : ing
+                  ).join(', ')
+                : ''}
             </Typography>
           </Box>
 
@@ -145,7 +150,8 @@ const DrinkCard = ({ drink, onDelete, onEdit }) => {
               color="error"
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(drink.id);
+                // Verwende _id (MongoDB) oder id (Frontend), je nachdem was verfügbar ist
+                onDelete(drink._id || drink.id);
               }}
             >
               <DeleteIcon fontSize="small" />

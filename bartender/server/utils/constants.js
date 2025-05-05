@@ -13,10 +13,24 @@ const DRINK_CATEGORIES = [
 
 // Inventarkategorien
 const INVENTORY_CATEGORIES = [
-  { id: 'beer', name: 'Bier' },
-  { id: 'wine', name: 'Wein' },
   { id: 'spirits', name: 'Spirituosen' },
+  { id: 'wine', name: 'Wein' },
+  { id: 'beer', name: 'Bier' },
   { id: 'softDrinks', name: 'Alkoholfrei' },
+  { id: 'mixer', name: 'Mixer' },
+  { id: 'fruit', name: 'Früchte' },
+  { id: 'other', name: 'Sonstiges' },
+];
+
+// Inventareinheiten
+const INVENTORY_UNITS = [
+  { id: 'Flaschen', name: 'Flaschen' },
+  { id: 'Kisten', name: 'Kisten' },
+  { id: 'Kästen', name: 'Kästen' },
+  { id: 'kg', name: 'Kilogramm' },
+  { id: 'liter', name: 'Liter' },
+  { id: 'Stück', name: 'Stück' },
+  { id: 'other', name: 'Sonstiges' },
 ];
 
 // Personalrollen
@@ -68,6 +82,7 @@ const PAYMENT_METHODS = [
 module.exports = {
   DRINK_CATEGORIES,
   INVENTORY_CATEGORIES,
+  INVENTORY_UNITS,
   STAFF_ROLES,
   EXPENSE_CATEGORIES,
   MONTHS,

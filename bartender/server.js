@@ -34,6 +34,9 @@ app.use('/api/staff', require('./server/routes/staff'));
 app.use('/api/sales', require('./server/routes/sales'));
 app.use('/api/auth', require('./server/routes/auth'));
 app.use('/api/users', require('./server/routes/users'));
+app.use('/api/inventory', require('./server/routes/inventory'));
+app.use('/api/suppliers', require('./server/routes/suppliers'));
+app.use('/api/dashboard', require('./server/routes/dashboard'));
 
 // In Production brauchen wir auch Routen ohne /api-Präfix für Proxy-Weiterleitungen
 if (process.env.NODE_ENV === 'production') {
@@ -43,6 +46,9 @@ if (process.env.NODE_ENV === 'production') {
   app.use('/sales', require('./server/routes/sales'));
   app.use('/auth', require('./server/routes/auth'));
   app.use('/users', require('./server/routes/users'));
+  app.use('/inventory', require('./server/routes/inventory'));
+  app.use('/suppliers', require('./server/routes/suppliers'));
+  app.use('/dashboard', require('./server/routes/dashboard'));
 }
 
 // Basis API-Endpunkte - mit und ohne /api prefix, um flexibel zu sein

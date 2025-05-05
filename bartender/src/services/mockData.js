@@ -518,19 +518,19 @@ export const posFormats = [
   {
     id: 'csv',
     name: 'CSV-Format',
-    description: 'Standardformat mit Komma-getrennten Werten',
-    example: 'datum,produkt,menge,preis\n2023-05-01,Mojito,3,8.50\n2023-05-01,Gin Tonic,2,7.50'
+    description: 'Standardformat mit Komma-getrennten Werten. Benötigt mindestens die Spalten: Datum, Getränk/Produkt, Menge, Preis.',
+    example: 'Datum,Getränk,Menge,Preis,Zahlungsart,Mitarbeiter,Notizen\n01.05.2023,Mojito,3,8.50,Bar,Max,Stammkunde\n01.05.2023,Gin Tonic,2,7.50,Karte,Lisa,'
   },
   {
     id: 'json',
     name: 'JSON-Format',
-    description: 'Strukturiertes Datenformat',
-    example: '{"date":"2023-05-01","items":[{"name":"Mojito","quantity":3,"price":8.50},{"name":"Gin Tonic","quantity":2,"price":7.50}]}'
+    description: 'Strukturiertes Datenformat. Akzeptiert sowohl ein einzelnes Verkaufsobjekt als auch ein Array von Verkäufen.',
+    example: '[\n  {\n    "date": "2023-05-01T19:30:00",\n    "items": [\n      {"name": "Mojito", "quantity": 3, "pricePerUnit": 8.50},\n      {"name": "Gin Tonic", "quantity": 2, "pricePerUnit": 7.50}\n    ],\n    "paymentMethod": "cash",\n    "notes": "Stammkunde"\n  }\n]'
   },
   {
     id: 'excel',
-    name: 'Excel-Format',
-    description: 'Microsoft Excel Dateien (.xlsx)',
-    example: 'Tabelle mit Spalten für Datum, Produkt, Menge, Preis'
+    name: 'Excel-Format (noch nicht unterstützt)',
+    description: 'Microsoft Excel Dateien (.xlsx) - bitte exportieren Sie zunächst nach CSV.',
+    example: 'Dieses Format wird noch nicht unterstützt. Bitte exportieren Sie Ihre Daten als CSV.'
   }
 ];

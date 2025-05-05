@@ -1,3 +1,13 @@
+/**
+ * Verbesserter Code für server/routes/drinks.js
+ * 
+ * Diese verbesserte Version enthält Middleware-Funktionen zur Validierung und 
+ * Formatierung der Drink-Daten, um häufige Fehler zu vermeiden.
+ * 
+ * Kopiere diesen Code in die Datei server/routes/drinks.js oder 
+ * passe die bestehende Datei entsprechend an.
+ */
+
 const express = require('express');
 const router = express.Router();
 const Drink = require('../models/Drink');
@@ -25,7 +35,6 @@ const prepareDrinkData = (req, res, next) => {
     
     // Numerische Werte konvertieren
     if (req.body.price !== undefined) req.body.price = Number(req.body.price);
-    if (req.body.cost !== undefined) req.body.cost = Number(req.body.cost);
     if (req.body.alcohol !== undefined) req.body.alcohol = Number(req.body.alcohol);
     if (req.body.stock !== undefined) req.body.stock = Number(req.body.stock);
     
@@ -47,12 +56,9 @@ const prepareDrinkData = (req, res, next) => {
       }
     }
     
-    // Boolean-Werte verarbeiten
-    if (req.body.isActive !== undefined) {
-      if (typeof req.body.isActive === 'string') {
-        // Konvertiere String zu Boolean
-        req.body.isActive = req.body.isActive.toLowerCase() === 'true';
-      }
+    // Entferne Felder, die nicht im Schema definiert sind
+    if (req.body.cost !== undefined) {
+      delete req.body.cost; // "cost"-Feld wird im Schema nicht verwendet
     }
     
     // Zeitstempel für Aktualisierungen
@@ -60,7 +66,6 @@ const prepareDrinkData = (req, res, next) => {
       req.body.updatedAt = new Date();
     }
     
-    console.log('Aufbereitete Getränkedaten:', JSON.stringify(req.body, null, 2));
     next();
   } catch (error) {
     console.error('Fehler bei der Getränkedatenverarbeitung:', error);

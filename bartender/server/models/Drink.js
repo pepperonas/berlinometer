@@ -17,6 +17,11 @@ const DrinkSchema = new mongoose.Schema({
     required: [true, 'Bitte geben Sie einen Preis an'],
     min: [0, 'Preis muss größer oder gleich 0 sein']
   },
+  cost: {
+    type: Number,
+    min: [0, 'Einkaufspreis muss größer oder gleich 0 sein'],
+    default: 0
+  },
   category: {
     type: String,
     enum: ['beer', 'wine', 'cocktails', 'spirits', 'softDrinks', 'other'],
@@ -44,6 +49,10 @@ const DrinkSchema = new mongoose.Schema({
   popular: {
     type: Boolean,
     default: false
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   },
   image: {
     type: String

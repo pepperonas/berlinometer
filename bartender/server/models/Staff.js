@@ -31,19 +31,46 @@ const StaffSchema = new mongoose.Schema({
     type: Number,
     min: [0, 'Gehalt muss größer oder gleich 0 sein']
   },
+  // Hilfswerte für das Frontend
+  hourlyRate: {
+    type: Number,
+    min: [0, 'Stundenlohn muss größer oder gleich 0 sein']
+  },
+  hoursPerWeek: {
+    type: Number,
+    min: [0, 'Wochenstunden müssen größer oder gleich 0 sein']
+  },
   role: {
     type: String,
     enum: ['admin', 'manager', 'bartender', 'waiter', 'trainee', 'chef', 'cleaner'],
     default: 'bartender'
   },
-  schedule: [{
-    day: {
-      type: String,
-      enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    },
-    startTime: String,
-    endTime: String
-  }],
+  schedule: {
+    type: [{
+      day: {
+        type: String,
+        enum: ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag', 
+               'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+      },
+      startTime: String,
+      endTime: String
+    }],
+    default: [],
+    validate: {
+      validator: function(schedules) {
+        // Allow empty schedules
+        if (!schedules || schedules.length === 0) return true;
+        
+        // Check each schedule item
+        for (const schedule of schedules) {
+          if (!schedule.day) return false;
+          // Other validations can be added here
+        }
+        return true;
+      },
+      message: 'Ungültiger Zeitplan. Bitte überprüfen Sie das Format.'
+    }
+  },
   notes: {
     type: String,
     maxlength: [500, 'Notizen dürfen nicht länger als 500 Zeichen sein']
@@ -52,6 +79,10 @@ const StaffSchema = new mongoose.Schema({
     type: String
   },
   active: {
+    type: Boolean,
+    default: true
+  },
+  isActive: {
     type: Boolean,
     default: true
   },
