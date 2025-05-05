@@ -62,9 +62,32 @@ import {
 import { PAYMENT_METHODS, INVENTORY_CATEGORIES, INVENTORY_UNITS, DRINK_CATEGORIES } from '../utils/constants';
 import { salesApi, drinksApi, staffApi, inventoryApi, suppliersApi } from '../services/api';
 import { posFormats } from '../services/mockData';
+// Use window.jspdf approach to fix autoTable integration
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+
+// Helper function to create properly configured jsPDF instances
+function createPdfDocument() {
+  // Create a new document with explicit parameters
+  const doc = new jsPDF('p', 'mm', 'a4');
+  
+  // Polyfill fix: ensure autoTable is available on this instance
+  if (!doc.autoTable) {
+    doc.autoTable = function() {
+      if (window.jspdf && window.jspdf.jsPDF) {
+        // Use the global version as fallback if needed
+        const tempDoc = new window.jspdf.jsPDF();
+        return tempDoc.autoTable.apply(this, arguments);
+      } else {
+        console.error("Cannot find autoTable function on jsPDF instance");
+        throw new Error("autoTable function not available");
+      }
+    };
+  }
+  
+  return doc;
+}
 
 // Tab-Panel für die verschiedenen Ansichten
 function TabPanel(props) {
@@ -523,7 +546,7 @@ const Sales = () => {
     
     try {
       // PDF erstellen mit jsPDF
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(18);
@@ -594,7 +617,14 @@ const Sales = () => {
       const totalSales = filteredSales.reduce((sum, sale) => sum + parseFloat(sale.total || 0), 0);
       
       // Gesamtsumme und Erstellungsdatum unten hinzufügen
-      const finalY = doc.autoTable.previous.finalY || 30;
+      // Sicherer Zugriff auf finalY mit Fallback
+      let finalY = 30; // Default fallback position
+      try {
+        // Versuche den Wert zu erhalten, falls er existiert
+        finalY = doc.autoTable.previous?.finalY || 30;
+      } catch (e) {
+        console.warn("Konnte finalY nicht abrufen, verwende Standardposition", e);
+      }
       doc.setFont('helvetica', 'bold');
       doc.text(`Gesamtumsatz: ${totalSales.toFixed(2)} €`, 14, finalY + 10);
       doc.setFont('helvetica', 'normal');
@@ -722,7 +752,7 @@ const Sales = () => {
       }
       
       // PDF erstellen
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(20);
@@ -942,7 +972,7 @@ const Sales = () => {
       });
       
       // PDF erstellen
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(20);
@@ -1447,7 +1477,7 @@ const Sales = () => {
         .sort((a, b) => b.revenue - a.revenue);
       
       // PDF erstellen
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(20);
@@ -1769,7 +1799,7 @@ const Sales = () => {
       });
       
       // PDF erstellen
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(20);
@@ -2082,7 +2112,7 @@ const Sales = () => {
       const activeStaff = staffData.filter(staff => staff.active || staff.isActive);
       
       // PDF erstellen
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(20);
@@ -2609,7 +2639,7 @@ const Sales = () => {
       });
       
       // PDF erstellen
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(20);
@@ -2984,7 +3014,7 @@ const Sales = () => {
       }
       
       // PDF erstellen
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(20);
@@ -3223,7 +3253,7 @@ const Sales = () => {
       }
       
       // PDF erstellen
-      const doc = new jsPDF();
+      const doc = createPdfDocument();
       
       // Titel
       doc.setFontSize(20);
@@ -3612,15 +3642,7 @@ const Sales = () => {
           >
             {exportLoading ? 'Exportiere...' : 'Exportieren'}
           </Button>
-          <Button 
-            variant="outlined" 
-            startIcon={<ReportIcon />}
-            onClick={handleOpenReportDialog}
-            sx={{ mr: 1 }}
-            color="secondary"
-          >
-            Berichte
-          </Button>
+          {/* Berichte-Button entfernt */}
           <Button 
             variant="outlined" 
             startIcon={<UploadIcon />}
