@@ -111,7 +111,8 @@ async function handleCSVImport(csvData) {
       if (staffName) {
         const staff = staffMembers.find(s => s.name.toLowerCase().includes(staffName.toLowerCase()));
         if (staff) {
-          staffId = staff._id;
+          // Wichtig: _id als String speichern, nicht als ObjectId
+          staffId = staff._id.toString();
           console.log(`Found staff "${staffName}" with ID ${staffId}`);
         } else {
           console.warn(`Warning: Staff "${staffName}" not found in database`);

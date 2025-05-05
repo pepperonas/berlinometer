@@ -2,6 +2,7 @@
  * API-Service für Bartender App mit echter MongoDB-Anbindung
  */
 import axios from 'axios';
+import { format } from 'date-fns';
 import { finances } from './mockData';
 
 // Basis URL für API-Anfragen
@@ -246,6 +247,51 @@ export const salesApi = {
         console.error('Response status:', error.response.status);
         console.error('Response data:', error.response.data);
       }
+      throw error;
+    }
+  },
+  
+  // Daten als PDF exportieren (clientseitig)
+  exportToPDF: (salesData, dateRange) => {
+    try {
+      console.log(`Exporting ${salesData.length} sales to PDF`);
+      const formattedStartDate = format(dateRange.startDate, 'dd.MM.yyyy');
+      const formattedEndDate = format(dateRange.endDate, 'dd.MM.yyyy');
+      
+      // Diese Funktion sollte von der Komponente aufgerufen werden, die jsPDF implementiert
+      // Hier wird nur die Logik bereitgestellt, aber die tatsächliche PDF-Erstellung 
+      // erfolgt in der Komponente
+      return {
+        salesData,
+        dateRange: {
+          startDate: formattedStartDate,
+          endDate: formattedEndDate
+        }
+      };
+    } catch (error) {
+      console.error('Fehler beim Exportieren als PDF:', error);
+      throw error;
+    }
+  },
+  
+  // Daten als Excel exportieren (clientseitig)
+  exportToExcel: (salesData, dateRange) => {
+    try {
+      console.log(`Exporting ${salesData.length} sales to Excel`);
+      const formattedStartDate = format(dateRange.startDate, 'dd.MM.yyyy');
+      const formattedEndDate = format(dateRange.endDate, 'dd.MM.yyyy');
+      
+      // Ähnlich wie beim PDF-Export wird hier nur die Logik bereitgestellt
+      // Die tatsächliche Excel-Erstellung erfolgt in der Komponente
+      return {
+        salesData,
+        dateRange: {
+          startDate: formattedStartDate,
+          endDate: formattedEndDate
+        }
+      };
+    } catch (error) {
+      console.error('Fehler beim Exportieren als Excel:', error);
       throw error;
     }
   }

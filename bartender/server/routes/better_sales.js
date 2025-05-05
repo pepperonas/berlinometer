@@ -22,8 +22,33 @@ router.get('/', async (req, res) => {
     // Transformiere die MongoDB-Dokumente in JSON-Format mit korrekt formatierten IDs
     const formattedSales = sales.map(sale => {
       const saleObj = sale.toObject();
+      
       // Stelle sicher, dass _id als string vorhanden ist und füge eine id-Eigenschaft hinzu
       saleObj.id = saleObj._id.toString();
+      
+      // Wenn staffId populated wurde und ein Objekt ist, konvertiere es in einen String
+      if (saleObj.staffId && typeof saleObj.staffId === 'object' && saleObj.staffId._id) {
+        // Wir behalten den Namen, aber speichern die ID als String
+        const staffName = saleObj.staffId.name;
+        saleObj.staffId = saleObj.staffId._id.toString();
+        saleObj.staffName = staffName; // Optional: Mitarbeiternamen als separate Eigenschaft
+      }
+      
+      // Auch für die Artikel (items) sicherstellen, dass drinkId ein String ist
+      if (Array.isArray(saleObj.items)) {
+        saleObj.items = saleObj.items.map(item => {
+          if (item.drinkId && typeof item.drinkId === 'object' && item.drinkId._id) {
+            const drinkName = item.drinkId.name;
+            item.drinkId = item.drinkId._id.toString();
+            // Falls der Name nicht im Item gespeichert ist, aber in der drinkId
+            if (!item.name && drinkName) {
+              item.name = drinkName;
+            }
+          }
+          return item;
+        });
+      }
+      
       return saleObj;
     });
     
@@ -125,7 +150,38 @@ router.get('/date/:start/:end', async (req, res) => {
       .populate('staffId', 'name')
       .populate('items.drinkId', 'name');
     
-    res.json(sales);
+    // Format the results just like in the main GET route
+    const formattedSales = sales.map(sale => {
+      const saleObj = sale.toObject();
+      
+      // Add string ID 
+      saleObj.id = saleObj._id.toString();
+      
+      // Fix staffId if it's an object
+      if (saleObj.staffId && typeof saleObj.staffId === 'object' && saleObj.staffId._id) {
+        const staffName = saleObj.staffId.name;
+        saleObj.staffId = saleObj.staffId._id.toString();
+        saleObj.staffName = staffName;
+      }
+      
+      // Fix item drinkIds
+      if (Array.isArray(saleObj.items)) {
+        saleObj.items = saleObj.items.map(item => {
+          if (item.drinkId && typeof item.drinkId === 'object' && item.drinkId._id) {
+            const drinkName = item.drinkId.name;
+            item.drinkId = item.drinkId._id.toString();
+            if (!item.name && drinkName) {
+              item.name = drinkName;
+            }
+          }
+          return item;
+        });
+      }
+      
+      return saleObj;
+    });
+    
+    res.json(formattedSales);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -145,7 +201,34 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ message: 'Verkauf nicht gefunden' });
     }
     
-    res.json(sale);
+    // Format the sale like we do in other routes
+    const saleObj = sale.toObject();
+    
+    // Format IDs as strings
+    saleObj.id = saleObj._id.toString();
+    
+    // Fix staffId if it's an object
+    if (saleObj.staffId && typeof saleObj.staffId === 'object' && saleObj.staffId._id) {
+      const staffName = saleObj.staffId.name;
+      saleObj.staffId = saleObj.staffId._id.toString();
+      saleObj.staffName = staffName;
+    }
+    
+    // Fix item drinkIds
+    if (Array.isArray(saleObj.items)) {
+      saleObj.items = saleObj.items.map(item => {
+        if (item.drinkId && typeof item.drinkId === 'object' && item.drinkId._id) {
+          const drinkName = item.drinkId.name;
+          item.drinkId = item.drinkId._id.toString();
+          if (!item.name && drinkName) {
+            item.name = drinkName;
+          }
+        }
+        return item;
+      });
+    }
+    
+    res.json(saleObj);
   } catch (err) {
     console.error(err.message);
     
