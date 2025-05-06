@@ -476,4 +476,157 @@ router.put('/bar', protect, async (req, res) => {
   }
 });
 
+// @route   POST /api/auth/profile
+// @desc    Benutzerprofil aktualisieren (alternative Methode)
+// @access  Private
+router.post('/profile', protect, async (req, res) => {
+  try {
+    console.log('POST Profile update endpoint reached');
+    console.log('User in request:', req.user ? req.user._id : 'No user in request');
+    console.log('Request body:', req.body);
+    
+    const { name, businessName, address, phone, website, taxId, currentPassword, newPassword } = req.body;
+    
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized - user not authenticated properly'
+      });
+    }
+    
+    // User-Daten aktualisieren
+    const updateData = {};
+    if (name) updateData.name = name;
+    
+    // Wenn ein neues Passwort gesetzt werden soll, prüfe das aktuelle
+    if (newPassword && currentPassword) {
+      // Hole den Benutzer mit Passwort für den Vergleich
+      const userWithPassword = await User.findById(req.user._id).select('+password');
+      
+      if (!userWithPassword) {
+        return res.status(404).json({
+          success: false,
+          error: 'Benutzer nicht gefunden'
+        });
+      }
+      
+      // Prüfe, ob das aktuelle Passwort korrekt ist
+      const isMatch = await userWithPassword.matchPassword(currentPassword);
+      
+      if (!isMatch) {
+        return res.status(401).json({
+          success: false,
+          error: 'Aktuelles Passwort ist falsch'
+        });
+      }
+      
+      const salt = await require('bcryptjs').genSalt(10);
+      updateData.password = await require('bcryptjs').hash(newPassword, salt);
+    }
+    
+    // Bar-Daten aktualisieren, wenn vorhanden
+    let updatedBar = null;
+    if (req.user.bar && (businessName || address || phone || website || taxId)) {
+      const bar = await Bar.findById(req.user.bar);
+      
+      if (bar) {
+        const barUpdateData = {};
+        
+        if (businessName) {
+          console.log('Updating bar name to:', businessName);
+          barUpdateData.name = businessName;
+        }
+        
+        // Adresse aktualisieren
+        if (address) {
+          const addressParts = address.split(',');
+          barUpdateData.address = {
+            street: addressParts[0]?.trim() || '',
+            city: addressParts[1]?.trim() || '',
+            zipCode: '',
+            country: 'Deutschland'
+          };
+          
+          // Try to extract zip code from city
+          const zipMatch = barUpdateData.address.city.match(/(\d{5})\s*(.*)/);
+          if (zipMatch) {
+            barUpdateData.address.zipCode = zipMatch[1];
+            barUpdateData.address.city = zipMatch[2];
+          }
+        }
+        
+        // Kontaktinformationen
+        if (phone || website) {
+          barUpdateData.contact = bar.contact || {};
+          if (phone) barUpdateData.contact.phone = phone;
+          if (website) barUpdateData.contact.website = website;
+        }
+        
+        // Tax ID
+        if (taxId) {
+          console.log('Updating tax ID to:', taxId);
+          barUpdateData.taxId = taxId;
+        }
+        
+        console.log('Updating bar with data:', JSON.stringify(barUpdateData));
+        console.log('Bar ID:', bar._id);
+        
+        try {
+          updatedBar = await Bar.findByIdAndUpdate(
+            bar._id,
+            { $set: barUpdateData },
+            { new: true, runValidators: true }
+          );
+          
+          console.log('Bar updated:', updatedBar ? 'success' : 'failed');
+          if (updatedBar) {
+            console.log('Updated bar data:', JSON.stringify(updatedBar).substring(0, 200) + '...');
+          }
+        } catch (barUpdateErr) {
+          console.error('Error updating bar:', barUpdateErr);
+        }
+      }
+    }
+    
+    // Benutzer aktualisieren
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password').populate('bar');
+    
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'Benutzer nicht gefunden'
+      });
+    }
+    
+    // Response mit aktualisierten Daten
+    const responseData = {
+      success: true,
+      data: updatedUser
+    };
+    
+    if (updatedBar) {
+      responseData.bar = updatedBar;
+      if (!updatedUser.bar || typeof updatedUser.bar === 'string') {
+        responseData.data = {
+          ...updatedUser.toObject(),
+          bar: updatedBar
+        };
+      }
+    }
+    
+    console.log('Sending profile update response');
+    res.status(200).json(responseData);
+  } catch (err) {
+    console.error('Error updating profile:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Serverfehler beim Aktualisieren des Profils'
+    });
+  }
+});
+
 module.exports = router;

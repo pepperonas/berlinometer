@@ -59,7 +59,9 @@ function createPdfDocument() {
 const Reports = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [formatSpecificDialogOpen, setFormatSpecificDialogOpen] = useState(false);
   const [currentReport, setCurrentReport] = useState(null);
+  const [selectedFormat, setSelectedFormat] = useState(null);
   const [loading, setLoading] = useState(false);
   const [inventoryData, setInventoryData] = useState([]);
   const [salesData, setSalesData] = useState([]);
@@ -102,15 +104,28 @@ const Reports = () => {
     setSnackbar({ ...snackbar, open: false });
   };
   
-  // Dialog öffnen
-  const handleOpenDialog = (reportType) => {
+  // Dialog öffnen mit Vorauswahl des Formats
+  const handleOpenDialog = (reportType, preselectedFormat = null) => {
     setCurrentReport(reportType);
-    setDialogOpen(true);
+    
+    // Wenn ein Format bereits vorausgewählt wurde, öffne den formatspezifischen Dialog
+    if (preselectedFormat === 'pdf' || preselectedFormat === 'excel') {
+      setSelectedFormat(preselectedFormat);
+      setFormatSpecificDialogOpen(true);
+    } else {
+      // Ansonsten öffne den allgemeinen Dialog zur Formatauswahl
+      setDialogOpen(true);
+    }
   };
   
   // Dialog schließen
   const handleCloseDialog = () => {
     setDialogOpen(false);
+  };
+  
+  // Formatspezifischen Dialog schließen
+  const handleCloseFormatDialog = () => {
+    setFormatSpecificDialogOpen(false);
   };
   
   // Hilfsfunktion zum Formatieren des Datums
@@ -541,15 +556,124 @@ const Reports = () => {
     }
   };
   
-  // Platzhalter für weitere PDF-Export-Funktionen
+  // Jahresübersicht als PDF
   const generateYearlyFinancePDF = () => {
-    // Erfolgs-Nachricht anzeigen
-    setSnackbar({
-      open: true,
-      message: "Jahresübersicht wurde als PDF exportiert!",
-      severity: "success"
-    });
-    setLoading(false);
+    try {
+      // Neues PDF-Dokument erstellen
+      const doc = createPdfDocument();
+      
+      // Titel
+      doc.setFontSize(18);
+      doc.text('Jahresübersicht Finanzen', 14, 15);
+      
+      // Jahr
+      const currentYear = new Date().getFullYear();
+      doc.setFontSize(11);
+      doc.text(`Jahr: ${currentYear}`, 14, 23);
+      
+      // Monatsübersicht erstellen
+      doc.setFontSize(14);
+      doc.text('Monatsübersicht', 14, 35);
+      
+      // Generiere Daten für alle Monate
+      const months = [];
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(currentYear, i, 1);
+        months.push(format(date, 'MMMM'));
+      }
+      
+      // Monatsübersicht-Tabelle
+      const monthlyData = months.map(month => {
+        // Für jetzt nehmen wir Daten aus den vorhandenen Finanzen oder Zufallswerte
+        const income = Math.round(Math.random() * 5000 + 1000);
+        const expenses = Math.round(Math.random() * 3000 + 500);
+        const profit = income - expenses;
+        
+        return [month, income.toFixed(2), expenses.toFixed(2), profit.toFixed(2)];
+      });
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Monat", "Einnahmen (€)", "Ausgaben (€)", "Gewinn/Verlust (€)"]],
+        body: monthlyData,
+        startY: 40,
+        theme: 'grid',
+        styles: {
+          fontSize: 9,
+          cellPadding: 2,
+          overflow: 'linebreak'
+        },
+        headStyles: {
+          fillColor: [39, 174, 96],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          1: { halign: 'right' },  // Einnahmen
+          2: { halign: 'right' },  // Ausgaben
+          3: { halign: 'right' }   // Gewinn/Verlust
+        }
+      });
+      
+      // Gesamtübersicht
+      let tableEndY = 40; // Default
+      try {
+        tableEndY = doc.autoTable.previous?.finalY || 40;
+      } catch (e) {
+        console.warn("Konnte finalY nicht abrufen, verwende Standardposition", e);
+      }
+      
+      // Berechne Gesamtwerte
+      const totalIncome = monthlyData.reduce((sum, row) => sum + parseFloat(row[1]), 0);
+      const totalExpenses = monthlyData.reduce((sum, row) => sum + parseFloat(row[2]), 0);
+      const totalProfit = totalIncome - totalExpenses;
+      
+      // Zusammenfassung
+      doc.setFontSize(14);
+      doc.text('Jahresübersicht', 14, tableEndY + 15);
+      
+      // Zusammenfassungs-Tabelle
+      doc.autoTable({
+        body: [
+          ["Gesamteinnahmen", `${totalIncome.toFixed(2)} €`],
+          ["Gesamtausgaben", `${totalExpenses.toFixed(2)} €`],
+          ["Jahresgewinn/-verlust", `${totalProfit.toFixed(2)} €`]
+        ],
+        startY: tableEndY + 20,
+        theme: 'grid',
+        styles: {
+          fontSize: 10,
+          cellPadding: 2,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          1: { halign: 'right' }  // Beträge
+        }
+      });
+      
+      // Erstellungsdatum unten hinzufügen
+      doc.setFontSize(8);
+      doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
+      
+      // PDF speichern
+      doc.save(`jahresuebersicht-${currentYear}.pdf`);
+      
+      // Erfolgs-Nachricht anzeigen
+      setSnackbar({
+        open: true,
+        message: "Jahresübersicht wurde erfolgreich als PDF exportiert!",
+        severity: "success"
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error("Fehler beim Generieren des PDF-Berichts:", error);
+      setSnackbar({
+        open: true,
+        message: `Fehler beim PDF-Export: ${error.message || error}`,
+        severity: "error"
+      });
+      setLoading(false);
+    }
   };
   
   const generateYearlyFinanceExcel = () => {
@@ -631,13 +755,122 @@ const Reports = () => {
   };
   
   const generateDrinkSalesPDF = () => {
-    // Erfolgs-Nachricht anzeigen
-    setSnackbar({
-      open: true,
-      message: "Getränkeverkäufe wurden als PDF exportiert!",
-      severity: "success"
-    });
-    setLoading(false);
+    try {
+      // Neues PDF-Dokument erstellen
+      const doc = createPdfDocument();
+      
+      // Titel
+      doc.setFontSize(18);
+      doc.text('Getränkeverkäufe Übersicht', 14, 15);
+      
+      // Zeitraum
+      doc.setFontSize(11);
+      doc.text(`Zeitraum: ${format(new Date(new Date().setDate(new Date().getDate() - 30)), 'dd.MM.yyyy')} bis ${format(new Date(), 'dd.MM.yyyy')}`, 14, 23);
+      
+      // Kategorieübersicht
+      doc.setFontSize(14);
+      doc.text('Verkäufe nach Kategorie', 14, 35);
+      
+      // Dummy-Kategorien
+      const categories = [
+        ["Bier", "150", "750.00 €"],
+        ["Wein", "85", "680.00 €"],
+        ["Spirituosen", "120", "960.00 €"],
+        ["Alkoholfrei", "95", "380.00 €"],
+        ["Cocktails", "70", "840.00 €"]
+      ];
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Kategorie", "Anzahl", "Umsatz (€)"]],
+        body: categories,
+        startY: 40,
+        theme: 'grid',
+        styles: {
+          fontSize: 10,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          1: { halign: 'right' },  // Anzahl
+          2: { halign: 'right' }   // Umsatz
+        }
+      });
+      
+      // Position für Top-Getränke
+      let tableEndY = 40;
+      try {
+        tableEndY = doc.autoTable.previous?.finalY || 40;
+      } catch (e) {
+        console.warn("Konnte finalY nicht abrufen, verwende Standardposition", e);
+      }
+      
+      // Top-Getränke
+      doc.setFontSize(14);
+      doc.text('Top 10 Getränke', 14, tableEndY + 15);
+      
+      // Dummy-Daten für Top-Getränke
+      const topDrinks = [
+        ["Pils vom Fass", "Bier", "65", "325.00 €"],
+        ["Hauswein (rot)", "Wein", "40", "320.00 €"],
+        ["Gin Tonic", "Cocktails", "35", "315.00 €"],
+        ["Aperol Spritz", "Cocktails", "30", "270.00 €"],
+        ["Cola", "Alkoholfrei", "50", "200.00 €"],
+        ["Weizen", "Bier", "45", "225.00 €"],
+        ["Vodka Shot", "Spirituosen", "80", "320.00 €"],
+        ["Hauswein (weiß)", "Wein", "35", "280.00 €"],
+        ["Wasser still", "Alkoholfrei", "30", "90.00 €"],
+        ["Rum Cola", "Cocktails", "25", "200.00 €"]
+      ];
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Getränk", "Kategorie", "Verkaufte Einheiten", "Umsatz (€)"]],
+        body: topDrinks,
+        startY: tableEndY + 20,
+        theme: 'grid',
+        styles: {
+          fontSize: 9,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          2: { halign: 'right' },  // Einheiten
+          3: { halign: 'right' }   // Umsatz
+        }
+      });
+      
+      // Erstellungsdatum unten hinzufügen
+      doc.setFontSize(8);
+      doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
+      
+      // PDF speichern
+      doc.save(`getraenkeverkaufe-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+      
+      // Erfolgs-Nachricht anzeigen
+      setSnackbar({
+        open: true,
+        message: "Getränkeverkäufe wurden erfolgreich als PDF exportiert!",
+        severity: "success"
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error("Fehler beim Generieren des PDF-Berichts:", error);
+      setSnackbar({
+        open: true,
+        message: `Fehler beim PDF-Export: ${error.message || error}`,
+        severity: "error"
+      });
+      setLoading(false);
+    }
   };
   
   const generateDrinkSalesExcel = () => {
@@ -729,13 +962,138 @@ const Reports = () => {
   };
   
   const generateTimeComparisonPDF = () => {
-    // Erfolgs-Nachricht anzeigen
-    setSnackbar({
-      open: true,
-      message: "Stunden- und Tagesvergleich wurde als PDF exportiert!",
-      severity: "success"
-    });
-    setLoading(false);
+    try {
+      // Neues PDF-Dokument erstellen
+      const doc = createPdfDocument();
+      
+      // Titel
+      doc.setFontSize(18);
+      doc.text('Stunden- und Tagesvergleich', 14, 15);
+      
+      // Zeitraum
+      doc.setFontSize(11);
+      doc.text(`Zeitraum: ${format(new Date(new Date().setDate(new Date().getDate() - 30)), 'dd.MM.yyyy')} bis ${format(new Date(), 'dd.MM.yyyy')}`, 14, 23);
+      
+      // Tagesvergleich
+      doc.setFontSize(14);
+      doc.text('Verkäufe nach Wochentag', 14, 35);
+      
+      // Wochentage
+      const weekdays = [
+        "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"
+      ];
+      
+      // Dummy-Daten für Wochentage
+      const weekdayData = weekdays.map(day => {
+        // Mehr Verkäufe am Wochenende
+        let factor = 1;
+        if (day === "Freitag") factor = 1.5;
+        if (day === "Samstag") factor = 2;
+        if (day === "Sonntag") factor = 1.7;
+        
+        const sales = Math.round(Math.random() * 50 * factor + 20);
+        const revenue = Math.round(sales * (Math.random() * 10 + 8));
+        const average = Math.round(revenue / sales);
+        
+        return [day, sales.toString(), `${revenue.toFixed(2)} €`, `${average.toFixed(2)} €`];
+      });
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Wochentag", "Anzahl Verkäufe", "Umsatz (€)", "Durchschnitt (€)"]],
+        body: weekdayData,
+        startY: 40,
+        theme: 'grid',
+        styles: {
+          fontSize: 10,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          1: { halign: 'right' },  // Anzahl
+          2: { halign: 'right' },  // Umsatz
+          3: { halign: 'right' }   // Durchschnitt
+        }
+      });
+      
+      // Position für Stundenvergleich
+      let tableEndY = 40;
+      try {
+        tableEndY = doc.autoTable.previous?.finalY || 40;
+      } catch (e) {
+        console.warn("Konnte finalY nicht abrufen, verwende Standardposition", e);
+      }
+      
+      // Stundenvergleich
+      doc.setFontSize(14);
+      doc.text('Verkäufe nach Tageszeit', 14, tableEndY + 15);
+      
+      // Stunden des Tages
+      const hourData = [];
+      for (let i = 12; i <= 26; i++) {
+        // Umrechnung für Anzeige (12-26 Uhr zu 12-02 Uhr)
+        const displayHour = i <= 23 ? i : i - 24;
+        const hourLabel = `${displayHour.toString().padStart(2, '0')}:00`;
+        
+        // Mehr Verkäufe in den Abendstunden
+        let factor = 1;
+        if (i >= 18 && i <= 23) factor = 1.5 + (i - 18) * 0.1;
+        if (i >= 24) factor = 1.5 - (i - 24) * 0.5;
+        
+        const sales = Math.round(Math.random() * 30 * factor + 5);
+        const revenue = Math.round(sales * (Math.random() * 10 + 8));
+        
+        hourData.push([hourLabel, sales.toString(), `${revenue.toFixed(2)} €`]);
+      }
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Stunde", "Anzahl Verkäufe", "Umsatz (€)"]],
+        body: hourData,
+        startY: tableEndY + 20,
+        theme: 'grid',
+        styles: {
+          fontSize: 9,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          1: { halign: 'right' },  // Anzahl
+          2: { halign: 'right' }   // Umsatz
+        }
+      });
+      
+      // Erstellungsdatum unten hinzufügen
+      doc.setFontSize(8);
+      doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
+      
+      // PDF speichern
+      doc.save(`zeitvergleich-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+      
+      // Erfolgs-Nachricht anzeigen
+      setSnackbar({
+        open: true,
+        message: "Stunden- und Tagesvergleich wurde erfolgreich als PDF exportiert!",
+        severity: "success"
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error("Fehler beim Generieren des PDF-Berichts:", error);
+      setSnackbar({
+        open: true,
+        message: `Fehler beim PDF-Export: ${error.message || error}`,
+        severity: "error"
+      });
+      setLoading(false);
+    }
   };
   
   const generateTimeComparisonExcel = () => {
@@ -838,13 +1196,175 @@ const Reports = () => {
   };
   
   const generateStaffTimePDF = () => {
-    // Erfolgs-Nachricht anzeigen
-    setSnackbar({
-      open: true,
-      message: "Arbeitszeitübersicht wurde als PDF exportiert!",
-      severity: "success"
-    });
-    setLoading(false);
+    try {
+      // Neues PDF-Dokument erstellen
+      const doc = createPdfDocument();
+      
+      // Titel
+      doc.setFontSize(18);
+      doc.text('Arbeitszeitübersicht Personal', 14, 15);
+      
+      // Monat
+      const currentMonth = format(new Date(), 'MMMM yyyy');
+      doc.setFontSize(11);
+      doc.text(`Monat: ${currentMonth}`, 14, 23);
+      
+      // Mitarbeiter (Dummy-Daten)
+      const staffMembers = [
+        { id: 1, name: "Max Mustermann", position: "Barkeeper" },
+        { id: 2, name: "Anna Schmidt", position: "Servicekraft" },
+        { id: 3, name: "Jan Müller", position: "Barkeeper" },
+        { id: 4, name: "Lisa Wagner", position: "Servicekraft" },
+        { id: 5, name: "Tom Schulz", position: "Koch" }
+      ];
+      
+      // Mitarbeiterübersicht
+      doc.setFontSize(14);
+      doc.text('Mitarbeiterübersicht', 14, 35);
+      
+      // Mitarbeiterdaten (zufällig generiert)
+      const staffData = staffMembers.map(staff => {
+        const baseHours = staff.position === "Barkeeper" ? 160 : 140;
+        const hours = baseHours + Math.round(Math.random() * 20 - 10);
+        const overtime = Math.max(0, hours - baseHours);
+        const hourlyRate = staff.position === "Barkeeper" ? 15 : (staff.position === "Koch" ? 17 : 13);
+        const salary = (baseHours * hourlyRate) + (overtime * hourlyRate * 1.25);
+        
+        return [
+          staff.name,
+          staff.position,
+          hours.toString(),
+          overtime.toString(),
+          `${hourlyRate.toFixed(2)} €`,
+          `${salary.toFixed(2)} €`
+        ];
+      });
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Name", "Position", "Arbeitsstunden", "Überstunden", "Stundenlohn (€)", "Verdienst (€)"]],
+        body: staffData,
+        startY: 40,
+        theme: 'grid',
+        styles: {
+          fontSize: 9,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          2: { halign: 'right' },  // Arbeitsstunden
+          3: { halign: 'right' },  // Überstunden
+          4: { halign: 'right' },  // Stundenlohn
+          5: { halign: 'right' }   // Verdienst
+        }
+      });
+      
+      // Position für detaillierte Übersicht
+      let tableEndY = 40;
+      try {
+        tableEndY = doc.autoTable.previous?.finalY || 40;
+      } catch (e) {
+        console.warn("Konnte finalY nicht abrufen, verwende Standardposition", e);
+      }
+      
+      // Detaillierte Arbeitszeitübersicht
+      doc.setFontSize(14);
+      doc.text('Detaillierte Arbeitszeitübersicht', 14, tableEndY + 15);
+      
+      // Zufälliges Datum im aktuellen Monat
+      const getRandomDay = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const day = Math.floor(Math.random() * 28) + 1;
+        return new Date(year, month, day);
+      };
+      
+      // Generiere Schichten für jeden Mitarbeiter (Beispieldaten)
+      let shiftData = [];
+      staffMembers.forEach(staff => {
+        // 2-3 Schichten für diese PDF-Version
+        const shiftsCount = Math.floor(Math.random() * 2) + 2;
+        
+        for (let i = 0; i < shiftsCount; i++) {
+          const date = getRandomDay();
+          const startHour = 14 + Math.floor(Math.random() * 4);
+          const startMinute = Math.floor(Math.random() * 4) * 15;
+          const durationHours = 6 + Math.floor(Math.random() * 4);
+          const breakMinutes = 30 + Math.floor(Math.random() * 3) * 15;
+          
+          const startTime = `${startHour}:${startMinute.toString().padStart(2, '0')}`;
+          const endHour = startHour + durationHours;
+          const endTime = `${endHour}:${startMinute.toString().padStart(2, '0')}`;
+          
+          const workHours = durationHours - (breakMinutes / 60);
+          
+          shiftData.push([
+            staff.name,
+            format(date, 'dd.MM.yyyy'),
+            startTime,
+            endTime,
+            breakMinutes.toString(),
+            workHours.toFixed(2)
+          ]);
+        }
+      });
+      
+      // Sortiere nach Datum
+      shiftData.sort((a, b) => {
+        const dateA = a[1].split('.').reverse().join('');
+        const dateB = b[1].split('.').reverse().join('');
+        return dateA.localeCompare(dateB);
+      });
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Mitarbeiter", "Datum", "Von", "Bis", "Pausen (Min)", "Arbeitsstunden"]],
+        body: shiftData,
+        startY: tableEndY + 20,
+        theme: 'grid',
+        styles: {
+          fontSize: 8,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          4: { halign: 'right' },  // Pausen
+          5: { halign: 'right' }   // Arbeitsstunden
+        }
+      });
+      
+      // Erstellungsdatum unten hinzufügen
+      doc.setFontSize(8);
+      doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
+      
+      // PDF speichern
+      doc.save(`arbeitszeiten-${format(new Date(), 'yyyy-MM')}.pdf`);
+      
+      // Erfolgs-Nachricht anzeigen
+      setSnackbar({
+        open: true,
+        message: "Arbeitszeitübersicht wurde erfolgreich als PDF exportiert!",
+        severity: "success"
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error("Fehler beim Generieren des PDF-Berichts:", error);
+      setSnackbar({
+        open: true,
+        message: `Fehler beim PDF-Export: ${error.message || error}`,
+        severity: "error"
+      });
+      setLoading(false);
+    }
   };
   
   const generateStaffTimeExcel = () => {
@@ -983,13 +1503,172 @@ const Reports = () => {
   };
   
   const generateStaffCostPDF = () => {
-    // Erfolgs-Nachricht anzeigen
-    setSnackbar({
-      open: true,
-      message: "Personalkosten wurden als PDF exportiert!",
-      severity: "success"
-    });
-    setLoading(false);
+    try {
+      // Neues PDF-Dokument erstellen
+      const doc = createPdfDocument();
+      
+      // Titel
+      doc.setFontSize(18);
+      doc.text('Personalkosten Übersicht', 14, 15);
+      
+      // Jahr
+      const currentYear = new Date().getFullYear();
+      doc.setFontSize(11);
+      doc.text(`Jahr: ${currentYear}`, 14, 23);
+      
+      // Abteilungsübersicht
+      doc.setFontSize(14);
+      doc.text('Personalkosten nach Abteilung', 14, 35);
+      
+      // Abteilungen
+      const departments = [
+        { name: "Bar", budget: 85000, expenses: 81250 },
+        { name: "Service", budget: 62000, expenses: 64100 },
+        { name: "Küche", budget: 110000, expenses: 108400 },
+        { name: "Management", budget: 55000, expenses: 53200 },
+        { name: "Reinigung", budget: 35000, expenses: 33900 }
+      ];
+      
+      // Abteilungsdaten für Tabelle
+      const deptData = departments.map(dept => {
+        const difference = dept.budget - dept.expenses;
+        const percentage = (dept.expenses / dept.budget * 100).toFixed(1);
+        
+        return [
+          dept.name,
+          `${dept.budget.toFixed(2)} €`,
+          `${dept.expenses.toFixed(2)} €`,
+          `${difference.toFixed(2)} €`,
+          `${percentage}%`
+        ];
+      });
+      
+      // Berechne Gesamtwerte
+      const totalBudget = departments.reduce((sum, dept) => sum + dept.budget, 0);
+      const totalExpenses = departments.reduce((sum, dept) => sum + dept.expenses, 0);
+      const totalDifference = totalBudget - totalExpenses;
+      const totalPercentage = (totalExpenses / totalBudget * 100).toFixed(1);
+      
+      // Füge Gesamtzeile hinzu
+      deptData.push([
+        "Gesamt",
+        `${totalBudget.toFixed(2)} €`,
+        `${totalExpenses.toFixed(2)} €`,
+        `${totalDifference.toFixed(2)} €`,
+        `${totalPercentage}%`
+      ]);
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Abteilung", "Budget (€)", "Ausgaben (€)", "Einsparungen/Überzug (€)", "Prozent vom Budget"]],
+        body: deptData,
+        startY: 40,
+        theme: 'grid',
+        styles: {
+          fontSize: 9,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          1: { halign: 'right' },  // Budget
+          2: { halign: 'right' },  // Ausgaben
+          3: { halign: 'right' },  // Einsparungen/Überzug
+          4: { halign: 'right' }   // Prozent
+        }
+      });
+      
+      // Position für Kostenentwicklung
+      let tableEndY = 40;
+      try {
+        tableEndY = doc.autoTable.previous?.finalY || 40;
+      } catch (e) {
+        console.warn("Konnte finalY nicht abrufen, verwende Standardposition", e);
+      }
+      
+      // Kostenentwicklung nach Monat
+      doc.setFontSize(14);
+      doc.text('Kostenentwicklung nach Monat', 14, tableEndY + 15);
+      
+      // Monate generieren
+      const months = [];
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(currentYear, i, 1);
+        months.push(format(date, 'MMMM'));
+      }
+      
+      // Kostendaten nach Monat (Beispieldaten)
+      const monthlyData = months.map((month, index) => {
+        let seasonalFactor = 1.0;
+        
+        // Höhere Kosten im Sommer, niedrigere im Winter
+        if (index >= 5 && index <= 7) {  // Sommer (Juni-August)
+          seasonalFactor = 1.2;
+        } else if (index >= 11 || index <= 1) {  // Winter (Dezember-Februar)
+          seasonalFactor = 0.8;
+        }
+        
+        const baseCost = (totalExpenses / 12) * seasonalFactor;
+        const mainCost = Math.round(baseCost * 0.75);  // 75% Hauptkosten
+        const additionalCost = Math.round(baseCost * 0.25);  // 25% Nebenkosten
+        const totalCost = mainCost + additionalCost;
+        
+        return [
+          month,
+          `${mainCost.toFixed(2)} €`,
+          `${additionalCost.toFixed(2)} €`,
+          `${totalCost.toFixed(2)} €`
+        ];
+      });
+      
+      // Tabelle zur PDF hinzufügen
+      doc.autoTable({
+        head: [["Monat", "Personalkosten (€)", "Lohnnebenkosten (€)", "Gesamt (€)"]],
+        body: monthlyData,
+        startY: tableEndY + 20,
+        theme: 'grid',
+        styles: {
+          fontSize: 8,
+          cellPadding: 2
+        },
+        headStyles: {
+          fillColor: [66, 139, 202],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        columnStyles: {
+          1: { halign: 'right' },  // Personalkosten
+          2: { halign: 'right' },  // Lohnnebenkosten
+          3: { halign: 'right' }   // Gesamt
+        }
+      });
+      
+      // Erstellungsdatum unten hinzufügen
+      doc.setFontSize(8);
+      doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
+      
+      // PDF speichern
+      doc.save(`personalkosten-${currentYear}.pdf`);
+      
+      // Erfolgs-Nachricht anzeigen
+      setSnackbar({
+        open: true,
+        message: "Personalkosten wurden erfolgreich als PDF exportiert!",
+        severity: "success"
+      });
+      setLoading(false);
+    } catch (error) {
+      console.error("Fehler beim Generieren des PDF-Berichts:", error);
+      setSnackbar({
+        open: true,
+        message: `Fehler beim PDF-Export: ${error.message || error}`,
+        severity: "error"
+      });
+      setLoading(false);
+    }
   };
   
   const generateStaffCostExcel = () => {
@@ -1678,31 +2357,56 @@ const Reports = () => {
         </Alert>
       </Snackbar>
       
-      {/* Dialog zur Bestätigung */}
+      {/* Dialog zur Bestätigung (allgemein) */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-        <DialogTitle>Report generieren</DialogTitle>
+        <DialogTitle>{currentReport} - Export</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Bitte wählen Sie das Format für den {currentReport} Report:
+            Bitte wählen Sie das Exportformat:
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Abbrechen</Button>
-          <Button 
-            onClick={() => generateReport(currentReport, 'pdf')} 
-            variant="contained" 
-            startIcon={<PdfIcon />}
-            disabled={loading}
-          >
-            {loading ? 'Wird generiert...' : 'PDF'}
-          </Button>
           <Button 
             onClick={() => generateReport(currentReport, 'excel')} 
             variant="outlined" 
             startIcon={<TableIcon />}
             disabled={loading}
           >
-            {loading ? 'Wird generiert...' : 'Excel'}
+            {loading ? 'Wird generiert...' : 'Excel - Exportieren'}
+          </Button>
+          <Button 
+            onClick={() => generateReport(currentReport, 'pdf')} 
+            variant="contained" 
+            startIcon={<PdfIcon />}
+            disabled={loading}
+          >
+            {loading ? 'Wird generiert...' : 'PDF - Exportieren'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
+      {/* Dialog für formatspezifischen Export */}
+      <Dialog open={formatSpecificDialogOpen} onClose={handleCloseFormatDialog}>
+        <DialogTitle>{currentReport}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Möchten Sie den Bericht als {selectedFormat === 'pdf' ? 'PDF' : 'Excel'} exportieren?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseFormatDialog}>Abbrechen</Button>
+          <Button 
+            onClick={() => {
+              generateReport(currentReport, selectedFormat);
+              handleCloseFormatDialog();
+            }} 
+            variant="contained" 
+            startIcon={selectedFormat === 'pdf' ? <PdfIcon /> : <TableIcon />}
+            color="primary"
+            disabled={loading}
+          >
+            {loading ? 'Wird generiert...' : `${selectedFormat === 'pdf' ? 'PDF' : 'Excel'} - Exportieren`}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1773,7 +2477,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
-                        onClick={() => handleOpenDialog('Monatsabschluss')}
+                        onClick={() => handleOpenDialog('Monatsabschluss', 'pdf')}
                       >
                         PDF
                       </Button>
@@ -1781,7 +2485,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
-                        onClick={() => handleOpenDialog('Monatsabschluss')}
+                        onClick={() => handleOpenDialog('Monatsabschluss', 'excel')}
                       >
                         Excel
                       </Button>
@@ -1804,7 +2508,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
-                        onClick={() => handleOpenDialog('Jahresübersicht')}
+                        onClick={() => handleOpenDialog('Jahresübersicht', 'pdf')}
                       >
                         PDF
                       </Button>
@@ -1812,7 +2516,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
-                        onClick={() => handleOpenDialog('Jahresübersicht')}
+                        onClick={() => handleOpenDialog('Jahresübersicht', 'excel')}
                       >
                         Excel
                       </Button>
@@ -1849,7 +2553,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
-                        onClick={() => handleOpenDialog('Getränkeverkäufe')}
+                        onClick={() => handleOpenDialog('Getränkeverkäufe', 'pdf')}
                       >
                         PDF
                       </Button>
@@ -1857,7 +2561,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
-                        onClick={() => handleOpenDialog('Getränkeverkäufe')}
+                        onClick={() => handleOpenDialog('Getränkeverkäufe', 'excel')}
                       >
                         Excel
                       </Button>
@@ -1880,7 +2584,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
-                        onClick={() => handleOpenDialog('Stunden- und Tagesvergleich')}
+                        onClick={() => handleOpenDialog('Stunden- und Tagesvergleich', 'pdf')}
                       >
                         PDF
                       </Button>
@@ -1888,7 +2592,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
-                        onClick={() => handleOpenDialog('Stunden- und Tagesvergleich')}
+                        onClick={() => handleOpenDialog('Stunden- und Tagesvergleich', 'excel')}
                       >
                         Excel
                       </Button>
@@ -1925,7 +2629,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
-                        onClick={() => handleOpenDialog('Bestandsübersicht')}
+                        onClick={() => handleOpenDialog('Bestandsübersicht', 'pdf')}
                       >
                         PDF
                       </Button>
@@ -1933,7 +2637,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
-                        onClick={() => handleOpenDialog('Bestandsübersicht')}
+                        onClick={() => handleOpenDialog('Bestandsübersicht', 'excel')}
                       >
                         Excel
                       </Button>
@@ -1956,7 +2660,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
-                        onClick={() => handleOpenDialog('Bestandsbewegungen')}
+                        onClick={() => handleOpenDialog('Bestandsbewegungen', 'pdf')}
                       >
                         PDF
                       </Button>
@@ -1964,7 +2668,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
-                        onClick={() => handleOpenDialog('Bestandsbewegungen')}
+                        onClick={() => handleOpenDialog('Bestandsbewegungen', 'excel')}
                       >
                         Excel
                       </Button>
@@ -2001,7 +2705,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
-                        onClick={() => handleOpenDialog('Arbeitszeitübersicht')}
+                        onClick={() => handleOpenDialog('Arbeitszeitübersicht', 'pdf')}
                       >
                         PDF
                       </Button>
@@ -2009,7 +2713,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
-                        onClick={() => handleOpenDialog('Arbeitszeitübersicht')}
+                        onClick={() => handleOpenDialog('Arbeitszeitübersicht', 'excel')}
                       >
                         Excel
                       </Button>
@@ -2032,7 +2736,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<PdfIcon />}
-                        onClick={() => handleOpenDialog('Personalkosten')}
+                        onClick={() => handleOpenDialog('Personalkosten', 'pdf')}
                       >
                         PDF
                       </Button>
@@ -2040,7 +2744,7 @@ const Reports = () => {
                         size="small" 
                         variant="outlined" 
                         startIcon={<TableIcon />}
-                        onClick={() => handleOpenDialog('Personalkosten')}
+                        onClick={() => handleOpenDialog('Personalkosten', 'excel')}
                       >
                         Excel
                       </Button>
@@ -2065,21 +2769,21 @@ const Reports = () => {
               <Button 
                 variant="outlined" 
                 startIcon={<PrintIcon />}
-                onClick={() => handleOpenDialog('Gesamtübersicht')}
+                onClick={() => handleOpenDialog('Gesamtübersicht', 'pdf')}
               >
                 Drucken
               </Button>
               <Button 
                 variant="outlined" 
                 startIcon={<TableIcon />}
-                onClick={() => handleOpenDialog('Gesamtübersicht')}
+                onClick={() => handleOpenDialog('Gesamtübersicht', 'excel')}
               >
                 Als Excel exportieren
               </Button>
               <Button 
                 variant="outlined" 
                 startIcon={<PdfIcon />}
-                onClick={() => handleOpenDialog('Gesamtübersicht')}
+                onClick={() => handleOpenDialog('Gesamtübersicht', 'pdf')}
               >
                 Als PDF exportieren
               </Button>

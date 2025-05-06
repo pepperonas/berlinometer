@@ -244,11 +244,19 @@ const Settings = () => {
           website: settings.website,
           taxId: settings.taxId
         };
+        
+        // Alternativ könnte man auch den Benutzernamen aktualisieren
+        if (settings.username) {
+          userData.name = settings.username;
+        }
       }
       // For now, we only handle profile and business tabs
       
       console.log('Sending update data:', JSON.stringify(userData));
-      const result = await updateProfile(userData);
+      
+      try {
+        const result = await updateProfile(userData);
+        console.log('Profile update result:', result);
       
       if (result.success) {
         setSaveSuccess(true);
@@ -263,6 +271,10 @@ const Settings = () => {
         }
       } else {
         setError(result.error || 'Fehler beim Aktualisieren der Einstellungen');
+      }
+      } catch (profileErr) {
+        console.error('Profile update error:', profileErr);
+        setError(profileErr.message || 'Fehler beim Aktualisieren des Profils');
       }
     } catch (err) {
       console.error('Save error:', err);

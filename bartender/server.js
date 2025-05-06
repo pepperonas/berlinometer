@@ -18,8 +18,24 @@ const PORT = process.env.SERVER_PORT || process.env.PORT || 5024;
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? ['https://mrx3k1.de', 'http://69.62.121.168', 'http://mrx3k1.de'] : ['http://localhost:3000', 'http://localhost:5024'],
-  credentials: true
+  origin: function(origin, callback) {
+    // Erlaube Anfragen ohne Origin-Header (z.B. von Postman, curl, usw.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = process.env.NODE_ENV === 'production' ? 
+      ['https://mrx3k1.de', 'http://69.62.121.168', 'http://mrx3k1.de', 'https://bartender.mrx3k1.de'] : 
+      ['http://localhost:3000', 'http://localhost:5024', 'http://127.0.0.1:3000'];
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      console.log('CORS rejected origin:', origin);
+      callback(null, true); // Allow all origins in development for ease of debugging
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

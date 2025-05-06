@@ -223,6 +223,18 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     
     try {
+      // Check if token exists in localStorage
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found in localStorage for updateProfile');
+        // Force reauthentication
+        setCurrentUser(null);
+        throw new Error('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+      }
+      
+      // Make sure Authorization header is set for all requests
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      
       if (!currentUser) {
         throw new Error('Sie müssen angemeldet sein, um Ihr Profil zu aktualisieren');
       }
@@ -232,9 +244,9 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Ungültiges Benutzerprofil. Bitte melden Sie sich erneut an.');
       }
       
-      // Use the new profile update endpoint
-      let endpoint = `${API_URL}/users/profile`;
-      let method = 'PUT';
+      // Try using the auth/profile endpoint instead of users/profile
+      let endpoint = `${API_URL}/auth/profile`;
+      let method = 'POST';
       
       if (userData.currentPassword && userData.newPassword) {
         // No need to change endpoint for password change anymore
@@ -265,10 +277,14 @@ export const AuthProvider = ({ children }) => {
         
         if (!token) {
           console.error('No token found in localStorage!');
+          setCurrentUser(null);
           throw new Error('Sie sind nicht eingeloggt. Bitte melden Sie sich an.');
         }
         
         console.log('Using token from localStorage:', token ? 'Token exists' : 'No token');
+        
+        // Direktes Logging des Tokens für Debug-Zwecke (nur die ersten 10 Zeichen)
+        console.log('Token first 10 chars:', token.substring(0, 10) + '...');
         
         const fetchResponse = await fetch(endpoint, {
           method: method,
@@ -281,6 +297,16 @@ export const AuthProvider = ({ children }) => {
         });
         
         console.log('Fetch response status:', fetchResponse.status);
+        
+        if (fetchResponse.status === 401 || fetchResponse.status === 403) {
+          // Token ungültig oder abgelaufen - User abmelden
+          console.error('Authentication error, logging out');
+          localStorage.removeItem('token');
+          localStorage.removeItem('currentUser');
+          delete axios.defaults.headers.common['Authorization'];
+          setCurrentUser(null);
+          throw new Error('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+        }
         
         if (!fetchResponse.ok) {
           throw new Error(`Server antwortete mit Status ${fetchResponse.status}`);
@@ -324,42 +350,66 @@ export const AuthProvider = ({ children }) => {
         
         if (!token) {
           console.error('No token found in localStorage for axios fallback!');
+          setCurrentUser(null);
           throw new Error('Sie sind nicht eingeloggt. Bitte melden Sie sich an.');
         }
         
         // Force set the authorization header again
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         
-        const response = await axios[axiosMethod](endpoint, userData, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        if (response.data && response.data.success) {
-          // If we have updated user data, update the current user
-          if (response.data.user) {
-            setCurrentUser(response.data.user);
-          } else if (response.data.data) {
-            // If we have bar data, merge it with the current user
-            if (response.data.bar) {
-              setCurrentUser(prev => ({
-                ...prev,
-                ...response.data.data,
-                bar: {
-                  ...(prev.bar || {}),
-                  ...response.data.bar
-                }
-              }));
-            } else {
-              // Otherwise just update the user data
-              setCurrentUser(prev => ({ ...prev, ...response.data.data }));
+        try {
+          const response = await axios[axiosMethod](endpoint, userData, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
             }
+          });
+          
+          // Erfolgreiche Antwort
+          console.log('Axios response status:', response.status);
+        
+          if (response.data && response.data.success) {
+            // If we have updated user data, update the current user
+            if (response.data.user) {
+              setCurrentUser(response.data.user);
+            } else if (response.data.data) {
+              // If we have bar data, merge it with the current user
+              if (response.data.bar) {
+                setCurrentUser(prev => ({
+                  ...prev,
+                  ...response.data.data,
+                  bar: {
+                    ...(prev.bar || {}),
+                    ...response.data.bar
+                  }
+                }));
+              } else {
+                // Otherwise just update the user data
+                setCurrentUser(prev => ({ ...prev, ...response.data.data }));
+              }
+            }
+            return { success: true };
+          } else {
+            throw new Error(response.data?.error || 'Aktualisierung fehlgeschlagen');
           }
-          return { success: true };
-        } else {
-          throw new Error(response.data?.error || 'Aktualisierung fehlgeschlagen');
+        } catch (axiosError) {
+          console.error('Axios error:', axiosError);
+          
+          if (axiosError.response) {
+            if (axiosError.response.status === 401 || axiosError.response.status === 403) {
+              // Token ungültig oder abgelaufen - User abmelden
+              console.error('Authentication error in axios, logging out');
+              localStorage.removeItem('token');
+              localStorage.removeItem('currentUser');
+              delete axios.defaults.headers.common['Authorization'];
+              setCurrentUser(null);
+              throw new Error('Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.');
+            }
+            
+            throw new Error(`Server antwortete mit Status ${axiosError.response.status}: ${axiosError.response.data?.error || axiosError.message}`);
+          }
+          
+          throw axiosError;
         }
       }
     } catch (err) {
