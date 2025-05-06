@@ -23,12 +23,14 @@ router.get('/stats', protect, async (req, res) => {
     
     // Aktuellen Monatsumsatz berechnen
     const currentMonthSales = await Sale.find({
-      date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth }
+      date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+      bar: req.barId
     });
     
     // Vormonatsumsatz berechnen
     const prevMonthSales = await Sale.find({
-      date: { $gte: firstDayOfPrevMonth, $lte: lastDayOfPrevMonth }
+      date: { $gte: firstDayOfPrevMonth, $lte: lastDayOfPrevMonth },
+      bar: req.barId
     });
     
     // Gesamtumsatz aktueller Monat
@@ -113,7 +115,8 @@ router.get('/sales-data', protect, async (req, res) => {
       
       // Umsatz für diesen Monat berechnen
       const monthlySales = await Sale.find({
-        date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth }
+        date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+        bar: req.barId
       });
       
       const monthlyRevenue = monthlySales.reduce((sum, sale) => sum + sale.total, 0);
@@ -149,7 +152,8 @@ router.get('/top-selling', protect, async (req, res) => {
     lastMonth.setMonth(lastMonth.getMonth() - 1);
     
     const sales = await Sale.find({
-      date: { $gte: lastMonth }
+      date: { $gte: lastMonth },
+      bar: req.barId
     });
     
     // Verkaufsdaten nach Getränk aggregieren

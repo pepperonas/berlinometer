@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Staff = require('../models/Staff');
+const { protect } = require('../middleware/auth');
+const { addBarToBody } = require('../middleware/barFilter');
 
 // Middleware zur Vorbereitung und Validierung der Mitarbeiterdaten
 const prepareStaffData = (req, res, next) => {
@@ -107,9 +109,9 @@ const handleMongooseErrors = (err, req, res, next) => {
 // @route   GET /api/staff
 // @desc    Alle Mitarbeiter erhalten
 // @access  Private
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
-    const staffMembers = await Staff.find().sort({ name: 1 });
+    const staffMembers = await Staff.find({ bar: req.barId }).sort({ name: 1 });
     res.json(staffMembers);
   } catch (err) {
     console.error(err.message);
@@ -120,9 +122,12 @@ router.get('/', async (req, res) => {
 // @route   GET /api/staff/:id
 // @desc    Einzelnen Mitarbeiter erhalten
 // @access  Private
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect, async (req, res) => {
   try {
-    const staffMember = await Staff.findById(req.params.id);
+    const staffMember = await Staff.findOne({
+      _id: req.params.id,
+      bar: req.barId
+    });
     
     if (!staffMember) {
       return res.status(404).json({ message: 'Mitarbeiter nicht gefunden' });
@@ -143,7 +148,7 @@ router.get('/:id', async (req, res) => {
 // @route   POST /api/staff
 // @desc    Mitarbeiter erstellen
 // @access  Private
-router.post('/', prepareStaffData, async (req, res, next) => {
+router.post('/', protect, addBarToBody, prepareStaffData, async (req, res, next) => {
   try {
     // Debug: Zeige die aufbereiteten Daten vor dem Speichern
     console.log('Speichere Mitarbeiter mit Daten:', JSON.stringify(req.body, null, 2));
@@ -172,13 +177,16 @@ router.post('/', prepareStaffData, async (req, res, next) => {
 // @route   PUT /api/staff/:id
 // @desc    Mitarbeiter aktualisieren
 // @access  Private
-router.put('/:id', prepareStaffData, async (req, res, next) => {
+router.put('/:id', protect, addBarToBody, prepareStaffData, async (req, res, next) => {
   try {
     // Debug: Zeige die aufbereiteten Daten vor dem Update
     console.log('Aktualisiere Mitarbeiter mit Daten:', JSON.stringify(req.body, null, 2));
     
-    const staffMember = await Staff.findByIdAndUpdate(
-      req.params.id, 
+    const staffMember = await Staff.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        bar: req.barId
+      }, 
       req.body, 
       { new: true, runValidators: true }
     );
@@ -207,9 +215,12 @@ router.put('/:id', prepareStaffData, async (req, res, next) => {
 // @route   DELETE /api/staff/:id
 // @desc    Mitarbeiter löschen
 // @access  Private
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   try {
-    const staffMember = await Staff.findById(req.params.id);
+    const staffMember = await Staff.findOne({
+      _id: req.params.id,
+      bar: req.barId
+    });
     
     if (!staffMember) {
       return res.status(404).json({ message: 'Mitarbeiter nicht gefunden' });

@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Bar = require('../models/Bar');
 
 // Middleware zum Schutz von Routen - prüft ob ein gültiger JWT Token vorhanden ist
 exports.protect = async (req, res, next) => {
@@ -44,8 +45,20 @@ exports.protect = async (req, res, next) => {
       });
     }
 
-    // Benutzer an den Request anfügen
+    // Bar des Benutzers abrufen
+    let barId = decoded.bar || user.bar;
+    
+    // Bar-Objekt laden, wenn eine Bar-ID vorhanden ist
+    let bar = null;
+    if (barId) {
+      bar = await Bar.findById(barId);
+    }
+    
+    // Benutzer und Bar an den Request anfügen
     req.user = user;
+    req.bar = bar;
+    req.barId = barId;
+    
     next();
   } catch (err) {
     return res.status(401).json({
@@ -74,3 +87,6 @@ exports.authorize = (...roles) => {
     next();
   };
 };
+
+// Diese Middleware wird nicht mehr benötigt, da jeder Benutzer nur eine Bar hat
+// und wir die normale authorize-Middleware verwenden können

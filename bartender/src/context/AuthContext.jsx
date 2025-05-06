@@ -116,6 +116,9 @@ export const AuthProvider = ({ children }) => {
         // Setze Authorization Header für alle Anfragen
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
         
+        // Speichere den User inkl. Bar-Info im localStorage für API-Interceptor
+        localStorage.setItem('currentUser', JSON.stringify(response.data.user));
+        
         setCurrentUser(response.data.user);
         return { success: true };
       } else {
@@ -141,6 +144,7 @@ export const AuthProvider = ({ children }) => {
       console.log('Mit Daten:', { name, email, password: '***HIDDEN***' });
       
       // Nutze direkt fetch statt axios wegen möglicher CORS-Probleme
+      console.log('Full registration URL:', `${API_URL}/auth/register`);
       const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
@@ -150,7 +154,8 @@ export const AuthProvider = ({ children }) => {
           name,
           email,
           password
-        })
+        }),
+        credentials: 'include' // Wichtig für Cookies
       });
       
       console.log('Register response status:', response.status);
@@ -186,6 +191,9 @@ export const AuthProvider = ({ children }) => {
       // Token entfernen
       localStorage.removeItem('token');
       
+      // Entferne den gespeicherten User
+      localStorage.removeItem('currentUser');
+      
       // Entferne Authorization Header
       delete axios.defaults.headers.common['Authorization'];
       
@@ -210,14 +218,15 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Sie müssen angemeldet sein, um Ihr Profil zu aktualisieren');
       }
       
-      // Check if this is a password change request
-      let endpoint = `${API_URL}/users/${currentUser.id}`;
-      let method = userData.currentPassword ? 'POST' : 'PUT';
+      // Use the new profile update endpoint
+      let endpoint = `${API_URL}/users/profile`;
+      let method = 'PUT';
       
       if (userData.currentPassword && userData.newPassword) {
-        endpoint = `${API_URL}/auth/change-password`;
-        // Verwende POST statt PUT
+        // No need to change endpoint for password change anymore
+        // Convert the password parameters to expected ones
         userData = {
+          ...userData,
           currentPassword: userData.currentPassword,
           newPassword: userData.newPassword
         };

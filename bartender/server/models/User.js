@@ -26,12 +26,17 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'manager'],
+    enum: ['user', 'admin', 'manager', 'barkeeper', 'server'],
     default: 'user'
   },
   active: {
     type: Boolean,
     default: false
+  },
+  // Jeder Benutzer hat genau eine Bar
+  bar: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bar'
   },
   avatar: {
     type: String
@@ -73,7 +78,11 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
 // JWT-Token generieren
 UserSchema.methods.getSignedJwtToken = function() {
   return jwt.sign(
-    { id: this._id, role: this.role },
+    { 
+      id: this._id, 
+      role: this.role,
+      bar: this.bar 
+    },
     process.env.JWT_SECRET || 'defaultsecretkey',
     { expiresIn: '1d' }
   );

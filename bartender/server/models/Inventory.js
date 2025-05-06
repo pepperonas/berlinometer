@@ -6,6 +6,11 @@ const categoryEnums = INVENTORY_CATEGORIES.map(category => category.id);
 const unitEnums = INVENTORY_UNITS.map(unit => unit.id);
 
 const InventorySchema = new mongoose.Schema({
+  bar: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bar',
+    required: [true, 'Jedes Inventarelement muss einer Bar zugeordnet sein']
+  },
   name: {
     type: String,
     required: [true, 'Bitte geben Sie einen Namen an'],

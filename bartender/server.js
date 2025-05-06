@@ -79,9 +79,10 @@ function healthCheck(req, res) {
 function infoResponse(req, res) {
   res.json({
     appName: 'Bartender',
-    version: '1.0.0',
+    version: '1.1.0',
     apiStatus: 'active',
     database: 'MongoDB',
+    multiTenant: true,
     environment: process.env.NODE_ENV || 'development'
   });
 }

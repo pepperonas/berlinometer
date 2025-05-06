@@ -4,6 +4,11 @@ const { PAYMENT_METHODS } = require('../utils/constants');
 const paymentMethodOptions = PAYMENT_METHODS.map(method => method.id);
 
 const SaleSchema = new mongoose.Schema({
+  bar: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bar',
+    required: [true, 'Jeder Verkauf muss einer Bar zugeordnet sein']
+  },
   date: {
     type: Date,
     default: Date.now,

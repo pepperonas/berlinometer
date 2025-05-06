@@ -1,12 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Bar = require('../models/Bar');
 const { protect, authorize } = require('../middleware/auth');
 
 // @route   POST /api/auth/register
-// @desc    Benutzer registrieren
+// @desc    Benutzer registrieren (mit Bar)
 // @access  Public
 router.post('/register', async (req, res) => {
+  console.log('REGISTER API CALLED', req.body);
   try {
     console.log('Register route hit with data:', {
       name: req.body.name,
@@ -21,7 +23,7 @@ router.post('/register', async (req, res) => {
       console.log('Missing required fields for registration');
       return res.status(400).json({
         success: false,
-        error: 'Bitte alle Pflichtfelder ausfüllen (Name, E-Mail, Passwort)'
+        error: 'Bitte alle Pflichtfelder ausfüllen (Name der Bar, E-Mail, Passwort)'
       });
     }
 
@@ -36,34 +38,71 @@ router.post('/register', async (req, res) => {
       });
     }
 
-    // Neuen Benutzer erstellen
-    user = new User({
-      name,
-      email,
-      password,
-      // Standardmäßig inaktiv, bis Admin aktiviert
-      active: false
-    });
+    try {
+      // Zunächst eine Bar für den Benutzer erstellen
+      const bar = new Bar({
+        name: name, // Name des Benutzers als Name der Bar
+        address: {},
+        contact: {
+          email: email
+        },
+        isActive: true
+      });
 
-    await user.save();
+      console.log('Trying to save bar...');
+      await bar.save();
+      console.log('Bar saved successfully:', bar._id);
 
-    console.log('New user registered successfully:', user._id);
+      // Neuen Benutzer erstellen und mit der Bar verknüpfen
+      user = new User({
+        name, // Name des Benutzers (entspricht Namen der Bar)
+        email,
+        password,
+        bar: bar._id,
+        // Standardmäßig inaktiv, bis Admin aktiviert
+        active: false
+      });
 
-    res.status(201).json({
-      success: true,
-      message: 'Registrierung erfolgreich! Dein Konto wird vom Administrator aktiviert.',
-      data: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        active: user.active
-      }
-    });
+      console.log('Trying to save user...');
+      await user.save();
+      console.log('User saved successfully:', user._id);
+
+      // Bar aktualisieren, um den Benutzer als Besitzer festzulegen
+      bar.owner = user._id;
+      await bar.save();
+      console.log('Bar updated with owner reference');
+
+      console.log('New user and bar registered successfully:', {
+        userId: user._id,
+        barId: bar._id
+      });
+
+      res.status(201).json({
+        success: true,
+        message: 'Registrierung erfolgreich! Dein Konto wird vom Administrator aktiviert.',
+        data: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          active: user.active,
+          bar: {
+            id: bar._id,
+            name: bar.name
+          }
+        }
+      });
+    } catch (dbError) {
+      console.error('Database error during registration:', dbError);
+      return res.status(500).json({
+        success: false,
+        error: `Datenbankfehler bei der Registrierung: ${dbError.message}`
+      });
+    }
   } catch (err) {
     console.error('Error in register:', err);
     res.status(500).json({
       success: false,
-      error: 'Serverfehler bei der Registrierung'
+      error: `Serverfehler bei der Registrierung: ${err.message}`
     });
   }
 });
@@ -129,6 +168,21 @@ router.post('/login', async (req, res) => {
         });
       }
 
+      // Bar-Informationen abrufen
+      let barInfo = null;
+      if (user.bar) {
+        const bar = await Bar.findById(user.bar);
+        if (bar) {
+          barInfo = {
+            id: bar._id,
+            name: bar.name,
+            address: bar.address,
+            contact: bar.contact,
+            logo: bar.logo
+          };
+        }
+      }
+
       // Erfolgreich angemeldet, Token erstellen
       const token = user.getSignedJwtToken();
 
@@ -155,7 +209,8 @@ router.post('/login', async (req, res) => {
               name: user.name,
               email: user.email,
               role: user.role,
-              active: user.active
+              active: user.active,
+              currentBar: barInfo
             }
           });
     } catch (dbError) {
@@ -179,7 +234,7 @@ router.post('/login', async (req, res) => {
 // @access  Private
 router.get('/me', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.id).populate('bar', 'name address contact logo isActive');
 
     res.status(200).json({
       success: true,
@@ -190,7 +245,15 @@ router.get('/me', protect, async (req, res) => {
         role: user.role,
         active: user.active,
         avatar: user.avatar,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        bar: user.bar ? {
+          id: user.bar._id,
+          name: user.bar.name,
+          address: user.bar.address,
+          contact: user.bar.contact,
+          logo: user.bar.logo,
+          isActive: user.bar.isActive
+        } : null
       }
     });
   } catch (err) {
@@ -356,6 +419,58 @@ router.post('/change-password', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Serverfehler beim Ändern des Passworts'
+    });
+  }
+});
+
+// @route   PUT /api/auth/bar
+// @desc    Bar-Informationen aktualisieren
+// @access  Private
+router.put('/bar', protect, async (req, res) => {
+  try {
+    const { name, address, contact, logo } = req.body;
+    
+    if (!req.barId) {
+      return res.status(404).json({
+        success: false,
+        error: 'Keine Bar gefunden'
+      });
+    }
+    
+    // Aktualisiere die Bar-Informationen
+    const bar = await Bar.findById(req.barId);
+    
+    if (!bar) {
+      return res.status(404).json({
+        success: false,
+        error: 'Bar nicht gefunden'
+      });
+    }
+    
+    // Nur Felder aktualisieren, die angegeben wurden
+    if (name) bar.name = name;
+    if (address) bar.address = address;
+    if (contact) bar.contact = contact;
+    if (logo) bar.logo = logo;
+    
+    await bar.save();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Bar-Informationen erfolgreich aktualisiert',
+      data: {
+        id: bar._id,
+        name: bar.name,
+        address: bar.address,
+        contact: bar.contact,
+        logo: bar.logo
+      }
+    });
+  } catch (err) {
+    console.error('Error updating bar:', err);
+    res.status(500).json({
+      success: false,
+      error: 'Fehler beim Aktualisieren der Bar-Informationen'
     });
   }
 });

@@ -38,6 +38,23 @@ const api = axios.create({
   }
 });
 
+// Request-Interceptor zum Hinzufügen der aktuellen Bar aus dem User-Objekt
+api.interceptors.request.use(config => {
+  // Versuche die Bar-ID aus dem localStorage zu bekommen
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  if (currentUser && currentUser.bar && currentUser.bar.id) {
+    // Füge die Bar-ID zu den Request-Daten hinzu, wenn es sich um eine POST oder PUT-Anfrage handelt
+    if ((config.method === 'post' || config.method === 'put') && config.data) {
+      const data = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
+      data.bar = currentUser.bar.id;
+      config.data = JSON.stringify(data);
+    }
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
+
 // API für Getränke
 export const drinksApi = {
   getAll: async () => {

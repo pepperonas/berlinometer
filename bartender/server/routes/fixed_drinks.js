@@ -1,14 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const Drink = require('../models/Drink');
+const { protect } = require('../middleware/auth');
+const { addBarToBody } = require('../middleware/barFilter');
 
 // WICHTIG: Spezifische Routen VOR dynamischen Routen definieren
 // @route   GET /api/drinks/popular/list
 // @desc    Beliebte Getränke erhalten
 // @access  Public
-router.get('/popular/list', async (req, res) => {
+router.get('/popular/list', protect, async (req, res) => {
   try {
-    const popularDrinks = await Drink.find({ popular: true });
+    const popularDrinks = await Drink.find({ popular: true, bar: req.barId });
     res.json(popularDrinks);
   } catch (err) {
     console.error(err.message);
@@ -19,9 +21,9 @@ router.get('/popular/list', async (req, res) => {
 // @route   GET /api/drinks
 // @desc    Alle Getränke erhalten
 // @access  Public
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
-    const drinks = await Drink.find().sort({ name: 1 });
+    const drinks = await Drink.find({ bar: req.barId }).sort({ name: 1 });
     res.json(drinks);
   } catch (err) {
     console.error(err.message);
@@ -32,9 +34,9 @@ router.get('/', async (req, res) => {
 // @route   GET /api/drinks/:id
 // @desc    Einzelnes Getränk erhalten
 // @access  Public
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect, async (req, res) => {
   try {
-    const drink = await Drink.findById(req.params.id);
+    const drink = await Drink.findOne({ _id: req.params.id, bar: req.barId });
     
     if (!drink) {
       return res.status(404).json({ message: 'Getränk nicht gefunden' });
@@ -55,7 +57,7 @@ router.get('/:id', async (req, res) => {
 // @route   POST /api/drinks
 // @desc    Getränk erstellen
 // @access  Private
-router.post('/', async (req, res) => {
+router.post('/', protect, addBarToBody, async (req, res) => {
   try {
     const newDrink = new Drink(req.body);
     const drink = await newDrink.save();
@@ -69,10 +71,10 @@ router.post('/', async (req, res) => {
 // @route   PUT /api/drinks/:id
 // @desc    Getränk aktualisieren
 // @access  Private
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, addBarToBody, async (req, res) => {
   try {
-    const drink = await Drink.findByIdAndUpdate(
-      req.params.id, 
+    const drink = await Drink.findOneAndUpdate(
+      { _id: req.params.id, bar: req.barId }, 
       req.body, 
       { new: true, runValidators: true }
     );
@@ -96,9 +98,9 @@ router.put('/:id', async (req, res) => {
 // @route   DELETE /api/drinks/:id
 // @desc    Getränk löschen
 // @access  Private
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   try {
-    const drink = await Drink.findById(req.params.id);
+    const drink = await Drink.findOne({ _id: req.params.id, bar: req.barId });
     
     if (!drink) {
       return res.status(404).json({ message: 'Getränk nicht gefunden' });

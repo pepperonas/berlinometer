@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const StaffSchema = new mongoose.Schema({
+  bar: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bar',
+    required: [true, 'Jeder Mitarbeiter muss einer Bar zugeordnet sein']
+  },
   name: {
     type: String,
     required: [true, 'Bitte geben Sie einen Namen an'],

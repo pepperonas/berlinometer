@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const DrinkSchema = new mongoose.Schema({
+  bar: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bar',
+    required: [true, 'Jedes Getränk muss einer Bar zugeordnet sein']
+  },
   name: {
     type: String,
     required: [true, 'Bitte geben Sie einen Namen an'],

@@ -4,6 +4,11 @@ const { INCOME_CATEGORIES } = require('../utils/constants');
 const incomeCategoryOptions = INCOME_CATEGORIES.map(category => category.id);
 
 const IncomeSchema = new mongoose.Schema({
+  bar: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bar',
+    required: [true, 'Jede Einnahme muss einer Bar zugeordnet sein']
+  },
   category: {
     type: String,
     enum: incomeCategoryOptions,

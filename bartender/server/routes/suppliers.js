@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Supplier = require('../models/Supplier');
 const { protect } = require('../middleware/auth');
+const { addBarToBody } = require('../middleware/barFilter');
 
 // @route   GET /api/suppliers
 // @desc    Alle Lieferanten abrufen
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    const suppliers = await Supplier.find().sort({ name: 1 });
+    const suppliers = await Supplier.find({ bar: req.barId }).sort({ name: 1 });
     res.json(suppliers);
   } catch (err) {
     console.error(err.message);
@@ -21,7 +22,10 @@ router.get('/', protect, async (req, res) => {
 // @access  Private
 router.get('/:id', protect, async (req, res) => {
   try {
-    const supplier = await Supplier.findById(req.params.id);
+    const supplier = await Supplier.findOne({
+      _id: req.params.id,
+      bar: req.barId
+    });
     
     if (!supplier) {
       return res.status(404).json({ message: 'Lieferant nicht gefunden' });
@@ -42,7 +46,7 @@ router.get('/:id', protect, async (req, res) => {
 // @route   POST /api/suppliers
 // @desc    Neuen Lieferanten erstellen
 // @access  Private
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, addBarToBody, async (req, res) => {
   try {
     console.log('Creating new supplier with data:', JSON.stringify(req.body, null, 2));
     
@@ -90,7 +94,7 @@ router.post('/', protect, async (req, res) => {
 // @route   PUT /api/suppliers/:id
 // @desc    Lieferanten aktualisieren
 // @access  Private
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', protect, addBarToBody, async (req, res) => {
   try {
     console.log('Updating supplier with ID:', req.params.id);
     console.log('Update data:', JSON.stringify(req.body, null, 2));
@@ -117,8 +121,11 @@ router.put('/:id', protect, async (req, res) => {
     // Set updated timestamp
     req.body.updatedAt = new Date();
     
-    const supplier = await Supplier.findByIdAndUpdate(
-      req.params.id, 
+    const supplier = await Supplier.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        bar: req.barId
+      },
       req.body, 
       { 
         new: true,           // Return the modified document
@@ -154,7 +161,10 @@ router.put('/:id', protect, async (req, res) => {
 // @access  Private
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const supplier = await Supplier.findById(req.params.id);
+    const supplier = await Supplier.findOne({
+      _id: req.params.id,
+      bar: req.barId
+    });
     
     if (!supplier) {
       return res.status(404).json({ message: 'Lieferant nicht gefunden' });

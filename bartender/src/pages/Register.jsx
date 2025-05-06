@@ -30,6 +30,13 @@ const Register = () => {
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Aktueller API-Kontext
+  const apiBaseUrl = process.env.REACT_APP_API_URL || (
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'http://localhost:5024/api' 
+      : `${window.location.pathname.match(/^\/([^\/]+)/) ? `/${window.location.pathname.match(/^\/([^\/]+)/)[1]}` : ''}/api`
+  );
+  
   const { register } = useAuth();
   const navigate = useNavigate();
   
@@ -62,8 +69,8 @@ const Register = () => {
       
       // Direkter API-Aufruf ohne über AuthContext zu gehen
       try {
-        console.log('Trying direct fetch to API');
-        const response = await fetch('http://localhost:5024/api/auth/register', {
+        console.log('Trying direct fetch to API:', `${apiBaseUrl}/auth/register`);
+        const response = await fetch(`${apiBaseUrl}/auth/register`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -179,7 +186,7 @@ const Register = () => {
               required
               fullWidth
               id="name"
-              label="Name"
+              label="Name der Bar"
               name="name"
               autoComplete="name"
               autoFocus
@@ -277,6 +284,7 @@ const Register = () => {
           
           <Typography variant="caption" color="text.secondary" align="center" mt={1}>
             Hinweis: Nach der Registrierung muss dein Konto vom Administrator aktiviert werden.
+            Jeder Account repräsentiert eine Bar.
           </Typography>
         </Paper>
       </Container>

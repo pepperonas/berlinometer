@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const { protect, authorize } = require('../middleware/auth');
+const bcrypt = require('bcryptjs');
 
 // @route   GET /api/users
 // @desc    Alle Benutzer abrufen (nur für Admins)
@@ -148,6 +149,89 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Serverfehler beim Löschen des Benutzers'
+    });
+  }
+});
+
+// @route   PUT /api/users/profile
+// @desc    Eigenes Profil aktualisieren (für jeden Benutzer)
+// @access  Private
+router.put('/profile', protect, async (req, res) => {
+  try {
+    const user = req.user;
+    
+    // Felder, die aktualisiert werden dürfen
+    const { name, currentPassword, newPassword } = req.body;
+    
+    const updateData = {};
+    if (name) updateData.name = name;
+    
+    // Wenn ein neues Passwort gesetzt werden soll, prüfe das aktuelle
+    if (newPassword && currentPassword) {
+      // Hole den Benutzer mit Passwort für den Vergleich
+      const userWithPassword = await User.findById(user._id).select('+password');
+      
+      if (!userWithPassword) {
+        return res.status(404).json({
+          success: false,
+          error: 'Benutzer nicht gefunden'
+        });
+      }
+      
+      // Prüfe, ob das aktuelle Passwort korrekt ist
+      const isMatch = await userWithPassword.matchPassword(currentPassword);
+      
+      if (!isMatch) {
+        return res.status(401).json({
+          success: false,
+          error: 'Aktuelles Passwort ist falsch'
+        });
+      }
+      
+      // Setze das neue Passwort
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(newPassword, salt);
+    }
+    
+    // Benutzer aktualisieren
+    const updatedUser = await User.findByIdAndUpdate(
+      user._id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'Benutzer nicht gefunden'
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: updatedUser
+    });
+  } catch (err) {
+    console.error('Error updating user profile:', err);
+    
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({
+        success: false,
+        error: 'Benutzer nicht gefunden'
+      });
+    }
+    
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({
+        success: false,
+        error: messages.join(', ')
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      error: 'Serverfehler beim Aktualisieren des Profils'
     });
   }
 });

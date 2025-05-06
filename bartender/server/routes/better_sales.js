@@ -6,13 +6,15 @@ const Staff = require('../models/Staff');
 const mongoose = require('mongoose');
 const { PAYMENT_METHODS } = require('../utils/constants');
 const { handleCSVImport } = require('./fixed_import');
+const { protect } = require('../middleware/auth');
+const { addBarToBody } = require('../middleware/barFilter');
 
 // @route   GET /api/sales
 // @desc    Alle Verkäufe erhalten
 // @access  Private
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
   try {
-    const sales = await Sale.find()
+    const sales = await Sale.find({ bar: req.barId })
       .sort({ date: -1 })
       .populate('staffId', 'name')
       .populate('items.drinkId', 'name');
@@ -326,7 +328,7 @@ const prepareSaleData = (req, res, next) => {
 // @route   POST /api/sales
 // @desc    Verkauf erstellen
 // @access  Private
-router.post('/', prepareSaleData, async (req, res) => {
+router.post('/', protect, addBarToBody, prepareSaleData, async (req, res) => {
   try {
     const newSale = new Sale(req.body);
     

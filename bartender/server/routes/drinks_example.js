@@ -2,9 +2,15 @@ const express = require('express');
 const router = express.Router();
 const Drink = require('../models/Drink');
 const { protect } = require('../middleware/auth');
-const { addBarToBody } = require('../middleware/barFilter');
+const { 
+  getList, 
+  getOne, 
+  createOne, 
+  updateOne, 
+  deleteOne 
+} = require('../middleware/barFilter');
 
-// Middleware zur Vorbereitung und Validierung der Getränkedaten
+// Middleware für die Validierung der Getränkedaten
 const prepareDrinkData = (req, res, next) => {
   try {
     // Logging für Debug-Zwecke
@@ -99,21 +105,12 @@ const handleMongooseErrors = (err, req, res, next) => {
 };
 
 // @route   GET /api/drinks
-// @desc    Alle Getränke erhalten
+// @desc    Alle Getränke erhalten (mit Bar-Filter)
 // @access  Private
-router.get('/', protect, async (req, res) => {
-  try {
-    // Filtere nach aktueller Bar
-    const drinks = await Drink.find({ bar: req.barId }).sort({ name: 1 });
-    res.json(drinks);
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
-  }
-});
+router.get('/', protect, getList(Drink, { sort: { name: 1 } }));
 
 // @route   GET /api/drinks/popular/list
-// @desc    Beliebte Getränke erhalten
+// @desc    Beliebte Getränke erhalten (mit Bar-Filter)
 // @access  Private
 router.get('/popular/list', protect, async (req, res) => {
   try {
@@ -121,116 +118,39 @@ router.get('/popular/list', protect, async (req, res) => {
       popular: true,
       bar: req.barId 
     });
-    res.json(popularDrinks);
+    res.json({
+      success: true,
+      count: popularDrinks.length,
+      data: popularDrinks
+    });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({
+      success: false,
+      error: 'Serverfehler beim Abrufen beliebter Getränke'
+    });
   }
 });
 
 // @route   GET /api/drinks/:id
-// @desc    Einzelnes Getränk erhalten
+// @desc    Einzelnes Getränk erhalten (mit Bar-Filter)
 // @access  Private
-router.get('/:id', protect, async (req, res) => {
-  try {
-    const drink = await Drink.findOne({
-      _id: req.params.id,
-      bar: req.barId
-    });
-    
-    if (!drink) {
-      return res.status(404).json({ message: 'Getränk nicht gefunden' });
-    }
-    
-    res.json(drink);
-  } catch (err) {
-    console.error(err.message);
-    
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ message: 'Getränk nicht gefunden' });
-    }
-    
-    res.status(500).send('Server Error');
-  }
-});
+router.get('/:id', protect, getOne(Drink));
 
 // @route   POST /api/drinks
-// @desc    Getränk erstellen
+// @desc    Getränk erstellen (mit Bar-Filter)
 // @access  Private
-router.post('/', protect, addBarToBody, prepareDrinkData, async (req, res, next) => {
-  try {
-    // Bar-ID wurde bereits durch addBarToBody hinzugefügt
-    
-    const newDrink = new Drink(req.body);
-    const drink = await newDrink.save();
-    console.log('Getränk erfolgreich erstellt:', drink._id);
-    res.json(drink);
-  } catch (err) {
-    next(err); // Weiterleitung an die Fehlerbehandlungs-Middleware
-  }
-});
+router.post('/', protect, prepareDrinkData, createOne(Drink));
 
 // @route   PUT /api/drinks/:id
-// @desc    Getränk aktualisieren
+// @desc    Getränk aktualisieren (mit Bar-Filter)
 // @access  Private
-router.put('/:id', protect, prepareDrinkData, async (req, res, next) => {
-  try {
-    // Stelle sicher, dass Bar-ID nicht geändert wird
-    req.body.bar = req.barId;
-    
-    const drink = await Drink.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        bar: req.barId
-      }, 
-      req.body, 
-      { 
-        new: true,           // Gibt das aktualisierte Dokument zurück
-        runValidators: true, // Führt die Schema-Validierungen aus
-        context: 'query'     // Erlaubt den Zugriff auf die Abfrage in Pre-Hooks
-      }
-    );
-    
-    if (!drink) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Getränk nicht gefunden' 
-      });
-    }
-    
-    console.log('Getränk erfolgreich aktualisiert:', drink._id);
-    res.json(drink);
-  } catch (err) {
-    next(err); // Weiterleitung an die Fehlerbehandlungs-Middleware
-  }
-});
+router.put('/:id', protect, prepareDrinkData, updateOne(Drink));
 
 // @route   DELETE /api/drinks/:id
-// @desc    Getränk löschen
+// @desc    Getränk löschen (mit Bar-Filter)
 // @access  Private
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    const drink = await Drink.findOne({
-      _id: req.params.id,
-      bar: req.barId
-    });
-    
-    if (!drink) {
-      return res.status(404).json({ message: 'Getränk nicht gefunden' });
-    }
-    
-    await drink.deleteOne();
-    res.json({ message: 'Getränk entfernt' });
-  } catch (err) {
-    console.error(err.message);
-    
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ message: 'Getränk nicht gefunden' });
-    }
-    
-    res.status(500).send('Server Error');
-  }
-});
+router.delete('/:id', protect, deleteOne(Drink));
 
 // Fehlerbehandlungs-Middleware registrieren
 router.use(handleMongooseErrors);

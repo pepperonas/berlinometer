@@ -3,15 +3,17 @@ const router = express.Router();
 const Expense = require('../models/Expense');
 const Income = require('../models/Income');
 const mongoose = require('mongoose');
+const { protect } = require('../middleware/auth');
+const { addBarToBody } = require('../middleware/barFilter');
 
 // ========== AUSGABEN-ROUTES ==========
 
 // @route   GET /api/finances/expenses
 // @desc    Alle Ausgaben abrufen
 // @access  Private
-router.get('/expenses', async (req, res) => {
+router.get('/expenses', protect, async (req, res) => {
   try {
-    const expenses = await Expense.find().sort({ date: -1 });
+    const expenses = await Expense.find({ bar: req.barId }).sort({ date: -1 });
     
     // IDs formatieren
     const formattedExpenses = expenses.map(expense => {
@@ -30,9 +32,9 @@ router.get('/expenses', async (req, res) => {
 // @route   GET /api/finances/expenses/:id
 // @desc    Einzelne Ausgabe abrufen
 // @access  Private
-router.get('/expenses/:id', async (req, res) => {
+router.get('/expenses/:id', protect, async (req, res) => {
   try {
-    const expense = await Expense.findById(req.params.id);
+    const expense = await Expense.findOne({ _id: req.params.id, bar: req.barId });
     
     if (!expense) {
       return res.status(404).json({ message: 'Ausgabe nicht gefunden' });
@@ -53,12 +55,13 @@ router.get('/expenses/:id', async (req, res) => {
 // @route   POST /api/finances/expenses
 // @desc    Neue Ausgabe erstellen
 // @access  Private
-router.post('/expenses', async (req, res) => {
+router.post('/expenses', protect, addBarToBody, async (req, res) => {
   try {
     const { category, amount, date, description, recurring } = req.body;
     
     // Neue Ausgabe erstellen
     const newExpense = new Expense({
+      bar: req.barId, // Bar-ID hinzufügen
       category,
       amount,
       date,
@@ -88,13 +91,13 @@ router.post('/expenses', async (req, res) => {
 // @route   PUT /api/finances/expenses/:id
 // @desc    Ausgabe aktualisieren
 // @access  Private
-router.put('/expenses/:id', async (req, res) => {
+router.put('/expenses/:id', protect, addBarToBody, async (req, res) => {
   try {
     const { category, amount, date, description, recurring } = req.body;
     
     // Vorhandene Ausgabe suchen und aktualisieren
-    const expense = await Expense.findByIdAndUpdate(
-      req.params.id,
+    const expense = await Expense.findOneAndUpdate(
+      { _id: req.params.id, bar: req.barId },
       {
         category,
         amount,
@@ -134,9 +137,9 @@ router.put('/expenses/:id', async (req, res) => {
 // @route   DELETE /api/finances/expenses/:id
 // @desc    Ausgabe löschen
 // @access  Private
-router.delete('/expenses/:id', async (req, res) => {
+router.delete('/expenses/:id', protect, async (req, res) => {
   try {
-    const expense = await Expense.findById(req.params.id);
+    const expense = await Expense.findOne({ _id: req.params.id, bar: req.barId });
     
     if (!expense) {
       return res.status(404).json({ message: 'Ausgabe nicht gefunden' });
@@ -161,9 +164,9 @@ router.delete('/expenses/:id', async (req, res) => {
 // @route   GET /api/finances/income
 // @desc    Alle Einnahmen abrufen
 // @access  Private
-router.get('/income', async (req, res) => {
+router.get('/income', protect, async (req, res) => {
   try {
-    const incomes = await Income.find().sort({ date: -1 });
+    const incomes = await Income.find({ bar: req.barId }).sort({ date: -1 });
     
     // IDs formatieren
     const formattedIncomes = incomes.map(income => {
@@ -182,9 +185,9 @@ router.get('/income', async (req, res) => {
 // @route   GET /api/finances/income/:id
 // @desc    Einzelne Einnahme abrufen
 // @access  Private
-router.get('/income/:id', async (req, res) => {
+router.get('/income/:id', protect, async (req, res) => {
   try {
-    const income = await Income.findById(req.params.id);
+    const income = await Income.findOne({ _id: req.params.id, bar: req.barId });
     
     if (!income) {
       return res.status(404).json({ message: 'Einnahme nicht gefunden' });
@@ -205,12 +208,13 @@ router.get('/income/:id', async (req, res) => {
 // @route   POST /api/finances/income
 // @desc    Neue Einnahme erstellen
 // @access  Private
-router.post('/income', async (req, res) => {
+router.post('/income', protect, addBarToBody, async (req, res) => {
   try {
     const { category, amount, date, description } = req.body;
     
     // Neue Einnahme erstellen
     const newIncome = new Income({
+      bar: req.barId, // Bar-ID hinzufügen
       category,
       amount,
       date,
@@ -239,13 +243,13 @@ router.post('/income', async (req, res) => {
 // @route   PUT /api/finances/income/:id
 // @desc    Einnahme aktualisieren
 // @access  Private
-router.put('/income/:id', async (req, res) => {
+router.put('/income/:id', protect, addBarToBody, async (req, res) => {
   try {
     const { category, amount, date, description } = req.body;
     
     // Vorhandene Einnahme suchen und aktualisieren
-    const income = await Income.findByIdAndUpdate(
-      req.params.id,
+    const income = await Income.findOneAndUpdate(
+      { _id: req.params.id, bar: req.barId },
       {
         category,
         amount,
@@ -284,9 +288,9 @@ router.put('/income/:id', async (req, res) => {
 // @route   DELETE /api/finances/income/:id
 // @desc    Einnahme löschen
 // @access  Private
-router.delete('/income/:id', async (req, res) => {
+router.delete('/income/:id', protect, async (req, res) => {
   try {
-    const income = await Income.findById(req.params.id);
+    const income = await Income.findOne({ _id: req.params.id, bar: req.barId });
     
     if (!income) {
       return res.status(404).json({ message: 'Einnahme nicht gefunden' });

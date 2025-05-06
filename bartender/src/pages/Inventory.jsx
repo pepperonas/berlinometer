@@ -108,28 +108,18 @@ const Inventory = () => {
       
       if (Array.isArray(data) && data.length > 0) {
         setSuppliers(data);
+        return data;
       } else {
         console.warn('No suppliers found or invalid data format');
-        // If suppliers API returns empty, create a placeholder supplier for testing
-        setSuppliers([
-          { _id: '1', id: '1', name: 'Test Supplier 1' },
-          { _id: '2', id: '2', name: 'Test Supplier 2' }
-        ]);
+        // Just set an empty array instead of using test suppliers with invalid IDs
+        setSuppliers([]);
+        return [];
       }
-      // Return the supplier data for external use
-      return Array.isArray(data) && data.length > 0 ? data : [
-        { _id: '1', id: '1', name: 'Test Supplier 1' },
-        { _id: '2', id: '2', name: 'Test Supplier 2' }
-      ];
     } catch (err) {
       console.error('Error loading suppliers:', err);
-      // If error occurs, create a placeholder supplier for testing
-      const fallbackSuppliers = [
-        { _id: '1', id: '1', name: 'Test Supplier 1' },
-        { _id: '2', id: '2', name: 'Test Supplier 2' }
-      ];
-      setSuppliers(fallbackSuppliers);
-      return fallbackSuppliers;
+      // If error occurs, just return an empty array
+      setSuppliers([]);
+      return [];
     }
   };
   
@@ -337,6 +327,16 @@ const Inventory = () => {
       // Remove id from the processed item to avoid MongoDB errors
       const { id, ...itemToSave } = processedItem;
       
+      // Ensure supplier is a valid MongoDB ObjectId or null
+      if (itemToSave.supplier) {
+        // Check if supplier is a valid MongoDB ObjectId (24 hex characters)
+        const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(itemToSave.supplier);
+        if (!isValidObjectId) {
+          console.warn('Invalid supplier ID format, setting to null:', itemToSave.supplier);
+          itemToSave.supplier = null;
+        }
+      }
+      
       // Additional debug info to check what we're actually sending
       console.log('Item to save:', JSON.stringify(itemToSave, null, 2));
       console.log('Contains supplier field:', itemToSave.hasOwnProperty('supplier'));
@@ -420,7 +420,7 @@ const Inventory = () => {
                 minQuantity: 0,
                 costPerUnit: 0,
                 lastOrderDate: new Date().toISOString().split('T')[0],
-                supplier: suppliers.length > 0 ? (suppliers[0]._id || suppliers[0].id) : '',
+                supplier: suppliers.length > 0 && suppliers[0]._id ? suppliers[0]._id : null,
               });
               setEditDialogOpen(true);
             }}

@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const SupplierSchema = new mongoose.Schema({
+  bar: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bar',
+    required: [true, 'Jeder Lieferant muss einer Bar zugeordnet sein']
+  },
   name: {
     type: String,
     required: [true, 'Bitte geben Sie einen Namen an'],

@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Inventory = require('../models/Inventory');
 const { protect } = require('../middleware/auth');
+const { addBarToBody } = require('../middleware/barFilter');
 
 // @route   GET /api/inventory
 // @desc    Alle Inventareinträge abrufen
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    const inventory = await Inventory.find().sort({ name: 1 });
+    const inventory = await Inventory.find({ bar: req.barId }).sort({ name: 1 });
     res.json(inventory);
   } catch (err) {
     console.error(err.message);
@@ -22,7 +23,8 @@ router.get('/', protect, async (req, res) => {
 router.get('/low-stock', protect, async (req, res) => {
   try {
     const lowStockItems = await Inventory.find({
-      $expr: { $lt: ["$quantity", "$minQuantity"] }
+      $expr: { $lt: ["$quantity", "$minQuantity"] },
+      bar: req.barId
     }).sort({ quantity: 1 });
     
     res.json(lowStockItems);
@@ -37,7 +39,7 @@ router.get('/low-stock', protect, async (req, res) => {
 // @access  Private
 router.get('/:id', protect, async (req, res) => {
   try {
-    const item = await Inventory.findById(req.params.id);
+    const item = await Inventory.findOne({ _id: req.params.id, bar: req.barId });
     
     if (!item) {
       return res.status(404).json({ message: 'Artikel nicht gefunden' });
@@ -58,7 +60,7 @@ router.get('/:id', protect, async (req, res) => {
 // @route   POST /api/inventory
 // @desc    Neuen Inventareintrag erstellen
 // @access  Private
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, addBarToBody, async (req, res) => {
   try {
     console.log('Creating new inventory item with data:', JSON.stringify(req.body, null, 2));
     console.log('Update data contains supplier?', req.body.hasOwnProperty('supplier'));
@@ -84,6 +86,9 @@ router.post('/', protect, async (req, res) => {
       console.log('Setting supplier to null for new inventory');
       // If supplier is empty, null, or undefined, set it to null explicitly
       req.body.supplier = null;
+    } else if (typeof req.body.supplier === 'string' && !mongoose.Types.ObjectId.isValid(req.body.supplier)) {
+      console.log('Invalid supplier ID format, setting to null');
+      req.body.supplier = null; 
     }
     
     // Ensure lastOrderDate is in the correct format
@@ -136,7 +141,7 @@ router.post('/', protect, async (req, res) => {
 // @route   PUT /api/inventory/:id
 // @desc    Inventareintrag aktualisieren
 // @access  Private
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', protect, addBarToBody, async (req, res) => {
   try {
     console.log('Updating inventory item with ID:', req.params.id);
     console.log('Update data:', JSON.stringify(req.body, null, 2));
@@ -149,6 +154,9 @@ router.put('/:id', protect, async (req, res) => {
     if (!req.body.supplier || (typeof req.body.supplier === 'string' && req.body.supplier.trim() === '')) {
       console.log('Setting supplier to null');
       // If supplier is empty, null, or undefined, set it to null explicitly
+      req.body.supplier = null;
+    } else if (typeof req.body.supplier === 'string' && !mongoose.Types.ObjectId.isValid(req.body.supplier)) {
+      console.log('Invalid supplier ID format, setting to null');
       req.body.supplier = null;
     }
     
@@ -178,8 +186,8 @@ router.put('/:id', protect, async (req, res) => {
     
     console.log('Final update data:', JSON.stringify(updateData, null, 2));
     
-    const item = await Inventory.findByIdAndUpdate(
-      req.params.id, 
+    const item = await Inventory.findOneAndUpdate(
+      { _id: req.params.id, bar: req.barId }, 
       updateData, 
       { 
         new: true,           // Return the modified document
@@ -220,7 +228,7 @@ router.delete('/:id', protect, async (req, res) => {
   try {
     console.log('Deleting inventory item with ID:', req.params.id);
     
-    const item = await Inventory.findById(req.params.id);
+    const item = await Inventory.findOne({ _id: req.params.id, bar: req.barId });
     
     if (!item) {
       return res.status(404).json({ success: false, error: 'Artikel nicht gefunden' });

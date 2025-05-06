@@ -4,6 +4,11 @@ const { EXPENSE_CATEGORIES } = require('../utils/constants');
 const expenseCategoryOptions = EXPENSE_CATEGORIES.map(category => category.id);
 
 const ExpenseSchema = new mongoose.Schema({
+  bar: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Bar',
+    required: [true, 'Jede Ausgabe muss einer Bar zugeordnet sein']
+  },
   category: {
     type: String,
     enum: expenseCategoryOptions,
