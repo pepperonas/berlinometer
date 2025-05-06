@@ -210,7 +210,7 @@ router.post('/login', async (req, res) => {
               email: user.email,
               role: user.role,
               active: user.active,
-              currentBar: barInfo
+              bar: barInfo
             }
           });
     } catch (dbError) {
@@ -234,7 +234,8 @@ router.post('/login', async (req, res) => {
 // @access  Private
 router.get('/me', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('bar', 'name address contact logo isActive');
+    // Use _id instead of id (MongoDB uses _id)
+    const user = await User.findById(req.user._id).populate('bar', 'name address contact logo isActive');
 
     res.status(200).json({
       success: true,

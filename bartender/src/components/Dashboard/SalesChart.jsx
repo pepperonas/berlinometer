@@ -21,11 +21,13 @@ import {
 
 const SalesChart = ({ data }) => {
   const theme = useTheme();
-  const [timeRange, setTimeRange] = useState('week');
+  const [timeRange, setTimeRange] = useState('today');
   
   // Filterdaten nach Zeitraum
   const getFilteredData = () => {
     switch (timeRange) {
+      case 'today':
+        return data.today;
       case 'week':
         return data.weekly;
       case 'month':
@@ -39,7 +41,10 @@ const SalesChart = ({ data }) => {
 
   // Formatierung für X-Achse
   const formatXAxis = (value) => {
-    if (timeRange === 'week') {
+    if (timeRange === 'today') {
+      // Stunden für Tagesansicht
+      return value;
+    } else if (timeRange === 'week') {
       // Wochentage z.B. "Mo" für Montag
       return value.substring(0, 2);
     } else if (timeRange === 'month') {
@@ -100,6 +105,12 @@ const SalesChart = ({ data }) => {
             Umsätze
           </Typography>
           <ButtonGroup size="small" aria-label="Zeitraum wählen">
+            <Button 
+              onClick={() => setTimeRange('today')}
+              variant={timeRange === 'today' ? 'contained' : 'outlined'}
+            >
+              Heute
+            </Button>
             <Button 
               onClick={() => setTimeRange('week')}
               variant={timeRange === 'week' ? 'contained' : 'outlined'}

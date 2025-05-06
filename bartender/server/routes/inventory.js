@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Inventory = require('../models/Inventory');
+const mongoose = require('mongoose');
 const { protect } = require('../middleware/auth');
 const { addBarToBody } = require('../middleware/barFilter');
 
@@ -113,8 +114,13 @@ router.post('/', protect, addBarToBody, async (req, res) => {
       minQuantity: req.body.minQuantity,
       costPerUnit: req.body.costPerUnit || 0,
       lastOrderDate: req.body.lastOrderDate,
-      supplier: req.body.supplier
+      supplier: req.body.supplier,
+      bar: req.barId // Explicitly add the bar ID
     };
+    
+    // Log critical information for debugging
+    console.log('Bar ID from request:', req.barId);
+    console.log('User from request:', req.user ? req.user._id : 'No user');
     
     console.log("Final lastOrderDate being saved for create:", itemData.lastOrderDate);
     

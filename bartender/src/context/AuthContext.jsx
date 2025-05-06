@@ -117,9 +117,18 @@ export const AuthProvider = ({ children }) => {
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
         
         // Speichere den User inkl. Bar-Info im localStorage für API-Interceptor
-        localStorage.setItem('currentUser', JSON.stringify(response.data.user));
+        // Ensure consistent id and _id properties
+        const userData = response.data.user;
+        if (userData._id && !userData.id) userData.id = userData._id;
+        if (userData.id && !userData._id) userData._id = userData.id;
         
-        setCurrentUser(response.data.user);
+        // Make sure bar info is consistent too
+        if (userData.bar && userData.bar._id && !userData.bar.id) userData.bar.id = userData.bar._id;
+        if (userData.bar && userData.bar.id && !userData.bar._id) userData.bar._id = userData.bar.id;
+        
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        
+        setCurrentUser(userData); // Use our normalized userData
         return { success: true };
       } else {
         throw new Error(response.data?.error || 'Anmeldung fehlgeschlagen');
@@ -214,8 +223,13 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     
     try {
-      if (!currentUser || !currentUser.id) {
+      if (!currentUser) {
         throw new Error('Sie müssen angemeldet sein, um Ihr Profil zu aktualisieren');
+      }
+      // Use _id or id depending on what's available
+      if (!currentUser._id && !currentUser.id) {
+        console.error('User object missing both _id and id:', currentUser);
+        throw new Error('Ungültiges Benutzerprofil. Bitte melden Sie sich erneut an.');
       }
       
       // Use the new profile update endpoint

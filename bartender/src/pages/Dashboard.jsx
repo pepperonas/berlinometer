@@ -45,15 +45,16 @@ const Dashboard = () => {
     
     try {
       // Parallele API-Aufrufe
-      const [statsData, weeklyData, topDrinks, lowStock] = await Promise.all([
+      const [statsData, topDrinks, lowStock] = await Promise.all([
         dashboardApi.getStats(),
-        dashboardApi.getSalesData('weekly'),
         dashboardApi.getTopSellingDrinks(),
         inventoryApi.getLowStock()
       ]);
       
-      // Parallele API-Aufrufe für monatliche und jährliche Daten
-      const [monthlyData, yearlyData] = await Promise.all([
+      // Parallele API-Aufrufe für alle Zeiträume
+      const [todayData, weeklyData, monthlyData, yearlyData] = await Promise.all([
+        dashboardApi.getSalesData('today'),
+        dashboardApi.getSalesData('weekly'),
         dashboardApi.getSalesData('monthly'),
         dashboardApi.getSalesData('yearly')
       ]);
@@ -63,6 +64,7 @@ const Dashboard = () => {
       
       setStats(statsData);
       setSalesData({
+        today: todayData,
         weekly: weeklyData,
         monthly: monthlyData,
         yearly: yearlyData

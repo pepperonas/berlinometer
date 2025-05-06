@@ -40,17 +40,43 @@ const api = axios.create({
 
 // Request-Interceptor zum Hinzufügen der aktuellen Bar aus dem User-Objekt
 api.interceptors.request.use(config => {
-  // Versuche die Bar-ID aus dem localStorage zu bekommen
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-  if (currentUser && currentUser.bar && currentUser.bar.id) {
-    // Füge die Bar-ID zu den Request-Daten hinzu, wenn es sich um eine POST oder PUT-Anfrage handelt
-    if ((config.method === 'post' || config.method === 'put') && config.data) {
-      const data = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
-      data.bar = currentUser.bar.id;
-      config.data = JSON.stringify(data);
+  try {
+    // Versuche die Bar-ID aus dem localStorage zu bekommen
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    // Find the bar ID using multiple potential paths
+    let barId = null;
+    
+    if (currentUser.bar) {
+      // Try bar.id first
+      if (currentUser.bar.id) {
+        barId = currentUser.bar.id;
+      }
+      // If not found, try bar._id
+      else if (currentUser.bar._id) {
+        barId = currentUser.bar._id;
+      }
+      // If it's a string, use it directly (simple ID reference)
+      else if (typeof currentUser.bar === 'string') {
+        barId = currentUser.bar;
+      }
     }
+    
+    // Log diagnostic information
+    console.log('Request interceptor - barId:', barId);
+    
+    // Füge die Bar-ID zu den Request-Daten hinzu, wenn es sich um eine POST oder PUT-Anfrage handelt
+    if (barId && (config.method === 'post' || config.method === 'put' || config.method === 'patch') && config.data) {
+      const data = typeof config.data === 'string' ? JSON.parse(config.data) : { ...config.data };
+      data.bar = barId;
+      config.data = typeof config.data === 'string' ? JSON.stringify(data) : data;
+    }
+    
+    return config;
+  } catch (error) {
+    console.error('Error in request interceptor:', error);
+    return config; // Continue with the request even if interceptor fails
   }
-  return config;
 }, error => {
   return Promise.reject(error);
 });
@@ -529,15 +555,19 @@ export const dashboardApi = {
     }
   },
   
-  getSalesData: async () => {
+  getSalesData: async (period = 'monthly') => {
     try {
-      const response = await api.get('/dashboard/sales-data');
+      const response = await api.get(`/dashboard/sales-data?period=${period}`);
       return response.data;
     } catch (error) {
-      console.error('Fehler beim Abrufen der Umsatzdaten:', error);
+      console.error(`Fehler beim Abrufen der Umsatzdaten (${period}):`, error);
       // Fallback zu Beispieldaten im Fehlerfall
       return {
-        labels: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'],
+        labels: period === 'today' ? 
+          ['00:00', '02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'] :
+          period === 'weekly' ? 
+            ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'] :
+            ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun'],
         datasets: [
           {
             label: 'Umsatz',

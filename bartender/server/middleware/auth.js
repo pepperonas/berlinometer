@@ -51,13 +51,22 @@ exports.protect = async (req, res, next) => {
     // Bar-Objekt laden, wenn eine Bar-ID vorhanden ist
     let bar = null;
     if (barId) {
-      bar = await Bar.findById(barId);
+      try {
+        bar = await Bar.findById(barId);
+        // If bar not found, log but don't block the request
+        if (!bar) {
+          console.warn(`Bar with ID ${barId} not found, but continuing with request`);
+        }
+      } catch (barErr) {
+        console.error(`Error finding bar ${barId}:`, barErr);
+        // Don't block the request, just log the error
+      }
     }
     
     // Benutzer und Bar an den Request anfügen
     req.user = user;
     req.bar = bar;
-    req.barId = barId;
+    req.barId = barId; // Always keep the barId even if Bar object not found
     
     next();
   } catch (err) {

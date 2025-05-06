@@ -158,6 +158,16 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
   try {
+    console.log('Profile update request from user:', req.user ? req.user._id : 'Unknown user');
+    console.log('Request body:', req.body);
+    
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized - user not authenticated properly'
+      });
+    }
+    
     const user = req.user;
     
     // Felder, die aktualisiert werden dürfen

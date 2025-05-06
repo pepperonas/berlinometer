@@ -10,34 +10,81 @@ const { protect } = require('../middleware/auth');
 // @access  Private
 router.get('/stats', protect, async (req, res) => {
   try {
-    // Zeitraum festlegen (aktueller Monat)
+    // Get period parameter (default to monthly)
+    const period = req.query.period || 'monthly';
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
     
-    // Zeitraum des vorherigen Monats
-    const firstDayOfPrevMonth = new Date(currentYear, currentMonth - 1, 1);
-    const lastDayOfPrevMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
+    let currentStart, currentEnd, previousStart, previousEnd, trendDescription;
     
-    // Aktuellen Monatsumsatz berechnen
-    const currentMonthSales = await Sale.find({
-      date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+    // Set date ranges based on the period
+    if (period === 'today') {
+      // Today's data compared to yesterday
+      currentStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      currentEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+      
+      // Yesterday
+      previousStart = new Date(now);
+      previousStart.setDate(previousStart.getDate() - 1);
+      previousStart.setHours(0, 0, 0, 0);
+      
+      previousEnd = new Date(previousStart);
+      previousEnd.setHours(23, 59, 59);
+      
+      trendDescription = "vs. gestern";
+    } else if (period === 'weekly') {
+      // Current week data compared to previous week
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+      const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      
+      // Current week (starting from Monday)
+      currentStart = new Date(now);
+      currentStart.setDate(now.getDate() - daysFromMonday);
+      currentStart.setHours(0, 0, 0, 0);
+      
+      currentEnd = new Date(now);
+      currentEnd.setHours(23, 59, 59);
+      
+      // Previous week
+      previousStart = new Date(currentStart);
+      previousStart.setDate(previousStart.getDate() - 7);
+      
+      previousEnd = new Date(currentStart);
+      previousEnd.setDate(previousEnd.getDate() - 1);
+      previousEnd.setHours(23, 59, 59);
+      
+      trendDescription = "vs. letzte Woche";
+    } else {
+      // Default: monthly view
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      currentStart = new Date(currentYear, currentMonth, 1);
+      currentEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59, 999);
+      
+      // Previous month
+      previousStart = new Date(currentYear, currentMonth - 1, 1);
+      previousEnd = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
+      
+      trendDescription = "vs. letzter Monat";
+    }
+    
+    // Aktuellen Zeitraum berechnen
+    const currentSales = await Sale.find({
+      date: { $gte: currentStart, $lte: currentEnd },
       bar: req.barId
     });
     
-    // Vormonatsumsatz berechnen
-    const prevMonthSales = await Sale.find({
-      date: { $gte: firstDayOfPrevMonth, $lte: lastDayOfPrevMonth },
+    // Vorherigen Zeitraum berechnen
+    const prevSales = await Sale.find({
+      date: { $gte: previousStart, $lte: previousEnd },
       bar: req.barId
     });
     
-    // Gesamtumsatz aktueller Monat
-    const currentRevenue = currentMonthSales.reduce((sum, sale) => sum + sale.total, 0);
+    // Gesamtumsatz aktueller Zeitraum
+    const currentRevenue = currentSales.reduce((sum, sale) => sum + sale.total, 0);
     
-    // Gesamtumsatz Vormonat
-    const prevRevenue = prevMonthSales.reduce((sum, sale) => sum + sale.total, 0);
+    // Gesamtumsatz vorheriger Zeitraum
+    const prevRevenue = prevSales.reduce((sum, sale) => sum + sale.total, 0);
     
     // Trendberechnung
     const revenueTrend = prevRevenue === 0 ? 100 : ((currentRevenue - prevRevenue) / prevRevenue) * 100;
@@ -48,8 +95,8 @@ router.get('/stats', protect, async (req, res) => {
     const profitTrend = prevProfit === 0 ? 100 : ((currentProfit - prevProfit) / prevProfit) * 100;
     
     // Anzahl der Kunden (einfach die Anzahl der Verkäufe)
-    const currentCustomers = currentMonthSales.length;
-    const prevCustomers = prevMonthSales.length;
+    const currentCustomers = currentSales.length;
+    const prevCustomers = prevSales.length;
     const customersTrend = prevCustomers === 0 ? 100 : ((currentCustomers - prevCustomers) / prevCustomers) * 100;
     
     // Durchschnittlicher Bestellwert
@@ -62,22 +109,28 @@ router.get('/stats', protect, async (req, res) => {
       revenue: { 
         value: `${currentRevenue.toFixed(2)} €`, 
         trend: parseFloat(revenueTrend.toFixed(1)), 
-        trendDescription: "vs. letzter Monat" 
+        trendDescription 
       },
       profit: { 
         value: `${currentProfit.toFixed(2)} €`, 
         trend: parseFloat(profitTrend.toFixed(1)), 
-        trendDescription: "vs. letzter Monat" 
+        trendDescription 
       },
       customers: { 
         value: currentCustomers.toString(), 
         trend: parseFloat(customersTrend.toFixed(1)), 
-        trendDescription: "vs. letzter Monat" 
+        trendDescription
       },
       avgOrder: { 
         value: `${currentAvgOrder.toFixed(2)} €`, 
         trend: parseFloat(avgOrderTrend.toFixed(1)), 
-        trendDescription: "vs. letzter Monat" 
+        trendDescription
+      },
+      // Add period information
+      period,
+      dateRange: {
+        start: currentStart,
+        end: currentEnd
       }
     };
     
@@ -93,38 +146,101 @@ router.get('/stats', protect, async (req, res) => {
 // @access  Private
 router.get('/sales-data', protect, async (req, res) => {
   try {
+    // Get period parameter (default to monthly)
+    const period = req.query.period || 'monthly';
+    
     // Aktuelles Jahr
     const currentYear = new Date().getFullYear();
+    const now = new Date();
     
-    // Umsatzdaten für die letzten 6 Monate berechnen
-    const monthLabels = [];
-    const salesData = [];
+    let labels = [];
+    let salesData = [];
     
-    // Für jeden der letzten 6 Monate
-    for (let i = 5; i >= 0; i--) {
-      const month = new Date().getMonth() - i;
-      const year = month < 0 ? currentYear - 1 : currentYear;
-      const adjustedMonth = month < 0 ? month + 12 : month;
+    // Handle different periods
+    if (period === 'today') {
+      // For today, show hourly data
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
       
-      const firstDayOfMonth = new Date(year, adjustedMonth, 1);
-      const lastDayOfMonth = new Date(year, adjustedMonth + 1, 0, 23, 59, 59, 999);
+      // Create array for every 2 hours (12 points total)
+      for (let hour = 0; hour < 24; hour += 2) {
+        const startHour = new Date(startOfDay);
+        startHour.setHours(hour);
+        
+        const endHour = new Date(startOfDay);
+        endHour.setHours(hour + 2 - 0.01); // End 1 minute before next period
+        
+        // Add label for this time period (e.g., "08:00")
+        const hourLabel = `${hour.toString().padStart(2, '0')}:00`;
+        labels.push(hourLabel);
+        
+        // Get sales for this hour range
+        const hourlySales = await Sale.find({
+          date: { $gte: startHour, $lte: endHour },
+          bar: req.barId
+        });
+        
+        const hourlyRevenue = hourlySales.reduce((sum, sale) => sum + sale.total, 0);
+        salesData.push(parseFloat(hourlyRevenue.toFixed(2)));
+      }
+    } else if (period === 'weekly') {
+      // For the current week, show daily data
+      const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+      const startOfWeek = new Date(now); 
+      startOfWeek.setDate(now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1)); // Start from Monday
+      startOfWeek.setHours(0, 0, 0, 0);
       
-      // Monatsnamen hinzufügen
-      const monthName = firstDayOfMonth.toLocaleString('de-DE', { month: 'short' });
-      monthLabels.push(monthName);
+      // Get data for each day of the current week
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        
+        const nextDate = new Date(date);
+        nextDate.setDate(date.getDate() + 1);
+        
+        // Add day name (e.g., "Mo")
+        const dayName = date.toLocaleString('de-DE', { weekday: 'short' });
+        labels.push(dayName);
+        
+        // Get sales for this day
+        const dailySales = await Sale.find({
+          date: { $gte: date, $lt: nextDate },
+          bar: req.barId
+        });
+        
+        const dailyRevenue = dailySales.reduce((sum, sale) => sum + sale.total, 0);
+        salesData.push(parseFloat(dailyRevenue.toFixed(2)));
+      }
+    } else {
+      // Default: monthly view (last 6 months)
+      // Umsatzdaten für die letzten 6 Monate berechnen
       
-      // Umsatz für diesen Monat berechnen
-      const monthlySales = await Sale.find({
-        date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
-        bar: req.barId
-      });
-      
-      const monthlyRevenue = monthlySales.reduce((sum, sale) => sum + sale.total, 0);
-      salesData.push(parseFloat(monthlyRevenue.toFixed(2)));
+      // Für jeden der letzten 6 Monate
+      for (let i = 5; i >= 0; i--) {
+        const month = now.getMonth() - i;
+        const year = month < 0 ? currentYear - 1 : currentYear;
+        const adjustedMonth = month < 0 ? month + 12 : month;
+        
+        const firstDayOfMonth = new Date(year, adjustedMonth, 1);
+        const lastDayOfMonth = new Date(year, adjustedMonth + 1, 0, 23, 59, 59, 999);
+        
+        // Monatsnamen hinzufügen
+        const monthName = firstDayOfMonth.toLocaleString('de-DE', { month: 'short' });
+        labels.push(monthName);
+        
+        // Umsatz für diesen Monat berechnen
+        const monthlySales = await Sale.find({
+          date: { $gte: firstDayOfMonth, $lte: lastDayOfMonth },
+          bar: req.barId
+        });
+        
+        const monthlyRevenue = monthlySales.reduce((sum, sale) => sum + sale.total, 0);
+        salesData.push(parseFloat(monthlyRevenue.toFixed(2)));
+      }
     }
     
     const chartData = {
-      labels: monthLabels,
+      labels: labels,
       datasets: [
         {
           label: 'Umsatz',
@@ -147,12 +263,28 @@ router.get('/sales-data', protect, async (req, res) => {
 // @access  Private
 router.get('/top-selling', protect, async (req, res) => {
   try {
-    // Alle Verkäufe des letzten Monats abrufen
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    // Get period parameter (default to monthly)
+    const period = req.query.period || 'monthly';
+    const now = new Date();
+    
+    let startDate;
+    
+    // Set the date range based on the period
+    if (period === 'today') {
+      // Just today's data
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    } else if (period === 'weekly') {
+      // Last 7 days
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7);
+    } else {
+      // Default: last month
+      startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1);
+    }
     
     const sales = await Sale.find({
-      date: { $gte: lastMonth },
+      date: { $gte: startDate },
       bar: req.barId
     });
     
