@@ -285,7 +285,20 @@ export const AuthProvider = ({ children }) => {
           if (data.user) {
             setCurrentUser(data.user);
           } else if (data.data) {
-            setCurrentUser(prev => ({ ...prev, ...data.data }));
+            // If we have bar data, merge it with the current user
+            if (data.bar) {
+              setCurrentUser(prev => ({
+                ...prev,
+                ...data.data,
+                bar: {
+                  ...(prev.bar || {}),
+                  ...data.bar
+                }
+              }));
+            } else {
+              // Otherwise just update the user data
+              setCurrentUser(prev => ({ ...prev, ...data.data }));
+            }
           }
           return { success: true };
         } else {
@@ -308,8 +321,20 @@ export const AuthProvider = ({ children }) => {
           if (response.data.user) {
             setCurrentUser(response.data.user);
           } else if (response.data.data) {
-            // Maintain backward compatibility
-            setCurrentUser(prev => ({ ...prev, ...response.data.data }));
+            // If we have bar data, merge it with the current user
+            if (response.data.bar) {
+              setCurrentUser(prev => ({
+                ...prev,
+                ...response.data.data,
+                bar: {
+                  ...(prev.bar || {}),
+                  ...response.data.bar
+                }
+              }));
+            } else {
+              // Otherwise just update the user data
+              setCurrentUser(prev => ({ ...prev, ...response.data.data }));
+            }
           }
           return { success: true };
         } else {

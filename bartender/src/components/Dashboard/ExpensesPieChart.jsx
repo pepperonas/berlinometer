@@ -54,10 +54,17 @@ const ExpensesPieChart = ({ data }) => {
     '#607d8b',  // Blaugrau
   ];
 
-  // Filterdaten nach Zeitraum
+  // Filterdaten nach Zeitraum und stell sicher, dass sie im erwarteten Format sind
   const getFilteredData = () => {
     if (!data) {
+      console.log('Keine Daten verfügbar für ExpensesPieChart');
       return []; // Return empty array if data is null or undefined
+    }
+    
+    // Wenn data direkt ein Array ist, haben wir möglicherweise nur ein Zeitraumsegment
+    if (Array.isArray(data)) {
+      console.log('Expensesdata ist direkt ein Array, verwende es als monatliche Daten');
+      return timeRange === 'month' ? data : [];
     }
     
     let filteredData;
@@ -75,8 +82,29 @@ const ExpensesPieChart = ({ data }) => {
         filteredData = data.monthly;
     }
     
-    // Ensure we always return an array
-    return Array.isArray(filteredData) ? filteredData : [];
+    // Wenn keine spezifischen Daten für diesen Zeitraum verfügbar sind
+    // und wir haben monatliche Daten, zeige diese als Fallback an
+    if (!filteredData && data.monthly) {
+      console.log(`Keine Daten für Zeitraum ${timeRange} verfügbar, verwende monatliche Daten`);
+      filteredData = data.monthly;
+    }
+    
+    // Stelle sicher, dass wir ein Array zurückgeben und dass jeder Eintrag ein "percent" Feld hat
+    let result = Array.isArray(filteredData) ? filteredData : [];
+    
+    // Berechne Prozentangaben falls nötig
+    if (result.length > 0 && result.some(item => typeof item.percent === 'undefined')) {
+      console.log('Berechne fehlende Prozentanteile für Ausgabendaten');
+      const total = result.reduce((sum, item) => sum + item.value, 0);
+      if (total > 0) {
+        result = result.map(item => ({
+          ...item,
+          percent: item.value / total
+        }));
+      }
+    }
+    
+    return result;
   };
 
   // Formatierung für Tooltip
@@ -144,6 +172,8 @@ const ExpensesPieChart = ({ data }) => {
     );
   };
 
+  const chartData = getFilteredData();
+  
   return (
     <Card 
       sx={{ 
@@ -180,27 +210,47 @@ const ExpensesPieChart = ({ data }) => {
         </Box>
 
         <Box sx={{ width: '100%', height: 240 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={getFilteredData()}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={renderCustomizedLabel}
-                outerRadius={80}
-                innerRadius={40}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {getFilteredData().map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend content={<CustomLegend />} />
-              <RechartsTooltip content={<CustomTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={renderCustomizedLabel}
+                  outerRadius={80}
+                  innerRadius={40}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Legend content={<CustomLegend />} />
+                <RechartsTooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <Box sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              flexDirection: 'column',
+              p: 2,
+              textAlign: 'center',
+              color: 'text.secondary'
+            }}>
+              <Typography variant="body1" gutterBottom>
+                Keine Ausgabendaten für diesen Zeitraum verfügbar
+              </Typography>
+              <Typography variant="body2">
+                Versuchen Sie, einen anderen Zeitraum auszuwählen
+              </Typography>
+            </Box>
+          )}
         </Box>
       </CardContent>
     </Card>

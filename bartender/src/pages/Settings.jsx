@@ -81,11 +81,51 @@ const Settings = () => {
   // Load current user data
   useEffect(() => {
     if (currentUser) {
-      setSettings(prev => ({
-        ...prev,
+      const updatedSettings = {
+        ...settings,
         username: currentUser.name || '',
         email: currentUser.email || ''
-      }));
+      };
+      
+      // Load bar data if available
+      if (currentUser.bar) {
+        // Bar name
+        if (currentUser.bar.name) {
+          updatedSettings.businessName = currentUser.bar.name;
+        }
+        
+        // Address
+        if (currentUser.bar.address) {
+          const address = currentUser.bar.address;
+          const addressParts = [];
+          
+          if (address.street) addressParts.push(address.street);
+          
+          const cityPart = [];
+          if (address.zipCode) cityPart.push(address.zipCode);
+          if (address.city) cityPart.push(address.city);
+          
+          if (cityPart.length > 0) {
+            addressParts.push(cityPart.join(' '));
+          }
+          
+          if (addressParts.length > 0) {
+            updatedSettings.address = addressParts.join(', ');
+          }
+        }
+        
+        // Contact info
+        if (currentUser.bar.contact) {
+          if (currentUser.bar.contact.phone) {
+            updatedSettings.phone = currentUser.bar.contact.phone;
+          }
+          if (currentUser.bar.contact.website) {
+            updatedSettings.website = currentUser.bar.contact.website;
+          }
+        }
+      }
+      
+      setSettings(updatedSettings);
     }
   }, [currentUser]);
   
@@ -137,27 +177,46 @@ const Settings = () => {
     setError('');
     
     try {
-      // Build update data
-      const userData = {
-        name: settings.username
-      };
+      // Build update data based on active tab
+      let userData = {};
       
-      if (settings.password && settings.currentPassword) {
-        userData.currentPassword = settings.currentPassword;
-        userData.newPassword = settings.password;
+      // Profile tab
+      if (activeTab === 0) {
+        userData = {
+          name: settings.username
+        };
+        
+        if (settings.password && settings.currentPassword) {
+          userData.currentPassword = settings.currentPassword;
+          userData.newPassword = settings.password;
+        }
+      } 
+      // Business tab
+      else if (activeTab === 1) {
+        userData = {
+          businessName: settings.businessName,
+          address: settings.address,
+          phone: settings.phone,
+          website: settings.website,
+          taxId: settings.taxId
+        };
       }
+      // For now, we only handle profile and business tabs
       
+      console.log('Sending update data:', JSON.stringify(userData));
       const result = await updateProfile(userData);
       
       if (result.success) {
         setSaveSuccess(true);
         // Clear sensitive fields
-        setSettings(prev => ({
-          ...prev,
-          password: '',
-          confirmPassword: '',
-          currentPassword: ''
-        }));
+        if (activeTab === 0) {
+          setSettings(prev => ({
+            ...prev,
+            password: '',
+            confirmPassword: '',
+            currentPassword: ''
+          }));
+        }
       } else {
         setError(result.error || 'Fehler beim Aktualisieren der Einstellungen');
       }

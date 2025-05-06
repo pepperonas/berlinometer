@@ -171,10 +171,64 @@ router.put('/profile', protect, async (req, res) => {
     const user = req.user;
     
     // Felder, die aktualisiert werden dürfen
-    const { name, currentPassword, newPassword } = req.body;
+    const { name, currentPassword, newPassword, businessName, address, phone, website, taxId } = req.body;
     
     const updateData = {};
     if (name) updateData.name = name;
+    
+    // Bar-Daten finden und aktualisieren, wenn vorhanden
+    let updatedBar = null;
+    if (user.bar && (businessName || address || phone || website || taxId)) {
+      const Bar = require('../models/Bar');
+      const bar = await Bar.findById(user.bar);
+      
+      if (bar) {
+        // Aktualisiere die Bar-Daten
+        const barUpdateData = {};
+        if (businessName) barUpdateData.name = businessName;
+        
+        // Adresse aktualisieren
+        if (address) {
+          // Split address in components
+          const addressParts = address.split(',');
+          barUpdateData.address = {
+            street: addressParts[0]?.trim() || '',
+            city: addressParts[1]?.trim() || '',
+            zipCode: '',
+            country: 'Deutschland'
+          };
+          
+          // Try to extract zip code from city
+          const zipMatch = barUpdateData.address.city.match(/(\d{5})\s*(.*)/);
+          if (zipMatch) {
+            barUpdateData.address.zipCode = zipMatch[1];
+            barUpdateData.address.city = zipMatch[2];
+          }
+        }
+        
+        // Contact information
+        if (phone || website) {
+          barUpdateData.contact = bar.contact || {};
+          if (phone) barUpdateData.contact.phone = phone;
+          if (website) barUpdateData.contact.website = website;
+        }
+        
+        // Tax ID if provided
+        if (taxId) {
+          barUpdateData.taxId = taxId;
+        }
+        
+        console.log('Updating bar with data:', barUpdateData);
+        
+        updatedBar = await Bar.findByIdAndUpdate(
+          bar._id,
+          { $set: barUpdateData },
+          { new: true, runValidators: true }
+        );
+        
+        console.log('Bar updated:', updatedBar ? 'success' : 'failed');
+      }
+    }
     
     // Wenn ein neues Passwort gesetzt werden soll, prüfe das aktuelle
     if (newPassword && currentPassword) {
@@ -208,7 +262,7 @@ router.put('/profile', protect, async (req, res) => {
       user._id,
       updateData,
       { new: true, runValidators: true }
-    ).select('-password');
+    ).select('-password').populate('bar');
     
     if (!updatedUser) {
       return res.status(404).json({
@@ -219,7 +273,8 @@ router.put('/profile', protect, async (req, res) => {
     
     res.status(200).json({
       success: true,
-      data: updatedUser
+      data: updatedUser,
+      bar: updatedBar
     });
   } catch (err) {
     console.error('Error updating user profile:', err);

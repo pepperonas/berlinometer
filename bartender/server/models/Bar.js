@@ -132,6 +132,10 @@ const BarSchema = new mongoose.Schema({
   logo: {
     type: String
   },
+  taxId: {
+    type: String,
+    trim: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
