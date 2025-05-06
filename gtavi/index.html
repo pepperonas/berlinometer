@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA 6 - Coming 2026</title>
+    <style>
+        @font-face {
+            font-family: 'Pricedown';
+            src: url('pricedown.ttf') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #ff9966, #ff5e62, #2C2E3B);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .palm-left {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 20%;
+            height: 80%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M50,0 Q45,30 30,50 Q25,80 10,100 Q5,130 1,180 Q10,170 15,165 Q25,150 30,120 Q40,130 42,150 Q50,140 55,130 Q65,120 70,100 Q80,80 75,50 Q85,70 90,90 Q95,70 98,50 Q90,40 80,30 Q70,20 50,0" fill="%232C2E3B" opacity="0.7"/></svg>');
+            background-repeat: no-repeat;
+            background-size: contain;
+            z-index: 1;
+        }
+
+        .palm-right {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 25%;
+            height: 90%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M50,0 Q55,30 70,50 Q75,80 90,100 Q95,130 99,180 Q90,170 85,165 Q75,150 70,120 Q60,130 58,150 Q50,140 45,130 Q35,120 30,100 Q20,80 25,50 Q15,70 10,90 Q5,70 2,50 Q10,40 20,30 Q30,20 50,0" fill="%232C2E3B" opacity="0.7"/></svg>');
+            background-repeat: no-repeat;
+            background-size: contain;
+            z-index: 1;
+        }
+
+        .city-skyline {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200"><path d="M0,200 L0,150 L20,150 L20,130 L40,130 L40,160 L60,160 L60,140 L80,140 L80,120 L100,120 L100,150 L120,150 L120,100 L140,100 L140,130 L160,130 L160,110 L180,110 L180,140 L200,140 L200,90 L220,90 L220,150 L240,150 L240,120 L260,120 L260,150 L280,150 L280,130 L300,130 L300,100 L320,100 L320,140 L340,140 L340,110 L360,110 L360,150 L380,150 L380,130 L400,130 L400,150 L420,150 L420,120 L440,120 L440,150 L460,150 L460,130 L480,130 L480,100 L500,100 L500,140 L520,140 L520,110 L540,110 L540,150 L560,150 L560,130 L580,130 L580,100 L600,100 L600,140 L620,140 L620,110 L640,110 L640,150 L660,150 L660,130 L680,130 L680,150 L700,150 L700,120 L720,120 L720,150 L740,150 L740,130 L760,130 L760,100 L780,100 L780,140 L800,140 L800,110 L820,110 L820,150 L840,150 L840,130 L860,130 L860,150 L880,150 L880,120 L900,120 L900,150 L920,150 L920,130 L940,130 L940,100 L960,100 L960,140 L980,140 L980,110 L1000,110 L1000,200 Z" fill="%238a9ac7" opacity="0.8"/></svg>');
+            background-repeat: no-repeat;
+            background-size: cover;
+            z-index: 2;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            position: relative;
+            z-index: 3;
+        }
+
+        .logo {
+            max-width: 80%;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+
+        .logo h1 {
+            font-family: 'Pricedown', serif;
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: -3px;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 10px;
+            line-height: 0.85;
+        }
+
+        .logo h1 span.grand {
+            font-family: 'Pricedown', serif;
+            display: block;
+            font-size: 8rem;
+            /*letter-spacing: 5px;*/
+        }
+
+        .logo h1 span.theft, .logo h1 span.auto {
+            font-family: 'Pricedown';
+            display: block;
+            font-size: 8rem;
+        }
+
+        .vi {
+            font-family: 'Pricedown', sans-serif;
+            font-size: 8rem;
+            font-weight: 900;
+            margin: 20px 0;
+            letter-spacing: 5px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+        }
+
+        .coming {
+            font-family: 'Pricedown', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 10px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        .release-date {
+            font-family: 'Pricedown', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+            color: #ffaa00;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .countdown-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(44, 46, 59, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            min-width: 100px;
+            backdrop-filter: blur(5px);
+        }
+
+        .countdown-value {
+            font-family: 'Pricedown', sans-serif;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .countdown-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .rockstar-logo {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: #ffaa00;
+            color: #000;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 3px;
+            letter-spacing: 1px;
+        }
+
+        .mature {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: #fff;
+            color: #000;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .logo h1 {
+                font-size: 3rem;
+            }
+
+            .logo h1 span.grand {
+                font-size: 2rem;
+            }
+
+            .logo h1 span.theft, .logo h1 span.auto {
+                font-size: 2.5rem;
+            }
+
+            .vi {
+                font-size: 5rem;
+            }
+
+            .coming {
+                font-size: 1.5rem;
+            }
+
+            .release-date {
+                font-size: 1.8rem;
+            }
+
+            .countdown {
+                flex-wrap: wrap;
+            }
+
+            .countdown-item {
+                min-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="palm-left"></div>
+<div class="palm-right"></div>
+<div class="city-skyline"></div>
+
+<div class="container">
+    <div class="logo">
+        <h1>
+            <span class="grand">grand</span>
+            <span class="theft">theft</span>
+            <span class="auto">auto</span>
+        </h1>
+    </div>
+
+    <div class="vi">VI</div>
+    <div class="coming">COMING 2026</div>
+    <div class="release-date">MAY 26, 2026</div>
+
+    <div class="countdown">
+        <div class="countdown-item">
+            <div id="days" class="countdown-value">000</div>
+            <div class="countdown-label">Tage</div>
+        </div>
+        <div class="countdown-item">
+            <div id="hours" class="countdown-value">00</div>
+            <div class="countdown-label">Stunden</div>
+        </div>
+        <div class="countdown-item">
+            <div id="minutes" class="countdown-value">00</div>
+            <div class="countdown-label">Minuten</div>
+        </div>
+        <div class="countdown-item">
+            <div id="seconds" class="countdown-value">00</div>
+            <div class="countdown-label">Sekunden</div>
+        </div>
+    </div>
+</div>
+
+<div class="rockstar-logo">R*</div>
+<div class="mature">18+</div>
+
+<script>
+    // Countdown zum Release-Datum
+    const countDownDate = new Date("May 26, 2026 00:00:00").getTime();
+
+    // Update des Countdowns jede Sekunde
+    const countdown = setInterval(function () {
+        const now = new Date().getTime();
+        const distance = countDownDate - now;
+
+        // Berechnung für Tage, Stunden, Minuten und Sekunden
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Anzeige der Ergebnisse
+        document.getElementById("days").innerHTML = days.toString().padStart(3, '0');
+        document.getElementById("hours").innerHTML = hours.toString().padStart(2, '0');
+        document.getElementById("minutes").innerHTML = minutes.toString().padStart(2, '0');
+        document.getElementById("seconds").innerHTML = seconds.toString().padStart(2, '0');
+
+        // Wenn der Countdown abgelaufen ist
+        if (distance < 0) {
+            clearInterval(countdown);
+            document.getElementById("days").innerHTML = "000";
+            document.getElementById("hours").innerHTML = "00";
+            document.getElementById("minutes").innerHTML = "00";
+            document.getElementById("seconds").innerHTML = "00";
+
+            // Zusätzliche Aktionen nach Ablauf des Countdowns
+            const comingText = document.querySelector('.coming');
+            comingText.innerHTML = "OUT NOW";
+        }
+    }, 1000);
+</script>
+</body>
+</html>
