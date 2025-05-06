@@ -157,6 +157,9 @@ router.delete('/:id', protect, authorize('admin'), async (req, res) => {
 // @desc    Eigenes Profil aktualisieren (für jeden Benutzer)
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
+  console.log('Profile update endpoint reached');
+  console.log('User in request:', req.user ? req.user._id : 'No user in request');
+  console.log('Authorization header:', req.headers.authorization ? 'Present' : 'Missing');
   try {
     console.log('Profile update request from user:', req.user ? req.user._id : 'Unknown user');
     console.log('Request body:', req.body);
@@ -185,7 +188,10 @@ router.put('/profile', protect, async (req, res) => {
       if (bar) {
         // Aktualisiere die Bar-Daten
         const barUpdateData = {};
-        if (businessName) barUpdateData.name = businessName;
+        if (businessName) {
+          console.log('Updating bar name to:', businessName);
+          barUpdateData.name = businessName;
+        }
         
         // Adresse aktualisieren
         if (address) {
@@ -215,18 +221,28 @@ router.put('/profile', protect, async (req, res) => {
         
         // Tax ID if provided
         if (taxId) {
+          console.log('Updating tax ID to:', taxId);
           barUpdateData.taxId = taxId;
         }
         
-        console.log('Updating bar with data:', barUpdateData);
+        console.log('Updating bar with data:', JSON.stringify(barUpdateData));
+        console.log('Bar ID:', bar._id);
         
-        updatedBar = await Bar.findByIdAndUpdate(
-          bar._id,
-          { $set: barUpdateData },
-          { new: true, runValidators: true }
-        );
-        
-        console.log('Bar updated:', updatedBar ? 'success' : 'failed');
+        try {
+          updatedBar = await Bar.findByIdAndUpdate(
+            bar._id,
+            { $set: barUpdateData },
+            { new: true, runValidators: true }
+          );
+          
+          console.log('Bar updated:', updatedBar ? 'success' : 'failed');
+          if (updatedBar) {
+            console.log('Updated bar data:', JSON.stringify(updatedBar));
+          }
+        } catch (barUpdateErr) {
+          console.error('Error updating bar:', barUpdateErr);
+          // Don't throw the error, just log it and continue
+        }
       }
     }
     
@@ -271,11 +287,25 @@ router.put('/profile', protect, async (req, res) => {
       });
     }
     
-    res.status(200).json({
+    // Explicitly include bar data in the response
+    const responseData = {
       success: true,
-      data: updatedUser,
-      bar: updatedBar
-    });
+      data: updatedUser
+    };
+    
+    if (updatedBar) {
+      responseData.bar = updatedBar;
+      // Also make sure the bar data is included in the user object
+      if (!updatedUser.bar || typeof updatedUser.bar === 'string') {
+        responseData.data = {
+          ...updatedUser.toObject(),
+          bar: updatedBar
+        };
+      }
+    }
+    
+    console.log('Sending response:', JSON.stringify(responseData).substring(0, 200) + '...');
+    res.status(200).json(responseData);
   } catch (err) {
     console.error('Error updating user profile:', err);
     

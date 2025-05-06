@@ -142,6 +142,50 @@ const Settings = () => {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
     setError('');
+    
+    // When business tab is selected, make sure to load all bar data
+    if (newValue === 1 && currentUser && currentUser.bar) {
+      // Load bar data into settings
+      const updatedSettings = { ...settings };
+      
+      if (currentUser.bar.name) {
+        updatedSettings.businessName = currentUser.bar.name;
+      }
+      
+      if (currentUser.bar.address) {
+        const address = currentUser.bar.address;
+        const addressParts = [];
+        
+        if (address.street) addressParts.push(address.street);
+        
+        const cityPart = [];
+        if (address.zipCode) cityPart.push(address.zipCode);
+        if (address.city) cityPart.push(address.city);
+        
+        if (cityPart.length > 0) {
+          addressParts.push(cityPart.join(' '));
+        }
+        
+        if (addressParts.length > 0) {
+          updatedSettings.address = addressParts.join(', ');
+        }
+      }
+      
+      if (currentUser.bar.contact) {
+        if (currentUser.bar.contact.phone) {
+          updatedSettings.phone = currentUser.bar.contact.phone;
+        }
+        if (currentUser.bar.contact.website) {
+          updatedSettings.website = currentUser.bar.contact.website;
+        }
+      }
+      
+      if (currentUser.bar.taxId) {
+        updatedSettings.taxId = currentUser.bar.taxId;
+      }
+      
+      setSettings(updatedSettings);
+    }
   };
   
   // Validate password change

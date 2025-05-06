@@ -262,6 +262,14 @@ export const AuthProvider = ({ children }) => {
       try {
         // Versuche mit fetch statt axios (CORS-Problem umgehen)
         const token = localStorage.getItem('token');
+        
+        if (!token) {
+          console.error('No token found in localStorage!');
+          throw new Error('Sie sind nicht eingeloggt. Bitte melden Sie sich an.');
+        }
+        
+        console.log('Using token from localStorage:', token ? 'Token exists' : 'No token');
+        
         const fetchResponse = await fetch(endpoint, {
           method: method,
           headers: {
@@ -310,9 +318,22 @@ export const AuthProvider = ({ children }) => {
         // Fallback zu axios als letzter Versuch
         console.log('Fallback zu axios mit Methode:', method);
         const axiosMethod = method.toLowerCase();
+        
+        // Make sure headers are set for axios
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          console.error('No token found in localStorage for axios fallback!');
+          throw new Error('Sie sind nicht eingeloggt. Bitte melden Sie sich an.');
+        }
+        
+        // Force set the authorization header again
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
         const response = await axios[axiosMethod](endpoint, userData, {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           }
         });
         
