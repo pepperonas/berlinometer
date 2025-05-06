@@ -56,6 +56,19 @@ function createPdfDocument() {
   return doc;
 }
 
+// Hilfsfunktion zum sicheren Beenden des Exports
+const finishExport = (setLoading, setSnackbar, message) => {
+  // Kurze Verzögerung, um sicherzustellen, dass die Datei heruntergeladen wurde
+  setTimeout(() => {
+    setSnackbar({
+      open: true,
+      message: message,
+      severity: "success"
+    });
+    setLoading(false);
+  }, 500);
+};
+
 const Reports = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -66,6 +79,19 @@ const Reports = () => {
   const [inventoryData, setInventoryData] = useState([]);
   const [salesData, setSalesData] = useState([]);
   const [financesData, setFinancesData] = useState({ expenses: [], income: [] });
+  
+  // Timer zum automatischen Ausblenden des Ladeindikators nach 8 Sekunden
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      timer = setTimeout(() => {
+        setLoading(false);
+      }, 8000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [loading]);
   
   // Daten laden
   useEffect(() => {
@@ -145,6 +171,23 @@ const Reports = () => {
     }
   };
   
+  // Hilfsfunktion für den PDF-Export
+  const exportToPdf = (doc, filename, successMessage) => {
+    try {
+      // PDF speichern und dann Ladeindikator ausblenden
+      doc.save(filename);
+      finishExport(setLoading, setSnackbar, successMessage);
+    } catch (error) {
+      console.error("Fehler beim Generieren des PDF-Berichts:", error);
+      setSnackbar({
+        open: true,
+        message: `Fehler beim PDF-Export: ${error.message || error}`,
+        severity: "error"
+      });
+      setLoading(false);
+    }
+  };
+  
   // Report generieren
   const generateReport = (reportType, formatType) => {
     setLoading(true);
@@ -158,99 +201,103 @@ const Reports = () => {
     
     // Dialog schließen
     handleCloseDialog();
+    handleCloseFormatDialog();
     
-    try {
-      // Je nach Berichtstyp den entsprechenden Report generieren
-      switch (reportType) {
-        case 'Bestandsbewegungen':
-          if (formatType === 'pdf') {
-            generateInventoryMovementsPDF();
-          } else if (formatType === 'excel') {
-            generateInventoryMovementsExcel();
-          }
-          break;
-        
-        case 'Bestandsübersicht':
-          if (formatType === 'pdf') {
-            generateInventoryOverviewPDF();
-          } else if (formatType === 'excel') {
-            generateInventoryOverviewExcel();
-          }
-          break;
+    // Kurze Verzögerung, um die Dialoge zu schließen
+    setTimeout(() => {
+      try {
+        // Je nach Berichtstyp den entsprechenden Report generieren
+        switch (reportType) {
+          case 'Bestandsbewegungen':
+            if (formatType === 'pdf') {
+              generateInventoryMovementsPDF();
+            } else if (formatType === 'excel') {
+              generateInventoryMovementsExcel();
+            }
+            break;
           
-        case 'Monatsabschluss':
-          if (formatType === 'pdf') {
-            generateMonthlyFinancePDF();
-          } else if (formatType === 'excel') {
-            generateMonthlyFinanceExcel();
-          }
-          break;
-          
-        case 'Jahresübersicht':
-          if (formatType === 'pdf') {
-            generateYearlyFinancePDF();
-          } else if (formatType === 'excel') {
-            generateYearlyFinanceExcel();
-          }
-          break;
-          
-        case 'Getränkeverkäufe':
-          if (formatType === 'pdf') {
-            generateDrinkSalesPDF();
-          } else if (formatType === 'excel') {
-            generateDrinkSalesExcel();
-          }
-          break;
-          
-        case 'Stunden- und Tagesvergleich':
-          if (formatType === 'pdf') {
-            generateTimeComparisonPDF();
-          } else if (formatType === 'excel') {
-            generateTimeComparisonExcel();
-          }
-          break;
-          
-        case 'Arbeitszeitübersicht':
-          if (formatType === 'pdf') {
-            generateStaffTimePDF();
-          } else if (formatType === 'excel') {
-            generateStaffTimeExcel();
-          }
-          break;
-          
-        case 'Personalkosten':
-          if (formatType === 'pdf') {
-            generateStaffCostPDF();
-          } else if (formatType === 'excel') {
-            generateStaffCostExcel();
-          }
-          break;
-          
-        case 'Gesamtübersicht':
-          if (formatType === 'pdf') {
-            generateCompleteOverviewPDF();
-          } else if (formatType === 'excel') {
-            generateCompleteOverviewExcel();
-          }
-          break;
-          
-        default:
-          setSnackbar({
-            open: true,
-            message: `Der Berichtstyp "${reportType}" ist noch nicht implementiert.`,
-            severity: 'warning'
-          });
-          setLoading(false);
+          case 'Bestandsübersicht':
+            if (formatType === 'pdf') {
+              generateInventoryOverviewPDF();
+            } else if (formatType === 'excel') {
+              generateInventoryOverviewExcel();
+            }
+            break;
+            
+          case 'Monatsabschluss':
+            if (formatType === 'pdf') {
+              generateMonthlyFinancePDF();
+            } else if (formatType === 'excel') {
+              generateMonthlyFinanceExcel();
+            }
+            break;
+            
+          case 'Jahresübersicht':
+            if (formatType === 'pdf') {
+              generateYearlyFinancePDF();
+            } else if (formatType === 'excel') {
+              generateYearlyFinanceExcel();
+            }
+            break;
+            
+          case 'Getränkeverkäufe':
+            if (formatType === 'pdf') {
+              generateDrinkSalesPDF();
+            } else if (formatType === 'excel') {
+              generateDrinkSalesExcel();
+            }
+            break;
+            
+          case 'Stunden- und Tagesvergleich':
+            if (formatType === 'pdf') {
+              generateTimeComparisonPDF();
+            } else if (formatType === 'excel') {
+              generateTimeComparisonExcel();
+            }
+            break;
+            
+          case 'Arbeitszeitübersicht':
+            if (formatType === 'pdf') {
+              generateStaffTimePDF();
+            } else if (formatType === 'excel') {
+              generateStaffTimeExcel();
+            }
+            break;
+            
+          case 'Personalkosten':
+            if (formatType === 'pdf') {
+              generateStaffCostPDF();
+            } else if (formatType === 'excel') {
+              generateStaffCostExcel();
+            }
+            break;
+            
+          case 'Gesamtübersicht':
+            if (formatType === 'pdf') {
+              generateCompleteOverviewPDF();
+            } else if (formatType === 'excel') {
+              generateCompleteOverviewExcel();
+            }
+            break;
+            
+          default:
+            setSnackbar({
+              open: true,
+              message: `Der Berichtstyp "${reportType}" ist noch nicht implementiert.`,
+              severity: 'warning'
+            });
+            setLoading(false);
+        }
+      } catch (error) {
+        console.error(`Fehler beim Generieren des ${reportType}-Berichts:`, error);
+        setSnackbar({
+          open: true,
+          message: `Fehler beim Generieren des Berichts: ${error.message || error}`,
+          severity: 'error'
+        });
+        setLoading(false);
       }
-    } catch (error) {
-      console.error(`Fehler beim Generieren des ${reportType}-Berichts:`, error);
-      setSnackbar({
-        open: true,
-        message: `Fehler beim Generieren des Berichts: ${error.message || error}`,
-        severity: 'error'
-      });
-      setLoading(false);
-    }
+    }, 100); // Kurze Verzögerung, um die UI zu aktualisieren
   };
   
   // Monatsabschluss als PDF
@@ -427,21 +474,46 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
       
-      // PDF speichern
-      doc.save(`monatsabschluss-${format(new Date(), 'yyyy-MM')}.pdf`);
-      
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Monatsabschluss wurde erfolgreich als PDF exportiert!",
-        severity: "success"
-      });
-      setLoading(false);
+      // PDF exportieren über Hilfsfunktion
+      exportToPdf(
+        doc, 
+        `monatsabschluss-${format(new Date(), 'yyyy-MM')}.pdf`,
+        "Monatsabschluss wurde erfolgreich als PDF exportiert!"
+      );
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({
         open: true,
         message: `Fehler beim PDF-Export: ${error.message || error}`,
+        severity: "error"
+      });
+      setLoading(false);
+    }
+  };
+  
+  // Hilfsfunktion für den Excel-Export
+  const exportToExcel = (data, filename, successMessage) => {
+    try {
+      // Arbeitsmappe erstellen
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      
+      // Arbeitsblatt der Mappe hinzufügen (Sheetname ist der Teil vor dem ersten Leerzeichen im Dateinamen)
+      const sheetName = filename.split('-')[0];
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      
+      // Excel-Datei speichern
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, filename);
+      
+      // Export abschließen
+      finishExport(setLoading, setSnackbar, successMessage);
+    } catch (error) {
+      console.error("Fehler beim Generieren des Excel-Berichts:", error);
+      setSnackbar({
+        open: true,
+        message: `Fehler beim Excel-Export: ${error.message || error}`,
         severity: "error"
       });
       setLoading(false);
@@ -526,25 +598,12 @@ const Reports = () => {
       excelData.push(["Gesamtausgaben", totalExpenses]);
       excelData.push(["Gewinn/Verlust", totalIncome - totalExpenses]);
       
-      // Arbeitsmappe erstellen
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(excelData);
-      
-      // Arbeitsblatt der Mappe hinzufügen
-      XLSX.utils.book_append_sheet(wb, ws, "Monatsabschluss");
-      
-      // Excel-Datei speichern
-      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-      const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(data, `monatsabschluss-${format(new Date(), 'yyyy-MM')}.xlsx`);
-      
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Monatsabschluss wurde erfolgreich als Excel exportiert!",
-        severity: "success"
-      });
-      setLoading(false);
+      // Die Hilfsfunktion aufrufen, um das Excel zu exportieren
+      exportToExcel(
+        excelData, 
+        `monatsabschluss-${format(new Date(), 'yyyy-MM')}.xlsx`,
+        "Monatsabschluss wurde erfolgreich als Excel exportiert!"
+      );
     } catch (error) {
       console.error("Fehler beim Generieren des Excel-Berichts:", error);
       setSnackbar({
@@ -655,16 +714,12 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
       
-      // PDF speichern
-      doc.save(`jahresuebersicht-${currentYear}.pdf`);
-      
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Jahresübersicht wurde erfolgreich als PDF exportiert!",
-        severity: "success"
-      });
-      setLoading(false);
+      // PDF exportieren über Hilfsfunktion
+      exportToPdf(
+        doc, 
+        `jahresuebersicht-${currentYear}.pdf`,
+        "Jahresübersicht wurde erfolgreich als PDF exportiert!"
+      );
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({
@@ -852,16 +907,19 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
       
-      // PDF speichern
+      // PDF speichern und dann Ladeindikator ausblenden
       doc.save(`getraenkeverkaufe-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Getränkeverkäufe wurden erfolgreich als PDF exportiert!",
-        severity: "success"
-      });
-      setLoading(false);
+      // Hier warten wir kurz, um sicherzustellen, dass die Datei heruntergeladen wurde
+      setTimeout(() => {
+        // Erfolgs-Nachricht anzeigen
+        setSnackbar({
+          open: true,
+          message: "Getränkeverkäufe wurden erfolgreich als PDF exportiert!",
+          severity: "success"
+        });
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({
@@ -1075,16 +1133,19 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
       
-      // PDF speichern
+      // PDF speichern und dann Ladeindikator ausblenden
       doc.save(`zeitvergleich-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Stunden- und Tagesvergleich wurde erfolgreich als PDF exportiert!",
-        severity: "success"
-      });
-      setLoading(false);
+      // Hier warten wir kurz, um sicherzustellen, dass die Datei heruntergeladen wurde
+      setTimeout(() => {
+        // Erfolgs-Nachricht anzeigen
+        setSnackbar({
+          open: true,
+          message: "Stunden- und Tagesvergleich wurde erfolgreich als PDF exportiert!",
+          severity: "success"
+        });
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({
@@ -1346,16 +1407,19 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
       
-      // PDF speichern
+      // PDF speichern und dann Ladeindikator ausblenden
       doc.save(`arbeitszeiten-${format(new Date(), 'yyyy-MM')}.pdf`);
       
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Arbeitszeitübersicht wurde erfolgreich als PDF exportiert!",
-        severity: "success"
-      });
-      setLoading(false);
+      // Hier warten wir kurz, um sicherzustellen, dass die Datei heruntergeladen wurde
+      setTimeout(() => {
+        // Erfolgs-Nachricht anzeigen
+        setSnackbar({
+          open: true,
+          message: "Arbeitszeitübersicht wurde erfolgreich als PDF exportiert!",
+          severity: "success"
+        });
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({
@@ -1650,16 +1714,19 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
       
-      // PDF speichern
+      // PDF speichern und dann Ladeindikator ausblenden
       doc.save(`personalkosten-${currentYear}.pdf`);
       
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Personalkosten wurden erfolgreich als PDF exportiert!",
-        severity: "success"
-      });
-      setLoading(false);
+      // Hier warten wir kurz, um sicherzustellen, dass die Datei heruntergeladen wurde
+      setTimeout(() => {
+        // Erfolgs-Nachricht anzeigen
+        setSnackbar({
+          open: true,
+          message: "Personalkosten wurden erfolgreich als PDF exportiert!",
+          severity: "success"
+        });
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({
@@ -1866,16 +1933,19 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, doc.internal.pageSize.height - 10);
       
-      // PDF speichern
+      // PDF speichern und dann Ladeindikator ausblenden
       doc.save(`gesamtuebersicht-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Komplettübersicht wurde als PDF exportiert!",
-        severity: "success"
-      });
-      setLoading(false);
+      // Hier warten wir kurz, um sicherzustellen, dass die Datei heruntergeladen wurde
+      setTimeout(() => {
+        // Erfolgs-Nachricht anzeigen
+        setSnackbar({
+          open: true,
+          message: "Komplettübersicht wurde als PDF exportiert!",
+          severity: "success"
+        });
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({
@@ -2073,15 +2143,19 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, finalY + 15);
       
-      // PDF speichern
+      // PDF speichern und dann Ladeindikator ausblenden
       doc.save(`bestandsbewegungen-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Bestandsbewegungen wurden erfolgreich als PDF exportiert!",
-        severity: "success"
-      });
+      // Hier warten wir kurz, um sicherzustellen, dass die Datei heruntergeladen wurde
+      setTimeout(() => {
+        // Erfolgs-Nachricht anzeigen
+        setSnackbar({
+          open: true,
+          message: "Bestandsbewegungen wurden erfolgreich als PDF exportiert!",
+          severity: "success"
+        });
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({
@@ -2244,15 +2318,19 @@ const Reports = () => {
       doc.setFontSize(8);
       doc.text(`Erstellt am: ${format(new Date(), 'dd.MM.yyyy HH:mm')}`, 14, finalY + 15);
       
-      // PDF speichern
+      // PDF speichern und dann Ladeindikator ausblenden
       doc.save(`bestandsuebersicht-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
       
-      // Erfolgs-Nachricht anzeigen
-      setSnackbar({
-        open: true,
-        message: "Bestandsübersicht wurde erfolgreich als PDF exportiert!",
-        severity: "success"
-      });
+      // Hier warten wir kurz, um sicherzustellen, dass die Datei heruntergeladen wurde
+      setTimeout(() => {
+        // Erfolgs-Nachricht anzeigen
+        setSnackbar({
+          open: true,
+          message: "Bestandsübersicht wurde erfolgreich als PDF exportiert!",
+          severity: "success"
+        });
+        setLoading(false);
+      }, 500);
     } catch (error) {
       console.error("Fehler beim Generieren des PDF-Berichts:", error);
       setSnackbar({

@@ -197,7 +197,7 @@ const Header = ({ toggleTheme, darkMode, toggleSidebar }) => {
           component="div"
           sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: 'bold' }}
         >
-          Bartender
+          {currentUser?.bar?.name || "Bartender"}
         </Typography>
         
         <Box sx={{ flexGrow: 1 }} />
