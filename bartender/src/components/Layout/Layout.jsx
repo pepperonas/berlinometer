@@ -179,7 +179,7 @@ const Layout = ({ children }) => {
           {children}
         </Box>
       </Box>
-    </ThemeProvider>
+    </MuiThemeProvider>
   );
 };
 
