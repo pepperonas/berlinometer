@@ -23,20 +23,65 @@ const SalesChart = ({ data }) => {
   const theme = useTheme();
   const [timeRange, setTimeRange] = useState('today');
   
-  // Filterdaten nach Zeitraum
+  // Filterdaten nach Zeitraum und konvertiere sie ins richtige Format falls nötig
   const getFilteredData = () => {
+    if (!data) {
+      console.log('Keine Daten verfügbar für SalesChart');
+      return [];
+    }
+
+    let selectedData;
     switch (timeRange) {
       case 'today':
-        return data.today;
+        selectedData = data.today;
+        break;
       case 'week':
-        return data.weekly;
+        selectedData = data.weekly;
+        break;
       case 'month':
-        return data.monthly;
+        selectedData = data.monthly;
+        break;
       case 'year':
-        return data.yearly;
+        selectedData = data.yearly;
+        break;
       default:
-        return data.weekly;
+        selectedData = data.weekly;
     }
+
+    // Überprüfe, ob die Daten im erwarteten Format sind
+    if (!selectedData) {
+      console.log(`Keine Daten für Zeitraum ${timeRange} verfügbar`);
+      return [];
+    }
+
+    // Wenn die Daten im Format { labels, datasets } sind, konvertiere sie
+    if (selectedData.labels && selectedData.datasets) {
+      console.log(`Konvertiere Daten für ${timeRange} aus dem API-Format`);
+      // Konvertiere das Format von { labels, datasets } zu [{ name, bar, food, events }]
+      return selectedData.labels.map((label, index) => {
+        const result = { name: label };
+        
+        // Füge Daten aus allen Datensätzen hinzu
+        selectedData.datasets.forEach(dataset => {
+          const key = dataset.label.toLowerCase();
+          if (index < dataset.data.length) {
+            result[key] = dataset.data[index];
+          } else {
+            result[key] = 0;
+          }
+        });
+        
+        // Standardkategorien hinzufügen, falls sie fehlen
+        if (!result.bar) result.bar = 0;
+        if (!result.food) result.food = 0;
+        if (!result.events) result.events = 0;
+        
+        return result;
+      });
+    }
+
+    // Wenn bereits im richtigen Format (Array von Objekten), einfach zurückgeben
+    return Array.isArray(selectedData) ? selectedData : [];
   };
 
   // Formatierung für X-Achse
@@ -91,6 +136,9 @@ const SalesChart = ({ data }) => {
     return null;
   };
 
+  // Hole die aufbereiteten Daten
+  const chartData = getFilteredData();
+  
   return (
     <Card 
       sx={{ 
@@ -133,50 +181,76 @@ const SalesChart = ({ data }) => {
         </Box>
 
         <Box sx={{ width: '100%', height: 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={getFilteredData()}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-              <XAxis 
-                dataKey="name" 
-                tickFormatter={formatXAxis}
-                tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
-                stroke={theme.palette.divider}
-              />
-              <YAxis 
-                tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
-                stroke={theme.palette.divider}
-                tickFormatter={(value) => `${value}€`}
-              />
-              <RechartsTooltip content={<CustomTooltip />} />
-              <Legend />
-              <Bar 
-                dataKey="bar" 
-                name="Bar" 
-                fill={theme.palette.primary.main} 
-                radius={[4, 4, 0, 0]} 
-              />
-              <Bar 
-                dataKey="food" 
-                name="Essen" 
-                fill={theme.palette.secondary.main} 
-                radius={[4, 4, 0, 0]} 
-              />
-              <Bar 
-                dataKey="events" 
-                name="Events" 
-                fill={theme.palette.info.main} 
-                radius={[4, 4, 0, 0]} 
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{
+                  top: 5,
+                  right: 30,
+                  left: 20,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
+                <XAxis 
+                  dataKey="name" 
+                  tickFormatter={formatXAxis}
+                  tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                  stroke={theme.palette.divider}
+                />
+                <YAxis 
+                  tick={{ fill: theme.palette.text.secondary, fontSize: 12 }}
+                  stroke={theme.palette.divider}
+                  tickFormatter={(value) => `${value}€`}
+                />
+                <RechartsTooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar 
+                  dataKey="bar" 
+                  name="Bar" 
+                  fill={theme.palette.primary.main} 
+                  radius={[4, 4, 0, 0]} 
+                />
+                <Bar 
+                  dataKey="food" 
+                  name="Essen" 
+                  fill={theme.palette.secondary.main} 
+                  radius={[4, 4, 0, 0]} 
+                />
+                <Bar 
+                  dataKey="events" 
+                  name="Events" 
+                  fill={theme.palette.info.main} 
+                  radius={[4, 4, 0, 0]} 
+                />
+                <Bar 
+                  dataKey="umsatz" 
+                  name="Umsatz" 
+                  fill={theme.palette.success.main} 
+                  radius={[4, 4, 0, 0]} 
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <Box sx={{ 
+              height: '100%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              flexDirection: 'column',
+              p: 2,
+              textAlign: 'center',
+              color: 'text.secondary'
+            }}>
+              <Typography variant="body1" gutterBottom>
+                Keine Umsatzdaten für diesen Zeitraum verfügbar
+              </Typography>
+              <Typography variant="body2">
+                Versuchen Sie, einen anderen Zeitraum auszuwählen oder erstellen Sie Verkäufe, um Daten zu sehen
+              </Typography>
+            </Box>
+          )}
         </Box>
       </CardContent>
     </Card>

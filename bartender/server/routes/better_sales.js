@@ -14,7 +14,23 @@ const { addBarToBody } = require('../middleware/barFilter');
 // @access  Private
 router.get('/', protect, async (req, res) => {
   try {
-    const sales = await Sale.find({ bar: req.barId })
+    // Stelle sicher, dass req.barId vorhanden ist
+    let barId = req.barId;
+    if (!barId && req.user && req.user.bar) {
+      barId = req.user.bar.toString();
+      console.log('Retrieved bar ID from user object for sales query:', barId);
+    }
+    
+    if (!barId) {
+      console.error('No bar ID found for sales query. User:', req.user ? req.user._id : 'not set');
+      return res.status(400).json({
+        success: false,
+        error: 'Bar-ID nicht gefunden. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.'
+      });
+    }
+    
+    console.log(`Querying sales for bar: ${barId}`);
+    const sales = await Sale.find({ bar: barId })
       .sort({ date: -1 })
       .populate('staffId', 'name')
       .populate('items.drinkId', 'name');
@@ -51,13 +67,25 @@ router.get('/', protect, async (req, res) => {
         });
       }
       
+      // Stelle sicher, dass die Bar-ID in der Antwort enthalten ist
+      if (saleObj.bar) {
+        if (typeof saleObj.bar === 'object' && saleObj.bar._id) {
+          saleObj.bar = saleObj.bar._id.toString();
+        } else if (typeof saleObj.bar !== 'string') {
+          saleObj.bar = saleObj.bar.toString();
+        }
+      }
+      
       return saleObj;
     });
     
     res.json(formattedSales);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    console.error('Error getting sales:', err);
+    res.status(500).json({
+      success: false,
+      error: err.message || 'Server Error'
+    });
   }
 });
 
@@ -330,6 +358,23 @@ const prepareSaleData = (req, res, next) => {
 // @access  Private
 router.post('/', protect, addBarToBody, prepareSaleData, async (req, res) => {
   try {
+    // Stelle sicher, dass req.body.bar vorhanden ist
+    if (!req.body.bar) {
+      if (req.barId) {
+        req.body.bar = req.barId;
+        console.log('Manually set bar ID from req.barId:', req.barId);
+      } else if (req.user && req.user.bar) {
+        req.body.bar = req.user.bar.toString();
+        console.log('Manually set bar ID from req.user.bar:', req.user.bar);
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: 'Bar-ID nicht gefunden. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.'
+        });
+      }
+    }
+    
+    console.log('Creating new sale with bar ID:', req.body.bar);
     const newSale = new Sale(req.body);
     
     // Lagerbestand aktualisieren für jedes Getränk
@@ -349,6 +394,15 @@ router.post('/', protect, addBarToBody, prepareSaleData, async (req, res) => {
     // ID formatieren für die Antwort
     const saleObj = sale.toObject();
     saleObj.id = saleObj._id.toString();
+    
+    // Stelle sicher, dass die Bar-ID in der Antwort enthalten ist
+    if (saleObj.bar) {
+      if (typeof saleObj.bar === 'object' && saleObj.bar._id) {
+        saleObj.bar = saleObj.bar._id.toString();
+      } else if (typeof saleObj.bar !== 'string') {
+        saleObj.bar = saleObj.bar.toString();
+      }
+    }
     
     res.json(saleObj);
   } catch (err) {

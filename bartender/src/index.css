@@ -29,6 +29,17 @@ a:focus, button:focus, input:focus, textarea:focus, select:focus, [tabindex]:foc
   outline-offset: 2px;
 }
 
+/* Mindestbreite für alle Formular-Controls und ComboBoxen */
+.MuiInputBase-formControl, 
+.MuiInputBase-root,
+.MuiSelect-select,
+.MuiAutocomplete-root,
+.MuiOutlinedInput-root,
+.MuiInput-root,
+.MuiFilledInput-root {
+  min-width: 100px !important;
+}
+
 /* Bessere Scrollbars für Webkit-Browser */
 ::-webkit-scrollbar {
   width: 8px;

@@ -25,7 +25,17 @@ const addBarToBody = (req, res, next) => {
     req.body.bar = req.barId;
     console.log('Added bar ID to request body:', req.barId);
   } else {
-    console.log('No bar ID found in request');
+    console.error('No bar ID found in request. User:', req.user ? req.user._id : 'not set');
+    
+    // Wenn kein req.barId vorhanden ist, aber der Benutzer existiert, versuche die Bar-ID vom Benutzer zu holen
+    if (req.user && req.user.bar) {
+      const barId = req.user.bar.toString();
+      req.body.bar = barId;
+      req.barId = barId; // Auch req.barId setzen für konsistentes Verhalten
+      console.log('Retrieved bar ID from user object:', barId);
+    } else {
+      console.error('No bar ID could be determined from user object.');
+    }
   }
   next();
 };

@@ -93,6 +93,38 @@ const Layout = ({ children }) => {
               },
             },
           },
+          // Stellt sicher, dass alle ComboBoxen und Select-Felder mindestens 100px breit sind
+          MuiInputBase: {
+            styleOverrides: {
+              root: {
+                '&.MuiInputBase-formControl': {
+                  minWidth: '100px',
+                },
+                '&.MuiInputBase-adornedEnd': {
+                  minWidth: '100px',
+                },
+              },
+            },
+          },
+          // Zusätzlich für Select-Komponenten
+          MuiOutlinedInput: {
+            styleOverrides: {
+              root: {
+                minWidth: '100px',
+              },
+            },
+          },
+          // Auch für Autocomplete-Komponenten
+          MuiAutocomplete: {
+            styleOverrides: {
+              root: {
+                minWidth: '100px',
+              },
+              inputRoot: {
+                minWidth: '100px',
+              },
+            },
+          },
         },
       }),
     [darkMode],
