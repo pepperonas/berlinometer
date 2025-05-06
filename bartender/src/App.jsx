@@ -1,6 +1,7 @@
 import React from 'react';
 import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom';
 import {AuthProvider, useAuth} from './context/AuthContext';
+import {ThemeProvider} from './context/ThemeContext';
 import Layout from './components/Layout/Layout';
 
 // Seiten
@@ -38,8 +39,9 @@ const ProtectedRoute = ({children}) => {
 function App() {
     return (
         <AuthProvider>
-            <Router basename="/bartender">
-                <Routes>
+            <ThemeProvider>
+                <Router basename="/bartender">
+                    <Routes>
                     <Route path="/login" element={<Login/>}/>
                     <Route path="/register" element={<Register/>}/>
 
@@ -140,8 +142,9 @@ function App() {
                     }/>
 
                     <Route path="*" element={<NotFound/>}/>
-                </Routes>
-            </Router>
+                    </Routes>
+                </Router>
+            </ThemeProvider>
         </AuthProvider>
     );
 }

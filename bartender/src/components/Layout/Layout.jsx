@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { useTheme } from '../../context/ThemeContext';
 
 const Layout = ({ children }) => {
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [darkMode, setDarkMode] = useState(prefersDarkMode);
+  const { darkMode, fontSize, toggleDarkMode } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   
   const theme = React.useMemo(
@@ -27,23 +27,43 @@ const Layout = ({ children }) => {
         },
         typography: {
           fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+          // Schriftgröße basierend auf der Einstellung anpassen
+          fontSize: fontSize === 'small' ? 13 : fontSize === 'large' ? 16 : 14,
           h1: {
             fontWeight: 500,
+            fontSize: fontSize === 'small' ? '2.2rem' : fontSize === 'large' ? '2.8rem' : '2.5rem',
           },
           h2: {
             fontWeight: 500,
+            fontSize: fontSize === 'small' ? '1.8rem' : fontSize === 'large' ? '2.4rem' : '2.1rem',
           },
           h3: {
             fontWeight: 500,
+            fontSize: fontSize === 'small' ? '1.5rem' : fontSize === 'large' ? '2.1rem' : '1.8rem',
           },
           h4: {
             fontWeight: 500,
+            fontSize: fontSize === 'small' ? '1.2rem' : fontSize === 'large' ? '1.8rem' : '1.5rem',
           },
           h5: {
             fontWeight: 500,
+            fontSize: fontSize === 'small' ? '1.1rem' : fontSize === 'large' ? '1.5rem' : '1.3rem',
           },
           h6: {
             fontWeight: 500,
+            fontSize: fontSize === 'small' ? '0.9rem' : fontSize === 'large' ? '1.3rem' : '1.1rem',
+          },
+          body1: {
+            fontSize: fontSize === 'small' ? '0.9rem' : fontSize === 'large' ? '1.1rem' : '1rem',
+          },
+          body2: {
+            fontSize: fontSize === 'small' ? '0.8rem' : fontSize === 'large' ? '1rem' : '0.9rem',
+          },
+          button: {
+            fontSize: fontSize === 'small' ? '0.8rem' : fontSize === 'large' ? '1rem' : '0.9rem',
+          },
+          caption: {
+            fontSize: fontSize === 'small' ? '0.7rem' : fontSize === 'large' ? '0.9rem' : '0.8rem',
           },
         },
         shape: {
@@ -130,19 +150,15 @@ const Layout = ({ children }) => {
     [darkMode],
   );
 
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
-  };
-
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <MuiThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', minHeight: '100vh' }}>
         <CssBaseline />
-        <Header toggleTheme={toggleTheme} darkMode={darkMode} toggleSidebar={toggleSidebar} />
+        <Header toggleTheme={toggleDarkMode} darkMode={darkMode} toggleSidebar={toggleSidebar} />
         <Sidebar open={sidebarOpen} />
         <Box
           component="main"

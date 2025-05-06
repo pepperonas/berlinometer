@@ -34,6 +34,7 @@ import {
   CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState(0);
@@ -42,6 +43,7 @@ const Settings = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const { currentUser, updateProfile } = useAuth();
+  const { darkMode, fontSize, updateThemeSettings } = useTheme();
   
   // User Settings
   const [settings, setSettings] = useState({
@@ -78,13 +80,15 @@ const Settings = () => {
     anonymousUsage: true
   });
   
-  // Load current user data
+  // Load current user data and theme settings
   useEffect(() => {
     if (currentUser) {
       const updatedSettings = {
         ...settings,
         username: currentUser.name || '',
-        email: currentUser.email || ''
+        email: currentUser.email || '',
+        darkMode: darkMode,
+        fontSize: fontSize
       };
       
       // Load bar data if available
@@ -127,7 +131,7 @@ const Settings = () => {
       
       setSettings(updatedSettings);
     }
-  }, [currentUser]);
+  }, [currentUser, darkMode, fontSize]);
   
   // Formularänderungen verarbeiten
   const handleChange = (e) => {
@@ -250,31 +254,46 @@ const Settings = () => {
           userData.name = settings.username;
         }
       }
-      // For now, we only handle profile and business tabs
-      
-      console.log('Sending update data:', JSON.stringify(userData));
-      
-      try {
-        const result = await updateProfile(userData);
-        console.log('Profile update result:', result);
-      
-      if (result.success) {
+      // Display tab - speichere Anzeigeeinstellungen in ThemeContext
+      else if (activeTab === 2) {
+        // Aktualisiere die Theme-Einstellungen
+        updateThemeSettings({
+          darkMode: settings.darkMode,
+          fontSize: settings.fontSize
+        });
+        
         setSaveSuccess(true);
-        // Clear sensitive fields
-        if (activeTab === 0) {
-          setSettings(prev => ({
-            ...prev,
-            password: '',
-            confirmPassword: '',
-            currentPassword: ''
-          }));
-        }
-      } else {
-        setError(result.error || 'Fehler beim Aktualisieren der Einstellungen');
+        setIsLoading(false);
+        return; // Keine API-Anfrage nötig
       }
-      } catch (profileErr) {
-        console.error('Profile update error:', profileErr);
-        setError(profileErr.message || 'Fehler beim Aktualisieren des Profils');
+      // For now, we only handle profile, business and display tabs
+      
+      // Nur API-Anfrage senden, wenn wir im Profil- oder Business-Tab sind
+      if (activeTab === 0 || activeTab === 1) {
+        console.log('Sending update data:', JSON.stringify(userData));
+        
+        try {
+          const result = await updateProfile(userData);
+          console.log('Profile update result:', result);
+        
+          if (result.success) {
+            setSaveSuccess(true);
+            // Clear sensitive fields
+            if (activeTab === 0) {
+              setSettings(prev => ({
+                ...prev,
+                password: '',
+                confirmPassword: '',
+                currentPassword: ''
+              }));
+            }
+          } else {
+            setError(result.error || 'Fehler beim Aktualisieren der Einstellungen');
+          }
+        } catch (profileErr) {
+          console.error('Profile update error:', profileErr);
+          setError(profileErr.message || 'Fehler beim Aktualisieren des Profils');
+        }
       }
     } catch (err) {
       console.error('Save error:', err);
