@@ -15,6 +15,7 @@ import Suppliers from './pages/Suppliers';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Sales from './pages/Sales';
+import Admin from './pages/Admin';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
@@ -126,6 +127,14 @@ function App() {
                         <ProtectedRoute>
                             <Layout>
                                 <Settings/>
+                            </Layout>
+                        </ProtectedRoute>
+                    }/>
+                    
+                    <Route path="/admin" element={
+                        <ProtectedRoute>
+                            <Layout>
+                                <Admin/>
                             </Layout>
                         </ProtectedRoute>
                     }/>

@@ -32,6 +32,7 @@
             <excludedPath local="true" path="$PROJECT_DIR$/blog/blog-framework/node_modules" />
             <excludedPath local="true" path="$PROJECT_DIR$/mpsec/client/node_modules" />
             <excludedPath local="true" path="$PROJECT_DIR$/mpsec/server/node_modules" />
+            <excludedPath local="true" path="$PROJECT_DIR$/bartender/node_modules" />
           </excludedPaths>
         </serverdata>
       </paths>

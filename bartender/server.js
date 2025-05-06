@@ -5,10 +5,18 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./server/config/db');
 require('dotenv').config();
+
+// Temporäres Verzeichnis erstellen, falls es nicht existiert
+const tempDir = path.join(__dirname, 'temp');
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir);
+  console.log('Temporäres Verzeichnis erstellt:', tempDir);
+}
 
 // Datenbankverbindung herstellen
 connectDB();
@@ -65,6 +73,9 @@ app.get('/api/finances/test', (req, res) => {
 // Eigentliche Finanzen-Routen
 app.use('/api/finances', require('./server/routes/finances'));
 
+// Admin-Routen
+app.use('/api/admin', require('./server/routes/admin'));
+
 // In Production brauchen wir auch Routen ohne /api-Präfix für Proxy-Weiterleitungen
 if (process.env.NODE_ENV === 'production') {
   console.log('Registering routes without /api prefix for production environment');
@@ -85,6 +96,7 @@ if (process.env.NODE_ENV === 'production') {
   });
   
   app.use('/finances', require('./server/routes/finances'));
+  app.use('/admin', require('./server/routes/admin'));
 }
 
 // Basis API-Endpunkte - mit und ohne /api prefix, um flexibel zu sein

@@ -18,8 +18,10 @@ import {
   LocalShipping as SuppliersIcon,
   BarChart as ReportsIcon,
   Settings as SettingsIcon,
-  ShoppingBag as SalesIcon
+  ShoppingBag as SalesIcon,
+  AdminPanelSettings as AdminIcon
 } from '@mui/icons-material';
+import { useAuth } from '../../context/AuthContext';
 
 const drawerWidth = 240;
 
@@ -36,6 +38,10 @@ const menuItems = [
 
 const Sidebar = ({ open }) => {
   const location = useLocation();
+  const { currentUser } = useAuth();
+  
+  // Prüfen, ob der Benutzer Zugriff auf das Admin-Panel haben soll
+  const isAdmin = currentUser && currentUser.email === 'martin.pfeffer@celox.io';
 
   return (
     <Drawer
@@ -120,6 +126,41 @@ const Sidebar = ({ open }) => {
           <ListItemIcon><SettingsIcon /></ListItemIcon>
           {open && <ListItemText primary="Einstellungen" />}
         </ListItem>
+        
+        {/* Admin-Panel-Eintrag nur anzeigen, wenn der Benutzer berechtigt ist */}
+        {isAdmin && (
+          <ListItem 
+            button 
+            component={Link} 
+            to="/admin"
+            selected={location.pathname === '/admin'}
+            sx={{
+              my: 0.5,
+              borderRadius: '8px',
+              mx: 1,
+              color: 'warning.main',
+              '&.Mui-selected': {
+                bgcolor: 'warning.light',
+                '&:hover': {
+                  bgcolor: 'warning.light',
+                },
+                '& .MuiListItemIcon-root': {
+                  color: 'warning.dark',
+                },
+                '& .MuiListItemText-primary': {
+                  color: 'warning.dark',
+                  fontWeight: 'bold',
+                },
+              },
+              '&:hover': {
+                bgcolor: 'action.hover',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ color: 'warning.main' }}><AdminIcon /></ListItemIcon>
+            {open && <ListItemText primary="Admin" sx={{ color: 'warning.main' }} />}
+          </ListItem>
+        )}
       </List>
     </Drawer>
   );
