@@ -107,6 +107,14 @@ const categoriesData = [
                 tags: ['charts', 'musik', 'phonk d']
             },
             {
+                id: 'sonnensystem',
+                name: 'Sonnensystem',
+                path: 'statistics/sonnensystem-visualisierung.html',
+                description: 'Diese Visualisierung zeigt die Planeten unseres Sonnensystems mit ihren relativen Größen und Abständen zur Sonne.',
+                category: 'Datenvisualisierung',
+                tags: ['sonnensystem', 'statistik', 'planeten']
+            },
+            {
                 id: 'os-distribution',
                 name: 'OS Distribution',
                 path: 'statistics/os-distribution.html',
@@ -177,6 +185,7 @@ const documentSources = {
     'james-bond': 'statistics/james-bond-data.html',
     'phonk-d': 'statistics/phonk-d-charts.html',
     'os-distribution': 'statistics/os-distribution.html',
+    'sonnensystem': 'statistics/sonnensystem-visualisierung.html',
     'war-report': 'statistics/war-report.html',
     'tech-report': 'statistics/tech-report.html',
     'ki-vergleich': 'tech-demos/m5-cardputer-comparison.html',

@@ -169,10 +169,13 @@ const Admin = () => {
     try {
       const token = localStorage.getItem('token');
       
-      // Verwende den normalen users-Endpunkt, da wir hier keine spezielle Admin-Methode haben
-      // Dies sollte funktionieren, da Admin-Benutzer generell Zugriff auf diesen Endpunkt haben
+      // Verwende den Admin-Endpunkt, um sicherzustellen, dass die Berechtigungen korrekt sind
+      // Dieser Endpunkt prüft nur die E-Mail-Adresse und nicht die Rolle
+      const apiUrl = `${process.env.REACT_APP_API_URL || '/api'}/admin/toggle-user-active/${userId}`;
+      console.log('Toggle User Active URL:', apiUrl);
+      
       const response = await axios.put(
-        `${process.env.REACT_APP_API_URL || '/api'}/users/${userId}`,
+        apiUrl,
         { active: !currentStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );

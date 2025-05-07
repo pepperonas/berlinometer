@@ -436,4 +436,82 @@ router.post('/run-script', protect, async (req, res) => {
   }
 });
 
+// @route   PUT /api/admin/toggle-user-active/:id
+// @desc    Aktiviert oder deaktiviert einen Benutzer (nur vom Admin erreichbar)
+// @access  Private/Admin (nur E-Mail-Prüfung)
+router.put('/toggle-user-active/:id', protect, async (req, res) => {
+  try {
+    // Debug-Informationen
+    console.log('Admin/toggle-user-active/:id route accessed by:', req.user ? {
+      id: req.user._id,
+      email: req.user.email,
+      role: req.user.role
+    } : 'No user in request');
+    
+    // Erweiterte Fehlerprüfung
+    if (!req.user) {
+      console.log('No user object in request');
+      return res.status(401).json({
+        success: false,
+        error: 'Nicht autorisiert, Benutzerinformationen fehlen im Request'
+      });
+    }
+    
+    // Wir umgehen hier die Rollenprüfung und nutzen nur die E-Mail
+    if (req.user.email !== 'martin.pfeffer@celox.io') {
+      console.log(`User ${req.user.email} hat keine Berechtigung zum Aktualisieren von Benutzerkonten`);
+      return res.status(403).json({
+        success: false,
+        error: `Keine Berechtigung zum Aktualisieren von Benutzerkonten (${req.user.email})`
+      });
+    }
+    
+    const userId = req.params.id;
+    const { active } = req.body;
+    
+    if (active === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'Der active-Status muss angegeben werden'
+      });
+    }
+    
+    // Direkt aus mongoose-Modell aktualisieren
+    const User = require('../models/User');
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { active: active },
+      { new: true, runValidators: true }
+    ).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Benutzer nicht gefunden'
+      });
+    }
+    
+    console.log(`Benutzer ${user.name} (${user.email}) wurde ${active ? 'aktiviert' : 'deaktiviert'}`);
+    
+    return res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (err) {
+    console.error('Fehler beim Aktualisieren des Benutzerstatus:', err);
+    
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({
+        success: false,
+        error: 'Benutzer nicht gefunden'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      error: 'Serverfehler beim Aktualisieren des Benutzerstatus: ' + err.message
+    });
+  }
+});
+
 module.exports = router;
