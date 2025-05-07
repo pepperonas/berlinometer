@@ -91,6 +91,14 @@ const categoriesData = [
         name: 'Statistiken',
         files: [
             {
+                id: 'ai',
+                name: 'KI in der Arbeitswelt',
+                path: 'statistics/ai.html',
+                description: 'Eine Analyse der kommenden Veränderungen durch Künstliche Intelligenz',
+                category: 'Datenvisualisierung',
+                tags: ['charts', 'statistik', 'visualisierung', 'ai']
+            },
+            {
                 id: 'james-bond',
                 name: 'James Bond Statistiken',
                 path: 'statistics/james-bond-data.html',
@@ -182,6 +190,7 @@ const categoriesData = [
 
 // Die Pfade für die Dokumente
 const documentSources = {
+    'ai': 'statistics/ai.html',
     'james-bond': 'statistics/james-bond-data.html',
     'phonk-d': 'statistics/phonk-d-charts.html',
     'os-distribution': 'statistics/os-distribution.html',
