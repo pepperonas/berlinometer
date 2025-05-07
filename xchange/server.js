@@ -361,6 +361,10 @@ app.get(`${API_PREFIX}/login`, (req, res) => {
             document.addEventListener('DOMContentLoaded', function() {
                 const loginForm = document.getElementById('loginForm');
                 const errorMessage = document.getElementById('errorMessage');
+                const passwordInput = document.getElementById('password');
+                
+                // Automatisch Fokus auf das Passwort-Eingabefeld setzen
+                passwordInput.focus();
                 
                 // URL Parameter auslesen
                 const urlParams = new URLSearchParams(window.location.search);
@@ -375,7 +379,7 @@ app.get(`${API_PREFIX}/login`, (req, res) => {
                 loginForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
-                    const password = document.getElementById('password').value;
+                    const password = passwordInput.value;
                     
                     fetch('${API_PREFIX}/authenticate', {
                         method: 'POST',
@@ -393,6 +397,10 @@ app.get(`${API_PREFIX}/login`, (req, res) => {
                             // Fehlermeldung anzeigen
                             errorMessage.textContent = data.message || 'Ungültiges Passwort';
                             errorMessage.style.display = 'block';
+                            
+                            // Nach einem Fehlversuch wieder Fokus auf das Passwort-Feld setzen
+                            passwordInput.value = '';
+                            passwordInput.focus();
                         }
                     })
                     .catch(error => {
