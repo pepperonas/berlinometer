@@ -64,32 +64,112 @@ app.use(cors({
 // Statische Dateien aus dem public-Verzeichnis servieren
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Database connection
+// MongoDB Verbindung mit Authentifizierung
+console.log('Verbinde mit MongoDB...');
 mongoose
     .connect(process.env.MONGO_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        retryWrites: true,
+        w: 'majority'
     })
-    .then(() => console.log('MongoDB connected'))
+    .then(() => {
+        console.log('MongoDB erfolgreich verbunden');
+    })
     .catch((err) => {
-        console.error('MongoDB connection error:', err);
-        // Detailliertere Fehlerausgabe für MongoDB-Verbindungsprobleme
+        console.error('MongoDB Verbindungsfehler:', err);
+        
+        // Detaillierte Fehleranalyse
         if (err.name === 'MongoNetworkError') {
-            console.error('Verbindung zu MongoDB nicht möglich. Läuft der MongoDB-Server?');
+            console.error('Netzwerkfehler: MongoDB-Server möglicherweise nicht erreichbar');
+        } else if (err.name === 'MongoServerSelectionError') {
+            console.error('Server-Auswahlfehler: Kann keinen MongoDB-Server finden');
+        } else if (err.code === 18) {
+            console.error('Authentifizierungsfehler: Benutzername oder Passwort falsch');
+        } else if (err.code === 13) {
+            console.error('Berechtigungsfehler: Benutzer hat keine ausreichenden Rechte');
+        }
+        
+        // Im Produktionsmodus nicht sofort beenden
+        if (process.env.NODE_ENV === 'production') {
+            console.warn('Server läuft weiter, aber Datenbankfunktionen sind nicht verfügbar!');
+        } else {
+            // Im Entwicklungsmodus abbrechen
+            process.exit(1);
         }
     });
 
 // EINFACHE Debug/Test-Endpunkte
 app.get('/api/ping', (req, res) => {
-    res.json({ success: true, message: 'pong', time: new Date().toISOString() });
+    // Prüfen, ob die Datenbankverbindung aktiv ist
+    const dbStatus = mongoose.connection.readyState;
+    const dbStatusText = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting',
+        4: 'invalid credentials'
+    }[dbStatus] || 'unknown';
+    
+    res.json({ 
+        success: true, 
+        message: 'pong', 
+        time: new Date().toISOString(),
+        db: {
+            status: dbStatus,
+            statusText: dbStatusText,
+            connected: dbStatus === 1
+        },
+        env: process.env.NODE_ENV
+    });
 });
 
 app.get('/mpsec/api/ping', (req, res) => {
-    res.json({ success: true, message: 'pong mit /mpsec Präfix', time: new Date().toISOString() });
+    // Prüfen, ob die Datenbankverbindung aktiv ist
+    const dbStatus = mongoose.connection.readyState;
+    const dbStatusText = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting',
+        4: 'invalid credentials'
+    }[dbStatus] || 'unknown';
+    
+    res.json({ 
+        success: true, 
+        message: 'pong mit /mpsec Präfix', 
+        time: new Date().toISOString(),
+        db: {
+            status: dbStatus,
+            statusText: dbStatusText,
+            connected: dbStatus === 1
+        },
+        env: process.env.NODE_ENV
+    });
 });
 
 app.get('/ping', (req, res) => {
-    res.json({ success: true, message: 'pong ohne Pfad-Präfix', time: new Date().toISOString() });
+    // Prüfen, ob die Datenbankverbindung aktiv ist
+    const dbStatus = mongoose.connection.readyState;
+    const dbStatusText = {
+        0: 'disconnected',
+        1: 'connected',
+        2: 'connecting',
+        3: 'disconnecting',
+        4: 'invalid credentials'
+    }[dbStatus] || 'unknown';
+    
+    res.json({ 
+        success: true, 
+        message: 'pong ohne Pfad-Präfix', 
+        time: new Date().toISOString(),
+        db: {
+            status: dbStatus,
+            statusText: dbStatusText,
+            connected: dbStatus === 1
+        },
+        env: process.env.NODE_ENV
+    });
 });
 
 // Debug-Endpunkte für Pfadtests

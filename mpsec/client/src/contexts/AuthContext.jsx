@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
-import api from '../services/api';
+import api, { fetchWithRetry } from '../services/api';
 import jwt_decode from 'jwt-decode';
 
 const AuthContext = createContext();
@@ -92,15 +92,18 @@ export const AuthProvider = ({ children }) => {
     validateUser();
   }, [updateApiHeader]);
 
-  // Registrierung
+  // Registrierung mit Wiederholungsversuchen bei Netzwerkfehlern
   const register = async (username, password) => {
     setError('');
 
     try {
-      const response = await api.post('/auth/register', {
-        username,
-        password
-      });
+      // Register-API-Aufruf mit automatischer Wiederholung bei Netzwerkfehlern
+      const response = await fetchWithRetry(async () => {
+        return await api.post('/auth/register', {
+          username,
+          password
+        });
+      }, 3); // 3 Versuche gesamt
 
       if (response.data.success && response.data.token) {
         // Token speichern (löst useEffect für Token aus)
@@ -111,24 +114,34 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error('Registrierungsfehler:', err);
-      setError(
+      // Spezifischere Fehlermeldungen für Netzwerkprobleme
+      if (err.message === 'timeout of 30000ms exceeded') {
+        setError('Der Server antwortet nicht. Bitte versuche es später erneut oder kontaktiere den Administrator.');
+      } else if (err.message && err.message.includes('Network Error')) {
+        setError('Netzwerkfehler: Keine Verbindung zum Server möglich. Bitte überprüfe deine Internetverbindung.');
+      } else {
+        setError(
           err.response?.data?.message ||
           err.message ||
           'Bei der Registrierung ist ein Fehler aufgetreten'
-      );
+        );
+      }
       throw err;
     }
   };
 
-  // Anmeldung
+  // Anmeldung mit Wiederholungsversuchen bei Netzwerkfehlern
   const login = async (username, password) => {
     setError('');
 
     try {
-      const response = await api.post('/auth/login', {
-        username,
-        password
-      });
+      // Login-API-Aufruf mit automatischer Wiederholung bei Netzwerkfehlern
+      const response = await fetchWithRetry(async () => {
+        return await api.post('/auth/login', {
+          username,
+          password
+        });
+      }, 3); // 3 Versuche gesamt
 
       if (response.data.success && response.data.token) {
         // Token speichern (löst useEffect für Token aus)
@@ -139,11 +152,18 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error('Anmeldefehler:', err);
-      setError(
+      // Spezifischere Fehlermeldungen für Netzwerkprobleme
+      if (err.message === 'timeout of 30000ms exceeded') {
+        setError('Der Server antwortet nicht. Bitte versuche es später erneut oder kontaktiere den Administrator.');
+      } else if (err.message && err.message.includes('Network Error')) {
+        setError('Netzwerkfehler: Keine Verbindung zum Server möglich. Bitte überprüfe deine Internetverbindung.');
+      } else {
+        setError(
           err.response?.data?.message ||
           err.message ||
           'Bei der Anmeldung ist ein Fehler aufgetreten'
-      );
+        );
+      }
       throw err;
     }
   };

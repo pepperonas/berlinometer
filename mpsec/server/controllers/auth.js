@@ -31,6 +31,22 @@ exports.register = async (req, res, next) => {
     sendTokenResponse(user, 201, res);
   } catch (err) {
     console.error('Registrierungsfehler:', err);
+    
+    // Prüfen, ob es sich um einen Datenbank-Authentifizierungsfehler handelt
+    if (err.name === 'MongoServerError' && (err.code === 18 || err.code === 13)) {
+      return res.status(500).json({
+        success: false,
+        message: 'Authentifizierungsproblem mit der Datenbank. Bitte kontaktieren Sie den Administrator.',
+        error: process.env.NODE_ENV === 'development' ? 'MongoDB-Authentifizierungsfehler: ' + err.message : undefined
+      });
+    } else if (err.name === 'MongoNetworkError') {
+      return res.status(500).json({
+        success: false,
+        message: 'Verbindungsproblem mit der Datenbank. Bitte versuchen Sie es später erneut.',
+        error: process.env.NODE_ENV === 'development' ? 'MongoDB-Netzwerkfehler: ' + err.message : undefined
+      });
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Fehler bei der Registrierung',
@@ -116,6 +132,22 @@ exports.login = async (req, res, next) => {
       }
     } catch (dbError) {
       console.error('Datenbank-Fehler:', dbError);
+      
+      // Prüfen, ob es sich um einen Authentifizierungsfehler mit MongoDB handelt
+      if (dbError.name === 'MongoServerError' && (dbError.code === 18 || dbError.code === 13)) {
+        return res.status(500).json({
+          success: false,
+          message: 'Authentifizierungsproblem mit der Datenbank. Bitte kontaktieren Sie den Administrator.',
+          error: process.env.NODE_ENV === 'development' ? 'MongoDB-Authentifizierungsfehler: ' + dbError.message : undefined
+        });
+      } else if (dbError.name === 'MongoNetworkError') {
+        return res.status(500).json({
+          success: false,
+          message: 'Verbindungsproblem mit der Datenbank. Bitte versuchen Sie es später erneut.',
+          error: process.env.NODE_ENV === 'development' ? 'MongoDB-Netzwerkfehler: ' + dbError.message : undefined
+        });
+      }
+      
       return res.status(500).json({
         success: false,
         message: 'Datenbank-Fehler',

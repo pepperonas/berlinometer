@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../contexts/AuthContext';
@@ -37,6 +37,22 @@ const LoginFooter = styled.div`
   color: ${({ theme }) => theme.colors.textSecondary};
 `;
 
+const StatusLink = styled.button`
+  background: none;
+  border: none;
+  color: ${({ theme }) => theme.colors.primary};
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.8rem;
+  margin-top: ${({ theme }) => theme.spacing.md};
+  
+  &:hover {
+    color: ${({ theme }) => theme.colors.primaryDark};
+  }
+`;
+
+// Diese Konstante wird nicht mehr verwendet, aber für zukünftige Referenz belassen
+
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -55,10 +71,15 @@ const Login = () => {
     
     setIsLoading(true);
     try {
+      // Statusmeldung für den Benutzer
+      setError('Verbinde mit Server... (Dies kann bis zu 30 Sekunden dauern)');
+      
       await login(username, password);
+      setError(''); // Fehlermeldung zurücksetzen
       navigate('/dashboard');
     } catch (err) {
       console.error('Login-Fehler:', err);
+      // Fehlermeldung wird bereits in der login-Funktion gesetzt
     } finally {
       setIsLoading(false);
     }
@@ -82,6 +103,7 @@ const Login = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoading}
+                autoFocus
               />
             </FormGroup>
             

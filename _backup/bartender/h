@@ -1,0 +1,14 @@
+[0;1;31m×[0m mongod.service - MongoDB Database Server
+     Loaded: loaded (]8;;file://mrx3k1/usr/lib/systemd/system/mongod.service/usr/lib/systemd/system/mongod.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;31mfailed[0m (Result: exit-code) since Sun 2025-05-04 20:34:06 CEST; 5s ago
+   Duration: 44ms
+       Docs: ]8;;https://docs.mongodb.org/manualhttps://docs.mongodb.org/manual]8;;
+    Process: 392182 ExecStart=/usr/bin/mongod --config /etc/mongod.conf [0;1;31m(code=exited, status=2)[0m
+   Main PID: 392182 (code=exited, status=2)
+        CPU: 32ms
+
+May 04 20:34:06 mrx3k1 systemd[1]: Started mongod.service - MongoDB Database Server.
+May 04 20:34:06 mrx3k1 mongod[392182]: Unrecognized option: EOF
+May 04 20:34:06 mrx3k1 mongod[392182]: try '/usr/bin/mongod --help' for more information
+May 04 20:34:06 mrx3k1 systemd[1]: [0;1;39m[0;1;31m[0;1;39mmongod.service: Main process exited, code=exited, status=2/INVALIDARGUMENT[0m
+May 04 20:34:06 mrx3k1 systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mmongod.service: Failed with result 'exit-code'.[0m

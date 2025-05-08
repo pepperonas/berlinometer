@@ -3,15 +3,23 @@ import axios from 'axios';
 // Bestimme den Basis-URL basierend auf der Umgebung
 let baseURL = '/api'; // Standard für lokale Entwicklung mit Proxy
 
+// Domain und Host erkennen
+const isHostedDomain = window.location.hostname === 'mrx3k1.de';
+
 // Wenn wir auf dem Produktionsserver sind (über /mpsec erreichbar)
 // oder wenn wir einen speziellen Pfad in der URL haben
 if (window.location.pathname.startsWith('/mpsec') ||
     process.env.NODE_ENV === 'production') {
-    baseURL = '/mpsec/api';
+    if (isHostedDomain) {
+        // Für die gehostete Anwendung auf mrx3k1.de
+        baseURL = 'https://mrx3k1.de/mpsec/api';
+    } else {
+        baseURL = '/mpsec/api';
+    }
 }
 
 // DIREKTER API-ZUGRIFF (für Debugging, falls das Proxy nicht funktioniert)
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' && !isHostedDomain) {
     // Nur im Development-Modus direkt auf den API-Server zugreifen
     baseURL = 'http://localhost:5012/api';
 }
@@ -20,7 +28,7 @@ console.log('[DEBUG] API baseURL:', baseURL);
 
 const api = axios.create({
     baseURL,
-    timeout: 10000,
+    timeout: 30000, // Erhöht auf 30 Sekunden für bessere Zuverlässigkeit
     headers: {
         'Content-Type': 'application/json'
     },
@@ -134,6 +142,99 @@ window.testApi = async (path = '/auth/login', method = 'post', data = {}) => {
     } catch (error) {
         console.error('API-Test fehlgeschlagen:', error);
         throw error;
+    }
+};
+
+// Helper für Wiederholungsversuche bei Netzwerkfehlern
+export const fetchWithRetry = async (apiCall, maxRetries = 3) => {
+    let retries = 0;
+    
+    while (retries < maxRetries) {
+        try {
+            return await apiCall();
+        } catch (error) {
+            retries++;
+            
+            // Nur bei Timeout oder Network Error wiederholen
+            const isNetworkError = 
+                error.message.includes('timeout') || 
+                error.message.includes('Network Error');
+                
+            if (!isNetworkError || retries >= maxRetries) {
+                throw error;
+            }
+            
+            console.log(`Anfrage fehlgeschlagen (${error.message}). Wiederholungsversuch ${retries}/${maxRetries}...`);
+            
+            // Exponentielles Backoff: 1s, 2s, 4s, ...
+            const delay = Math.pow(2, retries - 1) * 1000;
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+};
+
+// Helper für Serververbindungsstatus mit Datenbank-Prüfung
+export const checkServerStatus = async () => {
+    try {
+        const endpoints = [
+            '/ping',
+            '/api/ping',
+            '/mpsec/api/ping'
+        ];
+        
+        const results = {};
+        let dbConnected = false;
+        let dbStatus = null;
+        
+        for (const endpoint of endpoints) {
+            try {
+                console.log(`Prüfe Verbindung zu: ${baseURL}${endpoint}`);
+                const start = Date.now();
+                const response = await api.get(endpoint, { timeout: 5000 });
+                const elapsed = Date.now() - start;
+                
+                // Prüfe auf Datenbank-Status in der Antwort
+                if (response.data?.db) {
+                    dbStatus = response.data.db;
+                    if (response.data.db.connected) {
+                        dbConnected = true;
+                    }
+                }
+                
+                results[endpoint] = {
+                    status: 'success',
+                    time: elapsed,
+                    data: response.data
+                };
+            } catch (err) {
+                results[endpoint] = {
+                    status: 'error',
+                    message: err.message,
+                    code: err.code
+                };
+            }
+        }
+        
+        // Server-Status bestimmen
+        const serverConnected = Object.values(results).some(r => r.status === 'success');
+        
+        return {
+            baseURL,
+            timestamp: new Date().toISOString(),
+            connected: serverConnected,
+            dbConnected: dbConnected,
+            dbStatus: dbStatus,
+            endpoints: results
+        };
+    } catch (error) {
+        console.error('Fehler bei Serverstatusprüfung:', error);
+        return {
+            baseURL,
+            timestamp: new Date().toISOString(),
+            connected: false,
+            dbConnected: false,
+            error: error.message
+        };
     }
 };
 
