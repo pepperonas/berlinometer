@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Immobilien-Rechner</title>
+    <title>ImmoCalc Pro - Immobilien-Rechner</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Open Graph Meta Tags für Link-Vorschau -->
-    <meta property="og:title" content="Immobilien-Rechner">
-    <meta property="og:description" content="Made with ❤️ by Martin Pfeffer">
+    <meta property="og:title" content="ImmoCalc Pro - Immobilien-Rechner">
+    <meta property="og:description" content="Professioneller Immobilien-Kalkulator mit umfangreichen Analysefunktionen">
     <meta property="og:image" content="immo.jpg">
     <meta property="og:type" content="website">
 
     <!-- Twitter Card Tags für Twitter-Vorschau -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Immobilien-Rechner">
-    <meta name="twitter:description" content="Made with ❤️ by Martin Pfeffer">
+    <meta name="twitter:title" content="ImmoCalc Pro - Immobilien-Rechner">
+    <meta name="twitter:description" content="Professioneller Immobilien-Kalkulator mit umfangreichen Analysefunktionen">
     <meta name="twitter:image" content="immo.jpg">
 
     <!-- Favicon -->
@@ -27,150 +28,565 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 </head>
 <body>
-<div class="container">
-    <h1>🏡 Immobilien-Rechner</h1>
+<div class="app-container">
+    <header>
+        <h1>🏡 ImmoCalc Pro</h1>
+        <p class="subtitle">Professioneller Immobilien-Kalkulator</p>
+    </header>
 
-    <div class="section">
-        <label>Kaufpreis (€)</label>
-        <input type="number" id="kaufpreis" value="130000"/>
-
-        <label>Nebenkosten (€)</label>
-        <input type="number" id="nebenkosten" value="11120"/>
-
-        <label>Eigenkapital (€)</label>
-        <input type="number" id="eigenkapital" value="30000"/>
-
-        <label>Zinssatz (% p.a.)</label>
-        <input type="number" id="zins" value="3.5" step="0.1"/>
-
-        <label>Monatliche Kreditrate (€)</label>
-        <input type="number" id="rate" value="600"/>
-
-        <label>Monatliche Kaltmiete (€)</label>
-        <input type="number" id="miete" value="550"/>
-
-        <label>Nicht umlagefähige Nebenkosten (€ / Monat)</label>
-        <input type="number" id="nichtumlage" value="80"/>
-
-        <label>Wertsteigerung p.a. (%)</label>
-        <input type="number" id="steigerung" value="2.5" step="0.1"/>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="basic-calc">Basiskalkulation</button>
+        <button class="tab-btn" data-tab="advanced-calc">Erweiterte Analyse</button>
+        <button class="tab-btn" data-tab="comparison">Objektvergleich</button>
+        <button class="tab-btn" data-tab="info">Hilfe & Infos</button>
     </div>
 
-    <div class="section">
-        <div class="result">💸 Gesamtkosten: <span id="gesamtkosten"></span></div>
-        <div class="result">💰 Fremdfinanzierung: <span id="fremdfinanzierung"></span></div>
+    <div class="tab-content active" id="basic-calc">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-home"></i> Objektdaten</h2>
+                <button class="info-btn" data-info="objektdaten-info"><i class="fas fa-info-circle"></i></button>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label for="kaufpreis">Kaufpreis (€)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-euro-sign"></i>
+                        <input type="number" id="kaufpreis" value="130000"/>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="nebenkosten">Kaufnebenkosten (€)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-euro-sign"></i>
+                        <input type="number" id="nebenkosten" value="11120"/>
+                    </div>
+                    <div class="helper-text">
+                        <button class="calc-btn" id="nebenkosten-calc">Berechnen</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="flaeche">Wohnfläche (m²)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-ruler-combined"></i>
+                        <input type="number" id="flaeche" value="65"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-coins"></i> Finanzierung</h2>
+                <button class="info-btn" data-info="finanzierung-info"><i class="fas fa-info-circle"></i></button>
+            </div>
+            <div class="card-body">
+                <div class="financing-toggle">
+                    <label class="switch-label">
+                        <span>Eigenkapitalfinanzierung</span>
+                        <label class="switch">
+                            <input type="checkbox" id="finanzierungsart" checked>
+                            <span class="slider round"></span>
+                        </label>
+                        <span>Fremdfinanzierung</span>
+                    </label>
+                </div>
+
+                <div class="input-group">
+                    <label for="eigenkapital">Eigenkapital (€)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-euro-sign"></i>
+                        <input type="number" id="eigenkapital" value="30000"/>
+                    </div>
+                </div>
+
+                <div class="finanzierung-inputs">
+                    <div class="input-group">
+                        <label for="zins">Zinssatz (% p.a.)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-percentage"></i>
+                            <input type="number" id="zins" value="3.5" step="0.1"/>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="tilgung">Anfängliche Tilgung (% p.a.)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-percentage"></i>
+                            <input type="number" id="tilgung" value="2.0" step="0.1"/>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="laufzeit">Zinsbindung (Jahre)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="number" id="laufzeit" value="10"/>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="rate">Monatliche Kreditrate (€)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-euro-sign"></i>
+                            <input type="number" id="rate" value="600"/>
+                        </div>
+                        <div class="helper-text">
+                            <button class="calc-btn" id="rate-calc">Berechnen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-line"></i> Erträge & Aufwendungen</h2>
+                <button class="info-btn" data-info="ertraege-info"><i class="fas fa-info-circle"></i></button>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label for="miete">Monatliche Kaltmiete (€)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-euro-sign"></i>
+                        <input type="number" id="miete" value="550"/>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="nichtumlage">Nicht umlagefähige Nebenkosten (€/Monat)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-euro-sign"></i>
+                        <input type="number" id="nichtumlage" value="80"/>
+                    </div>
+                    <div class="helper-text">
+                        <button class="calc-btn" id="nichtumlage-calc">Typische Kosten</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="ruecklage">Instandhaltungsrücklage (€/m²/Jahr)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-euro-sign"></i>
+                        <input type="number" id="ruecklage" value="7.10" step="0.1"/>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="leerstand">Mietausfall/Leerstand (%)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-percentage"></i>
+                        <input type="number" id="leerstand" value="2" step="0.5"/>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="steigerung">Wertsteigerung p.a. (%)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-percentage"></i>
+                        <input type="number" id="steigerung" value="2.5" step="0.1"/>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="mietsteigerung">Mietsteigerung p.a. (%)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-percentage"></i>
+                        <input type="number" id="mietsteigerung" value="1.8" step="0.1"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results">
+            <div class="result-card">
+                <div class="result-header">Kostenübersicht</div>
+                <div class="result-body">
+                    <div class="result-item">
+                        <div class="result-label">💸 Gesamtkosten:</div>
+                        <div class="result-value" id="gesamtkosten"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">💰 Fremdfinanzierung:</div>
+                        <div class="result-value" id="fremdfinanzierung"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">💵 Eigenkapitalquote:</div>
+                        <div class="result-value" id="eigenkapitalquote"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">📊 Quadratmeterpreis:</div>
+                        <div class="result-value" id="quadratmeterpreis"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-header">Rendite</div>
+                <div class="result-body">
+                    <div class="result-item">
+                        <div class="result-label">💵 Bruttorendite:</div>
+                        <div class="result-value" id="bruttoRendite"></div>
+                        <div class="result-formula" id="formelBrutto"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">💵 Nettorendite:</div>
+                        <div class="result-value" id="nettoRendite"></div>
+                        <div class="result-formula" id="formelNetto"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">💵 Cash-Flow pro Monat:</div>
+                        <div class="result-value" id="cashflow"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="result-card">
+                <div class="result-header">Finanzierung & Zeitliche Analyse</div>
+                <div class="result-body">
+                    <div class="result-item">
+                        <div class="result-label">⏳ Tilgung:</div>
+                        <div class="result-value" id="tilgungsinfo"></div>
+                        <div class="result-formula" id="tilgungsformel"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">📈 Break-even:</div>
+                        <div class="result-value" id="breakEvenBox"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">📈 Wertentwicklung (10 Jahre):</div>
+                        <div class="result-value" id="wertentwicklung"></div>
+                        <div class="result-formula" id="wertverhaeltnis"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <div class="result" id="bruttoRendite">💵 Bruttorendite: ...</div>
-        <div class="formel" id="formelBrutto"></div>
-
-        <div class="result netto-box" id="nettoRendite">💵 Nettorendite: ...</div>
-        <div class="formel" id="formelNetto"></div>
+    <div class="tab-content" id="advanced-calc">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-calculator"></i> Detaillierte Wirtschaftlichkeitsberechnung</h2>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <label for="berechnungszeitraum">Berechnungszeitraum (Jahre)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                        <input type="number" id="berechnungszeitraum" value="20"/>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="anschlussfinanzierung">Zinssatz Anschlussfinanzierung (%)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-percentage"></i>
+                        <input type="number" id="anschlussfinanzierung" value="4.0" step="0.1"/>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="inflation">Inflationsrate p.a. (%)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-percentage"></i>
+                        <input type="number" id="inflation" value="2.0" step="0.1"/>
+                    </div>
+                </div>
+                
+                <button class="button primary-button" id="calculate-advanced">Detailliert berechnen</button>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-chart-area"></i> Cashflow-Entwicklung</h2>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="cashflow-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-balance-scale"></i> ROI & Kapitalentwicklung</h2>
+            </div>
+            <div class="card-body">
+                <div class="advanced-results">
+                    <div class="result-item">
+                        <div class="result-label">🔄 Return on Investment (ROI):</div>
+                        <div class="result-value" id="roi-result"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">📊 Interner Zinsfuß (IRR):</div>
+                        <div class="result-value" id="irr-result"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">💰 Gesamtkapitalrendite:</div>
+                        <div class="result-value" id="gesamtkapitalrendite-result"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">💰 Eigenkapitalrendite:</div>
+                        <div class="result-value" id="eigenkapitalrendite-result"></div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="kapital-chart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <div class="box tilgung-box" id="tilgungsinfo">⏳ Tilgung oder Break-even: ...</div>
-        <div class="formel" id="tilgungsformel">...</div>
-
-        <div class="box break-even-box" id="breakEvenBox">📈 Break-even-Berechnung ...</div>
+    <div class="tab-content" id="comparison">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-building"></i> Objektvergleich</h2>
+            </div>
+            <div class="card-body">
+                <p>Vergleichen Sie bis zu 3 Immobilienobjekte miteinander:</p>
+                
+                <div class="comparison-controls">
+                    <button class="button secondary-button" id="add-object">Objekt hinzufügen</button>
+                    <button class="button warning-button" id="reset-comparison">Zurücksetzen</button>
+                </div>
+                
+                <div class="comparison-container" id="comparison-container">
+                    <div class="comparison-message">Klicken Sie auf "Objekt hinzufügen", um aktuelle Berechnungsdaten als Vergleichsobjekt zu speichern</div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="section">
-        <div class="box wert-box" id="wertentwicklung">📈 Marktwert in 10 Jahren: ...</div>
-        <div class="formel" id="wertverhaeltnis">...</div>
+    <div class="tab-content" id="info">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-question-circle"></i> Hilfe & Erklärungen</h2>
+            </div>
+            <div class="card-body">
+                <div class="accordion">
+                    <div class="accordion-item">
+                        <div class="accordion-header">Was ist ImmoCalc Pro?</div>
+                        <div class="accordion-content">
+                            <p>ImmoCalc Pro ist ein umfassendes Tool zur Berechnung und Analyse von Immobilieninvestitionen. Es hilft Ihnen dabei, fundierte Entscheidungen beim Immobilienkauf zu treffen, indem es verschiedene Kennzahlen und Prognosen berechnet.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <div class="accordion-header">Erklärung zu den Renditeberechnungen</div>
+                        <div class="accordion-content">
+                            <p><strong>Bruttorendite</strong>: Die Bruttorendite ist das Verhältnis der jährlichen Mieteinnahmen (ohne Abzüge) zum Gesamtkaufpreis (inkl. Nebenkosten). Sie gibt einen ersten groben Anhaltspunkt zur Rentabilität.</p>
+                            <p><strong>Nettorendite</strong>: Die Nettorendite berücksichtigt zusätzlich die nicht umlagefähigen Nebenkosten und gibt ein realistischeres Bild der zu erwartenden Rendite.</p>
+                            <p><strong>Cash-Flow</strong>: Der monatliche Cash-Flow zeigt, ob und wie viel Geld monatlich nach Abzug aller Kosten (Kreditrate, nicht umlagefähige Nebenkosten, Rücklagen) übrig bleibt oder zugeschossen werden muss.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <div class="accordion-header">Was bedeutet Break-even?</div>
+                        <div class="accordion-content">
+                            <p>Der Break-even-Punkt bezeichnet den Zeitpunkt, an dem die kumulierten Einnahmen aus der Immobilie die gesamten Investitionskosten decken. Nach diesem Zeitpunkt erwirtschaftet die Immobilie einen echten Gewinn.</p>
+                            <p>Bei einer finanzierten Immobilie wird der Break-even-Punkt erreicht, wenn die Nettomieteinnahmen die Gesamtkosten der Finanzierung (Zins + Tilgung) ausgleichen.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <div class="accordion-header">Kaufnebenkosten: Was gehört dazu?</div>
+                        <div class="accordion-content">
+                            <p>Zu den Kaufnebenkosten gehören typischerweise:</p>
+                            <ul>
+                                <li>Grunderwerbsteuer (je nach Bundesland 3,5% bis 6,5%)</li>
+                                <li>Notarkosten (ca. 1,5-2%)</li>
+                                <li>Grundbucheintrag (ca. 0,5%)</li>
+                                <li>Maklergebühren (variiert, oft 3,57-7,14%)</li>
+                            </ul>
+                            <p>Nutzen Sie den "Berechnen"-Button bei den Kaufnebenkosten, um einen typischen Wert basierend auf dem Kaufpreis zu ermitteln.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <div class="accordion-header">Nicht umlagefähige Nebenkosten</div>
+                        <div class="accordion-content">
+                            <p>Nicht umlagefähige Nebenkosten sind Ausgaben, die der Vermieter tragen muss und nicht auf den Mieter umlegen kann. Dazu gehören:</p>
+                            <ul>
+                                <li>Verwaltungskosten</li>
+                                <li>Instandhaltungsrücklage</li>
+                                <li>Eigentumsversicherung</li>
+                                <li>Grundsteuer (in manchen Fällen)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <div class="accordion-header">Tipps für eine erfolgreiche Immobilieninvestition</div>
+                        <div class="accordion-content">
+                            <p>Hier einige wichtige Faktoren, die Sie bei einer Immobilieninvestition beachten sollten:</p>
+                            <ul>
+                                <li><strong>Lage</strong>: Die Lage ist entscheidend für Wertstabilität und Mietpotenzial.</li>
+                                <li><strong>Zustand des Objekts</strong>: Berücksichtigen Sie potenzielle Renovierungskosten.</li>
+                                <li><strong>Nachfrage</strong>: Recherchieren Sie die lokale Nachfragesituation für Mietobjekte.</li>
+                                <li><strong>Finanzierung</strong>: Eine solide Finanzierung mit ausreichend Eigenkapital reduziert Risiken.</li>
+                                <li><strong>Langfristige Perspektive</strong>: Immobilien sind in der Regel langfristige Investments.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <!-- Info Popups -->
+    <div class="info-popup" id="objektdaten-info">
+        <div class="info-popup-content">
+            <h3>Information zu Objektdaten</h3>
+            <p>Hier geben Sie die grundlegenden Daten der Immobilie ein:</p>
+            <ul>
+                <li><strong>Kaufpreis</strong>: Der reine Kaufpreis ohne Nebenkosten</li>
+                <li><strong>Kaufnebenkosten</strong>: Zusätzliche Kosten wie Grunderwerbsteuer, Notarkosten, Maklergebühren etc.</li>
+                <li><strong>Wohnfläche</strong>: Die gesamte Wohnfläche in Quadratmetern</li>
+            </ul>
+            <button class="close-popup">Schließen</button>
+        </div>
+    </div>
+
+    <div class="info-popup" id="finanzierung-info">
+        <div class="info-popup-content">
+            <h3>Information zur Finanzierung</h3>
+            <p>Hier definieren Sie die Art und Parameter der Immobilienfinanzierung:</p>
+            <ul>
+                <li><strong>Finanzierungsart</strong>: Wählen Sie zwischen Eigenkapital- und Fremdfinanzierung</li>
+                <li><strong>Eigenkapital</strong>: Der Betrag, den Sie selbst einbringen</li>
+                <li><strong>Zinssatz</strong>: Der jährliche Zinssatz des Darlehens (bei Fremdfinanzierung)</li>
+                <li><strong>Tilgung</strong>: Die jährliche anfängliche Tilgungsrate (bei Fremdfinanzierung)</li>
+                <li><strong>Zinsbindung</strong>: Zeitraum, für den der Zinssatz festgeschrieben ist</li>
+                <li><strong>Kreditrate</strong>: Die monatliche Rate für Zins und Tilgung</li>
+            </ul>
+            <p>Bei Auswahl "Eigenkapitalfinanzierung" wird automatisch der gesamte Kaufpreis inkl. Nebenkosten als Eigenkapital angesetzt und die Kreditrate auf 0 gesetzt.</p>
+            <button class="close-popup">Schließen</button>
+        </div>
+    </div>
+
+    <div class="info-popup" id="ertraege-info">
+        <div class="info-popup-content">
+            <h3>Information zu Erträgen & Aufwendungen</h3>
+            <p>Hier definieren Sie die laufenden Einnahmen und Ausgaben:</p>
+            <ul>
+                <li><strong>Kaltmiete</strong>: Die monatliche Miete ohne Nebenkosten</li>
+                <li><strong>Nicht umlagefähige Nebenkosten</strong>: Kosten, die Sie als Vermieter tragen müssen</li>
+                <li><strong>Instandhaltungsrücklage</strong>: Rücklagen für zukünftige Reparaturen</li>
+                <li><strong>Mietausfall/Leerstand</strong>: Puffer für mögliche Mietausfälle</li>
+                <li><strong>Wertsteigerung</strong>: Jährliche Wertsteigerung der Immobilie</li>
+                <li><strong>Mietsteigerung</strong>: Jährliche Steigerung der Mieteinnahmen</li>
+            </ul>
+            <button class="close-popup">Schließen</button>
+        </div>
+    </div>
+
+    <div class="calculator-popup" id="nebenkosten-rechner">
+        <div class="calculator-popup-content">
+            <h3>Kaufnebenkosten berechnen</h3>
+            <div class="input-group">
+                <label for="nb-kaufpreis">Kaufpreis (€)</label>
+                <input type="number" id="nb-kaufpreis" value="130000"/>
+            </div>
+            <div class="input-group">
+                <label for="nb-grunderwerbsteuer">Grunderwerbsteuer (%)</label>
+                <input type="number" id="nb-grunderwerbsteuer" value="6.0" step="0.1"/>
+            </div>
+            <div class="input-group">
+                <label for="nb-notar">Notar & Grundbuch (%)</label>
+                <input type="number" id="nb-notar" value="2.0" step="0.1"/>
+            </div>
+            <div class="input-group">
+                <label for="nb-makler">Maklergebühr (%)</label>
+                <input type="number" id="nb-makler" value="3.57" step="0.01"/>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Gesamte Nebenkosten:</div>
+                <div class="result-value" id="nb-ergebnis">0 €</div>
+            </div>
+            <div class="popup-buttons">
+                <button class="button secondary-button" id="nb-anwenden">Übernehmen</button>
+                <button class="button outline-button close-popup">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="calculator-popup" id="nichtumlage-rechner">
+        <div class="calculator-popup-content">
+            <h3>Typische nicht umlagefähige Kosten</h3>
+            <p>Wählen Sie einen Wert basierend auf dem Alter und Zustand der Immobilie:</p>
+            <div class="preset-buttons">
+                <button class="preset-btn" data-value="65">Neubau<br>(~65 €/Monat)</button>
+                <button class="preset-btn" data-value="80">Durchschnitt<br>(~80 €/Monat)</button>
+                <button class="preset-btn" data-value="110">Altbau<br>(~110 €/Monat)</button>
+            </div>
+            <div class="input-group">
+                <label for="nu-hausverwaltung">Hausverwaltung (€/Monat)</label>
+                <input type="number" id="nu-hausverwaltung" value="25"/>
+            </div>
+            <div class="input-group">
+                <label for="nu-versicherung">Versicherung (€/Monat)</label>
+                <input type="number" id="nu-versicherung" value="15"/>
+            </div>
+            <div class="input-group">
+                <label for="nu-instandhaltung">Instandhaltung (€/Monat)</label>
+                <input type="number" id="nu-instandhaltung" value="40"/>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Gesamte monatliche Kosten:</div>
+                <div class="result-value" id="nu-ergebnis">80 €</div>
+            </div>
+            <div class="popup-buttons">
+                <button class="button secondary-button" id="nu-anwenden">Übernehmen</button>
+                <button class="button outline-button close-popup">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="calculator-popup" id="rate-rechner">
+        <div class="calculator-popup-content">
+            <h3>Kreditrate berechnen</h3>
+            <p>Berechnung der monatlichen Rate basierend auf Darlehenssumme, Zinssatz und Tilgung:</p>
+            <div class="input-group">
+                <label for="kr-darlehen">Darlehenssumme (€)</label>
+                <input type="number" id="kr-darlehen" value="111120"/>
+            </div>
+            <div class="input-group">
+                <label for="kr-zins">Zinssatz (% p.a.)</label>
+                <input type="number" id="kr-zins" value="3.5" step="0.1"/>
+            </div>
+            <div class="input-group">
+                <label for="kr-tilgung">Anfängliche Tilgung (% p.a.)</label>
+                <input type="number" id="kr-tilgung" value="2.0" step="0.1"/>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Monatliche Rate:</div>
+                <div class="result-value" id="kr-ergebnis">0 €</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Zinsbindungsende:</div>
+                <div class="result-value" id="kr-zinsbindung">-</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Restschuld nach Zinsbindung:</div>
+                <div class="result-value" id="kr-restschuld">0 €</div>
+            </div>
+            <div class="popup-buttons">
+                <button class="button secondary-button" id="kr-anwenden">Übernehmen</button>
+                <button class="button outline-button close-popup">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>ImmoCalc Pro - Made with ❤️ | Alle Berechnungen ohne Gewähr</p>
+    </footer>
 </div>
 
-<script>
-    function get(id) {
-        return document.getElementById(id);
-    }
-
-    function formatEuro(value) {
-        return value.toLocaleString("de-DE", {style: "currency", currency: "EUR"});
-    }
-
-    function update() {
-        const kaufpreis = parseFloat(get("kaufpreis").value) || 0;
-        const nebenkosten = parseFloat(get("nebenkosten").value) || 0;
-        const eigenkapital = parseFloat(get("eigenkapital").value) || 0;
-        const rate = parseFloat(get("rate").value) || 1;
-        const zinssatz = parseFloat(get("zins").value) / 100 || 0;
-        const miete = parseFloat(get("miete").value) || 0;
-        const nichtumlage = parseFloat(get("nichtumlage").value) || 0;
-        const steigerung = parseFloat(get("steigerung").value) || 0;
-
-        const gesamtkosten = kaufpreis + nebenkosten;
-        const darlehen = Math.max(0, gesamtkosten - eigenkapital);
-        const mieteJahr = miete * 12;
-        const nuJahr = nichtumlage * 12;
-        const nettoEinnahme = mieteJahr - nuJahr;
-
-        const brutto = (mieteJahr / gesamtkosten) * 100;
-        const netto = (nettoEinnahme / gesamtkosten) * 100;
-
-        get("gesamtkosten").textContent = formatEuro(gesamtkosten);
-        get("fremdfinanzierung").textContent = formatEuro(darlehen);
-        get("bruttoRendite").textContent = `💵 Bruttorendite: ${brutto.toFixed(2)} %`;
-        get("nettoRendite").textContent = `💵 Nettorendite: ${netto.toFixed(2)} %`;
-        get("formelBrutto").textContent = `(${formatEuro(mieteJahr)} ÷ ${formatEuro(gesamtkosten)}) × 100`;
-        get("formelNetto").textContent = `(${formatEuro(mieteJahr)} – ${formatEuro(nuJahr)} ÷ ${formatEuro(gesamtkosten)}) × 100`;
-
-        const tilgungsinfo = get("tilgungsinfo");
-        const tilgungsformel = get("tilgungsformel");
-        const breakEvenBox = get("breakEvenBox");
-
-        if (darlehen > 0) {
-            let rest = darlehen;
-            const zinsmonat = zinssatz / 12;
-            let monate = 0;
-            let gezahlt = 0;
-
-            while (rest > 0 && monate < 600) {
-                const zinsen = rest * zinsmonat;
-                const tilgung = rate - zinsen;
-                if (tilgung <= 0) break;
-                rest -= tilgung;
-                gezahlt += rate;
-                monate++;
-            }
-
-            const jahre = monate / 12;
-            const jahrFertig = new Date().getFullYear() + Math.ceil(jahre);
-            tilgungsinfo.textContent = `⏳ Abgezahlt in ca. ${jahre.toFixed(1)} Jahren`;
-            tilgungsformel.textContent = `Annuität mit ${zinssatz.toFixed(2)} % Zins berechnet → fertig ca. ${jahrFertig}`;
-
-            const kapitaldienst = gezahlt;
-            const breakEvenJahre = kapitaldienst / nettoEinnahme;
-            const breakEvenJahr = new Date().getFullYear() + Math.ceil(breakEvenJahre);
-
-            if (nettoEinnahme <= 0) {
-                breakEvenBox.textContent = `⚠️ Kein Break-even möglich: Netto-Mieteinnahmen reichen nicht aus.`;
-            } else {
-                breakEvenBox.textContent = `💼 Break-even mit Finanzierung: nach ${breakEvenJahre.toFixed(1)} Jahren → ca. ${breakEvenJahr}`;
-            }
-        } else {
-            const breakEvenJahre = gesamtkosten / nettoEinnahme;
-            const breakEvenJahr = new Date().getFullYear() + Math.ceil(breakEvenJahre);
-            tilgungsinfo.textContent = `💼 Break-even (Eigenkauf): nach ${breakEvenJahre.toFixed(1)} Jahren → ca. ${breakEvenJahr}`;
-            tilgungsformel.textContent = `Gesamtkosten ÷ Netto-Mietertrag = ${gesamtkosten} ÷ ${nettoEinnahme.toFixed(2)} = ${breakEvenJahre.toFixed(1)} Jahre`;
-            breakEvenBox.textContent = '';
-        }
-
-        const faktor = Math.pow(1 + steigerung / 100, 10);
-        const zukunftswert = kaufpreis * faktor;
-        get("wertentwicklung").textContent = `📈 Marktwert in 10 Jahren: ${formatEuro(zukunftswert)}`;
-        get("wertverhaeltnis").textContent = `+${(zukunftswert - kaufpreis).toLocaleString("de-DE", {
-            style: "currency",
-            currency: "EUR"
-        })} (${((faktor - 1) * 100).toFixed(1)} % Steigerung)`;
-    }
-
-    ["kaufpreis", "nebenkosten", "eigenkapital", "rate", "zins", "miete", "nichtumlage", "steigerung"]
-        .forEach(id => get(id).addEventListener("input", update));
-
-    update();
-</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
