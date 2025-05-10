@@ -5,18 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ImmoCalc Pro - Immobilien-Rechner</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Open Graph Meta Tags für Link-Vorschau -->
     <meta property="og:title" content="ImmoCalc Pro - Immobilien-Rechner">
-    <meta property="og:description" content="Professioneller Immobilien-Kalkulator mit umfangreichen Analysefunktionen">
+    <meta property="og:description"
+          content="Professioneller Immobilien-Kalkulator mit umfangreichen Analysefunktionen">
     <meta property="og:image" content="immo.jpg">
     <meta property="og:type" content="website">
 
     <!-- Twitter Card Tags für Twitter-Vorschau -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="ImmoCalc Pro - Immobilien-Rechner">
-    <meta name="twitter:description" content="Professioneller Immobilien-Kalkulator mit umfangreichen Analysefunktionen">
+    <meta name="twitter:description"
+          content="Professioneller Immobilien-Kalkulator mit umfangreichen Analysefunktionen">
     <meta name="twitter:image" content="immo.jpg">
 
     <!-- Favicon -->
@@ -45,7 +48,8 @@
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-home"></i> Objektdaten</h2>
-                <button class="info-btn" data-info="objektdaten-info"><i class="fas fa-info-circle"></i></button>
+                <button class="info-btn" data-info="objektdaten-info"><i
+                        class="fas fa-info-circle"></i></button>
             </div>
             <div class="card-body">
                 <div class="input-group">
@@ -80,7 +84,8 @@
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-coins"></i> Finanzierung</h2>
-                <button class="info-btn" data-info="finanzierung-info"><i class="fas fa-info-circle"></i></button>
+                <button class="info-btn" data-info="finanzierung-info"><i
+                        class="fas fa-info-circle"></i></button>
             </div>
             <div class="card-body">
                 <div class="financing-toggle">
@@ -144,7 +149,8 @@
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-chart-line"></i> Erträge & Aufwendungen</h2>
-                <button class="info-btn" data-info="ertraege-info"><i class="fas fa-info-circle"></i></button>
+                <button class="info-btn" data-info="ertraege-info"><i
+                        class="fas fa-info-circle"></i></button>
             </div>
             <div class="card-body">
                 <div class="input-group">
@@ -268,7 +274,8 @@
     <div class="tab-content" id="advanced-calc">
         <div class="card">
             <div class="card-header">
-                <h2><i class="fas fa-calculator"></i> Detaillierte Wirtschaftlichkeitsberechnung</h2>
+                <h2><i class="fas fa-calculator"></i> Detaillierte Wirtschaftlichkeitsberechnung
+                </h2>
             </div>
             <div class="card-body">
                 <div class="input-group">
@@ -278,7 +285,7 @@
                         <input type="number" id="berechnungszeitraum" value="20"/>
                     </div>
                 </div>
-                
+
                 <div class="input-group">
                     <label for="anschlussfinanzierung">Zinssatz Anschlussfinanzierung (%)</label>
                     <div class="input-with-icon">
@@ -286,7 +293,7 @@
                         <input type="number" id="anschlussfinanzierung" value="4.0" step="0.1"/>
                     </div>
                 </div>
-                
+
                 <div class="input-group">
                     <label for="inflation">Inflationsrate p.a. (%)</label>
                     <div class="input-with-icon">
@@ -294,11 +301,13 @@
                         <input type="number" id="inflation" value="2.0" step="0.1"/>
                     </div>
                 </div>
-                
-                <button class="button primary-button" id="calculate-advanced">Detailliert berechnen</button>
+
+                <button class="button primary-button" id="calculate-advanced">Detailliert
+                    berechnen
+                </button>
             </div>
         </div>
-        
+
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-chart-area"></i> Cashflow-Entwicklung</h2>
@@ -309,7 +318,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="card">
             <div class="card-header">
                 <h2><i class="fas fa-balance-scale"></i> ROI & Kapitalentwicklung</h2>
@@ -333,7 +342,7 @@
                         <div class="result-value" id="eigenkapitalrendite-result"></div>
                     </div>
                 </div>
-                
+
                 <div class="chart-container">
                     <canvas id="kapital-chart"></canvas>
                 </div>
@@ -348,14 +357,18 @@
             </div>
             <div class="card-body">
                 <p>Vergleichen Sie bis zu 3 Immobilienobjekte miteinander:</p>
-                
+
                 <div class="comparison-controls">
-                    <button class="button secondary-button" id="add-object">Objekt hinzufügen</button>
-                    <button class="button warning-button" id="reset-comparison">Zurücksetzen</button>
+                    <button class="button secondary-button" id="add-object">Objekt hinzufügen
+                    </button>
+                    <button class="button warning-button" id="reset-comparison">Zurücksetzen
+                    </button>
                 </div>
-                
+
                 <div class="comparison-container" id="comparison-container">
-                    <div class="comparison-message">Klicken Sie auf "Objekt hinzufügen", um aktuelle Berechnungsdaten als Vergleichsobjekt zu speichern</div>
+                    <div class="comparison-message">Klicken Sie auf "Objekt hinzufügen", um aktuelle
+                        Berechnungsdaten als Vergleichsobjekt zu speichern
+                    </div>
                 </div>
             </div>
         </div>
@@ -371,27 +384,43 @@
                     <div class="accordion-item">
                         <div class="accordion-header">Was ist ImmoCalc Pro?</div>
                         <div class="accordion-content">
-                            <p>ImmoCalc Pro ist ein umfassendes Tool zur Berechnung und Analyse von Immobilieninvestitionen. Es hilft Ihnen dabei, fundierte Entscheidungen beim Immobilienkauf zu treffen, indem es verschiedene Kennzahlen und Prognosen berechnet.</p>
+                            <p>ImmoCalc Pro ist ein umfassendes Tool zur Berechnung und Analyse von
+                                Immobilieninvestitionen. Es hilft Ihnen dabei, fundierte
+                                Entscheidungen beim Immobilienkauf zu treffen, indem es verschiedene
+                                Kennzahlen und Prognosen berechnet.</p>
                         </div>
                     </div>
-                    
+
                     <div class="accordion-item">
                         <div class="accordion-header">Erklärung zu den Renditeberechnungen</div>
                         <div class="accordion-content">
-                            <p><strong>Bruttorendite</strong>: Die Bruttorendite ist das Verhältnis der jährlichen Mieteinnahmen (ohne Abzüge) zum Gesamtkaufpreis (inkl. Nebenkosten). Sie gibt einen ersten groben Anhaltspunkt zur Rentabilität.</p>
-                            <p><strong>Nettorendite</strong>: Die Nettorendite berücksichtigt zusätzlich die nicht umlagefähigen Nebenkosten und gibt ein realistischeres Bild der zu erwartenden Rendite.</p>
-                            <p><strong>Cash-Flow</strong>: Der monatliche Cash-Flow zeigt, ob und wie viel Geld monatlich nach Abzug aller Kosten (Kreditrate, nicht umlagefähige Nebenkosten, Rücklagen) übrig bleibt oder zugeschossen werden muss.</p>
+                            <p><strong>Bruttorendite</strong>: Die Bruttorendite ist das Verhältnis
+                                der jährlichen Mieteinnahmen (ohne Abzüge) zum Gesamtkaufpreis
+                                (inkl. Nebenkosten). Sie gibt einen ersten groben Anhaltspunkt zur
+                                Rentabilität.</p>
+                            <p><strong>Nettorendite</strong>: Die Nettorendite berücksichtigt
+                                zusätzlich die nicht umlagefähigen Nebenkosten und gibt ein
+                                realistischeres Bild der zu erwartenden Rendite.</p>
+                            <p><strong>Cash-Flow</strong>: Der monatliche Cash-Flow zeigt, ob und
+                                wie viel Geld monatlich nach Abzug aller Kosten (Kreditrate, nicht
+                                umlagefähige Nebenkosten, Rücklagen) übrig bleibt oder zugeschossen
+                                werden muss.</p>
                         </div>
                     </div>
-                    
+
                     <div class="accordion-item">
                         <div class="accordion-header">Was bedeutet Break-even?</div>
                         <div class="accordion-content">
-                            <p>Der Break-even-Punkt bezeichnet den Zeitpunkt, an dem die kumulierten Einnahmen aus der Immobilie die gesamten Investitionskosten decken. Nach diesem Zeitpunkt erwirtschaftet die Immobilie einen echten Gewinn.</p>
-                            <p>Bei einer finanzierten Immobilie wird der Break-even-Punkt erreicht, wenn die Nettomieteinnahmen die Gesamtkosten der Finanzierung (Zins + Tilgung) ausgleichen.</p>
+                            <p>Der Break-even-Punkt bezeichnet den Zeitpunkt, an dem die kumulierten
+                                Einnahmen aus der Immobilie die gesamten Investitionskosten decken.
+                                Nach diesem Zeitpunkt erwirtschaftet die Immobilie einen echten
+                                Gewinn.</p>
+                            <p>Bei einer finanzierten Immobilie wird der Break-even-Punkt erreicht,
+                                wenn die Nettomieteinnahmen die Gesamtkosten der Finanzierung (Zins
+                                + Tilgung) ausgleichen.</p>
                         </div>
                     </div>
-                    
+
                     <div class="accordion-item">
                         <div class="accordion-header">Kaufnebenkosten: Was gehört dazu?</div>
                         <div class="accordion-content">
@@ -402,14 +431,16 @@
                                 <li>Grundbucheintrag (ca. 0,5%)</li>
                                 <li>Maklergebühren (variiert, oft 3,57-7,14%)</li>
                             </ul>
-                            <p>Nutzen Sie den "Berechnen"-Button bei den Kaufnebenkosten, um einen typischen Wert basierend auf dem Kaufpreis zu ermitteln.</p>
+                            <p>Nutzen Sie den "Berechnen"-Button bei den Kaufnebenkosten, um einen
+                                typischen Wert basierend auf dem Kaufpreis zu ermitteln.</p>
                         </div>
                     </div>
-                    
+
                     <div class="accordion-item">
                         <div class="accordion-header">Nicht umlagefähige Nebenkosten</div>
                         <div class="accordion-content">
-                            <p>Nicht umlagefähige Nebenkosten sind Ausgaben, die der Vermieter tragen muss und nicht auf den Mieter umlegen kann. Dazu gehören:</p>
+                            <p>Nicht umlagefähige Nebenkosten sind Ausgaben, die der Vermieter
+                                tragen muss und nicht auf den Mieter umlegen kann. Dazu gehören:</p>
                             <ul>
                                 <li>Verwaltungskosten</li>
                                 <li>Instandhaltungsrücklage</li>
@@ -418,17 +449,30 @@
                             </ul>
                         </div>
                     </div>
-                    
+
                     <div class="accordion-item">
-                        <div class="accordion-header">Tipps für eine erfolgreiche Immobilieninvestition</div>
+                        <div class="accordion-header">Tipps für eine erfolgreiche
+                            Immobilieninvestition
+                        </div>
                         <div class="accordion-content">
-                            <p>Hier einige wichtige Faktoren, die Sie bei einer Immobilieninvestition beachten sollten:</p>
+                            <p>Hier einige wichtige Faktoren, die Sie bei einer
+                                Immobilieninvestition beachten sollten:</p>
                             <ul>
-                                <li><strong>Lage</strong>: Die Lage ist entscheidend für Wertstabilität und Mietpotenzial.</li>
-                                <li><strong>Zustand des Objekts</strong>: Berücksichtigen Sie potenzielle Renovierungskosten.</li>
-                                <li><strong>Nachfrage</strong>: Recherchieren Sie die lokale Nachfragesituation für Mietobjekte.</li>
-                                <li><strong>Finanzierung</strong>: Eine solide Finanzierung mit ausreichend Eigenkapital reduziert Risiken.</li>
-                                <li><strong>Langfristige Perspektive</strong>: Immobilien sind in der Regel langfristige Investments.</li>
+                                <li><strong>Lage</strong>: Die Lage ist entscheidend für
+                                    Wertstabilität und Mietpotenzial.
+                                </li>
+                                <li><strong>Zustand des Objekts</strong>: Berücksichtigen Sie
+                                    potenzielle Renovierungskosten.
+                                </li>
+                                <li><strong>Nachfrage</strong>: Recherchieren Sie die lokale
+                                    Nachfragesituation für Mietobjekte.
+                                </li>
+                                <li><strong>Finanzierung</strong>: Eine solide Finanzierung mit
+                                    ausreichend Eigenkapital reduziert Risiken.
+                                </li>
+                                <li><strong>Langfristige Perspektive</strong>: Immobilien sind in
+                                    der Regel langfristige Investments.
+                                </li>
                             </ul>
                         </div>
                     </div>
@@ -444,7 +488,9 @@
             <p>Hier geben Sie die grundlegenden Daten der Immobilie ein:</p>
             <ul>
                 <li><strong>Kaufpreis</strong>: Der reine Kaufpreis ohne Nebenkosten</li>
-                <li><strong>Kaufnebenkosten</strong>: Zusätzliche Kosten wie Grunderwerbsteuer, Notarkosten, Maklergebühren etc.</li>
+                <li><strong>Kaufnebenkosten</strong>: Zusätzliche Kosten wie Grunderwerbsteuer,
+                    Notarkosten, Maklergebühren etc.
+                </li>
                 <li><strong>Wohnfläche</strong>: Die gesamte Wohnfläche in Quadratmetern</li>
             </ul>
             <button class="close-popup">Schließen</button>
@@ -456,14 +502,22 @@
             <h3>Information zur Finanzierung</h3>
             <p>Hier definieren Sie die Art und Parameter der Immobilienfinanzierung:</p>
             <ul>
-                <li><strong>Finanzierungsart</strong>: Wählen Sie zwischen Eigenkapital- und Fremdfinanzierung</li>
+                <li><strong>Finanzierungsart</strong>: Wählen Sie zwischen Eigenkapital- und
+                    Fremdfinanzierung
+                </li>
                 <li><strong>Eigenkapital</strong>: Der Betrag, den Sie selbst einbringen</li>
-                <li><strong>Zinssatz</strong>: Der jährliche Zinssatz des Darlehens (bei Fremdfinanzierung)</li>
-                <li><strong>Tilgung</strong>: Die jährliche anfängliche Tilgungsrate (bei Fremdfinanzierung)</li>
-                <li><strong>Zinsbindung</strong>: Zeitraum, für den der Zinssatz festgeschrieben ist</li>
+                <li><strong>Zinssatz</strong>: Der jährliche Zinssatz des Darlehens (bei
+                    Fremdfinanzierung)
+                </li>
+                <li><strong>Tilgung</strong>: Die jährliche anfängliche Tilgungsrate (bei
+                    Fremdfinanzierung)
+                </li>
+                <li><strong>Zinsbindung</strong>: Zeitraum, für den der Zinssatz festgeschrieben ist
+                </li>
                 <li><strong>Kreditrate</strong>: Die monatliche Rate für Zins und Tilgung</li>
             </ul>
-            <p>Bei Auswahl "Eigenkapitalfinanzierung" wird automatisch der gesamte Kaufpreis inkl. Nebenkosten als Eigenkapital angesetzt und die Kreditrate auf 0 gesetzt.</p>
+            <p>Bei Auswahl "Eigenkapitalfinanzierung" wird automatisch der gesamte Kaufpreis inkl.
+                Nebenkosten als Eigenkapital angesetzt und die Kreditrate auf 0 gesetzt.</p>
             <button class="close-popup">Schließen</button>
         </div>
     </div>
@@ -474,8 +528,11 @@
             <p>Hier definieren Sie die laufenden Einnahmen und Ausgaben:</p>
             <ul>
                 <li><strong>Kaltmiete</strong>: Die monatliche Miete ohne Nebenkosten</li>
-                <li><strong>Nicht umlagefähige Nebenkosten</strong>: Kosten, die Sie als Vermieter tragen müssen</li>
-                <li><strong>Instandhaltungsrücklage</strong>: Rücklagen für zukünftige Reparaturen</li>
+                <li><strong>Nicht umlagefähige Nebenkosten</strong>: Kosten, die Sie als Vermieter
+                    tragen müssen
+                </li>
+                <li><strong>Instandhaltungsrücklage</strong>: Rücklagen für zukünftige Reparaturen
+                </li>
                 <li><strong>Mietausfall/Leerstand</strong>: Puffer für mögliche Mietausfälle</li>
                 <li><strong>Wertsteigerung</strong>: Jährliche Wertsteigerung der Immobilie</li>
                 <li><strong>Mietsteigerung</strong>: Jährliche Steigerung der Mieteinnahmen</li>
@@ -549,7 +606,8 @@
     <div class="calculator-popup" id="rate-rechner">
         <div class="calculator-popup-content">
             <h3>Kreditrate berechnen</h3>
-            <p>Berechnung der monatlichen Rate basierend auf Darlehenssumme, Zinssatz und Tilgung:</p>
+            <p>Berechnung der monatlichen Rate basierend auf Darlehenssumme, Zinssatz und
+                Tilgung:</p>
             <div class="input-group">
                 <label for="kr-darlehen">Darlehenssumme (€)</label>
                 <input type="number" id="kr-darlehen" value="111120"/>
@@ -582,7 +640,8 @@
     </div>
 
     <footer>
-        <p>ImmoCalc Pro - Made with ❤️ | Alle Berechnungen ohne Gewähr</p>
+        <p>ImmoCalc Pro - Made with ❤️ by Martin Pfeffer</p>
+        <p>Alle Berechnungen ohne Gewähr</p>
     </footer>
 </div>
 
