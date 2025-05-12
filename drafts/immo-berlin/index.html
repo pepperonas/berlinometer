@@ -12,19 +12,23 @@
             padding: 20px;
             line-height: 1.6;
         }
+
         h1 {
             color: #333;
             margin-bottom: 20px;
         }
+
         ul {
             list-style-type: none;
             padding: 0;
         }
+
         li {
             margin-bottom: 15px;
             border-left: 3px solid #0066cc;
             padding-left: 15px;
         }
+
         a {
             color: #0066cc;
             text-decoration: none;
@@ -33,15 +37,18 @@
             padding: 5px 0;
             transition: color 0.2s;
         }
+
         a:hover {
             color: #004494;
             text-decoration: underline;
         }
+
         .description {
             color: #666;
             font-size: 14px;
             margin-top: 3px;
         }
+
         #update-message {
             background-color: #f8f9fa;
             padding: 10px;
@@ -50,6 +57,7 @@
             font-size: 14px;
             border-left: 3px solid #28a745;
         }
+
         #loading {
             color: #666;
             margin: 20px 0;
@@ -58,176 +66,199 @@
     </style>
 </head>
 <body>
-    <h1>Immo Berlin - Übersicht</h1>
-    
-    <div id="loading">Seiten werden geladen...</div>
-    <ul id="page-list"></ul>
+<h1>Immo Berlin - Übersicht</h1>
 
-    <div id="update-message">
-        Diese Seite aktualisiert sich automatisch, wenn neue HTML-Dateien hinzugefügt werden.
-        <button onclick="findHtmlFiles()" style="margin-left: 10px; padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Manuell aktualisieren</button>
-    </div>
+<div id="loading">Seiten werden geladen...</div>
+<ul id="page-list"></ul>
 
-    <script>
-        // Bekannte HTML-Dateien als Fallback
-        const knownFiles = [
-            {
-                url: "berlin-bezirke-vergleich.html",
-                title: "Berlin Bezirke Vergleich",
-                description: "Vergleich der verschiedenen Bezirke in Berlin"
-            },
-            {
-                url: "mieten-berlin-bezirke.html",
-                title: "Mieten Berlin Bezirke",
-                description: "Informationen zu Mieten in verschiedenen Berliner Bezirken"
-            },
-            {
-                url: "mieten-berlin-potenzial.html",
-                title: "Mieten Berlin Potenzial",
-                description: "Potenzialanalyse für Mietobjekte in Berlin"
-            },
-            {
-                url: "berlin-bezirke-ranking-investor.html",
-                title: "Berliner Bezirke Ranking für Investoren",
-                description: "Ranking der Berliner Bezirke aus Investorensicht nach Kaufpreis/Mietertrag und Wertsteigerung"
-            },
-            {
-                url: "berlin-mietvertraege-vergleich.html",
-                title: "Feste vs. Befristete Mietverträge in Berlin",
-                description: "Gegenüberstellung von unbefristeten und befristeten Mietverträgen für Berliner Vermieter"
-            }
-        ];
+<div id="update-message">
+    Diese Seite aktualisiert sich automatisch, wenn neue HTML-Dateien hinzugefügt werden.
+    <button onclick="findHtmlFiles()"
+            style="margin-left: 10px; padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Manuell aktualisieren
+    </button>
+</div>
 
-        // Formatiert einen Dateinamen in einen lesbaren Titel
-        function formatTitle(filename) {
-            return filename
-                .replace('.html', '')
-                .replace(/-/g, ' ')
-                .split(' ')
-                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' ');
+<script>
+    // Bekannte HTML-Dateien als Fallback
+    const knownFiles = [
+        {
+            url: "berlin-bezirke-vergleich.html",
+            title: "Berlin Bezirke Vergleich",
+            description: "Vergleich der verschiedenen Bezirke in Berlin"
+        },
+        {
+            url: "mieten-berlin-bezirke.html",
+            title: "Mieten Berlin Bezirke",
+            description: "Informationen zu Mieten in verschiedenen Berliner Bezirken"
+        },
+        {
+            url: "mieten-berlin-potenzial.html",
+            title: "Mieten Berlin Potenzial",
+            description: "Potenzialanalyse für Mietobjekte in Berlin"
+        },
+        {
+            url: "berlin-bezirke-ranking-investor.html",
+            title: "Berliner Bezirke Ranking für Investoren",
+            description: "Ranking der Berliner Bezirke aus Investorensicht nach Kaufpreis/Mietertrag und Wertsteigerung"
+        },
+        {
+            url: "berlin-mietvertraege-vergleich.html",
+            title: "Feste vs. Befristete Mietverträge in Berlin",
+            description: "Gegenüberstellung von unbefristeten und befristeten Mietverträgen für Berliner Vermieter"
+        },
+        {
+            url: "berlin-heatmap-bevoelkerung.html",
+            title: "Berlin Heatmap Bevölkerung",
+            description: "Visualisierung der Bevölkerungsdichte in Berlin als Heatmap"
+        },
+        {
+            url: "berlin-immobilien-heatmap.html",
+            title: "Berlin Immobilien Heatmap",
+            description: "Heatmap der Immobilienpreise in Berlin"
+        },
+        {
+            url: "berlin-mietpreise-heatmap.html",
+            title: "Berlin Mietpreise Heatmap",
+            description: "Visualisierung der Mietpreise in Berlin als Heatmap"
+        },
+        {
+            url: "berlin-kultur-heatmap.html",
+            title: "Berlin Kultur Heatmap",
+            description: "Visualisierung der kulturellen Angebote in Berlin als Heatmap"
+        }
+    ];
+
+    // Formatiert einen Dateinamen in einen lesbaren Titel
+    function formatTitle(filename) {
+        return filename
+            .replace('.html', '')
+            .replace(/-/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
+    // Generiert eine Beschreibung basierend auf dem Titel
+    function generateDescription(title) {
+        if (title.includes("Ranking") || title.includes("Ranking")) {
+            return "Ranking der Berliner Bezirke aus Investorensicht";
+        } else if (title.includes("Bezirke")) {
+            return "Informationen zu Berliner Bezirken";
+        } else if (title.includes("Mieten")) {
+            return "Daten zu Mietpreisen in Berlin";
+        } else if (title.includes("Potenzial")) {
+            return "Potenzialanalyse für den Berliner Immobilienmarkt";
+        } else if (title.includes("Vergleich")) {
+            return "Vergleichende Daten zu Berlin";
+        } else {
+            return "Informationen zum Berliner Immobilienmarkt";
+        }
+    }
+
+    // Fügt eine Seite zur Liste hinzu
+    function addPage(url, title, description) {
+        const pageList = document.getElementById('page-list');
+        const li = document.createElement('li');
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.textContent = title || formatTitle(url);
+
+        const desc = document.createElement('div');
+        desc.className = 'description';
+        desc.textContent = description || generateDescription(title || url);
+
+        li.appendChild(a);
+        li.appendChild(desc);
+        pageList.appendChild(li);
+    }
+
+    // Sucht HTML-Dateien im aktuellen Verzeichnis
+    async function findHtmlFiles() {
+        const pageList = document.getElementById('page-list');
+        const loading = document.getElementById('loading');
+
+        pageList.innerHTML = ''; // Liste leeren
+        loading.style.display = 'block';
+
+        // Versuche 1: XMLHttpRequest, um Verzeichnis zu scannen
+        function scanDirectoryWithXHR() {
+            return new Promise((resolve) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', '.', true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        const parser = new DOMParser();
+                        const htmlDoc = parser.parseFromString(xhr.responseText, 'text/html');
+                        const links = htmlDoc.querySelectorAll('a');
+
+                        const htmlFiles = Array.from(links)
+                            .map(link => link.getAttribute('href'))
+                            .filter(href => href && href.endsWith('.html') && href !== 'index.html');
+
+                        resolve(htmlFiles);
+                    } else if (xhr.readyState === 4) {
+                        resolve([]);
+                    }
+                };
+                xhr.send();
+            });
         }
 
-        // Generiert eine Beschreibung basierend auf dem Titel
-        function generateDescription(title) {
-            if (title.includes("Ranking") || title.includes("Ranking")) {
-                return "Ranking der Berliner Bezirke aus Investorensicht";
-            } else if (title.includes("Bezirke")) {
-                return "Informationen zu Berliner Bezirken";
-            } else if (title.includes("Mieten")) {
-                return "Daten zu Mietpreisen in Berlin";
-            } else if (title.includes("Potenzial")) {
-                return "Potenzialanalyse für den Berliner Immobilienmarkt";
-            } else if (title.includes("Vergleich")) {
-                return "Vergleichende Daten zu Berlin";
-            } else {
-                return "Informationen zum Berliner Immobilienmarkt";
-            }
-        }
-        
-        // Fügt eine Seite zur Liste hinzu
-        function addPage(url, title, description) {
-            const pageList = document.getElementById('page-list');
-            const li = document.createElement('li');
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.textContent = title || formatTitle(url);
-            
-            const desc = document.createElement('div');
-            desc.className = 'description';
-            desc.textContent = description || generateDescription(title || url);
-            
-            li.appendChild(a);
-            li.appendChild(desc);
-            pageList.appendChild(li);
-        }
-
-        // Sucht HTML-Dateien im aktuellen Verzeichnis
-        async function findHtmlFiles() {
-            const pageList = document.getElementById('page-list');
-            const loading = document.getElementById('loading');
-            
-            pageList.innerHTML = ''; // Liste leeren
-            loading.style.display = 'block';
-
-            // Versuche 1: XMLHttpRequest, um Verzeichnis zu scannen
-            function scanDirectoryWithXHR() {
-                return new Promise((resolve) => {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('GET', '.', true);
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState === 4 && xhr.status === 200) {
-                            const parser = new DOMParser();
-                            const htmlDoc = parser.parseFromString(xhr.responseText, 'text/html');
-                            const links = htmlDoc.querySelectorAll('a');
-                            
-                            const htmlFiles = Array.from(links)
-                                .map(link => link.getAttribute('href'))
-                                .filter(href => href && href.endsWith('.html') && href !== 'index.html');
-                            
-                            resolve(htmlFiles);
-                        } else if (xhr.readyState === 4) {
-                            resolve([]);
-                        }
-                    };
-                    xhr.send();
-                });
-            }
-
-            // Versuche 2: Fetch API
-            async function scanDirectoryWithFetch() {
-                try {
-                    const response = await fetch('.');
-                    const text = await response.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(text, 'text/html');
-                    const links = Array.from(doc.querySelectorAll('a'));
-                    
-                    return links
-                        .map(link => link.getAttribute('href'))
-                        .filter(href => href && href.endsWith('.html') && href !== 'index.html');
-                } catch (e) {
-                    console.error("Fetch fehlgeschlagen:", e);
-                    return [];
-                }
-            }
-
+        // Versuche 2: Fetch API
+        async function scanDirectoryWithFetch() {
             try {
-                // Versuche beide Methoden
-                let htmlFiles = await scanDirectoryWithXHR();
-                
-                if (htmlFiles.length === 0) {
-                    htmlFiles = await scanDirectoryWithFetch();
-                }
+                const response = await fetch('.');
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                const links = Array.from(doc.querySelectorAll('a'));
 
-                // Wenn beide Methoden fehlschlagen, verwende die bekannten Dateien
-                if (htmlFiles.length === 0) {
-                    console.log("Verwende bekannte Dateien als Fallback");
-                    knownFiles.forEach(file => {
-                        addPage(file.url, file.title, file.description);
-                    });
-                } else {
-                    // Sonst zeige die gefundenen Dateien an
-                    htmlFiles.forEach(file => {
-                        const title = formatTitle(file);
-                        const description = generateDescription(title);
-                        addPage(file, title, description);
-                    });
-                }
-            } catch (error) {
-                console.error("Fehler beim Scannen des Verzeichnisses:", error);
-                // Fallback zu bekannten Dateien
+                return links
+                    .map(link => link.getAttribute('href'))
+                    .filter(href => href && href.endsWith('.html') && href !== 'index.html');
+            } catch (e) {
+                console.error("Fetch fehlgeschlagen:", e);
+                return [];
+            }
+        }
+
+        try {
+            // Versuche beide Methoden
+            let htmlFiles = await scanDirectoryWithXHR();
+
+            if (htmlFiles.length === 0) {
+                htmlFiles = await scanDirectoryWithFetch();
+            }
+
+            // Wenn beide Methoden fehlschlagen, verwende die bekannten Dateien
+            if (htmlFiles.length === 0) {
+                console.log("Verwende bekannte Dateien als Fallback");
                 knownFiles.forEach(file => {
                     addPage(file.url, file.title, file.description);
                 });
+            } else {
+                // Sonst zeige die gefundenen Dateien an
+                htmlFiles.forEach(file => {
+                    const title = formatTitle(file);
+                    const description = generateDescription(title);
+                    addPage(file, title, description);
+                });
             }
-
-            loading.style.display = 'none';
+        } catch (error) {
+            console.error("Fehler beim Scannen des Verzeichnisses:", error);
+            // Fallback zu bekannten Dateien
+            knownFiles.forEach(file => {
+                addPage(file.url, file.title, file.description);
+            });
         }
 
-        // Starte den Scan beim Laden der Seite
-        document.addEventListener('DOMContentLoaded', findHtmlFiles);
-    </script>
+        loading.style.display = 'none';
+    }
+
+    // Starte den Scan beim Laden der Seite
+    document.addEventListener('DOMContentLoaded', findHtmlFiles);
+</script>
 </body>
 </html>
