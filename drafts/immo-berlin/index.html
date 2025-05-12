@@ -4,64 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Immo Berlin - Übersicht</title>
+    <link rel="stylesheet" href="css/dark-theme.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
+        /* Zusätzliche spezifische Stile für die Indexseite */
         ul {
             list-style-type: none;
             padding: 0;
         }
 
         li {
-            margin-bottom: 15px;
-            border-left: 3px solid #0066cc;
-            padding-left: 15px;
+            margin-bottom: var(--spacing-4);
+            border-left: 3px solid var(--accent-blue);
+            padding-left: var(--spacing-4);
+            transition: var(--transition-normal);
+        }
+
+        li:hover {
+            border-left-color: var(--accent-green);
+            transform: translateX(3px);
         }
 
         a {
-            color: #0066cc;
+            color: var(--text-primary);
             text-decoration: none;
-            font-size: 18px;
+            font-size: 1.125rem;
             display: block;
-            padding: 5px 0;
-            transition: color 0.2s;
+            padding: var(--spacing-1) 0;
+            transition: var(--transition-fast);
         }
 
         a:hover {
-            color: #004494;
-            text-decoration: underline;
+            color: var(--accent-blue);
+            text-decoration: none;
         }
 
         .description {
-            color: #666;
-            font-size: 14px;
-            margin-top: 3px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-1);
         }
 
         #update-message {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 4px;
-            margin-top: 30px;
-            font-size: 14px;
-            border-left: 3px solid #28a745;
+            background-color: var(--background-darker);
+            padding: var(--spacing-3);
+            border-radius: var(--radius);
+            margin-top: var(--spacing-8);
+            font-size: 0.875rem;
+            border-left: 3px solid var(--accent-green);
         }
 
         #loading {
-            color: #666;
-            margin: 20px 0;
+            color: var(--text-secondary);
+            margin: var(--spacing-4) 0;
             font-style: italic;
+        }
+
+        .update-btn {
+            margin-left: var(--spacing-2);
+            padding: var(--spacing-1) var(--spacing-3);
+            background-color: var(--accent-green);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .update-btn:hover {
+            background-color: #8ba680;
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -73,8 +84,7 @@
 
 <div id="update-message">
     Diese Seite aktualisiert sich automatisch, wenn neue HTML-Dateien hinzugefügt werden.
-    <button onclick="findHtmlFiles()"
-            style="margin-left: 10px; padding: 5px 10px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+    <button onclick="findHtmlFiles()" class="update-btn">
         Manuell aktualisieren
     </button>
 </div>
@@ -126,6 +136,21 @@
             url: "berlin-kultur-heatmap.html",
             title: "Berlin Kultur Heatmap",
             description: "Visualisierung der kulturellen Angebote in Berlin als Heatmap"
+        },
+        {
+            url: "berlin-soziodata-heatmap.html",
+            title: "Berlin Sozio-Data Heatmap",
+            description: "Visualisierung weiterer Faktoren in Berlin als Heatmap"
+        },
+        {
+            url: "berlin-gentrifizierung-potenzial.html",
+            title: "Berlin Gentrifizierung Potenzial",
+            description: "Analyse des Gentrifizierungspotenzials in Berliner Bezirken"
+        },
+        {
+            url: "berlin-rendite-wertsteigerung-vergleich.html",
+            title: "Mietrendite vs. Wertsteigerung Berlin",
+            description: "Vergleich von Mietrendite und Wertsteigerung bei Immobilieninvestitionen in Berlin"
         }
     ];
 

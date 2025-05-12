@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Altersdurchschnitt, ÖPNV & Arbeitsplätze in Berlin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #2C2E3B;
+            color: #fff;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            background-color: #34364a;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            color: #fff;
+        }
+        
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+        }
+        
+        svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
+        }
+        
+        path {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            stroke: #2C2E3B;
+            stroke-width: 2;
+        }
+        
+        path:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+            stroke-width: 3;
+        }
+        
+        text {
+            fill: white;
+            font-size: 12px;
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px #000;
+        }
+        
+        .label-name {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .label-info {
+            font-size: 11px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #3d3f54;
+            border-radius: 5px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 15px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            border-radius: 4px;
+        }
+        
+        .info-panel {
+            margin-top: 20px;
+            background-color: #3d3f54;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+        }
+        
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .info-title {
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        .info-detail {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #abb1f0;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background-color: #1e1f2c;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 100;
+            pointer-events: none;
+            max-width: 300px;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #3d3f54;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab:hover {
+            background-color: #4d4f64;
+        }
+        
+        .tab.active {
+            background-color: #5e60a5;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 300px;
+            margin-top: 20px;
+            background-color: #3d3f54;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .data-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .data-card {
+            width: calc(33% - 10px);
+            background-color: #3d3f54;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .data-card-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #fff;
+            text-align: center;
+        }
+        
+        .data-card-value {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .data-card-subtitle {
+            font-size: 12px;
+            text-align: center;
+            color: #abb1f0;
+        }
+        
+        @media (max-width: 768px) {
+            .data-card {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Altersdurchschnitt, ÖPNV & Arbeitsplätze in Berlin</h1>
+        
+        <div class="tabs">
+            <div class="tab active" data-type="alter">Altersdurchschnitt</div>
+            <div class="tab" data-type="oepnv">ÖPNV-Anbindung</div>
+            <div class="tab" data-type="arbeit">Arbeitsplätze</div>
+            <div class="tab" data-type="gesamt">Gesamtindex</div>
+        </div>
+        
+        <div class="map-container" id="map">
+            <svg viewBox="0 0 800 600" id="berlin-map">
+                <!-- Berlin Bezirke SVG Pfade -->
+                <!-- Hier werden per JavaScript die Pfade eingefügt -->
+            </svg>
+        </div>
+        
+        <div class="legend" id="legend-alter">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #6fff00;"></div>
+                <span>Sehr junger Altersdurchschnitt (< 40 Jahre)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #c6ff00;"></div>
+                <span>Junger Altersdurchschnitt (40-41 Jahre)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffeb00;"></div>
+                <span>Mittlerer Altersdurchschnitt (41-43 Jahre)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffb700;"></div>
+                <span>Hoher Altersdurchschnitt (43-45 Jahre)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff7b00;"></div>
+                <span>Sehr hoher Altersdurchschnitt (> 45 Jahre)</span>
+            </div>
+        </div>
+        
+        <div class="legend" id="legend-oepnv" style="display: none;">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff3b00;"></div>
+                <span>Sehr hohe ÖPNV-Dichte</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff7b00;"></div>
+                <span>Hohe ÖPNV-Dichte</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffb700;"></div>
+                <span>Mittlere ÖPNV-Dichte</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffeb00;"></div>
+                <span>Moderate ÖPNV-Dichte</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: "#c6ff00";"></div>
+                <span>Niedrige ÖPNV-Dichte</span>
+            </div>
+        </div>
+        
+        <div class="legend" id="legend-arbeit" style="display: none;">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff3b00;"></div>
+                <span>Sehr hohe Arbeitsplatzdichte</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff7b00;"></div>
+                <span>Hohe Arbeitsplatzdichte</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffb700;"></div>
+                <span>Mittlere Arbeitsplatzdichte</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffeb00;"></div>
+                <span>Moderate Arbeitsplatzdichte</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: "#c6ff00";"></div>
+                <span>Niedrige Arbeitsplatzdichte</span>
+            </div>
+        </div>
+        
+        <div class="legend" id="legend-gesamt" style="display: none;">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff3b00;"></div>
+                <span>Stark urbanes Profil</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff7b00;"></div>
+                <span>Urbanes Profil</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffb700;"></div>
+                <span>Moderat urbanes Profil</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffeb00;"></div>
+                <span>Gemischtes Profil</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: "#c6ff00";"></div>
+                <span>Suburbanes Profil</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="data-cards">
+            <div class="data-card">
+                <div class="data-card-title">Durchschnittsalter Berlin</div>
+                <div class="data-card-value">42,8 Jahre</div>
+                <div class="data-card-subtitle">Jüngster Bezirk: Friedrichshain-Kreuzberg (39,4 Jahre)</div>
+            </div>
+            <div class="data-card">
+                <div class="data-card-title">Bevölkerungsdichte</div>
+                <div class="data-card-value">4.244 Einw./km²</div>
+                <div class="data-card-subtitle">Höchste Dichte: Friedrichshain-Kreuzberg (13.942 Einw./km²)</div>
+            </div>
+            <div class="data-card">
+                <div class="data-card-title">Gesamtbevölkerung</div>
+                <div class="data-card-value">3,9 Mio.</div>
+                <div class="data-card-subtitle">Größter Bezirk: Pankow (425.840 Einwohner)</div>
+            </div>
+        </div>
+    
+        <div class="info-panel" id="info-panel">
+            <div class="info-header">
+                <div class="info-title">Berlinweite Informationen</div>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Altersdurchschnitt in Berlin:</span>
+                <span>42,8 Jahre</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Jüngste Bezirke:</span>
+                <span>Friedrichshain-Kreuzberg (39,4 J.) und Mitte (39,6 J.)</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Ältester Bezirk:</span>
+                <span>Steglitz-Zehlendorf (46,5 Jahre)</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">ÖPNV-Anbindung:</span>
+                <span>U-Bahn, S-Bahn, Tram, Bus - über 2.600 km Strecke</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Arbeitsmarkt:</span>
+                <span>2,19 Mio. Erwerbstätige (2023)</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Arbeitslosenquote:</span>
+                <span>9,7% (November 2024)</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Bruttoinlandsprodukt:</span>
+                <span>193,2 Mrd. Euro (2023)</span>
+            </div>
+        </div>
+        
+        <div class="chart-container" id="chart">
+            <!-- Hier wird ein Chart per JavaScript eingefügt -->
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Bezirksdaten
+        const bezirke = [
+            {
+                id: "mitte",
+                name: "Mitte",
+                flaeche: 39.47,
+                einwohner: 395656,
+                alter: 39.6,
+                alter_farbe: "#6fff00", // Sehr jung
+                oepnv_score: 9.8,
+                oepnv_text: "Exzellente Anbindung durch U-Bahn, S-Bahn, Bus, Tram. Knotenpunkte: Hauptbahnhof, Alexanderplatz, Potsdamer Platz.",
+                oepnv_farbe: "#ff3b00", // Sehr hoch
+                arbeit_score: 9.7,
+                arbeit_text: "Höchste Arbeitsplatzdichte, Regierungsviertel, Tourismusbranche, viele Firmenzentralen",
+                arbeit_farbe: "#ff3b00", // Sehr hoch
+                gesamt_score: 9.7,
+                gesamt_farbe: "#ff3b00", // Stark urban
+                pfad: "M396,193 L405,208 L419,213 L432,212 L447,215 L448,228 L452,242 L464,245 L471,251 L476,258 L471,268 L466,278 L447,281 L440,292 L430,293 L425,298 L419,308 L408,308 L398,308 L388,313 L383,326 L371,324 L360,324 L353,331 L342,332 L336,327 L333,313 L323,303 L318,291 L315,279 L307,272 L302,261 L312,253 L323,248 L328,239 L332,227 L347,222 L351,212 L365,208 L374,199 L385,193 Z",
+                labelX: 397,
+                labelY: 255,
+                bevDichte: Math.round(395656 / 39.47),
+                arbeitsDichte: "Sehr hoch",
+                uBahn: 13,
+                sBahn: 11,
+                anteilAuslaender: 37.4
+            },
+            {
+                id: "friedrichshain-kreuzberg",
+                name: "Friedrichshain-Kreuzberg",
+                flaeche: 20.4,
+                einwohner: 266958,
+                alter: 39.4,
+                alter_farbe: "#6fff00", // Sehr jung
+                oepnv_score: 9.5,
+                oepnv_text: "Sehr gute Anbindung durch U-Bahn, S-Bahn, Bus, Tram. Knotenpunkte: Ostbahnhof, Warschauer Straße.",
+                oepnv_farbe: "#ff3b00", // Sehr hoch
+                arbeit_score: 8.5,
+                arbeit_text: "Hohe Arbeitsplatzdichte, Start-up-Szene, kreative Branchen, Medienwirtschaft",
+                arbeit_farbe: "#ff7b00", // Hoch
+                gesamt_score: 9.3,
+                gesamt_farbe: "#ff3b00", // Stark urban
+                pfad: "M471,268 L480,270 L490,269 L503,273 L513,275 L519,284 L522,295 L523,308 L527,320 L524,330 L513,340 L500,344 L489,348 L476,343 L466,338 L458,333 L448,333 L438,331 L428,327 L417,327 L411,320 L398,317 L388,313 L398,308 L408,308 L419,308 L425,298 L430,293 L440,292 L447,281 L466,278 Z",
+                labelX: 470,
+                labelY: 305,
+                bevDichte: Math.round(266958 / 20.4),
+                arbeitsDichte: "Hoch",
+                uBahn: 9,
+                sBahn: 7,
+                anteilAuslaender: 28.5
+            },
+            {
+                id: "pankow",
+                name: "Pankow",
+                flaeche: 103.22,
+                einwohner: 425840,
+                alter: 41.2,
+                alter_farbe: "#c6ff00", // Jung
+                oepnv_score: 7.5,
+                oepnv_text: "Gute Anbindung in zentralen Bereichen, schlechter im Norden. U-Bahn nur in Prenzlauer Berg.",
+                oepnv_farbe: "#ffb700", // Mittel
+                arbeit_score: 7.0,
+                arbeit_text: "Mittlere Arbeitsplatzdichte, überwiegend kleinere Unternehmen, Start-ups in Prenzlauer Berg",
+                arbeit_farbe: "#ffb700", // Mittel
+                gesamt_score: 7.2,
+                gesamt_farbe: "#ffb700", // Moderat urban
+                pfad: "M396,193 L385,193 L374,199 L365,208 L351,212 L347,222 L332,227 L323,236 L310,227 L298,223 L290,213 L294,200 L288,187 L287,173 L293,162 L300,152 L313,145 L326,141 L337,131 L348,119 L359,107 L371,98 L385,93 L400,90 L415,87 L428,89 L443,93 L456,99 L463,111 L469,123 L463,135 L455,146 L453,157 L459,167 L471,173 L479,183 L479,194 L469,200 L457,203 L444,203 L432,200 L419,198 L407,195 Z",
+                labelX: 380,
+                labelY: 150,
+                bevDichte: Math.round(425840 / 103.22),
+                arbeitsDichte: "Mittel",
+                uBahn: 4,
+                sBahn: 6,
+                anteilAuslaender: 18.1
+            },
+            {
+                id: "charlottenburg-wilmersdorf",
+                name: "Charlottenburg-Wilmersdorf",
+                flaeche: 64.72,
+                einwohner: 343853,
+                alter: 45.1,
+                alter_farbe: "#ff7b00", // Sehr hoch
+                oepnv_score: 8.8,
+                oepnv_text: "Sehr gute Anbindung durch U-Bahn, S-Bahn, Bus. Knotenpunkte: Bahnhof Zoo, Savignyplatz.",
+                oepnv_farbe: "#ff7b00", // Hoch
+                arbeit_score: 9.2,
+                arbeit_text: "Hohe Arbeitsplatzdichte, viele Büroflächen, Kurfürstendamm als Einkaufsmeile, Messe Berlin",
+                arbeit_farbe: "#ff3b00", // Sehr hoch
+                gesamt_score: 8.5,
+                gesamt_farbe: "#ff7b00", // Urban
+                pfad: "M302,261 L307,272 L315,279 L318,291 L323,303 L333,313 L336,327 L342,332 L333,339 L325,347 L315,357 L302,363 L290,369 L280,378 L271,385 L260,391 L250,383 L240,375 L229,370 L218,363 L210,353 L202,343 L197,332 L192,321 L196,308 L201,295 L205,282 L213,271 L223,260 L234,253 L244,242 L255,233 L265,245 L277,254 L290,258 Z",
+                labelX: 260,
+                labelY: 310,
+                bevDichte: Math.round(343853 / 64.72),
+                arbeitsDichte: "Hoch",
+                uBahn: 12,
+                sBahn: 7,
+                anteilAuslaender: 24.9
+            },
+            {
+                id: "spandau",
+                name: "Spandau",
+                flaeche: 91.91,
+                einwohner: 257091,
+                alter: 44.2,
+                alter_farbe: "#ffb700", // Hoch
+                oepnv_score: 5.0,
+                oepnv_text: "Moderate Anbindung, S-Bahn und U-Bahn nur in zentralen Bereichen. Randlagen schlecht angebunden.",
+                oepnv_farbe: "#ffeb00", // Moderat
+                arbeit_score: 4.5,
+                arbeit_text: "Geringe Arbeitsplatzdichte, einige Industriegebiete, wenige Büroflächen",
+                arbeit_farbe: "#c6ff00", // Niedrig
+                gesamt_score: 4.2,
+                gesamt_farbe: "#c6ff00", // Suburban
+                pfad: "M213,271 L205,282 L201,295 L196,308 L192,321 L197,332 L202,343 L202,354 L183,356 L171,361 L159,367 L145,372 L134,379 L126,389 L118,400 L111,410 L100,403 L89,396 L84,384 L85,369 L92,358 L95,345 L91,330 L86,317 L89,302 L93,288 L103,278 L115,269 L127,261 L139,252 L150,244 L162,237 L173,246 L184,254 L196,261 L207,268 Z",
+                labelX: 143,
+                labelY: 325,
+                bevDichte: Math.round(257091 / 91.91),
+                arbeitsDichte: "Niedrig",
+                uBahn: 3,
+                sBahn: 3,
+                anteilAuslaender: 21.3
+            },
+            {
+                id: "steglitz-zehlendorf",
+                name: "Steglitz-Zehlendorf",
+                flaeche: 102.56,
+                einwohner: 316852,
+                alter: 46.5,
+                alter_farbe: "#ff7b00", // Sehr hoch
+                oepnv_score: 6.0,
+                oepnv_text: "Moderate bis gute Anbindung, U-Bahn nur im nördlichen Teil. S-Bahn durchgehend. Buslinien flächendeckend.",
+                oepnv_farbe: "#ffb700", // Mittel
+                arbeit_score: 5.5,
+                arbeit_text: "Mittlere Arbeitsplatzdichte, Freie Universität, Kliniken, vereinzelte Bürostandorte",
+                arbeit_farbe: "#ffeb00", // Moderat
+                gesamt_score: 5.2,
+                gesamt_farbe: "#ffeb00", // Gemischt
+                pfad: "M250,383 L260,391 L271,385 L280,378 L290,369 L302,363 L315,357 L325,347 L333,339 L342,332 L353,331 L360,324 L371,324 L378,334 L387,343 L391,355 L392,368 L387,379 L378,388 L371,398 L362,407 L352,414 L342,420 L331,425 L320,430 L310,435 L298,439 L285,442 L272,444 L260,445 L247,443 L237,437 L228,429 L220,419 L211,411 L202,402 L196,390 L202,380 L210,372 L220,365 L230,369 L240,375 Z",
+                labelX: 318,
+                labelY: 410,
+                bevDichte: Math.round(316852 / 102.56),
+                arbeitsDichte: "Moderat",
+                uBahn: 5,
+                sBahn: 5,
+                anteilAuslaender: 16.8
+            },
+            {
+                id: "tempelhof-schoeneberg",
+                name: "Tempelhof-Schöneberg",
+                flaeche: 53.09,
+                einwohner: 351565,
+                alter: 43.5,
+                alter_farbe: "#ffb700", // Hoch
+                oepnv_score: 8.0,
+                oepnv_text: "Gute Anbindung durch U-Bahn, S-Bahn und Bus. Dichtes Netz in Schöneberg, etwas dünner in Tempelhof.",
+                oepnv_farbe: "#ff7b00", // Hoch
+                arbeit_score: 7.0,
+                arbeit_text: "Mittlere bis hohe Arbeitsplatzdichte, diverse Gewerbegebiete, Bürostandorte",
+                arbeit_farbe: "#ffb700", // Mittel
+                gesamt_score: 7.8,
+                gesamt_farbe: "#ffb700", // Moderat urban
+                pfad: "M342,332 L353,331 L360,324 L371,324 L383,326 L388,313 L398,317 L411,320 L417,327 L422,337 L428,347 L429,358 L426,368 L416,376 L407,384 L396,392 L384,398 L371,398 L362,407 L352,414 L342,420 L331,425 L320,430 L312,418 L307,407 L307,395 L312,383 L317,372 L322,360 L332,351 Z",
+                labelX: 370,
+                labelY: 365,
+                bevDichte: Math.round(351565 / 53.09),
+                arbeitsDichte: "Mittel-Hoch",
+                uBahn: 10,
+                sBahn: 5,
+                anteilAuslaender: 22.8
+            },
+            {
+                id: "neukoelln",
+                name: "Neukölln",
+                flaeche: 44.93,
+                einwohner: 329488,
+                alter: 42.0,
+                alter_farbe: "#ffeb00", // Mittel
+                oepnv_score: 7.2,
+                oepnv_text: "Gute Anbindung im Norden (U-Bahn), schwächer im Süden. Mehrere Buslinien, keine Tram.",
+                oepnv_farbe: "#ffb700", // Mittel
+                arbeit_score: 6.0,
+                arbeit_text: "Mittlere Arbeitsplatzdichte, überwiegend kleinere Unternehmen, einige Gewerbegebiete",
+                arbeit_farbe: "#ffeb00", // Moderat
+                gesamt_score: 6.5,
+                gesamt_farbe: "#ffb700", // Moderat urban
+                pfad: "M417,327 L428,327 L438,331 L448,333 L458,333 L466,338 L474,346 L481,356 L487,365 L490,376 L487,387 L480,397 L469,403 L457,409 L445,413 L433,415 L421,417 L409,419 L397,420 L384,422 L371,398 L384,398 L396,392 L407,384 L416,376 L426,368 L429,358 L428,347 L422,337 Z",
+                labelX: 455,
+                labelY: 375,
+                bevDichte: Math.round(329488 / 44.93),
+                arbeitsDichte: "Mittel",
+                uBahn: 5,
+                sBahn: 2,
+                anteilAuslaender: 28.4
+            },
+            {
+                id: "treptow-koepenick",
+                name: "Treptow-Köpenick",
+                flaeche: 167.73,
+                einwohner: 282775,
+                alter: 43.8,
+                alter_farbe: "#ffb700", // Hoch
+                oepnv_score: 4.0,
+                oepnv_text: "Mäßige Anbindung, S-Bahn entlang der Hauptachsen, keine U-Bahn, einige Tram- und Buslinien. Weitläufige Gebiete schlecht angebunden.",
+                oepnv_farbe: "#c6ff00", // Niedrig
+                arbeit_score: 4.5,
+                arbeit_text: "Niedrige bis mittlere Arbeitsplatzdichte, Wissenschaftsstandort Adlershof, ansonsten wenige Arbeitsplätze",
+                arbeit_farbe: "#c6ff00", // Niedrig
+                gesamt_score: 4.0,
+                gesamt_farbe: "#c6ff00", // Suburban
+                pfad: "M523,308 L527,320 L524,330 L513,340 L500,344 L489,348 L487,364 L490,376 L487,387 L480,397 L469,403 L457,409 L445,413 L433,415 L421,417 L409,419 L405,429 L409,441 L415,452 L423,461 L432,471 L443,476 L455,476 L468,477 L480,479 L492,481 L504,483 L516,486 L523,496 L533,496 L543,493 L554,488 L564,481 L572,472 L579,462 L584,451 L589,440 L593,428 L597,416 L599,403 L599,390 L597,377 L591,366 L583,357 L574,349 L564,342 L553,335 L541,329 L533,318 Z",
+                labelX: 535,
+                labelY: 425,
+                bevDichte: Math.round(282775 / 167.73),
+                arbeitsDichte: "Niedrig",
+                uBahn: 0,
+                sBahn: 9,
+                anteilAuslaender: 16.9
+            },
+            {
+                id: "marzahn-hellersdorf",
+                name: "Marzahn-Hellersdorf",
+                flaeche: 61.74,
+                einwohner: 280426,
+                alter: 44.5,
+                alter_farbe: "#ffb700", // Hoch
+                oepnv_score: 5.0,
+                oepnv_text: "Mäßige Anbindung, keine U-Bahn, S-Bahn nur im Süden. Tram-Netz in Plattenbaugebieten, ansonsten Buslinien.",
+                oepnv_farbe: "#ffeb00", // Moderat
+                arbeit_score: 4.0,
+                arbeit_text: "Niedrige Arbeitsplatzdichte, hauptsächlich lokale Versorgung und Dienstleistungen",
+                arbeit_farbe: "#c6ff00", // Niedrig
+                gesamt_score: 4.5,
+                gesamt_farbe: "#c6ff00", // Suburban
+                pfad: "M513,275 L519,284 L522,295 L523,308 L533,318 L541,329 L553,335 L564,342 L574,349 L583,357 L591,366 L596,353 L599,339 L600,325 L600,311 L596,297 L590,284 L580,274 L570,264 L561,253 L551,242 L541,235 L531,228 L521,222 L510,217 L499,212 L489,208 L480,208 L475,219 L472,231 L471,244 L474,258 L481,268 L490,269 L503,273 Z",
+                labelX: 550,
+                labelY: 280,
+                bevDichte: Math.round(280426 / 61.74),
+                arbeitsDichte: "Niedrig",
+                uBahn: 0,
+                sBahn: 2,
+                anteilAuslaender: 18.6
+            },
+            {
+                id: "lichtenberg",
+                name: "Lichtenberg",
+                flaeche: 52.29,
+                einwohner: 303341,
+                alter: 43.0,
+                alter_farbe: "#ffb700", // Hoch
+                oepnv_score: 6.5,
+                oepnv_text: "Mittlere Anbindung, U-Bahn und S-Bahn in Teilbereichen. Tram und Bus flächendeckend.",
+                oepnv_farbe: "#ffb700", // Mittel
+                arbeit_score: 6.0,
+                arbeit_text: "Mittlere Arbeitsplatzdichte, einige Gewerbegebiete, Krankenhäuser, Verwaltungsstandorte",
+                arbeit_farbe: "#ffeb00", // Moderat
+                gesamt_score: 6.2,
+                gesamt_farbe: "#ffb700", // Moderat urban
+                pfad: "M476,258 L471,251 L464,245 L452,242 L448,228 L447,215 L432,212 L419,213 L405,208 L396,193 L407,195 L419,198 L432,200 L444,203 L457,203 L469,200 L479,194 L479,183 L489,188 L499,193 L499,212 L489,208 L480,208 L475,219 L472,231 L471,244 L474,258 Z",
+                labelX: 470,
+                labelY: 220,
+                bevDichte: Math.round(303341 / 52.29),
+                arbeitsDichte: "Mittel",
+                uBahn: 4,
+                sBahn: 4,
+                anteilAuslaender: 20.5
+            },
+            {
+                id: "reinickendorf",
+                name: "Reinickendorf",
+                flaeche: 89.69,
+                einwohner: 273677,
+                alter: 44.8,
+                alter_farbe: "#ffb700", // Hoch
+                oepnv_score: 5.5,
+                oepnv_text: "Mäßige Anbindung, U-Bahn im südlichen Teil, S-Bahn entlang der Hauptachse. Buslinien flächendeckend.",
+                oepnv_farbe: "#ffeb00", // Moderat
+                arbeit_score: 5.0,
+                arbeit_text: "Mäßige Arbeitsplatzdichte, einige Industriestandorte (z.B. Tegel), überwiegend Wohngebiete",
+                arbeit_farbe: "#ffeb00", // Moderat
+                gesamt_score: 5.0,
+                gesamt_farbe: "#ffeb00", // Gemischt
+                pfad: "M290,213 L294,200 L288,187 L287,173 L293,162 L300,152 L313,145 L326,141 L312,131 L300,120 L290,113 L279,104 L270,94 L260,85 L250,78 L237,72 L224,67 L211,62 L201,70 L192,80 L182,90 L172,100 L161,110 L154,121 L149,134 L148,148 L148,162 L150,176 L155,188 L162,200 L170,211 L179,220 L190,226 L201,232 L211,240 L225,246 L237,250 L249,245 L260,237 L270,228 L280,220 Z",
+                labelX: 210,
+                labelY: 140,
+                bevDichte: Math.round(273677 / 89.69),
+                arbeitsDichte: "Moderat",
+                uBahn: 6,
+                sBahn: 4,
+                anteilAuslaender: 21.2
+            }
+        ];
+
+        const svgMap = document.getElementById('berlin-map');
+        const infoPanel = document.getElementById('info-panel');
+        const tooltip = document.getElementById('tooltip');
+        const chartContainer = document.getElementById('chart');
+        const tabs = document.querySelectorAll('.tab');
+        const legends = document.querySelectorAll('[id^="legend-"]');
+        
+        let currentType = 'alter';
+
+        // Tabs Event-Listener
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                currentType = tab.getAttribute('data-type');
+                updateMap();
+                updateLabels();
+                updateChart();
+                updateLegend();
+            });
+        });
+        
+        // Legend aktualisieren
+        function updateLegend() {
+            legends.forEach(legend => {
+                legend.style.display = 'none';
+            });
+            
+            document.getElementById(`legend-${currentType}`).style.display = 'flex';
+        }
+
+        // Karte aktualisieren basierend auf dem ausgewählten Tab
+        function updateMap() {
+            bezirke.forEach(bezirk => {
+                const path = document.getElementById(bezirk.id);
+                if (path) {
+                    switch(currentType) {
+                        case 'alter':
+                            path.setAttribute('fill', bezirk.alter_farbe);
+                            break;
+                        case 'oepnv':
+                            path.setAttribute('fill', bezirk.oepnv_farbe);
+                            break;
+                        case 'arbeit':
+                            path.setAttribute('fill', bezirk.arbeit_farbe);
+                            break;
+                        case 'gesamt':
+                            path.setAttribute('fill', bezirk.gesamt_farbe);
+                            break;
+                    }
+                }
+            });
+        }
+
+        // Chart aktualisieren
+        function updateChart() {
+            let chartTitle = '';
+            let dataPoints = [];
+            
+            switch(currentType) {
+                case 'alter':
+                    chartTitle = 'Altersdurchschnitt nach Bezirken (in Jahren)';
+                    dataPoints = bezirke.map(b => ({ name: b.name, value: b.alter }));
+                    dataPoints.sort((a, b) => a.value - b.value); // Aufsteigend für Alter
+                    break;
+                case 'oepnv':
+                    chartTitle = 'ÖPNV-Anbindung nach Bezirken (Score)';
+                    dataPoints = bezirke.map(b => ({ name: b.name, value: b.oepnv_score }));
+                    dataPoints.sort((a, b) => b.value - a.value); // Absteigend
+                    break;
+                case 'arbeit':
+                    chartTitle = 'Arbeitsplatzdichte nach Bezirken (Score)';
+                    dataPoints = bezirke.map(b => ({ name: b.name, value: b.arbeit_score }));
+                    dataPoints.sort((a, b) => b.value - a.value); // Absteigend
+                    break;
+                case 'gesamt':
+                    chartTitle = 'Gesamtindex Urbanität nach Bezirken (Score)';
+                    dataPoints = bezirke.map(b => ({ name: b.name, value: b.gesamt_score }));
+                    dataPoints.sort((a, b) => b.value - a.value); // Absteigend
+                    break;
+            }
+            
+            // Chart generieren
+            let chartHTML = `<h3 style="margin-bottom: 15px; color: #fff;">${chartTitle}</h3>
+                            <div style="display: flex; flex-direction: column; height: 220px;">`;
+            
+            const maxValue = Math.max(...dataPoints.map(d => d.value));
+            const minValue = Math.min(...dataPoints.map(d => d.value));
+            
+            dataPoints.forEach(point => {
+                let percentage;
+                if (currentType === 'alter') {
+                    // Für Alter: Jüngere Bezirke sollen längere Balken haben
+                    const invertedValue = maxValue - (point.value - minValue);
+                    percentage = (invertedValue / (maxValue - minValue) * 100).toFixed(0);
+                } else {
+                    percentage = (point.value / maxValue * 100).toFixed(0);
+                }
+                
+                const color = getColorForValue(point.value, maxValue, minValue, currentType);
+                
+                chartHTML += `<div style="display: flex; align-items: center; margin: 5px 0;">
+                                <div style="width: 110px; text-align: right; margin-right: 10px; font-size: 12px;">${point.name}</div>
+                                <div style="flex-grow: 1; height: 18px; position: relative;">
+                                    <div style="position: absolute; height: 100%; width: ${percentage}%; background-color: ${color}; border-radius: 3px;"></div>
+                                    <div style="position: absolute; right: -45px; width: 40px; text-align: right; font-size: 12px;">${point.value.toFixed(1)}</div>
+                                </div>
+                             </div>`;
+            });
+            
+            chartHTML += `</div>`;
+            chartContainer.innerHTML = chartHTML;
+        }
+        
+        // Hilfsfunktion zur Farbbestimmung für Chart
+        function getColorForValue(value, maxValue, minValue, type) {
+            if (type === 'alter') {
+                // Für Alter: Jüngere Bezirke sind grün, ältere rot
+                if (value < 40) return '#6fff00';
+                if (value < 41) return '#c6ff00';
+                if (value < 43) return '#ffeb00';
+                if (value < 45) return '#ffb700';
+                return '#ff7b00';
+            } else {
+                // Für andere Kategorien: Höhere Werte sind rot, niedrigere grün
+                const percentage = (value - minValue) / (maxValue - minValue);
+                
+                if (percentage > 0.85) return '#ff3b00';
+                if (percentage > 0.7) return '#ff7b00';
+                if (percentage > 0.55) return '#ffb700';
+                if (percentage > 0.4) return '#ffeb00';
+                if (percentage > 0.25) return '#c6ff00';
+                return '#6fff00';
+            }
+        }
+
+        // SVG Pfade für die Bezirke erstellen
+        bezirke.forEach(bezirk => {
+            // Pfad erstellen
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('id', bezirk.id);
+            path.setAttribute('d', bezirk.pfad);
+            path.setAttribute('fill', bezirk.alter_farbe);
+            
+            // Hover-Effekt und Klick-Interaktion
+            path.addEventListener('mousemove', (e) => {
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${e.pageX + 15}px`;
+                tooltip.style.top = `${e.pageY - 15}px`;
+                
+                let tooltipContent = `<strong>${bezirk.name}</strong><br>`;
+                
+                switch(currentType) {
+                    case 'alter':
+                        tooltipContent += `Altersdurchschnitt: ${bezirk.alter} Jahre<br>
+                                          Einwohner: ${bezirk.einwohner.toLocaleString()}<br>
+                                          Bevölkerungsdichte: ${bezirk.bevDichte} Einw./km²<br>
+                                          Anteil Ausländer: ${bezirk.anteilAuslaender}%`;
+                        break;
+                    case 'oepnv':
+                        tooltipContent += `ÖPNV-Score: ${bezirk.oepnv_score}/10<br>
+                                          U-Bahn-Stationen: ${bezirk.uBahn}<br>
+                                          S-Bahn-Stationen: ${bezirk.sBahn}<br><br>
+                                          ${bezirk.oepnv_text}`;
+                        break;
+                    case 'arbeit':
+                        tooltipContent += `Arbeitsplatzdichte: ${bezirk.arbeit_score}/10<br>
+                                          Niveau: ${bezirk.arbeitsDichte}<br><br>
+                                          ${bezirk.arbeit_text}`;
+                        break;
+                    case 'gesamt':
+                        tooltipContent += `Gesamtindex: ${bezirk.gesamt_score}/10<br>
+                                          Altersdurchschnitt: ${bezirk.alter} Jahre<br>
+                                          ÖPNV-Score: ${bezirk.oepnv_score}/10<br>
+                                          Arbeitsplatzdichte: ${bezirk.arbeit_score}/10`;
+                        break;
+                }
+                
+                tooltip.innerHTML = tooltipContent;
+            });
+            
+            path.addEventListener('mouseout', () => {
+                tooltip.style.display = 'none';
+            });
+            
+            path.addEventListener('click', () => {
+                updateInfoPanel(bezirk);
+            });
+            
+            svgMap.appendChild(path);
+            
+            // Bezirksnamen als Text hinzufügen
+            const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            nameText.setAttribute('x', bezirk.labelX);
+            nameText.setAttribute('y', bezirk.labelY);
+            nameText.setAttribute('class', 'label-name');
+            nameText.setAttribute('text-anchor', 'middle');
+            nameText.textContent = bezirk.name;
+            svgMap.appendChild(nameText);
+            
+            // Infotext je nach Tab
+            const infoText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            infoText.setAttribute('x', bezirk.labelX);
+            infoText.setAttribute('y', bezirk.labelY + 15);
+            infoText.setAttribute('class', 'label-info');
+            infoText.setAttribute('id', `info-${bezirk.id}`);
+            infoText.setAttribute('text-anchor', 'middle');
+            infoText.textContent = `${bezirk.alter} Jahre`;
+            svgMap.appendChild(infoText);
+        });
+        
+        // Info-Panel aktualisieren
+        function updateInfoPanel(bezirk) {
+            let content = '';
+            
+            switch(currentType) {
+                case 'alter':
+                    content = `
+                        <div class="info-header">
+                            <div class="info-title">${bezirk.name}</div>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Altersdurchschnitt:</span>
+                            <span>${bezirk.alter} Jahre</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Einwohnerzahl:</span>
+                            <span>${bezirk.einwohner.toLocaleString()}</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Fläche:</span>
+                            <span>${bezirk.flaeche} km²</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Bevölkerungsdichte:</span>
+                            <span>${bezirk.bevDichte} Einwohner/km²</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Anteil Ausländer:</span>
+                            <span>${bezirk.anteilAuslaender}%</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'oepnv':
+                    content = `
+                        <div class="info-header">
+                            <div class="info-title">${bezirk.name} - ÖPNV-Anbindung</div>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">ÖPNV-Score:</span>
+                            <span>${bezirk.oepnv_score}/10</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">U-Bahn-Stationen:</span>
+                            <span>${bezirk.uBahn}</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">S-Bahn-Stationen:</span>
+                            <span>${bezirk.sBahn}</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Besonderheiten:</span>
+                            <span>${bezirk.oepnv_text}</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'arbeit':
+                    content = `
+                        <div class="info-header">
+                            <div class="info-title">${bezirk.name} - Arbeitsplätze</div>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Arbeitsplatzdichte-Score:</span>
+                            <span>${bezirk.arbeit_score}/10</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Niveau der Arbeitsplatzdichte:</span>
+                            <span>${bezirk.arbeitsDichte}</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Besonderheiten:</span>
+                            <span>${bezirk.arbeit_text}</span>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'gesamt':
+                    content = `
+                        <div class="info-header">
+                            <div class="info-title">${bezirk.name} - Gesamtprofil</div>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Gesamtindex:</span>
+                            <span>${bezirk.gesamt_score}/10</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Altersdurchschnitt:</span>
+                            <span>${bezirk.alter} Jahre</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">ÖPNV-Score:</span>
+                            <span>${bezirk.oepnv_score}/10</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Arbeitsplatzdichte:</span>
+                            <span>${bezirk.arbeit_score}/10</span>
+                        </div>
+                        <div class="info-detail">
+                            <span class="info-label">Bevölkerungsdichte:</span>
+                            <span>${bezirk.bevDichte} Einwohner/km²</span>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            infoPanel.innerHTML = content;
+        }
+        
+        // Label-Texte aktualisieren basierend auf Tab
+        function updateLabels() {
+            bezirke.forEach(bezirk => {
+                const infoText = document.getElementById(`info-${bezirk.id}`);
+                if (!infoText) return;
+                
+                switch(currentType) {
+                    case 'alter':
+                        infoText.textContent = `${bezirk.alter} Jahre`;
+                        break;
+                    case 'oepnv':
+                        infoText.textContent = `ÖPNV: ${bezirk.oepnv_score}/10`;
+                        break;
+                    case 'arbeit':
+                        infoText.textContent = `Jobs: ${bezirk.arbeit_score}/10`;
+                        break;
+                    case 'gesamt':
+                        infoText.textContent = `Index: ${bezirk.gesamt_score}/10`;
+                        break;
+                }
+            });
+        }
+        
+        // Chart initialisieren
+        updateChart();
+    </script>
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gentrifizierungspotenzial Berlin - Reale Bezirksgrenzen</title>
+    <link rel="stylesheet" href="css/dark-theme.css">
+    <style>
+        /* Zusätzliche spezifische Stile für Gentrifizierungs-Heatmap */
+        .label-score {
+            font-size: 11px;
+        }
+
+        .explanation {
+            background-color: var(--background-darker);
+            padding: var(--spacing-4);
+            border-radius: var(--radius);
+            margin-top: var(--spacing-6);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .explanation h2 {
+            margin-bottom: var(--spacing-3);
+            font-size: 1.125rem;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .explanation p {
+            margin-bottom: var(--spacing-3);
+        }
+
+        .factors {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-4);
+            margin-top: var(--spacing-6);
+        }
+
+        .factor-card {
+            background-color: var(--card-background);
+            padding: var(--spacing-4);
+            border-radius: var(--radius);
+            border-left: 4px solid;
+            transition: var(--transition-normal);
+        }
+
+        .factor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .factor-card.high {
+            border-color: var(--accent-red);
+        }
+
+        .factor-card.medium {
+            border-color: #FFA500;
+        }
+
+        .factor-card.low {
+            border-color: var(--accent-green);
+        }
+
+        .factor-card h3 {
+            margin-bottom: var(--spacing-2);
+            font-size: 1rem;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gentrifizierungspotenzial in Berlin</h1>
+        
+        <div class="map-container" id="map">
+            <svg viewBox="0 0 800 600" id="berlin-map">
+                <!-- Berlin Bezirke SVG Pfade -->
+                <!-- Hier werden per JavaScript die Pfade eingefügt -->
+            </svg>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF4500;"></div>
+                <span>Hohes Gentrifizierungspotenzial (80-100)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF7F50;"></div>
+                <span>Erhöhtes Potenzial (60-80)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FFA500;"></div>
+                <span>Mittleres Potenzial (40-60)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #9ACD32;"></div>
+                <span>Niedriges Potenzial (20-40)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4CAF50;"></div>
+                <span>Sehr niedriges Potenzial (0-20)</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="info-panel" id="info-panel">
+            <div class="info-header">
+                <div class="info-title">Gentrifizierungspotenzial Analyse</div>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Bezirke mit höchstem Potenzial:</span>
+                <span>Neukölln, Wedding (Mitte), Friedrichshain</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Bezirke mit geringstem Potenzial:</span>
+                <span>Zehlendorf, Charlottenburg, Wilmersdorf</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Größte Wertsteigerung in Gentrifizierungsgebieten:</span>
+                <span>+215% in Wedding seit 2010</span>
+            </div>
+            <div class="info-detail">
+                <span class="info-label">Bevölkerungsänderung in Gentrifizierungsgebieten:</span>
+                <span>+18% Neuzuzüge, -12% Alt-Mieter (Jahresdurchschnitt)</span>
+            </div>
+        </div>
+        
+        <div class="explanation">
+            <h2>Was ist Gentrifizierung?</h2>
+            <p>Gentrifizierung beschreibt den sozioökonomischen Umstrukturierungsprozess, bei dem ärmere Bevölkerungsgruppen in einem Viertel durch wohlhabendere Schichten verdrängt werden. Dieser Prozess wird oft durch steigende Mieten, Immobilienpreise und Aufwertungsmaßnahmen vorangetrieben.</p>
+            
+            <h2>Wie wurde das Gentrifizierungspotenzial berechnet?</h2>
+            <p>Der Gentrifizierungsindex basiert auf einer Kombination verschiedener Faktoren, die auf historischen Daten und aktuellen Trends basieren. Dabei werden folgende Hauptfaktoren gewichtet:</p>
+            
+            <div class="factors">
+                <div class="factor-card high">
+                    <h3>Mietpreistrend (30%)</h3>
+                    <p>Steigerungsrate der Mietpreise im Vergleich zum Berliner Durchschnitt in den letzten 5 Jahren</p>
+                </div>
+                <div class="factor-card high">
+                    <h3>Einkommensgefälle (25%)</h3>
+                    <p>Differenz zwischen Durchschnittseinkommen der Neu- und Altmieter</p>
+                </div>
+                <div class="factor-card medium">
+                    <h3>Kulturelles Angebot (15%)</h3>
+                    <p>Dichte an kulturellen Einrichtungen, Cafés, Bars und Galerien</p>
+                </div>
+                <div class="factor-card medium">
+                    <h3>Infrastrukturentwicklung (15%)</h3>
+                    <p>Neue Verkehrsanbindungen, öffentliche Investitionen und Entwicklungsprojekte</p>
+                </div>
+                <div class="factor-card low">
+                    <h3>Leerstandsquote (10%)</h3>
+                    <p>Prozentsatz leerstehender Wohn- und Gewerbeimmobilien</p>
+                </div>
+                <div class="factor-card low">
+                    <h3>Demografischer Wandel (5%)</h3>
+                    <p>Veränderung der Bevölkerungsstruktur nach Alter und Bildungsgrad</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Bezirksdaten mit Gentrifizierungspotenzial
+        const bezirke = [
+            {
+                id: "mitte",
+                name: "Mitte",
+                score: 72,
+                faktoren: {
+                    mietpreistrend: 85,
+                    einkommensgefaelle: 70,
+                    kulturellesAngebot: 90,
+                    infrastrukturentwicklung: 65,
+                    leerstandsquote: 30,
+                    demografischerWandel: 75
+                },
+                hotspots: ["Wedding", "Gesundbrunnen"],
+                farbe: "#FF7F50", // Erhöhtes Potenzial
+                pfad: "M396,193 L405,208 L419,213 L432,212 L447,215 L448,228 L452,242 L464,245 L471,251 L476,258 L471,268 L466,278 L447,281 L440,292 L430,293 L425,298 L419,308 L408,308 L398,308 L388,313 L383,326 L371,324 L360,324 L353,331 L342,332 L336,327 L333,313 L323,303 L318,291 L315,279 L307,272 L302,261 L312,253 L323,248 L328,239 L332,227 L347,222 L351,212 L365,208 L374,199 L385,193 Z",
+                labelX: 397,
+                labelY: 255
+            },
+            {
+                id: "friedrichshain-kreuzberg",
+                name: "Friedrichshain-Kreuzberg",
+                score: 85,
+                faktoren: {
+                    mietpreistrend: 95,
+                    einkommensgefaelle: 80,
+                    kulturellesAngebot: 95,
+                    infrastrukturentwicklung: 75,
+                    leerstandsquote: 25,
+                    demografischerWandel: 90
+                },
+                hotspots: ["Friedrichshain", "Kreuzberg-Nord"],
+                farbe: "#FF4500", // Hohes Potenzial
+                pfad: "M471,268 L480,270 L490,269 L503,273 L513,275 L519,284 L522,295 L523,308 L527,320 L524,330 L513,340 L500,344 L489,348 L476,343 L466,338 L458,333 L448,333 L438,331 L428,327 L417,327 L411,320 L398,317 L388,313 L398,308 L408,308 L419,308 L425,298 L430,293 L440,292 L447,281 L466,278 Z",
+                labelX: 470,
+                labelY: 305
+            },
+            {
+                id: "pankow",
+                name: "Pankow",
+                score: 68,
+                faktoren: {
+                    mietpreistrend: 75,
+                    einkommensgefaelle: 65,
+                    kulturellesAngebot: 85,
+                    infrastrukturentwicklung: 70,
+                    leerstandsquote: 35,
+                    demografischerWandel: 65
+                },
+                hotspots: ["Prenzlauer Berg", "Weißensee"],
+                farbe: "#FF7F50", // Erhöhtes Potenzial
+                pfad: "M396,193 L385,193 L374,199 L365,208 L351,212 L347,222 L332,227 L323,236 L310,227 L298,223 L290,213 L294,200 L288,187 L287,173 L293,162 L300,152 L313,145 L326,141 L337,131 L348,119 L359,107 L371,98 L385,93 L400,90 L415,87 L428,89 L443,93 L456,99 L463,111 L469,123 L463,135 L455,146 L453,157 L459,167 L471,173 L479,183 L479,194 L469,200 L457,203 L444,203 L432,200 L419,198 L407,195 Z",
+                labelX: 380,
+                labelY: 150
+            },
+            {
+                id: "charlottenburg-wilmersdorf",
+                name: "Charlottenburg-Wilmersdorf",
+                score: 25,
+                faktoren: {
+                    mietpreistrend: 30,
+                    einkommensgefaelle: 25,
+                    kulturellesAngebot: 60,
+                    infrastrukturentwicklung: 40,
+                    leerstandsquote: 15,
+                    demografischerWandel: 20
+                },
+                hotspots: [],
+                farbe: "#9ACD32", // Niedriges Potenzial
+                pfad: "M302,261 L307,272 L315,279 L318,291 L323,303 L333,313 L336,327 L342,332 L333,339 L325,347 L315,357 L302,363 L290,369 L280,378 L271,385 L260,391 L250,383 L240,375 L229,370 L218,363 L210,353 L202,343 L197,332 L192,321 L196,308 L201,295 L205,282 L213,271 L223,260 L234,253 L244,242 L255,233 L265,245 L277,254 L290,258 Z",
+                labelX: 260,
+                labelY: 310
+            },
+            {
+                id: "spandau",
+                name: "Spandau",
+                score: 35,
+                faktoren: {
+                    mietpreistrend: 30,
+                    einkommensgefaelle: 35,
+                    kulturellesAngebot: 25,
+                    infrastrukturentwicklung: 50,
+                    leerstandsquote: 55,
+                    demografischerWandel: 30
+                },
+                hotspots: ["Spandau Altstadt"],
+                farbe: "#9ACD32", // Niedriges Potenzial
+                pfad: "M213,271 L205,282 L201,295 L196,308 L192,321 L197,332 L202,343 L202,354 L183,356 L171,361 L159,367 L145,372 L134,379 L126,389 L118,400 L111,410 L100,403 L89,396 L84,384 L85,369 L92,358 L95,345 L91,330 L86,317 L89,302 L93,288 L103,278 L115,269 L127,261 L139,252 L150,244 L162,237 L173,246 L184,254 L196,261 L207,268 Z",
+                labelX: 143,
+                labelY: 325
+            },
+            {
+                id: "steglitz-zehlendorf",
+                name: "Steglitz-Zehlendorf",
+                score: 15,
+                faktoren: {
+                    mietpreistrend: 20,
+                    einkommensgefaelle: 10,
+                    kulturellesAngebot: 30,
+                    infrastrukturentwicklung: 25,
+                    leerstandsquote: 10,
+                    demografischerWandel: 15
+                },
+                hotspots: [],
+                farbe: "#4CAF50", // Sehr niedriges Potenzial
+                pfad: "M250,383 L260,391 L271,385 L280,378 L290,369 L302,363 L315,357 L325,347 L333,339 L342,332 L353,331 L360,324 L371,324 L378,334 L387,343 L391,355 L392,368 L387,379 L378,388 L371,398 L362,407 L352,414 L342,420 L331,425 L320,430 L310,435 L298,439 L285,442 L272,444 L260,445 L247,443 L237,437 L228,429 L220,419 L211,411 L202,402 L196,390 L202,380 L210,372 L220,365 L230,369 L240,375 Z",
+                labelX: 318,
+                labelY: 410
+            },
+            {
+                id: "tempelhof-schoeneberg",
+                name: "Tempelhof-Schöneberg",
+                score: 40,
+                faktoren: {
+                    mietpreistrend: 45,
+                    einkommensgefaelle: 35,
+                    kulturellesAngebot: 60,
+                    infrastrukturentwicklung: 55,
+                    leerstandsquote: 25,
+                    demografischerWandel: 40
+                },
+                hotspots: ["Schöneberg-Nord"],
+                farbe: "#FFA500", // Mittleres Potenzial
+                pfad: "M342,332 L353,331 L360,324 L371,324 L383,326 L388,313 L398,317 L411,320 L417,327 L422,337 L428,347 L429,358 L426,368 L416,376 L407,384 L396,392 L384,398 L371,398 L362,407 L352,414 L342,420 L331,425 L320,430 L312,418 L307,407 L307,395 L312,383 L317,372 L322,360 L332,351 Z",
+                labelX: 375,
+                labelY: 370
+            },
+            {
+                id: "neukoelln",
+                name: "Neukölln",
+                score: 90,
+                faktoren: {
+                    mietpreistrend: 95,
+                    einkommensgefaelle: 90,
+                    kulturellesAngebot: 85,
+                    infrastrukturentwicklung: 75,
+                    leerstandsquote: 40,
+                    demografischerWandel: 85
+                },
+                hotspots: ["Neukölln-Nord", "Reuterkiez", "Schillerkiez"],
+                farbe: "#FF4500", // Hohes Potenzial
+                pfad: "M417,327 L428,327 L438,331 L448,333 L458,333 L466,338 L474,346 L481,356 L487,365 L490,376 L487,387 L480,397 L469,403 L457,409 L445,413 L433,415 L421,417 L409,419 L397,420 L384,422 L371,398 L384,398 L396,392 L407,384 L416,376 L426,368 L429,358 L428,347 L422,337 Z",
+                labelX: 455,
+                labelY: 375
+            },
+            {
+                id: "treptow-koepenick",
+                name: "Treptow-Köpenick",
+                score: 58,
+                faktoren: {
+                    mietpreistrend: 65,
+                    einkommensgefaelle: 60,
+                    kulturellesAngebot: 55,
+                    infrastrukturentwicklung: 70,
+                    leerstandsquote: 40,
+                    demografischerWandel: 45
+                },
+                hotspots: ["Alt-Treptow", "Plänterwald"],
+                farbe: "#FFA500", // Mittleres Potenzial
+                pfad: "M523,308 L527,320 L524,330 L513,340 L500,344 L489,348 L487,364 L490,376 L487,387 L480,397 L469,403 L457,409 L445,413 L433,415 L421,417 L409,419 L405,429 L409,441 L415,452 L423,461 L432,471 L443,476 L455,476 L468,477 L480,479 L492,481 L504,483 L516,486 L523,496 L533,496 L543,493 L554,488 L564,481 L572,472 L579,462 L584,451 L589,440 L593,428 L597,416 L599,403 L599,390 L597,377 L591,366 L583,357 L574,349 L564,342 L553,335 L541,329 L533,318 Z",
+                labelX: 535,
+                labelY: 425
+            },
+            {
+                id: "marzahn-hellersdorf",
+                name: "Marzahn-Hellersdorf",
+                score: 30,
+                faktoren: {
+                    mietpreistrend: 35,
+                    einkommensgefaelle: 30,
+                    kulturellesAngebot: 20,
+                    infrastrukturentwicklung: 45,
+                    leerstandsquote: 50,
+                    demografischerWandel: 25
+                },
+                hotspots: [],
+                farbe: "#9ACD32", // Niedriges Potenzial
+                pfad: "M513,275 L519,284 L522,295 L523,308 L533,318 L541,329 L553,335 L564,342 L574,349 L583,357 L591,366 L596,353 L599,339 L600,325 L600,311 L596,297 L590,284 L580,274 L570,264 L561,253 L551,242 L541,235 L531,228 L521,222 L510,217 L499,212 L489,208 L480,208 L475,219 L472,231 L471,244 L474,258 L481,268 L490,269 L503,273 Z",
+                labelX: 550,
+                labelY: 280
+            },
+            {
+                id: "lichtenberg",
+                name: "Lichtenberg",
+                score: 55,
+                faktoren: {
+                    mietpreistrend: 60,
+                    einkommensgefaelle: 50,
+                    kulturellesAngebot: 45,
+                    infrastrukturentwicklung: 65,
+                    leerstandsquote: 45,
+                    demografischerWandel: 50
+                },
+                hotspots: ["Lichtenberg-Nord", "Rummelsburg"],
+                farbe: "#FFA500", // Mittleres Potenzial
+                pfad: "M476,258 L471,251 L464,245 L452,242 L448,228 L447,215 L432,212 L419,213 L405,208 L396,193 L407,195 L419,198 L432,200 L444,203 L457,203 L469,200 L479,194 L479,183 L489,188 L499,193 L499,212 L489,208 L480,208 L475,219 L472,231 L471,244 L474,258 Z",
+                labelX: 470,
+                labelY: 220
+            },
+            {
+                id: "reinickendorf",
+                name: "Reinickendorf",
+                score: 45,
+                faktoren: {
+                    mietpreistrend: 40,
+                    einkommensgefaelle: 45,
+                    kulturellesAngebot: 30,
+                    infrastrukturentwicklung: 55,
+                    leerstandsquote: 35,
+                    demografischerWandel: 40
+                },
+                hotspots: ["Reinickendorf-Ost"],
+                farbe: "#FFA500", // Mittleres Potenzial
+                pfad: "M290,213 L294,200 L288,187 L287,173 L293,162 L300,152 L313,145 L326,141 L312,131 L300,120 L290,113 L279,104 L270,94 L260,85 L250,78 L237,72 L224,67 L211,62 L201,70 L192,80 L182,90 L172,100 L161,110 L154,121 L149,134 L148,148 L148,162 L150,176 L155,188 L162,200 L170,211 L179,220 L190,226 L201,232 L211,240 L225,246 L237,250 L249,245 L260,237 L270,228 L280,220 Z",
+                labelX: 210,
+                labelY: 140
+            }
+        ];
+
+        const svgMap = document.getElementById('berlin-map');
+        const infoPanel = document.getElementById('info-panel');
+        const tooltip = document.getElementById('tooltip');
+
+        // SVG Pfade für die Bezirke erstellen
+        bezirke.forEach(bezirk => {
+            // Pfad erstellen
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('id', bezirk.id);
+            path.setAttribute('d', bezirk.pfad);
+            path.setAttribute('fill', bezirk.farbe);
+            path.setAttribute('data-name', bezirk.name);
+            path.setAttribute('data-score', bezirk.score);
+            
+            // Hover-Effekt und Klick-Interaktion
+            path.addEventListener('mousemove', (e) => {
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${e.pageX + 15}px`;
+                tooltip.style.top = `${e.pageY - 15}px`;
+                tooltip.innerHTML = `
+                    <strong>${bezirk.name}</strong><br>
+                    Gentrifizierungspotenzial: ${bezirk.score}/100<br>
+                    ${bezirk.hotspots.length > 0 ? 'Hotspots: ' + bezirk.hotspots.join(', ') : 'Keine aktuellen Hotspots'}
+                `;
+            });
+            
+            path.addEventListener('mouseout', () => {
+                tooltip.style.display = 'none';
+            });
+            
+            path.addEventListener('click', () => {
+                const faktoren = bezirk.faktoren;
+                infoPanel.innerHTML = `
+                    <div class="info-header">
+                        <div class="info-title">${bezirk.name}</div>
+                    </div>
+                    <div class="info-detail">
+                        <span class="info-label">Gentrifizierungspotenzial:</span>
+                        <span>${bezirk.score}/100 (${getScoreDescription(bezirk.score)})</span>
+                    </div>
+                    ${bezirk.hotspots.length > 0 ? `
+                    <div class="info-detail">
+                        <span class="info-label">Aktuelle Hotspots:</span>
+                        <span>${bezirk.hotspots.join(', ')}</span>
+                    </div>` : ''}
+                    <div class="info-detail">
+                        <span class="info-label">Mietpreistrend:</span>
+                        <span>${faktoren.mietpreistrend}/100</span>
+                    </div>
+                    <div class="info-detail">
+                        <span class="info-label">Einkommensgefälle:</span>
+                        <span>${faktoren.einkommensgefaelle}/100</span>
+                    </div>
+                    <div class="info-detail">
+                        <span class="info-label">Kulturelles Angebot:</span>
+                        <span>${faktoren.kulturellesAngebot}/100</span>
+                    </div>
+                    <div class="info-detail">
+                        <span class="info-label">Infrastrukturentwicklung:</span>
+                        <span>${faktoren.infrastrukturentwicklung}/100</span>
+                    </div>
+                    <div class="info-detail">
+                        <span class="info-label">Leerstandsquote:</span>
+                        <span>${faktoren.leerstandsquote}/100</span>
+                    </div>
+                    <div class="info-detail">
+                        <span class="info-label">Demografischer Wandel:</span>
+                        <span>${faktoren.demografischerWandel}/100</span>
+                    </div>
+                `;
+            });
+            
+            svgMap.appendChild(path);
+            
+            // Bezirksnamen und Score als Text hinzufügen
+            const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            nameText.setAttribute('x', bezirk.labelX);
+            nameText.setAttribute('y', bezirk.labelY);
+            nameText.setAttribute('class', 'label-name');
+            nameText.setAttribute('text-anchor', 'middle');
+            nameText.textContent = bezirk.name;
+            svgMap.appendChild(nameText);
+            
+            const scoreText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            scoreText.setAttribute('x', bezirk.labelX);
+            scoreText.setAttribute('y', bezirk.labelY + 15);
+            scoreText.setAttribute('class', 'label-score');
+            scoreText.setAttribute('text-anchor', 'middle');
+            scoreText.textContent = `Score: ${bezirk.score}/100`;
+            svgMap.appendChild(scoreText);
+        });
+        
+        // Funktion zur Beschreibung des Scores
+        function getScoreDescription(score) {
+            if (score >= 80) return "Sehr hoch";
+            if (score >= 60) return "Hoch";
+            if (score >= 40) return "Mittel";
+            if (score >= 20) return "Niedrig";
+            return "Sehr niedrig";
+        }
+    </script>
+</body>
+</html>

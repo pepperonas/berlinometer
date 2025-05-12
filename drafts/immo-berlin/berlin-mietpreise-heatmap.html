@@ -4,257 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mietpreisentwicklung Berlin 2005-2025</title>
+    <link rel="stylesheet" href="css/dark-theme.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
-        }
-        
-        body {
-            background-color: #2C2E3B;
-            color: #fff;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            padding: 20px;
-            background-color: #34364a;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
-        }
-        
-        h1, h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
-            color: #fff;
-        }
-        
-        h2 {
-            font-size: 24px;
-            margin-top: 20px;
-        }
-        
-        .map-container {
-            position: relative;
-            width: 100%;
-            height: 600px;
-            margin-bottom: 30px;
-        }
-        
-        svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
-        }
-        
-        path {
-            transition: all 0.3s ease;
-            cursor: pointer;
-            stroke: #2C2E3B;
-            stroke-width: 2;
-        }
-        
-        path:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-            stroke-width: 3;
-        }
-        
-        text {
-            fill: white;
-            font-size: 12px;
-            font-weight: bold;
-            pointer-events: none;
-            text-shadow: 1px 1px 2px #000;
-        }
-        
-        .label-name {
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
+        /* Zusätzliche spezifische Stile für Mietpreis-Heatmap */
         .label-price {
             font-size: 11px;
         }
-        
-        .legend {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #3d3f54;
-            border-radius: 5px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin: 5px 15px;
-        }
-        
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            margin-right: 5px;
-            border-radius: 4px;
-        }
-        
-        .info-panel {
-            margin-top: 20px;
-            background-color: #3d3f54;
-            padding: 20px;
-            border-radius: 10px;
-            width: 100%;
-        }
-        
-        .info-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            align-items: center;
-        }
-        
-        .info-title {
-            font-size: 22px;
-            font-weight: bold;
-        }
-        
-        .info-detail {
-            margin: 8px 0;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #abb1f0;
-        }
-        
-        .tooltip {
-            position: absolute;
-            background-color: #1e1f2c;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 100;
-            pointer-events: none;
-            max-width: 220px;
-        }
-        
-        /* Styles für die Tabelle und Chart-Ansicht */
-        .heatmap-container {
-            overflow-x: auto;
-            margin: 30px 0;
-        }
-        
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            background-color: #3d3f54;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        
-        th, td {
-            padding: 10px;
-            text-align: center;
-            border: 1px solid #2C2E3B;
-        }
-        
-        th {
-            background-color: #2C2E3B;
-            color: white;
-            position: sticky;
-            top: 0;
-        }
-        
-        tr:nth-child(even) {
-            background-color: #414359;
-        }
-        
-        .bezirk-name {
-            font-weight: bold;
-            text-align: left;
-            width: 150px;
-            position: sticky;
-            left: 0;
-            background-color: #3d3f54;
-            z-index: 1;
-        }
-        
-        tr:nth-child(even) .bezirk-name {
-            background-color: #414359;
-        }
-        
+
         .year-header {
             writing-mode: vertical-rl;
             transform: rotate(180deg);
             height: 120px;
             white-space: nowrap;
         }
-        
-        .chart-container {
-            height: 400px;
-            margin: 30px 0;
-            background-color: #3d3f54;
-            padding: 15px;
-            border-radius: 8px;
-        }
-        
-        .info-box {
-            background-color: #3d3f54;
-            border-left: 5px solid #abb1f0;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 0 5px 5px 0;
-        }
-        
-        .tab-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .tab {
-            padding: 10px 20px;
-            background-color: #3d3f54;
-            border: none;
-            border-radius: 4px;
-            color: white;
-            cursor: pointer;
-            margin: 0 5px;
-            transition: background-color 0.3s;
-        }
-        
-        .tab.active {
-            background-color: #5d81B9;
+
+        .bezirk-name {
             font-weight: bold;
+            text-align: left;
+            width: 150px;
+            position: sticky;
+            left: 0;
+            background-color: var(--background-darker);
+            z-index: 1;
         }
-        
-        .tab-content {
-            display: none;
+
+        tr:nth-child(even) .bezirk-name {
+            background-color: var(--card-background);
         }
-        
-        .tab-content.active {
-            display: block;
+
+        .info-box {
+            background-color: var(--background-darker);
+            border-left: 5px solid var(--accent-blue);
+            padding: var(--spacing-4);
+            margin: var(--spacing-4) 0;
+            border-radius: 0 var(--radius) var(--radius) 0;
         }
-        
+
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
             .year-header {
                 height: 80px;
             }
