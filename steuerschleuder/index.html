@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brutto-Netto-Rechner</title>
+    <style>
+        :root {
+            --primary-color: #2C2E3B;
+            --accent-color: #4f5275;
+            --text-color: #ffffff;
+            --background-color: #f5f5f7;
+            --card-color: #ffffff;
+            --border-radius: 8px;
+            --shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --padding: 20px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .header {
+            grid-column: 1 / -1;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            padding: var(--padding);
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        
+        .card {
+            background-color: var(--card-color);
+            padding: var(--padding);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-weight: 500;
+        }
+        
+        .result-value {
+            font-weight: 700;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #eee;
+            border-radius: 4px 4px 0 0;
+        }
+        
+        .tab.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .summary-card {
+            margin-top: 20px;
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Brutto-Netto-Rechner für Deutschland</h1>
+            <p>Berechne Dein Nettogehalt und Abgaben nach aktuellen Steuersätzen</p>
+        </div>
+        
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" data-tab="monthly">Monatsgehalt</div>
+                <div class="tab" data-tab="yearly">Jahresgehalt</div>
+            </div>
+            
+            <div class="tab-content active" id="monthly-tab">
+                <div class="form-group">
+                    <label for="monthly-salary">Bruttogehalt pro Monat (€)</label>
+                    <input type="number" id="monthly-salary" min="0" step="100" value="3000">
+                </div>
+            </div>
+            
+            <div class="tab-content" id="yearly-tab">
+                <div class="form-group">
+                    <label for="yearly-salary">Bruttogehalt pro Jahr (€)</label>
+                    <input type="number" id="yearly-salary" min="0" step="1000" value="36000">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="tax-class">Steuerklasse</label>
+                <select id="tax-class">
+                    <option value="1">Steuerklasse I (Ledig)</option>
+                    <option value="2">Steuerklasse II (Alleinerziehend)</option>
+                    <option value="3">Steuerklasse III (Verheiratet, Alleinverdiener)</option>
+                    <option value="4">Steuerklasse IV (Verheiratet, beide verdienen)</option>
+                    <option value="5">Steuerklasse V (Verheiratet, weniger verdienend)</option>
+                    <option value="6">Steuerklasse VI (Nebenjob)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="state">Bundesland</label>
+                <select id="state">
+                    <option value="bw">Baden-Württemberg</option>
+                    <option value="by">Bayern</option>
+                    <option value="be">Berlin</option>
+                    <option value="bb">Brandenburg</option>
+                    <option value="hb">Bremen</option>
+                    <option value="hh">Hamburg</option>
+                    <option value="he">Hessen</option>
+                    <option value="mv">Mecklenburg-Vorpommern</option>
+                    <option value="ni">Niedersachsen</option>
+                    <option value="nw">Nordrhein-Westfalen</option>
+                    <option value="rp">Rheinland-Pfalz</option>
+                    <option value="sl">Saarland</option>
+                    <option value="sn">Sachsen</option>
+                    <option value="st">Sachsen-Anhalt</option>
+                    <option value="sh">Schleswig-Holstein</option>
+                    <option value="th">Thüringen</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="children">Anzahl Kinder</label>
+                <input type="number" id="children" min="0" max="10" value="0">
+            </div>
+            
+            <div class="form-group">
+                <label for="church-tax">Kirchensteuer</label>
+                <select id="church-tax">
+                    <option value="0">Keine Kirchensteuer</option>
+                    <option value="1">Kirchensteuer</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="health-insurance">Krankenversicherungssatz (%)</label>
+                <input type="number" id="health-insurance" min="14" max="16" step="0.1" value="14.6">
+            </div>
+            
+            <div class="form-group">
+                <label for="additional-health">Zusatzbeitrag Krankenkasse (%)</label>
+                <input type="number" id="additional-health" min="0" max="3" step="0.1" value="1.3">
+            </div>
+            
+            <button id="calculate-btn">Berechnen</button>
+        </div>
+        
+        <div class="card">
+            <h2>Ergebnisse</h2>
+            
+            <div id="monthly-results">
+                <h3>Monatlich</h3>
+                <div class="result-row">
+                    <span class="result-label">Bruttogehalt:</span>
+                    <span class="result-value" id="monthly-gross">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Lohnsteuer:</span>
+                    <span class="result-value" id="monthly-income-tax">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Solidaritätszuschlag:</span>
+                    <span class="result-value" id="monthly-solidarity">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Kirchensteuer:</span>
+                    <span class="result-value" id="monthly-church">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Krankenversicherung:</span>
+                    <span class="result-value" id="monthly-health">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Pflegeversicherung:</span>
+                    <span class="result-value" id="monthly-care">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Rentenversicherung:</span>
+                    <span class="result-value" id="monthly-pension">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Arbeitslosenversicherung:</span>
+                    <span class="result-value" id="monthly-unemployment">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Gesamtabgaben:</span>
+                    <span class="result-value" id="monthly-total-deductions">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Nettogehalt:</span>
+                    <span class="result-value" id="monthly-net">0,00 €</span>
+                </div>
+            </div>
+            
+            <div id="yearly-results">
+                <h3>Jährlich</h3>
+                <div class="result-row">
+                    <span class="result-label">Bruttogehalt:</span>
+                    <span class="result-value" id="yearly-gross">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Lohnsteuer:</span>
+                    <span class="result-value" id="yearly-income-tax">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Solidaritätszuschlag:</span>
+                    <span class="result-value" id="yearly-solidarity">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Kirchensteuer:</span>
+                    <span class="result-value" id="yearly-church">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Krankenversicherung:</span>
+                    <span class="result-value" id="yearly-health">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Pflegeversicherung:</span>
+                    <span class="result-value" id="yearly-care">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Rentenversicherung:</span>
+                    <span class="result-value" id="yearly-pension">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Arbeitslosenversicherung:</span>
+                    <span class="result-value" id="yearly-unemployment">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Gesamtabgaben:</span>
+                    <span class="result-value" id="yearly-total-deductions">0,00 €</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Nettogehalt:</span>
+                    <span class="result-value" id="yearly-net">0,00 €</span>
+                </div>
+            </div>
+            
+            <div class="card summary-card">
+                <div class="result-row">
+                    <span class="result-label">Abgabenquote:</span>
+                    <span class="result-value" id="deduction-rate">0,00 %</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Tabwechsel Funktionalität
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+                
+                // Bei Tabwechsel Werte synchronisieren
+                if (tabId === 'monthly') {
+                    const yearlyValue = parseFloat(document.getElementById('yearly-salary').value);
+                    document.getElementById('monthly-salary').value = Math.round(yearlyValue / 12);
+                } else {
+                    const monthlyValue = parseFloat(document.getElementById('monthly-salary').value);
+                    document.getElementById('yearly-salary').value = Math.round(monthlyValue * 12);
+                }
+            });
+        });
+        
+        // Steuersätze und Konstanten (vereinfachte Version)
+        const taxConstants = {
+            // Einkommensteuer 2024
+            basicAllowance: 11604, // Grundfreibetrag
+            taxZone2Start: 11604,
+            taxZone2End: 17005,
+            taxZone3Start: 17006,
+            taxZone3End: 66761,
+            taxZone4Start: 66762,
+            taxZone4End: 277825,
+            taxZone5Start: 277826,
+            
+            // Sozialversicherungsbeiträge 2024 (prozentual)
+            pensionRate: 18.6 / 100, // Rentenversicherung
+            unemploymentRate: 2.6 / 100, // Arbeitslosenversicherung
+            careRate: 3.4 / 100, // Pflegeversicherung
+            careRateChildless: 4.0 / 100, // Pflegeversicherung für Kinderlose über 23
+            
+            // Beitragsbemessungsgrenzen 2024
+            pensionCap: 7550 * 12, // Rentenversicherung
+            healthCap: 5175 * 12,  // Krankenversicherung
+            
+            // Kirchensteuersätze nach Bundesland
+            churchTaxRates: {
+                'bw': 0.08, 'by': 0.08, 'be': 0.09, 'bb': 0.09, 'hb': 0.09,
+                'hh': 0.09, 'he': 0.09, 'mv': 0.09, 'ni': 0.09, 'nw': 0.09,
+                'rp': 0.09, 'sl': 0.09, 'sn': 0.09, 'st': 0.09, 'sh': 0.09, 'th': 0.09
+            },
+            
+            // Steuerklassen-Faktoren (vereinfacht)
+            taxClassFactors: {
+                '1': 1.0,    // Single
+                '2': 0.85,   // Alleinerziehend
+                '3': 0.70,   // Verheiratet, Alleinverdiener
+                '4': 0.95,   // Verheiratet, beide verdienen
+                '5': 1.2,    // Verheiratet, weniger verdienend
+                '6': 1.3     // Nebenjob
+            },
+            
+            // Solidaritätszuschlag
+            soliFreeLimit: 17004,  // Freigrenze
+            soliRate: 0.055        // 5.5%
+        };
+        
+        // Funktion zur Berechnung der Einkommensteuer (vereinfacht)
+        function calculateIncomeTax(yearlyIncome, taxClass) {
+            // Grundfreibetrag anwenden
+            let taxableIncome = Math.max(0, yearlyIncome - taxConstants.basicAllowance);
+            
+            // Steuerklassenfaktor anwenden (vereinfacht)
+            const factor = taxConstants.taxClassFactors[taxClass];
+            taxableIncome *= factor;
+            
+            let tax = 0;
+            
+            // Progressive Steuerzonen
+            if (yearlyIncome <= taxConstants.basicAllowance) {
+                tax = 0;
+            } else if (yearlyIncome <= taxConstants.taxZone2End) {
+                // Zone 2: 14% bis 20%
+                const y = (yearlyIncome - taxConstants.taxZone2Start) / 10000;
+                tax = (714 * y + 1400) * y;
+            } else if (yearlyIncome <= taxConstants.taxZone3End) {
+                // Zone 3: 24% bis 42%
+                const z = (yearlyIncome - taxConstants.taxZone3Start) / 10000;
+                tax = (938.24 * z + 2397) * z + 1016.36;
+            } else if (yearlyIncome <= taxConstants.taxZone4End) {
+                // Zone 4: 42%
+                tax = 0.42 * yearlyIncome - 10409.34;
+            } else {
+                // Zone 5: 45%
+                tax = 0.45 * yearlyIncome - 18693.64;
+            }
+            
+            return Math.max(0, tax);
+        }
+        
+        // Funktion zur Berechnung des Solidaritätszuschlags
+        function calculateSolidarityTax(incomeTax) {
+            // Vereinfachte Berechnung
+            if (incomeTax <= taxConstants.soliFreeLimit) {
+                return 0;
+            }
+            return incomeTax * taxConstants.soliRate;
+        }
+        
+        // Funktion zur Berechnung der Kirchensteuer
+        function calculateChurchTax(incomeTax, state, isChurchMember) {
+            if (!isChurchMember) return 0;
+            
+            const rate = taxConstants.churchTaxRates[state];
+            return incomeTax * rate;
+        }
+        
+        // Funktion zur Berechnung der Krankenversicherung
+        function calculateHealthInsurance(yearlyIncome, rate, additionalRate) {
+            const cappedIncome = Math.min(yearlyIncome, taxConstants.healthCap);
+            const totalRate = (rate + additionalRate) / 100;
+            
+            return cappedIncome * (totalRate / 2); // Arbeitnehmeranteil
+        }
+        
+        // Funktion zur Berechnung der Pflegeversicherung
+        function calculateCareInsurance(yearlyIncome, children) {
+            const cappedIncome = Math.min(yearlyIncome, taxConstants.healthCap);
+            const rate = (children > 0) ? taxConstants.careRate : taxConstants.careRateChildless;
+            
+            return cappedIncome * (rate / 2); // Arbeitnehmeranteil
+        }
+        
+        // Funktion zur Berechnung der Rentenversicherung
+        function calculatePensionInsurance(yearlyIncome) {
+            const cappedIncome = Math.min(yearlyIncome, taxConstants.pensionCap);
+            return cappedIncome * (taxConstants.pensionRate / 2); // Arbeitnehmeranteil
+        }
+        
+        // Funktion zur Berechnung der Arbeitslosenversicherung
+        function calculateUnemploymentInsurance(yearlyIncome) {
+            const cappedIncome = Math.min(yearlyIncome, taxConstants.pensionCap);
+            return cappedIncome * (taxConstants.unemploymentRate / 2); // Arbeitnehmeranteil
+        }
+        
+        // Funktion zum Formatieren von Währungsbeträgen
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('de-DE', { 
+                style: 'currency', 
+                currency: 'EUR',
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+        
+        // Funktion zum Formatieren von Prozentsätzen
+        function formatPercent(amount) {
+            return new Intl.NumberFormat('de-DE', { 
+                style: 'percent', 
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+        
+        // Hauptfunktion zur Berechnung aller Werte
+        function calculateAll() {
+            // Eingabewerte auslesen
+            const activeTab = document.querySelector('.tab.active').getAttribute('data-tab');
+            
+            let yearlyGross, monthlyGross;
+            
+            if (activeTab === 'monthly') {
+                monthlyGross = parseFloat(document.getElementById('monthly-salary').value);
+                yearlyGross = monthlyGross * 12;
+            } else {
+                yearlyGross = parseFloat(document.getElementById('yearly-salary').value);
+                monthlyGross = yearlyGross / 12;
+            }
+            
+            const taxClass = document.getElementById('tax-class').value;
+            const state = document.getElementById('state').value;
+            const children = parseInt(document.getElementById('children').value);
+            const isChurchMember = document.getElementById('church-tax').value === '1';
+            const healthRate = parseFloat(document.getElementById('health-insurance').value);
+            const additionalHealthRate = parseFloat(document.getElementById('additional-health').value);
+            
+            // Berechnung der Steuern und Abgaben
+            const yearlyIncomeTax = calculateIncomeTax(yearlyGross, taxClass);
+            const yearlySolidarity = calculateSolidarityTax(yearlyIncomeTax);
+            const yearlyChurch = calculateChurchTax(yearlyIncomeTax, state, isChurchMember);
+            
+            const yearlyHealth = calculateHealthInsurance(yearlyGross, healthRate, additionalHealthRate);
+            const yearlyCare = calculateCareInsurance(yearlyGross, children);
+            const yearlyPension = calculatePensionInsurance(yearlyGross);
+            const yearlyUnemployment = calculateUnemploymentInsurance(yearlyGross);
+            
+            const yearlyTotalDeductions = yearlyIncomeTax + yearlySolidarity + yearlyChurch + 
+                                       yearlyHealth + yearlyCare + yearlyPension + yearlyUnemployment;
+            
+            const yearlyNet = yearlyGross - yearlyTotalDeductions;
+            
+            // Monatliche Werte berechnen
+            const monthlyIncomeTax = yearlyIncomeTax / 12;
+            const monthlySolidarity = yearlySolidarity / 12;
+            const monthlyChurch = yearlyChurch / 12;
+            const monthlyHealth = yearlyHealth / 12;
+            const monthlyCare = yearlyCare / 12;
+            const monthlyPension = yearlyPension / 12;
+            const monthlyUnemployment = yearlyUnemployment / 12;
+            const monthlyTotalDeductions = yearlyTotalDeductions / 12;
+            const monthlyNet = yearlyNet / 12;
+            
+            // Abgabenquote berechnen
+            const deductionRate = yearlyTotalDeductions / yearlyGross;
+            
+            // Ergebnisse anzeigen - Monatlich
+            document.getElementById('monthly-gross').textContent = formatCurrency(monthlyGross);
+            document.getElementById('monthly-income-tax').textContent = formatCurrency(monthlyIncomeTax);
+            document.getElementById('monthly-solidarity').textContent = formatCurrency(monthlySolidarity);
+            document.getElementById('monthly-church').textContent = formatCurrency(monthlyChurch);
+            document.getElementById('monthly-health').textContent = formatCurrency(monthlyHealth);
+            document.getElementById('monthly-care').textContent = formatCurrency(monthlyCare);
+            document.getElementById('monthly-pension').textContent = formatCurrency(monthlyPension);
+            document.getElementById('monthly-unemployment').textContent = formatCurrency(monthlyUnemployment);
+            document.getElementById('monthly-total-deductions').textContent = formatCurrency(monthlyTotalDeductions);
+            document.getElementById('monthly-net').textContent = formatCurrency(monthlyNet);
+            
+            // Ergebnisse anzeigen - Jährlich
+            document.getElementById('yearly-gross').textContent = formatCurrency(yearlyGross);
+            document.getElementById('yearly-income-tax').textContent = formatCurrency(yearlyIncomeTax);
+            document.getElementById('yearly-solidarity').textContent = formatCurrency(yearlySolidarity);
+            document.getElementById('yearly-church').textContent = formatCurrency(yearlyChurch);
+            document.getElementById('yearly-health').textContent = formatCurrency(yearlyHealth);
+            document.getElementById('yearly-care').textContent = formatCurrency(yearlyCare);
+            document.getElementById('yearly-pension').textContent = formatCurrency(yearlyPension);
+            document.getElementById('yearly-unemployment').textContent = formatCurrency(yearlyUnemployment);
+            document.getElementById('yearly-total-deductions').textContent = formatCurrency(yearlyTotalDeductions);
+            document.getElementById('yearly-net').textContent = formatCurrency(yearlyNet);
+            
+            // Abgabenquote anzeigen
+            document.getElementById('deduction-rate').textContent = formatPercent(deductionRate);
+        }
+        
+        // Event-Listener für den Berechnen-Button
+        document.getElementById('calculate-btn').addEventListener('click', calculateAll);
+        
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', calculateAll);
+    </script>
+</body>
+</html>
