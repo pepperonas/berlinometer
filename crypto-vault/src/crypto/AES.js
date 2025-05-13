@@ -1,6 +1,48 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {Copy, Eye, EyeOff, RefreshCw, Save, Upload} from 'lucide-react';
 
+// Hilfsfunktion zur Erkennung der AES-Schlüsselgröße
+function detectKeySize(key) {
+    // Entferne alle Whitespace und Zeilenumbrüche
+    const cleanKey = key.replace(/[\r\n\t\f\v \s]/g, '');
+
+    // Für Hex-Format: Jedes Zeichen stellt 4 Bits dar, daher Anzahl der Zeichen × 4 = Bits
+    if (/^[0-9A-Fa-f]+$/.test(cleanKey)) {
+        const bits = cleanKey.length * 4;
+
+        // Standardgrößen für AES sind 128, 192 und 256 Bit
+        if (bits === 128 || bits === 192 || bits === 256) {
+            return bits;
+        }
+
+        // Wenn kein standardmäßiger Schlüssel, zum nächsthöheren Standard abrunden
+        if (bits < 128) return 128;
+        if (bits < 192) return 128;
+        if (bits < 256) return 192;
+        return 256;
+    }
+
+    // Für Base64-Format: Dekodieren und Länge in Bytes × 8 = Bits
+    try {
+        const binary = atob(cleanKey);
+        const bits = binary.length * 8;
+
+        // Standardgrößen für AES ermitteln
+        if (bits === 128 || bits === 192 || bits === 256) {
+            return bits;
+        }
+
+        // Android verwendet typischerweise 256-Bit-Schlüssel
+        if (bits >= 256) return 256;
+        if (bits >= 192) return 192;
+        return 128;
+    } catch (e) {
+        // Wenn Base64-Dekodierung fehlschlägt, standardmäßig 256 Bit verwenden
+        console.warn("Schlüsselformat nicht erkannt, standardmäßig 256 Bit verwenden:", e);
+        return 256;
+    }
+}
+
 // AES-Komponente für CryptoVault
 export function AESEncryption() {
     const [inputText, setInputText] = useState('');
@@ -13,6 +55,9 @@ export function AESEncryption() {
     const [keyName, setKeyName] = useState('');
     const [error, setError] = useState('');
     const [info, setInfo] = useState('');
+    const [useExternalKey, setUseExternalKey] = useState(false);
+    const [externalKeyText, setExternalKeyText] = useState('');
+    const [detectedKeySize, setDetectedKeySize] = useState(null);
     const importFileRef = useRef(null);
 
     // Lade gespeicherte Schlüssel beim Start mit verbesserter Fehlerbehandlung
@@ -239,6 +284,52 @@ export function AESEncryption() {
         reader.onload = (e) => {
             try {
                 const content = e.target.result;
+
+                // Zuerst prüfen, ob es ein direkter Base64-Schlüssel sein könnte (von Android)
+                if (content.match(/^[A-Za-z0-9+/=\s]+$/) && !content.includes('{') && !content.includes('[')) {
+                    // Wahrscheinlich ein direkter Base64-String oder Hex-String als AES-Schlüssel von Android
+                    const cleanContent = content.replace(/[\r\n\t\f\v ]/g, '');
+
+                    // Automatische Erkennung der Schlüsselgröße
+                    const detectedSize = detectKeySize(cleanContent);
+                    console.log(`Erkannte Schlüsselgröße für importierten Schlüssel: ${detectedSize} Bit`);
+
+                    // Erstelle einen neuen Schlüssel mit dem importierten Wert
+                    const newKey = {
+                        id: Date.now().toString(),
+                        name: file.name.replace(/\.[^/.]+$/, "") || "Importierter Schlüssel",
+                        value: cleanContent,
+                        keySize: detectedSize, // Automatisch erkannte Größe
+                        type: 'text-encryption',
+                        createdAt: new Date().toISOString()
+                    };
+
+                    // Bestehende Schlüssel laden
+                    let allKeys = [];
+                    try {
+                        const storedKeys = localStorage.getItem('aesKeys');
+                        if (storedKeys) {
+                            allKeys = JSON.parse(storedKeys);
+                        }
+                    } catch (e) {
+                        console.error('Fehler beim Laden bestehender Schlüssel:', e);
+                        allKeys = [];
+                    }
+
+                    // Neuen Schlüssel hinzufügen
+                    allKeys.push(newKey);
+
+                    // In localStorage speichern
+                    localStorage.setItem('aesKeys', JSON.stringify(allKeys));
+
+                    // State aktualisieren
+                    setSavedKeys(prevKeys => [...prevKeys, newKey]);
+                    setInfo('Android AES-Schlüssel erfolgreich importiert');
+                    setTimeout(() => setInfo(''), 3000);
+                    return;
+                }
+
+                // Normale JSON-Verarbeitung für Web-App-Schlüssel
                 const importedKeys = JSON.parse(content);
 
                 // Validierung der importierten Daten
@@ -361,11 +452,19 @@ export function AESEncryption() {
             const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
             if (mode === 'encrypt') {
+                // Erkenne Schlüsselgröße automatisch, wenn es ein externer Schlüssel ist
+                let effectiveKeySize = keySize;
+                if (useExternalKey && externalKeyText) {
+                    // Automatische Erkennung der Schlüsselgröße für den manuell eingegebenen Schlüssel
+                    effectiveKeySize = detectKeySize(password);
+                    console.log(`Erkannte Schlüsselgröße für externen Schlüssel: ${effectiveKeySize} Bit`);
+                }
+
                 // Schlüssel aus Passwort ableiten
                 const key = await crypto.subtle.importKey(
                     'raw',
                     passwordBuffer,
-                    {name: 'AES-GCM', length: keySize},
+                    {name: 'AES-GCM', length: effectiveKeySize},
                     false,
                     ['encrypt']
                 );
@@ -389,8 +488,9 @@ export function AESEncryption() {
                 setOutputText(base64Result);
             } else {
                 try {
-                    // Base64 decodieren
-                    const binaryString = atob(inputText);
+                    // Base64 decodieren - mit Bereinigung von Zeilenumbrüchen und Whitespace
+                    const cleanedInput = inputText.replace(/[\r\n\t\f\v ]/g, '');
+                    const binaryString = atob(cleanedInput);
                     const bytes = new Uint8Array(binaryString.length);
                     for (let i = 0; i < binaryString.length; i++) {
                         bytes[i] = binaryString.charCodeAt(i);
@@ -400,25 +500,69 @@ export function AESEncryption() {
                     const iv = bytes.slice(0, 12);
                     const encryptedData = bytes.slice(12);
 
-                    // Schlüssel aus Passwort ableiten
-                    const key = await crypto.subtle.importKey(
-                        'raw',
-                        passwordBuffer,
-                        {name: 'AES-GCM', length: keySize},
-                        false,
-                        ['decrypt']
-                    );
+                    // Versuche automatisch verschiedene Schlüsselgrößen, wenn der Schlüssel aus Android stammen könnte
+                    const possibleKeySizes = [keySize]; // Zuerst die ausgewählte Größe versuchen
 
-                    // Text entschlüsseln
-                    const decryptedBuffer = await crypto.subtle.decrypt(
-                        {name: 'AES-GCM', iv},
-                        key,
-                        encryptedData
-                    );
+                    // Wenn es sich um einen externen Schlüssel handeln könnte, füge alternative Größen hinzu
+                    if (useExternalKey || password.length !== keySize / 4) {
+                        // Automatisch erkannte Größe hinzufügen (falls sie sich von der ausgewählten unterscheidet)
+                        const detectedSize = detectKeySize(password);
+                        if (detectedSize !== keySize && !possibleKeySizes.includes(detectedSize)) {
+                            possibleKeySizes.push(detectedSize);
+                        }
 
-                    // Als Text ausgeben
-                    const decryptedText = new TextDecoder().decode(decryptedBuffer);
-                    setOutputText(decryptedText);
+                        // Füge andere Standardgrößen hinzu, die noch nicht in der Liste sind
+                        [128, 192, 256].forEach(size => {
+                            if (!possibleKeySizes.includes(size)) {
+                                possibleKeySizes.push(size);
+                            }
+                        });
+                    }
+
+                    // Versuche nacheinander verschiedene Schlüsselgrößen
+                    let decryptedText = null;
+                    let lastError = null;
+
+                    for (const size of possibleKeySizes) {
+                        try {
+                            // Schlüssel aus Passwort ableiten
+                            const key = await crypto.subtle.importKey(
+                                'raw',
+                                passwordBuffer,
+                                {name: 'AES-GCM', length: size},
+                                false,
+                                ['decrypt']
+                            );
+
+                            // Text entschlüsseln
+                            const decryptedBuffer = await crypto.subtle.decrypt(
+                                {name: 'AES-GCM', iv},
+                                key,
+                                encryptedData
+                            );
+
+                            // Als Text ausgeben
+                            decryptedText = new TextDecoder().decode(decryptedBuffer);
+
+                            // Wenn die Entschlüsselung erfolgreich war, aktualisiere die Schlüsselgröße
+                            if (size !== keySize) {
+                                setKeySize(size);
+                                setInfo(`Entschlüsselung mit ${size} Bit erfolgreich (Schlüsselgröße angepasst)`);
+                                setTimeout(() => setInfo(''), 3000);
+                            }
+
+                            break; // Wenn erfolgreich, beende die Schleife
+                        } catch (e) {
+                            lastError = e;
+                            console.log(`Entschlüsselung mit ${size} Bit fehlgeschlagen, versuche andere Größen...`);
+                        }
+                    }
+
+                    if (decryptedText) {
+                        setOutputText(decryptedText);
+                    } else {
+                        throw lastError || new Error('Entschlüsselung fehlgeschlagen mit allen Schlüsselgrößen');
+                    }
                 } catch (error) {
                     setError('Entschlüsselung fehlgeschlagen. Überprüfe den Text und das Passwort.');
                     console.error(error);
@@ -497,45 +641,97 @@ export function AESEncryption() {
                 </div>
 
                 <div className="mt-6">
-                    <label className="block mb-2 font-medium dark:text-gray-200">Passwort /
-                        Schlüssel</label>
-                    <div className="flex">
-                        <div className="relative flex-1">
-                            <input
-                                type={showPassword ? 'text' : 'password'}
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full p-3 pr-10 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                                placeholder="Passwort oder Hex-Schlüssel eingeben..."
-                            />
-                            <button
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
-                            >
-                                {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
-                            </button>
-                        </div>
+                    <div className="flex justify-between items-center mb-2">
+                        <label className="font-medium dark:text-gray-200">Passwort / Schlüssel</label>
                         <button
-                            onClick={generateKey}
-                            className="ml-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center dark:text-gray-200"
-                            title="Zufälligen Schlüssel generieren"
+                            onClick={() => setUseExternalKey(!useExternalKey)}
+                            className="text-blue-600 dark:text-blue-400 text-sm flex items-center"
                         >
-                            <RefreshCw size={18}/>
+                            {useExternalKey ? 'Eigenen Schlüssel eingeben' : 'Fremden Schlüssel importieren'}
                         </button>
                     </div>
 
-                    <div className="mt-2 flex items-center">
-                        <span className="mr-2 text-sm dark:text-gray-300">Schlüsselgröße:</span>
-                        <select
-                            value={keySize}
-                            onChange={(e) => setKeySize(Number(e.target.value))}
-                            className="p-1 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                        >
-                            <option value={128}>128 Bit</option>
-                            <option value={192}>192 Bit</option>
-                            <option value={256}>256 Bit</option>
-                        </select>
-                    </div>
+                    {!useExternalKey ? (
+                        // Standard-Eingabe für eigene Schlüssel
+                        <>
+                            <div className="flex">
+                                <div className="relative flex-1">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full p-3 pr-10 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                        placeholder="Passwort oder Hex-Schlüssel eingeben..."
+                                    />
+                                    <button
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
+                                    >
+                                        {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={generateKey}
+                                    className="ml-2 px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center dark:text-gray-200"
+                                    title="Zufälligen Schlüssel generieren"
+                                >
+                                    <RefreshCw size={18}/>
+                                </button>
+                            </div>
+
+                            <div className="mt-2 flex items-center">
+                                <span className="mr-2 text-sm dark:text-gray-300">Schlüsselgröße:</span>
+                                <select
+                                    value={keySize}
+                                    onChange={(e) => setKeySize(Number(e.target.value))}
+                                    className="p-1 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                >
+                                    <option value={128}>128 Bit</option>
+                                    <option value={192}>192 Bit</option>
+                                    <option value={256}>256 Bit</option>
+                                </select>
+                            </div>
+                        </>
+                    ) : (
+                        // Eingabe für fremde Schlüssel mit automatischer Größenerkennung
+                        <div className="border p-3 rounded-md dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                                Importiere einen externen AES-Schlüssel (Hex oder Base64). Die Schlüsselgröße wird automatisch erkannt.
+                            </p>
+
+                            <textarea
+                                value={externalKeyText}
+                                onChange={(e) => {
+                                    const text = e.target.value;
+                                    setExternalKeyText(text);
+                                    setPassword(text);
+
+                                    // Automatisch Größe erkennen
+                                    if (text.trim()) {
+                                        const detectedSize = detectKeySize(text);
+                                        setDetectedKeySize(detectedSize);
+                                        setKeySize(detectedSize);
+                                    } else {
+                                        setDetectedKeySize(null);
+                                    }
+                                }}
+                                rows={3}
+                                className="w-full p-2 border rounded-md bg-white dark:bg-gray-600 dark:border-gray-600 dark:text-gray-100 text-xs font-mono"
+                                placeholder="Extern generierten AES-Schlüssel (Hex oder Base64) einfügen..."
+                            />
+
+                            {detectedKeySize && (
+                                <div className="mt-2 text-sm text-green-600 dark:text-green-400">
+                                    ✓ Erkannte Schlüsselgröße: <strong>{detectedKeySize} Bit</strong>
+                                </div>
+                            )}
+
+                            <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                                Hinweis: Bei der Entschlüsselung werden automatisch verschiedene Schlüsselgrößen probiert,
+                                falls die Entschlüsselung mit der erkannten Größe fehlschlägt.
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {error && (

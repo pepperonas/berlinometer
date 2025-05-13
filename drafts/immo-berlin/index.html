@@ -188,6 +188,7 @@
 
         const a = document.createElement('a');
         a.href = url;
+        a.target = "_blank";
         a.textContent = title || formatTitle(url);
 
         const desc = document.createElement('div');

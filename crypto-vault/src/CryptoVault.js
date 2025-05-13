@@ -35,18 +35,18 @@ const algorithms = [
         component: RSAEncryption
     },
     {
-        id: 'caesar',
-        name: 'Caesar',
-        description: 'Einfache Verschiebungs-Chiffre',
-        icon: <Lock size={20}/>,
-        component: CaesarCipher
-    },
-    {
         id: 'files',
         name: 'Dateien',
         description: 'Dateiverschlüsselung mit AES',
         icon: <File size={20}/>,
         component: FileEncryption
+    },
+    {
+        id: 'caesar',
+        name: 'Caesar',
+        description: 'Einfache Verschiebungs-Chiffre',
+        icon: <Lock size={20}/>,
+        component: CaesarCipher
     }
 ];
 

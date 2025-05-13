@@ -288,7 +288,45 @@ export function FileEncryption() {
         reader.onload = (e) => {
             try {
                 const content = e.target.result;
-                const importedKeys = JSON.parse(content);
+
+                // Zuerst prüfen, ob es ein direkter Base64-Schlüssel sein könnte (von Android)
+                if (content.match(/^[A-Za-z0-9+/=\s]+$/) && !content.includes('{') && !content.includes('[')) {
+                    // Wahrscheinlich ein direkter Base64-String als AES-Schlüssel von Android
+                    const cleanContent = content.replace(/[\r\n\t\f\v ]/g, '');
+
+                    // Erstelle einen neuen Schlüssel mit dem importierten Wert
+                    const newKey = {
+                        id: Date.now().toString(),
+                        name: file.name.replace(/\.[^/.]+$/, "") || "Importierter Android-Dateischlüssel",
+                        value: cleanContent,
+                        keySize: 256, // Android verwendet standardmäßig 256-bit
+                        type: 'file-encryption',
+                        createdAt: new Date().toISOString()
+                    };
+
+                    // Bestehende Schlüssel laden
+                    const updatedKeys = [...savedKeys, newKey];
+
+                    // In localStorage speichern
+                    localStorage.setItem('fileEncryptionKeys', JSON.stringify(updatedKeys));
+
+                    // State aktualisieren
+                    setSavedKeys(updatedKeys);
+                    setInfo('Android AES-Dateischlüssel erfolgreich importiert');
+                    setTimeout(() => setInfo(''), 3000);
+
+                    // Zurücksetzen des Datei-Inputs
+                    event.target.value = null;
+                    return;
+                }
+
+                // Standard JSON-Format-Verarbeitung
+                let importedKeys;
+                try {
+                    importedKeys = JSON.parse(content);
+                } catch (jsonError) {
+                    throw new Error('Die Datei enthält kein gültiges JSON-Format oder Base64-Schlüssel.');
+                }
 
                 // Validierung der importierten Daten
                 if (!Array.isArray(importedKeys)) {

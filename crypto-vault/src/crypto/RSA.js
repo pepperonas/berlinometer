@@ -147,10 +147,14 @@ export function RSAEncryption() {
     // Funktion zum Entschlüsseln des privaten Schlüssels
     const decryptPrivateKey = async (encryptedData, password) => {
         try {
-            // Parameter extrahieren
-            const encryptedBinary = Uint8Array.from(atob(encryptedData.encrypted), c => c.charCodeAt(0));
-            const salt = Uint8Array.from(atob(encryptedData.salt), c => c.charCodeAt(0));
-            const iv = Uint8Array.from(atob(encryptedData.iv), c => c.charCodeAt(0));
+            // Parameter extrahieren - mit Bereinigung für Android-Kompatibilität
+            const cleanEncrypted = cleanAndroidBase64(encryptedData.encrypted);
+            const cleanSalt = cleanAndroidBase64(encryptedData.salt);
+            const cleanIv = cleanAndroidBase64(encryptedData.iv);
+
+            const encryptedBinary = Uint8Array.from(atob(cleanEncrypted), c => c.charCodeAt(0));
+            const salt = Uint8Array.from(atob(cleanSalt), c => c.charCodeAt(0));
+            const iv = Uint8Array.from(atob(cleanIv), c => c.charCodeAt(0));
 
             // Password-based key derivation
             const encoder = new TextEncoder();
@@ -209,22 +213,42 @@ export function RSAEncryption() {
                     .replace('-----BEGIN PUBLIC KEY-----', '')
                     .replace('-----END PUBLIC KEY-----', '')
                     .replace(/\s/g, '');
+            } else if (base64Key.includes('-----BEGIN RSA PUBLIC KEY-----')) {
+                // Unterstützung für Android RSA-Format
+                base64Key = base64Key
+                    .replace('-----BEGIN RSA PUBLIC KEY-----', '')
+                    .replace('-----END RSA PUBLIC KEY-----', '')
+                    .replace(/\s/g, '');
             }
 
-            // Base64 zu Binär umwandeln
-            const binaryKey = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
+            // Base64 zu Binär umwandeln - mit Bereinigung für Android-Kompatibilität
+            // Android verwendet Base64.DEFAULT, was Zeilenumbrüche alle 76 Zeichen einfügt
+            const cleanBase64Key = cleanAndroidBase64(base64Key);
+            const binaryKey = Uint8Array.from(atob(cleanBase64Key), c => c.charCodeAt(0));
 
-            // Schlüssel importieren
-            const publicKey = await window.crypto.subtle.importKey(
-                "spki",
-                binaryKey,
-                {
-                    name: "RSA-OAEP",
-                    hash: "SHA-256",
-                },
-                true,
-                ["encrypt"]
-            );
+            // Versuche zuerst, den Schlüssel im OAEP-Format zu importieren
+            let publicKey;
+            try {
+                publicKey = await window.crypto.subtle.importKey(
+                    "spki",
+                    binaryKey,
+                    {
+                        name: "RSA-OAEP",
+                        hash: "SHA-256",
+                    },
+                    true,
+                    ["encrypt"]
+                );
+            } catch (e) {
+                // Falls OAEP fehlschlägt, versuche ein anderes Format (für Android-Kompatibilität)
+                // Hinweis: Leider unterstützt WebCrypto nicht direkt RSA/ECB/PKCS1Padding wie in Android,
+                // also können wir nur informieren
+                setError('Der öffentliche Schlüssel scheint nicht mit dem OAEP-Format kompatibel zu sein. ' +
+                        'Dies könnte ein Android-Schlüssel im PKCS1-Format sein. ' +
+                        'Wenn Sie einen Schlüssel aus der Android-App verwenden, stellen Sie sicher, dass keine Zeilenumbrüche enthalten sind. ' +
+                        'Die App verwendet Base64.DEFAULT, was Zeilenumbrüche einfügt, die zu Problemen führen können.');
+                throw e;
+            }
 
             setExternalKeyObj(publicKey);
             setExternalKeyLoaded(true);
@@ -357,8 +381,9 @@ export function RSAEncryption() {
             setUseExternalKey(false);
             setExternalKeyLoaded(false);
 
-            // Public Key importieren
-            const publicKeyBinary = Uint8Array.from(atob(savedKeyPair.publicKey), c => c.charCodeAt(0));
+            // Public Key importieren - mit Bereinigung für Android-Kompatibilität
+            const cleanPublicKey = cleanAndroidBase64(savedKeyPair.publicKey);
+            const publicKeyBinary = Uint8Array.from(atob(cleanPublicKey), c => c.charCodeAt(0));
             const publicKey = await crypto.subtle.importKey(
                 "spki",
                 publicKeyBinary,
@@ -370,8 +395,9 @@ export function RSAEncryption() {
                 ["encrypt"]
             );
 
-            // Private Key importieren
-            const privateKeyBinary = Uint8Array.from(atob(savedKeyPair.privateKey), c => c.charCodeAt(0));
+            // Private Key importieren - mit Bereinigung für Android-Kompatibilität
+            const cleanPrivateKey = cleanAndroidBase64(savedKeyPair.privateKey);
+            const privateKeyBinary = Uint8Array.from(atob(cleanPrivateKey), c => c.charCodeAt(0));
             const privateKey = await crypto.subtle.importKey(
                 "pkcs8",
                 privateKeyBinary,
@@ -472,6 +498,13 @@ export function RSAEncryption() {
         setTimeout(() => setInfo(''), 3000);
     };
 
+    // Hilfsfunktion zum Bereinigen von Base64-Strings aus Android
+    const cleanAndroidBase64 = (base64String) => {
+        if (!base64String) return '';
+        // Entferne alle Whitespace-Zeichen (Leerzeichen, Tabs, Zeilenumbrüche)
+        return base64String.replace(/[\r\n\t\f\v \s]/g, '');
+    };
+
     // Datei-Upload-Handler für JSON-Import
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
@@ -482,8 +515,49 @@ export function RSAEncryption() {
         reader.onload = (e) => {
             try {
                 const content = e.target.result;
-                const importedKeys = JSON.parse(content);
 
+                // Prüfen, ob es sich um eine Android-Exportdatei handelt (.rsa exportierte Datei)
+                // Android RSA-Exports können ein Array von Strings mit [0]=publicKey, [1]=privateKey sein
+                let importedKeys;
+
+                try {
+                    importedKeys = JSON.parse(content);
+                } catch(jsonError) {
+                    // Wenn kein gültiges JSON, prüfen auf direkten Schlüssel
+                    if (content.match(/^[A-Za-z0-9+/=\s]+$/) && !content.includes('{') && !content.includes('[')) {
+                        // Direkter Schlüssel (wahrscheinlich Base64-formatierter öffentlicher Schlüssel)
+                        setExternalPublicKey(content);
+                        importExternalPublicKey(); // Versuche direkten Import als öffentlichen Schlüssel
+                        return;
+                    } else {
+                        throw jsonError; // Weiterwerfen wenn kein direkter Schlüssel
+                    }
+                }
+
+                // Android-Format-Check: Array aus 2 Strings [publicKey, privateKey]
+                if (Array.isArray(importedKeys) && importedKeys.length === 2 &&
+                    typeof importedKeys[0] === 'string' && typeof importedKeys[1] === 'string') {
+
+                    // Ein neues Schlüsselpaar aus dem Android-Export erstellen
+                    const newKeyPair = {
+                        id: Date.now().toString(),
+                        name: file.name.replace(/\.[^/.]+$/, "") || "Importiertes Android-Schlüsselpaar",
+                        publicKey: cleanAndroidBase64(importedKeys[0]),
+                        privateKey: cleanAndroidBase64(importedKeys[1]),
+                        isEncrypted: false,
+                        keySize: 2048, // Typische Android-Größe
+                        createdAt: new Date().toISOString()
+                    };
+
+                    const updatedKeyPairs = [...savedKeyPairs, newKeyPair];
+                    localStorage.setItem('rsaKeyPairs', JSON.stringify(updatedKeyPairs));
+                    setSavedKeyPairs(updatedKeyPairs);
+                    setInfo('Android RSA-Schlüsselpaar erfolgreich importiert');
+                    setTimeout(() => setInfo(''), 3000);
+                    return;
+                }
+
+                // Standard Web-App JSON-Format
                 // Validierung der importierten Daten
                 if (!Array.isArray(importedKeys)) {
                     throw new Error('Ungültiges Dateiformat. Erwartet ein Array von Schlüsselpaaren.');
@@ -543,10 +617,18 @@ export function RSAEncryption() {
                 if (content.includes('-----BEGIN PUBLIC KEY-----')) {
                     setExternalPublicKey(content);
                     importExternalPublicKey(); // Importiere den Schlüssel direkt
+                } else if (content.includes('-----BEGIN RSA PUBLIC KEY-----')) {
+                    // Android-Format unterstützen
+                    setExternalPublicKey(content);
+                    importExternalPublicKey(); // Importiere den Schlüssel direkt
                 } else if (content.includes('-----BEGIN PRIVATE KEY-----')) {
                     setError('Private Schlüssel können nicht als externe Schlüssel verwendet werden. Bitte importieren Sie einen öffentlichen Schlüssel.');
+                } else if (content.match(/^[A-Za-z0-9+/=\s]+$/) && !content.includes('{') && !content.includes('[')) {
+                    // Direkter Base64-String (könnte ein Android-Export sein)
+                    setExternalPublicKey(content);
+                    importExternalPublicKey(); // Versuche direkten Import
                 } else {
-                    setError('Die Datei enthält keinen gültigen PEM-Schlüssel.');
+                    setError('Die Datei enthält keinen gültigen Schlüssel im unterstützten Format.');
                 }
             } catch (err) {
                 setError(`Fehler beim Importieren des Schlüssels: ${err.message}`);
@@ -616,8 +698,9 @@ export function RSAEncryption() {
                 }
 
                 try {
-                    // Base64 decodieren
-                    const binaryString = atob(inputText);
+                    // Base64 decodieren - mit Bereinigung für Android-Kompatibilität
+                    const cleanedInput = cleanAndroidBase64(inputText);
+                    const binaryString = atob(cleanedInput);
                     const bytes = new Uint8Array(binaryString.length);
                     for (let i = 0; i < binaryString.length; i++) {
                         bytes[i] = binaryString.charCodeAt(i);
@@ -839,6 +922,11 @@ export function RSAEncryption() {
                                         <Upload size={18} className="mr-1"/>
                                         Importieren
                                     </button>
+                                </div>
+
+                                <div className="mb-2 p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-xs">
+                                    <strong>Hinweis für Android-Export:</strong> Wenn Sie Schlüssel aus der Android-App importieren, werden automatisch alle Leerzeichen und Zeilenumbrüche entfernt,
+                                    da Android Base64.DEFAULT verwendet, was Zeilenumbrüche einfügt, die Probleme verursachen können.
                                 </div>
 
                                 {/* PEM-Datei hochladen */}
