@@ -1,4 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
+
+// Konstanten für Kompatibilität
+const AES_GCM_IV_LENGTH = 12; // Gemeinsame IV-Länge für Web und Android
 import {Copy, Eye, EyeOff, RefreshCw, Save, Upload} from 'lucide-react';
 
 // Hilfsfunktion zur Erkennung der AES-Schlüsselgröße
@@ -496,9 +499,18 @@ export function AESEncryption() {
                         bytes[i] = binaryString.charCodeAt(i);
                     }
 
-                    // IV und verschlüsselten Text trennen
-                    const iv = bytes.slice(0, 12);
-                    const encryptedData = bytes.slice(12);
+                    // Prüfen, ob es sich um das Android-Format mit Salt handelt
+                    // Android: [Salt(16) + IV(12) + Data], Web: [IV(12) + Data]
+                    // Versuch 1: Annahme Web-Format ohne Salt
+                    let iv, encryptedData, hasAndroidFormat = false;
+                    try {
+                        // Zuerst versuchen wir mit der Annahme, dass es sich um das Web-Format handelt (ohne Salt)
+                        iv = bytes.slice(0, AES_GCM_IV_LENGTH);
+                        encryptedData = bytes.slice(AES_GCM_IV_LENGTH);
+                    } catch (formatError) {
+                        console.error('Fehler beim Extrahieren von IV/Daten:', formatError);
+                        throw formatError;
+                    }
 
                     // Versuche automatisch verschiedene Schlüsselgrößen, wenn der Schlüssel aus Android stammen könnte
                     const possibleKeySizes = [keySize]; // Zuerst die ausgewählte Größe versuchen
@@ -534,12 +546,42 @@ export function AESEncryption() {
                                 ['decrypt']
                             );
 
-                            // Text entschlüsseln
-                            const decryptedBuffer = await crypto.subtle.decrypt(
-                                {name: 'AES-GCM', iv},
-                                key,
-                                encryptedData
-                            );
+                            // Mit beiden Formaten versuchen: 1) Web-Standard (nur IV) und 2) Android-Format (Salt + IV)
+                            let decryptedBuffer;
+                            
+                            try {
+                                // 1. Versuche das Web-Format (nur IV)
+                                decryptedBuffer = await crypto.subtle.decrypt(
+                                    {name: 'AES-GCM', iv},
+                                    key,
+                                    encryptedData
+                                );
+                            } catch (webFormatError) {
+                                console.log('Web-Format Entschlüsselung fehlgeschlagen, versuche Android-Format mit Salt', webFormatError);
+                                
+                                // 2. Versuche das Android-Format (Salt + IV)
+                                // Android: [Salt(16) + IV(12) + Data]
+                                const salt = bytes.slice(0, 16);
+                                iv = bytes.slice(16, 16 + AES_GCM_IV_LENGTH);
+                                encryptedData = bytes.slice(16 + AES_GCM_IV_LENGTH);
+                                hasAndroidFormat = true;
+                                
+                                try {
+                                    // Als AAD für GCM hinzufügen
+                                    decryptedBuffer = await crypto.subtle.decrypt(
+                                        {
+                                            name: 'AES-GCM', 
+                                            iv,
+                                            additionalData: salt // Salt als AAD hinzufügen
+                                        },
+                                        key,
+                                        encryptedData
+                                    );
+                                } catch (androidFormatError) {
+                                    console.error('Auch Android-Format fehlgeschlagen:', androidFormatError);
+                                    throw androidFormatError; // Werfe den Fehler weiter
+                                }
+                            }
 
                             // Als Text ausgeben
                             decryptedText = new TextDecoder().decode(decryptedBuffer);
@@ -549,6 +591,11 @@ export function AESEncryption() {
                                 setKeySize(size);
                                 setInfo(`Entschlüsselung mit ${size} Bit erfolgreich (Schlüsselgröße angepasst)`);
                                 setTimeout(() => setInfo(''), 3000);
+                            }
+                            
+                            if (hasAndroidFormat) {
+                                setInfo(`Entschlüsselung mit ${size} Bit erfolgreich (Android-App-Format mit Salt erkannt)`);
+                                setTimeout(() => setInfo(''), 5000);
                             }
 
                             break; // Wenn erfolgreich, beende die Schleife

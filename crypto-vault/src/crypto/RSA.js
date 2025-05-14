@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Copy, Download, FileText, Key, Lock, RefreshCw, Save, Upload} from 'lucide-react';
+import { decryptAndroidRSA, encryptForAndroid } from './WebCryptoFallback';
 
 // RSA-Komponente für CryptoVault
 export function RSAEncryption() {
@@ -384,16 +385,24 @@ export function RSAEncryption() {
             // Public Key importieren - mit Bereinigung für Android-Kompatibilität
             const cleanPublicKey = cleanAndroidBase64(savedKeyPair.publicKey);
             const publicKeyBinary = Uint8Array.from(atob(cleanPublicKey), c => c.charCodeAt(0));
-            const publicKey = await crypto.subtle.importKey(
-                "spki",
-                publicKeyBinary,
-                {
-                    name: "RSA-OAEP",
-                    hash: "SHA-256",
-                },
-                true,
-                ["encrypt"]
-            );
+            
+            // Zunächst mit RSA-OAEP probieren
+            let publicKey;
+            try {
+                publicKey = await crypto.subtle.importKey(
+                    "spki",
+                    publicKeyBinary,
+                    {
+                        name: "RSA-OAEP",
+                        hash: "SHA-256",
+                    },
+                    true,
+                    ["encrypt"]
+                );
+            } catch (e) {
+                console.error("Fehler beim Importieren des öffentlichen Schlüssels mit RSA-OAEP:", e);
+                throw new Error("Der Schlüssel konnte nicht importiert werden. Er ist möglicherweise im PKCS1-Format aus der Android-App, das vom Browser nicht unterstützt wird.");
+            }
 
             // Private Key importieren - mit Bereinigung für Android-Kompatibilität
             const cleanPrivateKey = cleanAndroidBase64(savedKeyPair.privateKey);
@@ -669,27 +678,53 @@ export function RSAEncryption() {
                     return;
                 }
 
+                // Option für Android-kompatible Verschlüsselung (PKCS1 statt OAEP)
+                const useAndroidCompatibility = document.getElementById('useAndroidFormat')?.checked || false;
                 const publicKey = useExternalKey ? externalKeyObj : keyPair.subtle.publicKey;
                 const actualKeySize = useExternalKey ? 2048 : keySize; // Annahme für externen Schlüssel
-
-                // Text mit öffentlichem Schlüssel verschlüsseln
-                // Da RSA beschränkt ist in der Größe des zu verschlüsselnden Texts,
-                // ist es besser für kleine Nachrichten oder für hybride Verschlüsselung
-                if (new TextEncoder().encode(inputText).length > ((actualKeySize / 8) - 42)) {
-                    setError(`Die Nachricht ist zu lang für RSA-OAEP mit ${actualKeySize} Bit (max. ${(actualKeySize / 8) - 42} Bytes). Verwende kürzeren Text oder hybrid encryption.`);
+                
+                // Maximale Datenlänge prüfen
+                const maxLen = useAndroidCompatibility 
+                    ? ((actualKeySize / 8) - 11) // PKCS1 Overhead = 11 Bytes
+                    : ((actualKeySize / 8) - 42); // OAEP Overhead = 42 Bytes
+                
+                if (new TextEncoder().encode(inputText).length > maxLen) {
+                    setError(`Die Nachricht ist zu lang für ${useAndroidCompatibility ? 'RSA-PKCS1' : 'RSA-OAEP'} mit ${actualKeySize} Bit (max. ${maxLen} Bytes). Verwende kürzeren Text oder hybrid encryption.`);
                     return;
                 }
+                
+                let base64Result;
+                
+                if (useAndroidCompatibility) {
+                    // Android-kompatible Verschlüsselung mit PKCS1
+                    // Hier nutzen wir den Fallback mit der forge-Bibliothek
+                    try {
+                        base64Result = await encryptForAndroid(
+                            inputText, 
+                            useExternalKey ? externalPublicKey : keyPair.publicKey
+                        );
+                        setInfo('Text mit RSA/ECB/PKCS1Padding verschlüsselt (Android-App-Format)');
+                    } catch (error) {
+                        setError(`Android-Verschlüsselung fehlgeschlagen: ${error.message}`);
+                        console.error('Android RSA encryption error:', error);
+                        return;
+                    }
+                } else {
+                    // Standard WebCrypto-Verschlüsselung mit OAEP
+                    const encoded = new TextEncoder().encode(inputText);
+                    const encrypted = await window.crypto.subtle.encrypt(
+                        {name: "RSA-OAEP"},
+                        publicKey,
+                        encoded
+                    );
 
-                const encoded = new TextEncoder().encode(inputText);
-                const encrypted = await window.crypto.subtle.encrypt(
-                    {name: "RSA-OAEP"},
-                    publicKey,
-                    encoded
-                );
-
-                // Als Base64 ausgeben
-                const base64Result = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+                    // Als Base64 ausgeben
+                    base64Result = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+                    setInfo('Text mit RSA-OAEP verschlüsselt (Web-App und Android-App mit OAEPWithSHA-256AndMGF1Padding kompatibel)');
+                }
+                
                 setOutputText(base64Result);
+                setTimeout(() => setInfo(''), 5000);
             } else {
                 // Entschlüsselung funktioniert nur mit eigenem privaten Schlüssel
                 if (!keyPair || !keyPair.subtle) {
@@ -700,22 +735,40 @@ export function RSAEncryption() {
                 try {
                     // Base64 decodieren - mit Bereinigung für Android-Kompatibilität
                     const cleanedInput = cleanAndroidBase64(inputText);
-                    const binaryString = atob(cleanedInput);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
+                    
+                    try {
+                        // Zuerst versuchen mit RSA-OAEP (Web-App Standard)
+                        const binaryString = atob(cleanedInput);
+                        const bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        
+                        const decrypted = await window.crypto.subtle.decrypt(
+                            {name: "RSA-OAEP"},
+                            keyPair.subtle.privateKey,
+                            bytes
+                        );
+                        
+                        // Als Text ausgeben
+                        const decryptedText = new TextDecoder().decode(decrypted);
+                        setOutputText(decryptedText);
+                        setInfo('Entschlüsselung mit RSA-OAEP erfolgreich (Web-App-Format)');
+                        setTimeout(() => setInfo(''), 3000);
+                    } catch (oaepError) {
+                        console.log('RSA-OAEP Entschlüsselung fehlgeschlagen, versuche PKCS1:', oaepError);
+                        
+                        try {
+                            // Fallback: Versuche mit RSA/ECB/PKCS1Padding (Android-Format)
+                            const decryptedText = await decryptAndroidRSA(cleanedInput, keyPair.privateKey);
+                            setOutputText(decryptedText);
+                            setInfo('Entschlüsselung mit RSA/ECB/PKCS1Padding erfolgreich (Android-App-Format)');
+                            setTimeout(() => setInfo(''), 3000);
+                        } catch (pkcs1Error) {
+                            console.error('RSA/ECB/PKCS1Padding Entschlüsselungsfehler:', pkcs1Error);
+                            setError('Entschlüsselung fehlgeschlagen mit beiden Methoden (RSA-OAEP und RSA/ECB/PKCS1Padding). Überprüfe den Text und den Schlüssel.');
+                        }
                     }
-
-                    // Text mit privatem Schlüssel entschlüsseln
-                    const decrypted = await window.crypto.subtle.decrypt(
-                        {name: "RSA-OAEP"},
-                        keyPair.subtle.privateKey,
-                        bytes
-                    );
-
-                    // Als Text ausgeben
-                    const decryptedText = new TextDecoder().decode(decrypted);
-                    setOutputText(decryptedText);
                 } catch (error) {
                     setError('Entschlüsselung fehlgeschlagen. Überprüfe den Text und den Schlüssel.');
                     console.error(error);
@@ -882,6 +935,20 @@ export function RSAEncryption() {
                         Entschlüsseln (mit privatem Schlüssel)
                     </button>
                 </div>
+                
+                {mode === 'encrypt' && (
+                    <div className="flex items-center mb-4 p-2 border rounded dark:border-gray-700 bg-amber-50 dark:bg-amber-900/20">
+                        <input
+                            type="checkbox"
+                            id="useAndroidFormat"
+                            className="mr-2"
+                        />
+                        <label htmlFor="useAndroidFormat" className="text-sm text-amber-800 dark:text-amber-300">
+                            Android-Kompatibilitätsmodus (RSA/ECB/PKCS1Padding) verwenden 
+                            <span className="text-xs">(für ältere Android-Versionen ohne OAEP-Unterstützung)</span>
+                        </label>
+                    </div>
+                )}
 
                 {mode === 'encrypt' && (
                     <div
@@ -925,8 +992,13 @@ export function RSAEncryption() {
                                 </div>
 
                                 <div className="mb-2 p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-xs">
-                                    <strong>Hinweis für Android-Export:</strong> Wenn Sie Schlüssel aus der Android-App importieren, werden automatisch alle Leerzeichen und Zeilenumbrüche entfernt,
-                                    da Android Base64.DEFAULT verwendet, was Zeilenumbrüche einfügt, die Probleme verursachen können.
+                                    <strong>Hinweis für Android-App-Kompatibilität:</strong>
+                                    <ul className="list-disc pl-4 mt-1">
+                                        <li>Diese Web-App unterstützt nun beide RSA-Formate: RSA-OAEP (Web-Standard) und RSA/ECB/PKCS1Padding (Android-Standard).</li>
+                                        <li>Beim Verschlüsseln wählen Sie das gewünschte Format mit der Checkbox "Android-Kompatibilitätsmodus" aus.</li>
+                                        <li>Beim Entschlüsseln werden beide Formate automatisch erkannt und verarbeitet.</li>
+                                        <li>Beim Import von Schlüsseln aus der Android-App werden automatisch alle Leerzeichen und Zeilenumbrüche entfernt.</li>
+                                    </ul>
                                 </div>
 
                                 {/* PEM-Datei hochladen */}

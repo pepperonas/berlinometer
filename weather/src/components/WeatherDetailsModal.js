@@ -1,8 +1,38 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
 
 function WeatherDetailsModal({ dayData, onClose }) {
     const { darkMode } = useContext(ThemeContext);
+    const modalRef = useRef(null);
+
+    // Handle click outside to close modal
+    useEffect(() => {
+        function handleClickOutside(event) {
+            // Check if the click target is the overlay (background) element
+            if (event.target.classList.contains('modal-overlay')) {
+                onClose();
+            }
+        }
+
+        // Handle back button on mobile devices
+        function handleBackButton(event) {
+            if (dayData) {
+                event.preventDefault();
+                onClose();
+            }
+        }
+
+        document.addEventListener('click', handleClickOutside);
+        window.addEventListener('popstate', handleBackButton);
+
+        // Push a new state to allow back button handling
+        window.history.pushState(null, document.title, window.location.href);
+
+        return () => {
+            document.removeEventListener('click', handleClickOutside);
+            window.removeEventListener('popstate', handleBackButton);
+        };
+    }, [dayData, onClose]);
 
     if (!dayData) return null;
 
@@ -89,9 +119,16 @@ function WeatherDetailsModal({ dayData, onClose }) {
     const avgWindSpeed = getAverageWindSpeed(dayData);
     const timeBasedWeather = getTimeBasedWeather(dayData);
 
+    // Handle direct click on overlay
+    const handleOverlayClick = (e) => {
+        if (e.target.classList.contains('modal-overlay')) {
+            onClose();
+        }
+    };
+
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fadeIn">
-            <div className={`relative w-full max-w-2xl rounded-lg shadow-lg p-6 ${darkMode ? 'bg-primary-light' : 'bg-white'} animate-slideIn`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 animate-fadeIn modal-overlay" onClick={handleOverlayClick}>
+            <div ref={modalRef} className={`relative w-full max-w-2xl rounded-lg shadow-lg p-6 ${darkMode ? 'bg-primary-light' : 'bg-white'} animate-slideIn`}>
                 {/* Schließen-Button */}
                 <button
                     onClick={onClose}
