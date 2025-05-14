@@ -36,7 +36,11 @@ function WeatherCharts({forecast}) {
                     temp: Math.round(item.main.temp),
                     rain: item.rain ? item.rain['3h'] || 0 : 0,
                     wind: Math.round(item.wind.speed * 3.6), // Umrechnung in km/h
-                    humidity: item.main.humidity
+                    humidity: item.main.humidity,
+                    // Mock-Daten für UV-Index und Luftqualität (AQI)
+                    // Diese sollten durch echte API-Daten ersetzt werden
+                    uv: Math.round(Math.random() * 10), // Beispielwerte zwischen 0-10
+                    aqi: Math.round(Math.random() * 200 + 50) // Beispielwerte zwischen 50-250
                 });
             });
         });
@@ -50,7 +54,9 @@ function WeatherCharts({forecast}) {
     const colors = {
         temp: darkMode ? '#3B82F6' : '#2563EB',
         rain: darkMode ? '#60A5FA' : '#3B82F6',
-        wind: darkMode ? '#93C5FD' : '#60A5FA'
+        wind: darkMode ? '#93C5FD' : '#60A5FA',
+        uv: darkMode ? '#8B5CF6' : '#6D28D9',     // Violett für UV-Index
+        aqi: darkMode ? '#10B981' : '#059669'     // Grün für Luftqualität
     };
 
     // Chart-Styles
@@ -167,6 +173,73 @@ function WeatherCharts({forecast}) {
                             stroke={colors.wind}
                             strokeWidth={2}
                             dot={{r: 2, fill: colors.wind}}
+                            activeDot={{r: 4}}
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </div>
+
+            {/* UV-Index Chart */}
+            <div style={chartStyle} className="mb-4">
+                <h3 className={`text-lg font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>UV-Index</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                    <BarChart data={chartData} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+                        <CartesianGrid strokeDasharray="3 3"
+                                       stroke={darkMode ? '#4B5563' : '#E5E7EB'}/>
+                        <XAxis
+                            dataKey="time"
+                            tickFormatter={formatXAxis}
+                            stroke={darkMode ? '#9CA3AF' : '#6B7280'}
+                        />
+                        <YAxis
+                            stroke={darkMode ? '#9CA3AF' : '#6B7280'}
+                        />
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: darkMode ? '#2C2E3B' : '#FFFFFF',
+                                borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                            }}
+                            labelFormatter={value => formatXAxis(value)}
+                            formatter={(value) => [`${value}`, 'UV-Index']}
+                        />
+                        <Bar
+                            dataKey="uv"
+                            fill={colors.uv}
+                            radius={[4, 4, 0, 0]}
+                        />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+
+            {/* Luftqualität Chart */}
+            <div style={chartStyle}>
+                <h3 className={`text-lg font-medium mb-2 ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>Luftqualität (AQI)</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={chartData} margin={{top: 5, right: 20, bottom: 5, left: 0}}>
+                        <CartesianGrid strokeDasharray="3 3"
+                                       stroke={darkMode ? '#4B5563' : '#E5E7EB'}/>
+                        <XAxis
+                            dataKey="time"
+                            tickFormatter={formatXAxis}
+                            stroke={darkMode ? '#9CA3AF' : '#6B7280'}
+                        />
+                        <YAxis
+                            stroke={darkMode ? '#9CA3AF' : '#6B7280'}
+                        />
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: darkMode ? '#2C2E3B' : '#FFFFFF',
+                                borderColor: darkMode ? '#4B5563' : '#E5E7EB'
+                            }}
+                            labelFormatter={value => formatXAxis(value)}
+                            formatter={(value) => [`${value}`, 'Luftqualität (AQI)']}
+                        />
+                        <Line
+                            type="monotone"
+                            dataKey="aqi"
+                            stroke={colors.aqi}
+                            strokeWidth={2}
+                            dot={{r: 2, fill: colors.aqi}}
                             activeDot={{r: 4}}
                         />
                     </LineChart>
