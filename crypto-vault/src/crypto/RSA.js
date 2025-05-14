@@ -1034,12 +1034,23 @@ export function RSAEncryption() {
                         <label className="block mb-2 font-medium dark:text-gray-200">
                             {mode === 'encrypt' ? 'Zu verschlüsselnder Text' : 'Zu entschlüsselnder Text (Base64)'}
                         </label>
-                        <textarea
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                            className="w-full h-32 p-3 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                            placeholder={mode === 'encrypt' ? 'Text eingeben...' : 'Verschlüsselten Text eingeben...'}
-                        />
+                        <div className="relative">
+                            <textarea
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                className="w-full h-32 p-3 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                placeholder={mode === 'encrypt' ? 'Text eingeben...' : 'Verschlüsselten Text eingeben...'}
+                            />
+                            {inputText && (
+                                <button
+                                    onClick={() => copyToClipboard(inputText)}
+                                    className="absolute top-2 right-2 p-1 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
+                                    title="Eingabe in Zwischenablage kopieren"
+                                >
+                                    <Copy size={14} className="dark:text-gray-200"/>
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div>
@@ -1052,13 +1063,16 @@ export function RSAEncryption() {
                               className="w-full h-32 p-3 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                           />
                             {outputText && (
-                                <button
-                                    onClick={() => copyToClipboard(outputText)}
-                                    className="absolute top-2 right-2 p-1 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
-                                    title="In Zwischenablage kopieren"
-                                >
-                                    <Copy size={16} className="dark:text-gray-200"/>
-                                </button>
+                                <div className="absolute top-2 right-2 flex space-x-1">
+                                    <button
+                                        onClick={() => copyToClipboard(outputText)}
+                                        className="p-1.5 rounded-md bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800/40 flex items-center gap-1"
+                                        title="Ergebnis in Zwischenablage kopieren"
+                                    >
+                                        <Copy size={14} />
+                                        <span className="text-xs">Kopieren</span>
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -1219,7 +1233,16 @@ export function RSAEncryption() {
                     </div>
                 )}
 
-                <div className="mt-6 flex justify-end">
+                <div className="mt-6 flex justify-end gap-2">
+                    {inputText && (
+                        <button
+                            onClick={() => copyToClipboard(inputText)}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md flex items-center"
+                        >
+                            <Copy size={16} className="mr-2" />
+                            Eingabe kopieren
+                        </button>
+                    )}
                     <button
                         onClick={processText}
                         disabled={mode === 'encrypt' ? (useExternalKey && !externalKeyLoaded) || (!useExternalKey && !keyPair) : !keyPair}
@@ -1248,9 +1271,19 @@ export function RSAEncryption() {
                                 Alle exportieren
                             </button>
 
+                            {keyPair && (
+                                <button
+                                    onClick={() => copyToClipboard(keyPair.publicKey)}
+                                    className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center text-sm"
+                                >
+                                    <Copy size={16} className="mr-1"/>
+                                    Public Key kopieren
+                                </button>
+                            )}
+
                             <button
                                 onClick={() => importFileRef.current.click()}
-                                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md flex items-center text-sm"
+                                className="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white rounded-md flex items-center text-sm"
                             >
                                 <Upload size={16} className="mr-1"/>
                                 Importieren

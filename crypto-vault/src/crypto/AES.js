@@ -1,8 +1,8 @@
 import React, {useEffect, useState, useRef} from 'react';
+import {Copy, Eye, EyeOff, RefreshCw, Save, Upload} from 'lucide-react';
 
 // Konstanten für Kompatibilität
 const AES_GCM_IV_LENGTH = 12; // Gemeinsame IV-Länge für Web und Android
-import {Copy, Eye, EyeOff, RefreshCw, Save, Upload} from 'lucide-react';
 
 // Hilfsfunktion zur Erkennung der AES-Schlüsselgröße
 function detectKeySize(key) {
@@ -44,6 +44,13 @@ function detectKeySize(key) {
         console.warn("Schlüsselformat nicht erkannt, standardmäßig 256 Bit verwenden:", e);
         return 256;
     }
+}
+
+// Hilfsfunktion zum Bereinigen von Base64-Strings aus Android
+function cleanAndroidBase64(base64String) {
+    if (!base64String) return '';
+    // Entferne alle Whitespace-Zeichen (Leerzeichen, Tabs, Zeilenumbrüche)
+    return base64String.replace(/[\r\n\t\f\v \s]/g, '');
 }
 
 // AES-Komponente für CryptoVault
@@ -445,13 +452,21 @@ export function AESEncryption() {
                 setError('Bitte Passwort eingeben oder generieren');
                 return;
             }
+            
+            // Option für Android-kompatible Verschlüsselung (mit Salt)
+            const useAndroidCompatibility = document.getElementById('useAndroidFormat')?.checked || false;
+            console.log('Android-Kompatibilitätsmodus:', useAndroidCompatibility);
+            
+            // Bereinigen des Passworts/Schlüssels von Whitespace
+            const cleanPassword = cleanAndroidBase64(password);
 
+            // Passwort in binäre Form umwandeln
             const passwordBuffer = await crypto.subtle.digest(
                 'SHA-256',
-                new TextEncoder().encode(password)
+                new TextEncoder().encode(cleanPassword)
             );
 
-            // IV für AES-GCM (zufällig)
+            // IV für AES-GCM (zufällig) - 12 Bytes wie in Android
             const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
             if (mode === 'encrypt') {
@@ -474,25 +489,59 @@ export function AESEncryption() {
 
                 // Text verschlüsseln
                 const encodedText = new TextEncoder().encode(inputText);
-                const encryptedBuffer = await crypto.subtle.encrypt(
-                    {name: 'AES-GCM', iv},
-                    key,
-                    encodedText
-                );
-
-                // Verschlüsselten Text und IV zusammen codieren
-                const encryptedArray = new Uint8Array(encryptedBuffer);
-                const result = new Uint8Array(iv.length + encryptedArray.length);
-                result.set(iv);
-                result.set(encryptedArray, iv.length);
-
-                // Als Base64 ausgeben
-                const base64Result = btoa(String.fromCharCode(...result));
-                setOutputText(base64Result);
+                
+                if (useAndroidCompatibility) {
+                    // Android-kompatibles Format mit Salt
+                    // Erzeuge Salt wie in der Android-App (16 Bytes)
+                    const salt = window.crypto.getRandomValues(new Uint8Array(16));
+                    
+                    // Verschlüssele mit Salt als AAD (Additional Authenticated Data) wie in Android
+                    const encryptedBuffer = await crypto.subtle.encrypt(
+                        {
+                            name: 'AES-GCM', 
+                            iv, 
+                            additionalData: salt  // Salt als AAD für Android-Kompatibilität
+                        },
+                        key,
+                        encodedText
+                    );
+                    
+                    // Format: [Salt(16 Bytes) + IV(12 Bytes) + EncryptedData]
+                    const encryptedArray = new Uint8Array(encryptedBuffer);
+                    const result = new Uint8Array(salt.length + iv.length + encryptedArray.length);
+                    result.set(salt, 0);                      // Salt zuerst
+                    result.set(iv, salt.length);               // Dann IV
+                    result.set(encryptedArray, salt.length + iv.length);  // Dann verschlüsselte Daten
+                    
+                    // Als Base64 ausgeben
+                    const base64Result = btoa(String.fromCharCode(...result));
+                    setOutputText(base64Result);
+                    setInfo('Im Android-kompatiblen Format mit Salt verschlüsselt');
+                } else {
+                    // Web-App-Standard-Format: [IV(12 Bytes) + EncryptedData]
+                    const encryptedBuffer = await crypto.subtle.encrypt(
+                        {name: 'AES-GCM', iv},
+                        key,
+                        encodedText
+                    );
+                    
+                    // Verschlüsselten Text und IV zusammen codieren
+                    const encryptedArray = new Uint8Array(encryptedBuffer);
+                    const result = new Uint8Array(iv.length + encryptedArray.length);
+                    result.set(iv);
+                    result.set(encryptedArray, iv.length);
+                    
+                    // Als Base64 ausgeben
+                    const base64Result = btoa(String.fromCharCode(...result));
+                    setOutputText(base64Result);
+                }
             } else {
                 try {
                     // Base64 decodieren - mit Bereinigung von Zeilenumbrüchen und Whitespace
-                    const cleanedInput = inputText.replace(/[\r\n\t\f\v ]/g, '');
+                    const cleanedInput = cleanAndroidBase64(inputText);
+                    // Bereinigen des Passworts/Schlüssels von Whitespace
+                    const cleanPassword = cleanAndroidBase64(password);
+                    
                     const binaryString = atob(cleanedInput);
                     const bytes = new Uint8Array(binaryString.length);
                     for (let i = 0; i < binaryString.length; i++) {
@@ -537,10 +586,16 @@ export function AESEncryption() {
 
                     for (const size of possibleKeySizes) {
                         try {
+                            // Der gleiche Hash-Ansatz wie in der Android-App für volle Kompatibilität
+                            const passwordBufferForSize = await crypto.subtle.digest(
+                                'SHA-256',
+                                new TextEncoder().encode(cleanPassword)
+                            );
+                            
                             // Schlüssel aus Passwort ableiten
                             const key = await crypto.subtle.importKey(
                                 'raw',
-                                passwordBuffer,
+                                passwordBufferForSize,
                                 {name: 'AES-GCM', length: size},
                                 false,
                                 ['decrypt']
@@ -651,6 +706,20 @@ export function AESEncryption() {
                         Entschlüsseln
                     </button>
                 </div>
+                
+                {mode === 'encrypt' && (
+                    <div className="flex items-center mb-4 p-2 border rounded dark:border-gray-700 bg-amber-50 dark:bg-amber-900/20">
+                        <input
+                            type="checkbox"
+                            id="useAndroidFormat"
+                            className="mr-2"
+                        />
+                        <label htmlFor="useAndroidFormat" className="text-sm text-amber-800 dark:text-amber-300">
+                            Android-Kompatibilitätsmodus (mit Salt) verwenden
+                            <span className="text-xs ml-2 opacity-75">(für Kompatibilität mit älteren Verschlüsselungen aus der Android-App)</span>
+                        </label>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -675,15 +744,31 @@ export function AESEncryption() {
                   className="w-full h-32 p-3 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               />
                             {outputText && (
-                                <button
-                                    onClick={() => copyToClipboard(outputText)}
-                                    className="absolute top-2 right-2 p-1 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500"
-                                    title="In Zwischenablage kopieren"
-                                >
-                                    <Copy size={16} className="dark:text-gray-200"/>
-                                </button>
+                                <div className="absolute top-2 right-2 flex space-x-1"> 
+                                    <button
+                                        onClick={() => copyToClipboard(outputText)}
+                                        className="p-1 rounded-md bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800/40 flex items-center gap-1"
+                                        title="Verschlüsselten Text kopieren"
+                                    >
+                                        <Copy size={14} />
+                                        <span className="text-xs">Text</span>
+                                    </button>
+                                </div>
                             )}
                         </div>
+                        
+                        {/* Ergebnisknopf (Anzeigen nach erfolgreicher Ver-/Entschlüsselung) */}
+                        {outputText && (
+                            <div className="mt-2 flex justify-end">
+                                <button 
+                                    onClick={() => copyToClipboard(outputText)}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md flex items-center"
+                                >
+                                    <Copy size={16} className="mr-1" />
+                                    Ergebnis kopieren
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -707,15 +792,26 @@ export function AESEncryption() {
                                         type={showPassword ? 'text' : 'password'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full p-3 pr-10 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                                        className="w-full p-3 pr-20 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                                         placeholder="Passwort oder Hex-Schlüssel eingeben..."
                                     />
-                                    <button
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 dark:text-gray-300"
-                                    >
-                                        {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
-                                    </button>
+                                    <div className="absolute top-1/2 right-3 transform -translate-y-1/2 flex items-center space-x-2">
+                                        {password && (
+                                            <button
+                                                onClick={() => copyToClipboard(password)}
+                                                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 p-1"
+                                                title="Schlüssel kopieren"
+                                            >
+                                                <Copy size={16}/>
+                                            </button>
+                                        )}
+                                        <button
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="text-gray-500 dark:text-gray-300"
+                                        >
+                                            {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                                        </button>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={generateKey}
@@ -746,26 +842,38 @@ export function AESEncryption() {
                                 Importiere einen externen AES-Schlüssel (Hex oder Base64). Die Schlüsselgröße wird automatisch erkannt.
                             </p>
 
-                            <textarea
-                                value={externalKeyText}
-                                onChange={(e) => {
-                                    const text = e.target.value;
-                                    setExternalKeyText(text);
-                                    setPassword(text);
+                            <div className="relative">
+                                <textarea
+                                    value={externalKeyText}
+                                    onChange={(e) => {
+                                        const text = e.target.value;
+                                        setExternalKeyText(text);
+                                        setPassword(text);
 
-                                    // Automatisch Größe erkennen
-                                    if (text.trim()) {
-                                        const detectedSize = detectKeySize(text);
-                                        setDetectedKeySize(detectedSize);
-                                        setKeySize(detectedSize);
-                                    } else {
-                                        setDetectedKeySize(null);
-                                    }
-                                }}
-                                rows={3}
-                                className="w-full p-2 border rounded-md bg-white dark:bg-gray-600 dark:border-gray-600 dark:text-gray-100 text-xs font-mono"
-                                placeholder="Extern generierten AES-Schlüssel (Hex oder Base64) einfügen..."
-                            />
+                                        // Automatisch Größe erkennen
+                                        if (text.trim()) {
+                                            const detectedSize = detectKeySize(text);
+                                            setDetectedKeySize(detectedSize);
+                                            setKeySize(detectedSize);
+                                        } else {
+                                            setDetectedKeySize(null);
+                                        }
+                                    }}
+                                    rows={3}
+                                    className="w-full p-2 border rounded-md bg-white dark:bg-gray-600 dark:border-gray-600 dark:text-gray-100 text-xs font-mono"
+                                    placeholder="Extern generierten AES-Schlüssel (Hex oder Base64) einfügen..."
+                                />
+                                {externalKeyText && (
+                                    <button
+                                        onClick={() => copyToClipboard(externalKeyText)}
+                                        className="absolute top-2 right-2 p-1.5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/40 flex items-center gap-1"
+                                        title="Schlüssel kopieren"
+                                    >
+                                        <Copy size={14} />
+                                        <span className="text-xs">Kopieren</span>
+                                    </button>
+                                )}
+                            </div>
 
                             {detectedKeySize && (
                                 <div className="mt-2 text-sm text-green-600 dark:text-green-400">
@@ -776,6 +884,23 @@ export function AESEncryption() {
                             <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
                                 Hinweis: Bei der Entschlüsselung werden automatisch verschiedene Schlüsselgrößen probiert,
                                 falls die Entschlüsselung mit der erkannten Größe fehlschlägt.
+                            </div>
+                            
+                            <div className="mt-3 flex items-center p-2 border rounded dark:border-gray-700 bg-blue-50 dark:bg-blue-900/20">
+                                <input
+                                    type="checkbox"
+                                    id="useAndroidFormatExternal"
+                                    className="mr-2"
+                                    onChange={(e) => {
+                                        // Synchronisiere beide Checkboxen
+                                        if (document.getElementById('useAndroidFormat')) {
+                                            document.getElementById('useAndroidFormat').checked = e.target.checked;
+                                        }
+                                    }}
+                                />
+                                <label htmlFor="useAndroidFormatExternal" className="text-sm text-blue-800 dark:text-blue-300">
+                                    Mit Android-Kompatibilitätsmodus verschlüsseln
+                                </label>
                             </div>
                         </div>
                     )}
@@ -795,7 +920,16 @@ export function AESEncryption() {
                     </div>
                 )}
 
-                <div className="mt-6 flex justify-end">
+                <div className="mt-6 flex justify-end gap-2">
+                    {mode === 'encrypt' && password && (
+                        <button
+                            onClick={() => copyToClipboard(password)}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md flex items-center"
+                        >
+                            <Copy size={16} className="mr-2" />
+                            Schlüssel kopieren
+                        </button>
+                    )}
                     <button
                         onClick={processText}
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
