@@ -460,11 +460,60 @@ export function AESEncryption() {
             // Bereinigen des Passworts/Schlüssels von Whitespace
             const cleanPassword = cleanAndroidBase64(password);
 
-            // Passwort in binäre Form umwandeln
-            const passwordBuffer = await crypto.subtle.digest(
-                'SHA-256',
-                new TextEncoder().encode(cleanPassword)
-            );
+            // Prüfen ob es ein direkter Base64/Hex-Key ist oder ein Passwort
+            let passwordBuffer;
+            
+            if (/^[A-Za-z0-9+/=]+$/.test(cleanPassword.trim()) && cleanPassword.trim().length >= 24) {
+                try {
+                    // Als direkten Base64-Schlüssel versuchen
+                    console.log('Versuche Schlüssel als Base64 zu interpretieren');
+                    const rawKey = atob(cleanPassword.trim());
+                    const keyBytes = new Uint8Array(rawKey.length);
+                    for (let i = 0; i < rawKey.length; i++) {
+                        keyBytes[i] = rawKey.charCodeAt(i);
+                    }
+                    passwordBuffer = keyBytes.buffer;
+                    console.log('Base64-Schlüssel erkannt mit Länge:', rawKey.length, 'Bytes');
+                } catch (e) {
+                    console.log('Base64-Interpretation fehlgeschlagen, verwende SHA-256');
+                    // Fallback auf SHA-256
+                    passwordBuffer = await crypto.subtle.digest(
+                        'SHA-256',
+                        new TextEncoder().encode(cleanPassword)
+                    );
+                }
+            } else if (/^[0-9A-Fa-f]+$/.test(cleanPassword.trim())) {
+                // Als Hex-String interpretieren
+                try {
+                    console.log('Versuche Schlüssel als Hex-String zu interpretieren');
+                    const keyBytes = new Uint8Array(cleanPassword.trim().length / 2);
+                    for (let i = 0; i < cleanPassword.trim().length; i += 2) {
+                        keyBytes[i/2] = parseInt(cleanPassword.trim().substring(i, i+2), 16);
+                    }
+                    passwordBuffer = keyBytes.buffer;
+                    console.log('Hex-Schlüssel erkannt mit Länge:', keyBytes.length, 'Bytes');
+                } catch (e) {
+                    console.log('Hex-Interpretation fehlgeschlagen, verwende SHA-256');
+                    // Fallback auf SHA-256
+                    passwordBuffer = await crypto.subtle.digest(
+                        'SHA-256',
+                        new TextEncoder().encode(cleanPassword)
+                    );
+                }
+            } else {
+                // Standard-Passwort-Hashing mit SHA-256 wie in der Android-App
+                console.log('Verwende SHA-256 Passwort-Hashing');
+                passwordBuffer = await crypto.subtle.digest(
+                    'SHA-256',
+                    new TextEncoder().encode(cleanPassword)
+                );
+            }
+            
+            // Passwort-Hash für Debug-Zwecke (keine sensiblen Daten)
+            const debugHashHex = Array.from(new Uint8Array(passwordBuffer))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('').substring(0, 8) + '...';
+            console.log('Schlüssel/Hash (ersten 4 Bytes):', debugHashHex);
 
             // IV für AES-GCM (zufällig) - 12 Bytes wie in Android
             const iv = window.crypto.getRandomValues(new Uint8Array(12));
@@ -479,13 +528,41 @@ export function AESEncryption() {
                 }
 
                 // Schlüssel aus Passwort ableiten
-                const key = await crypto.subtle.importKey(
-                    'raw',
-                    passwordBuffer,
-                    {name: 'AES-GCM', length: effectiveKeySize},
-                    false,
-                    ['encrypt']
-                );
+                // WebCrypto API unterstützt nur 128 und 256 Bit
+                // Wir verwenden immer 256 Bit für maximale Kompatibilität und Sicherheit
+                console.log(`Ursprüngliche Schlüsselgröße: ${effectiveKeySize} Bit`);
+                const keyImportSize = 256; // Nur 256 Bit verwenden
+                
+                // Verwende IMMER SHA-256 für den Schlüssel um exakt 32 Bytes (256 Bits) zu haben
+                let effectiveBuffer;
+                try {
+                    // SHA-256 erzeugt immer genau 32 Bytes (256 Bits)
+                    effectiveBuffer = await crypto.subtle.digest(
+                        'SHA-256',
+                        new TextEncoder().encode(cleanPassword)
+                    );
+                    
+                    console.log(`Schlüssel mit SHA-256 erzeugt: ${effectiveBuffer.byteLength * 8} Bits`);
+                } catch (e) {
+                    console.error('Fehler bei Schlüsselerzeugung:', e);
+                    throw new Error('Fehler bei der Schlüsselerzeugung: ' + e.message);
+                }
+                
+                let key;
+                try {
+                    key = await crypto.subtle.importKey(
+                        'raw',
+                        effectiveBuffer,
+                        {name: 'AES-GCM', length: keyImportSize},
+                        false,
+                        ['encrypt']
+                    );
+                    console.log('Schlüssel erfolgreich importiert');
+                } catch (e) {
+                    console.error('Fehler beim Schlüsselimport:', e);
+                    console.error('Buffer-Länge:', effectiveBuffer.byteLength, 'Bytes');
+                    throw new Error('Fehler beim Schlüsselimport: ' + e.message);
+                }
 
                 // Text verschlüsseln
                 const encodedText = new TextEncoder().encode(inputText);
@@ -534,6 +611,7 @@ export function AESEncryption() {
                     // Als Base64 ausgeben
                     const base64Result = btoa(String.fromCharCode(...result));
                     setOutputText(base64Result);
+                    setInfo('Im Web-App-Standard-Format verschlüsselt');
                 }
             } else {
                 try {
@@ -542,10 +620,33 @@ export function AESEncryption() {
                     // Bereinigen des Passworts/Schlüssels von Whitespace
                     const cleanPassword = cleanAndroidBase64(password);
                     
-                    const binaryString = atob(cleanedInput);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
+                    // Verbesserte Base64-Dekodierung mit Fehlerbehandlung
+                    let bytes;
+                    try {
+                        const binaryString = atob(cleanedInput);
+                        bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        
+                        console.log('Base64-Dekodierung erfolgreich. Ergebnis-Länge:', bytes.length);
+                    } catch (e) {
+                        console.error('Base64-Dekodierungsfehler:', e);
+                        throw new Error('Der Text ist kein gültiger Base64-String. Bitte überprüfe, ob der verschlüsselte Text vollständig kopiert wurde.');
+                    }
+                    
+                    // Minimales Validieren des dekodierten Inhalts, aber nicht zu streng für Android-Kompatibilität
+                    if (!bytes) {
+                        console.error('Ungültiger Inhalt nach Base64-Dekodierung: undefined');
+                        throw new Error('Der dekodierte Inhalt ist ungültig nach Base64-Dekodierung.');
+                    }
+                    
+                    console.log('Dekodierte Daten-Länge:', bytes.length, 'Bytes');
+                    
+                    // Warnung aber kein Fehler für kleine Datenpakete, da wir dennoch versuchen zu entschlüsseln
+                    if (bytes.length < 16) { // Mindestens IV sollte vorhanden sein
+                        console.warn('Warnung: Dekodierte Daten sind sehr kurz:', bytes.length, 'Bytes');
+                        console.warn('Dies könnte zu Entschlüsselungsfehlern führen, aber wir versuchen es trotzdem.');
                     }
 
                     // Prüfen, ob es sich um das Android-Format mit Salt handelt
@@ -567,6 +668,17 @@ export function AESEncryption() {
                     
                     // IVs und Daten für beide Formate vorbereiten
                     // Web-Format: [IV(12) + Data]
+                    // Für Debugging-Zwecke die Byte-Längen ausgeben
+                    console.log('Byte-Längen:', {
+                        total: bytes.length,
+                        ivLength: AES_GCM_IV_LENGTH,
+                        dataLength: bytes.length - AES_GCM_IV_LENGTH
+                    });
+                    
+                    if (bytes.length <= AES_GCM_IV_LENGTH) {
+                        throw new Error('Ungültiges Format: Die Daten sind zu kurz, um IV und Ciphertext zu enthalten.');
+                    }
+                    
                     iv = bytes.slice(0, AES_GCM_IV_LENGTH);
                     encryptedData = bytes.slice(AES_GCM_IV_LENGTH);
 
@@ -628,13 +740,41 @@ export function AESEncryption() {
                             }
                             
                             // Schlüssel aus Passwort ableiten
-                            const key = await crypto.subtle.importKey(
-                                'raw',
-                                passwordBufferForSize,
-                                {name: 'AES-GCM', length: size},
-                                false,
-                                ['decrypt']
-                            );
+                            // WebCrypto API unterstützt nur 128 und 256 Bit
+                            // Wir verwenden immer 256 Bit für maximale Kompatibilität
+                            console.log(`Ursprüngliche Schlüsselgröße: ${size} Bit`);
+                            const keyImportSize = 256; // Standard ist 256 Bit
+                            
+                            // Verwende IMMER SHA-256 für den Schlüssel um exakt 32 Bytes (256 Bits) zu haben
+                            let effectiveBuffer;
+                            try {
+                                // SHA-256 erzeugt immer genau 32 Bytes (256 Bits)
+                                effectiveBuffer = await crypto.subtle.digest(
+                                    'SHA-256',
+                                    new TextEncoder().encode(cleanPassword)
+                                );
+                                
+                                console.log(`Schlüssel mit SHA-256 erzeugt: ${effectiveBuffer.byteLength * 8} Bits`);
+                            } catch (e) {
+                                console.error('Fehler bei Schlüsselerzeugung:', e);
+                                throw new Error('Fehler bei der Schlüsselerzeugung: ' + e.message);
+                            }
+                            
+                            let key;
+                            try {
+                                key = await crypto.subtle.importKey(
+                                    'raw',
+                                    effectiveBuffer,
+                                    {name: 'AES-GCM', length: keyImportSize},
+                                    false,
+                                    ['decrypt']
+                                );
+                                console.log('Schlüssel erfolgreich importiert');
+                            } catch (e) {
+                                console.error('Fehler beim Schlüsselimport:', e);
+                                console.error('Buffer-Länge:', effectiveBuffer.byteLength, 'Bytes');
+                                throw new Error('Fehler beim Schlüsselimport: ' + e.message);
+                            }
 
                             // Mit beiden Formaten versuchen: 1) Android-Format (Salt + IV) und 2) Web-Standard (nur IV)
                             let decryptedBuffer;
@@ -645,6 +785,13 @@ export function AESEncryption() {
                             // 1. Versuche zuerst das Android-Format (Salt + IV) - Umkehrung der Reihenfolge für bessere Kompatibilität
                             if (androidFormatPossible) {
                                 try {
+                                    // Prüfen, ob genug Daten für Android-Format vorhanden sind
+                                    if (bytes.length < 16 + AES_GCM_IV_LENGTH + 16) { // Salt + IV + mindestens 16 Bytes Daten mit Tag
+                                        console.warn('Daten zu kurz für Android-Format:', bytes.length, 'Bytes');
+                                        console.warn('Mindestlänge für Android-Format:', 16 + AES_GCM_IV_LENGTH + 16, 'Bytes');
+                                        throw new Error('Daten zu kurz für Android-Format');
+                                    }
+                                    
                                     // Android: [Salt(16) + IV(12) + Data]
                                     const salt = bytes.slice(0, 16);
                                     const androidIv = bytes.slice(16, 16 + AES_GCM_IV_LENGTH);
@@ -656,6 +803,11 @@ export function AESEncryption() {
                                         dataLength: androidEncryptedData.length,
                                         totalLength: bytes.length
                                     });
+                                    
+                                    // Debug-Visualisierung der ersten Bytes
+                                    console.log('Salt-Bytes (erste 4):', Array.from(salt.slice(0, 4)).map(b => b.toString(16).padStart(2, '0')).join(' '));
+                                    console.log('IV-Bytes (erste 4):', Array.from(androidIv.slice(0, 4)).map(b => b.toString(16).padStart(2, '0')).join(' '));
+                                    console.log('Ciphertext-Bytes (erste 4):', Array.from(androidEncryptedData.slice(0, 4)).map(b => b.toString(16).padStart(2, '0')).join(' '));
                                     
                                     // Als AAD für GCM hinzufügen
                                     decryptedBuffer = await crypto.subtle.decrypt(
@@ -674,6 +826,12 @@ export function AESEncryption() {
                                     
                                     // Versuche Android-Format OHNE AAD (für ältere Android-Versionen)
                                     try {
+                                        // Prüfen, ob genug Daten für Android-Format vorhanden sind
+                                        if (bytes.length < 16 + AES_GCM_IV_LENGTH + 16) { // Salt + IV + mindestens 16 Bytes Daten mit Tag
+                                            console.warn('Daten zu kurz für Android-Format ohne AAD:', bytes.length, 'Bytes');
+                                            throw new Error('Daten zu kurz für Android-Format ohne AAD');
+                                        }
+                                        
                                         const salt = bytes.slice(0, 16);
                                         const androidIv = bytes.slice(16, 16 + AES_GCM_IV_LENGTH);
                                         const androidEncryptedData = bytes.slice(16 + AES_GCM_IV_LENGTH);
@@ -702,6 +860,36 @@ export function AESEncryption() {
                             // 2. Versuche das Web-Format (nur IV) falls Android-Format fehlgeschlagen oder noch kein Erfolg
                             if (!decryptedBuffer && webFormatPossible) {
                                 try {
+                                    console.log('Versuche Web-Format ohne Salt', {
+                                        ivLength: iv.length,
+                                        dataLength: encryptedData.length,
+                                        totalLength: bytes.length,
+                                        keySize: size
+                                    });
+                                    
+                                    // Sicherheitscheck für IV und Daten
+                                    if (iv.length !== AES_GCM_IV_LENGTH) {
+                                        console.error('Ungültige IV-Länge für Web-Format:', iv.length);
+                                        throw new Error('Ungültige IV-Länge für Web-Format');
+                                    }
+                                    
+                                    if (encryptedData.length < 16) { // Mindestens ein AES-Block + Tag
+                                        console.error('Daten zu kurz für Web-Format:', encryptedData.length);
+                                        throw new Error('Daten zu kurz für Web-Format');
+                                    }
+                                    
+                                    // Extra Debug-Info für Browser-zu-Browser Format
+                                    console.log('IV-Bytes (erste 4):', Array.from(iv.slice(0, 4)).map(b => b.toString(16).padStart(2, '0')).join(' '));
+                                    console.log('Ciphertext-Bytes (erste 4):', Array.from(encryptedData.slice(0, 4)).map(b => b.toString(16).padStart(2, '0')).join(' '));
+                                    
+                                    // Prüfe Base64-Konsistenz für Debugging
+                                    const reencoded = btoa(String.fromCharCode(...iv, ...encryptedData));
+                                    console.log('Base64-Konsistenzcheck:', {
+                                        originalLength: cleanedInput.length,
+                                        reencodedLength: reencoded.length,
+                                        consistent: cleanedInput.length === reencoded.length
+                                    });
+                                    
                                     decryptedBuffer = await crypto.subtle.decrypt(
                                         {name: 'AES-GCM', iv},
                                         key,
@@ -711,6 +899,16 @@ export function AESEncryption() {
                                     console.log('Web-Format Entschlüsselung erfolgreich');
                                 } catch (webFormatError) {
                                     console.error('Web-Format fehlgeschlagen:', webFormatError.message);
+                                    console.error('Das könnte bedeuten, dass der Schlüssel falsch ist oder das Format nicht unterstützt wird.');
+                                    
+                                    // Wenn es ein "operation does not meet requirements" Fehler ist, zeige spezifische Hilfe
+                                    if (webFormatError.message.includes('operation does not meet requirements')) {
+                                        console.error('--> Dies ist ein typischer Fehler bei Browser-zu-Browser Entschlüsselung wenn:');
+                                        console.error('    1. Der Text nicht vollständig kopiert wurde');
+                                        console.error('    2. Der Browser ein veraltetes Cache verwendet - versuche die Seite neu zu laden');
+                                        console.error('    3. Ein Browser-Erweiterung den Text verändert hat');
+                                    }
+                                    
                                     formatErrors.push(`Web-Format: ${webFormatError.message}`);
                                 }
                             }
@@ -748,11 +946,34 @@ export function AESEncryption() {
                         throw lastError || new Error('Entschlüsselung fehlgeschlagen mit allen Schlüsselgrößen');
                     }
                 } catch (error) {
-                    // Verbesserte Fehlermeldung mit Hinweisen zur Kompatibilität
-                    if (error.message && error.message.includes('BAD_DECRYPT')) {
+                    // Verbesserte Fehlermeldung mit spezifischen Hinweisen je nach Fehlertyp
+                    if (error.message && error.message.includes('provided data is too small')) {
+                        setError('Die Daten aus der Android-App sind zu klein für die Entschlüsselung. ' +
+                                'Wichtig für Android→Web Kompatibilität: ' +
+                                'Verwenden Sie in der Android-App die Methode encryptWebAppCompatible() ' +
+                                'oder wählen Sie in der App "Web-App Kompatibel" in den Einstellungen. ' +
+                                'Normale Android-Verschlüsselung verwendet ein anderes Format als die Web-App.');
+                        
+                        console.error('Android→Web Kompatibilitätsproblem erkannt:');
+                        console.error('Die Daten aus der Android-App haben nicht das richtige Format für die Web-App.');
+                        console.error('Lösung: In der Android-App muss encryptWebAppCompatible() verwendet werden.');
+                    } else if (error.message && error.message.includes('BAD_DECRYPT')) {
                         setError('Entschlüsselung fehlgeschlagen: BAD_DECRYPT-Fehler. Möglicherweise wurde der Text mit einer anderen Version verschlüsselt. ' +
                                 'Verwenden Sie in der Android-App die "encryptWebAppCompatible"-Methode für die Verschlüsselung oder aktivieren Sie hier das "Android-Kompatibilitätsmodus"-Checkbox. ' +
                                 'Siehe die Kompatibilitätsanleitung für weitere Details.');
+                    } else if (error.message && error.message.includes('operation does not meet requirements')) {
+                        setError('Browser-zu-Browser Entschlüsselung fehlgeschlagen: Die Daten entsprechen nicht den erwarteten Anforderungen. ' +
+                                'Dies kann passieren, wenn der verschlüsselte Text nicht vollständig kopiert wurde oder das Format beschädigt ist. ' +
+                                'Versuche die Verschlüsselung erneut und achte darauf, den gesamten verschlüsselten Text zu kopieren.');
+                                
+                        // Detaillierte Fehleranalyse im Konsolenfenster ausgeben
+                        console.error('Detaillierte Fehleranalyse für "operation does not meet requirements":');
+                        console.error('- Fehlertyp: Browser-zu-Browser Verschlüsselung');
+                        console.error('- Mögliche Ursachen:');
+                        console.error('  1. Verschlüsselter Text wurde nicht vollständig kopiert');
+                        console.error('  2. IV + Ciphertext Struktur ist beschädigt');
+                        console.error('  3. Ein falsches Passwort/Schlüssel wurde verwendet');
+                        console.error('  4. Browser-Cache enthält veraltete Seite - versuche Seite neu zu laden');
                     } else {
                         setError(`Entschlüsselung fehlgeschlagen. Überprüfe den Text und das Passwort. Fehler: ${error.message}`);
                     }
