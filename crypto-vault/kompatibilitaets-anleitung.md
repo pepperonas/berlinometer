@@ -38,9 +38,26 @@ Die AES Implementierungen unterscheiden sich:
 - Web-App: AES-GCM mit 12-Byte IV
 - Android-App: AES-GCM mit 16-Byte Salt + 12-Byte IV
 
+### Neue Benutzeroberflächen-Optionen für Kompatibilität
+
+Beide Apps wurden mit neuen Benutzeroberflächen-Elementen ausgestattet:
+
+#### Android-App (Enigma3k1):
+- Aktivieren Sie den "Web-App Kompatibilitätsmodus" durch den Schalter in der AES-Verschlüsselungsansicht
+- In diesem Modus werden Daten automatisch im kompatiblen Format mit der Web-App verschlüsselt
+- Die Entschlüsselung erkennt automatisch beide Formate
+
+#### Web-App (Crypto-Vault):
+- Aktivieren Sie die Checkbox "Android-Kompatibilitätsmodus (mit Salt) verwenden" beim Verschlüsseln
+- Die Entschlüsselung versucht automatisch, beide Formate zu erkennen
+
 ### Android → Web (Enigma3k1 → Crypto-Vault)
 
-1. **Verwenden Sie die neue Methode in der Android-App:**
+1. **Verwenden Sie den Kompatibilitätsmodus in der Android-App:**
+   - Aktivieren Sie den Schalter "Web-App Kompatibilitätsmodus" in der AES-Ansicht
+   - Verschlüsseln Sie Ihre Daten wie gewohnt
+
+   **ODER** in Ihrem Code:
    ```java
    // Verschlüsseln von Daten für die Web-App
    String encryptedText = AesUtils.encryptWebAppCompatible(plainText, password, keySize);
@@ -55,9 +72,12 @@ Die AES Implementierungen unterscheiden sich:
    Verwenden Sie die reguläre Verschlüsselungsfunktion.
 
 2. **Entschlüsseln in der Android-App:**
+   - Verwenden Sie die reguläre Entschlüsselungsfunktion (die universelle Methode wird automatisch verwendet)
+   
+   **ODER** in Ihrem Code:
    ```java
-   // Entschlüsseln von Daten aus der Web-App
-   String decryptedText = AesUtils.decryptWebAppCompatible(encryptedText, password, keySize);
+   // Entschlüsseln von Daten aus der Web-App (erkennt beide Formate automatisch)
+   String decryptedText = AesUtils.decryptUniversal(encryptedText, password, keySize);
    ```
 
 ## 3. Schlüsselaustausch
@@ -95,3 +115,26 @@ Die AES Implementierungen unterscheiden sich:
 3. **Längenbeschränkungen:** RSA kann nur begrenzte Mengen an Daten verschlüsseln:
    - Bei 2048-Bit Schlüsseln maximal ca. 245 Bytes
    - Für größere Datenmengen nutzen Sie AES
+
+## 5. Fehlerbehebung
+
+### Häufige Fehler bei AES-Verschlüsselung
+
+1. **"BAD_DECRYPT" oder "Entschlüsselung fehlgeschlagen":**
+   - **Ursache:** Format-Inkompatibilität zwischen Android- und Web-App-Verschlüsselung.
+   - **Lösung:** 
+     - Beim Verschlüsseln in der Android-App: Aktivieren Sie den "Web-App Kompatibilitätsmodus"
+     - Beim Verschlüsseln in der Web-App: Aktivieren Sie den "Android-Kompatibilitätsmodus (mit Salt)"
+     - Verwenden Sie die universelle Entschlüsselungsfunktion `decryptUniversal()` in der Android-App
+
+2. **"Ungültiger Schlüssel" oder "Falsches Format":**
+   - **Ursache:** Schlüssel hat nicht die erwartete Größe oder Format.
+   - **Lösung:**
+     - Stellen Sie sicher, dass Sie konsistent 256-Bit Schlüssel verwenden (empfohlen)
+     - Entfernen Sie Leerzeichen und Zeilenumbrüche aus kopierten Schlüsseln
+
+3. **"Schlüsselgröße nicht unterstützt":**
+   - **Ursache:** Die angegebene Schlüsselgröße wird nicht unterstützt.
+   - **Lösung:** Verwenden Sie nur die Standardgrößen (128, 192, 256 Bit)
+   
+Hinweis: Beide Apps versuchen automatisch, die Schlüsselgröße zu erkennen und verschiedene Größen zu probieren.

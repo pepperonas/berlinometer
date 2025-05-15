@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simon Wupper - Schlagzeuger</title>
+    <style>
+        :root {
+            --primary-color: #2C2E3B;
+            --accent-color: #e74c3c;
+            --text-color: #f5f5f5;
+            --secondary-color: #3F4155;
+            --highlight-color: #5D6382;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            height: 100vh;
+            background: linear-gradient(rgba(44, 46, 59, 0.8), rgba(44, 46, 59, 0.9)), url('/api/placeholder/1600/900') center/cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        .header-content h1 {
+            font-size: 4.5rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header-content p {
+            font-size: 1.5rem;
+            max-width: 700px;
+            margin: 0 auto;
+            margin-bottom: 40px;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            background-color: transparent;
+            padding: 20px 0;
+            transition: background-color 0.4s ease, padding 0.4s ease;
+        }
+
+        .navbar.scrolled {
+            background-color: var(--primary-color);
+            padding: 10px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-left: 30px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--accent-color);
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+        }
+
+        .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            background-color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        section {
+            padding: 100px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: inline-block;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background-color: var(--accent-color);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* About Section */
+        .about {
+            background-color: var(--secondary-color);
+        }
+
+        .about-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .about-img {
+            flex: 0 0 40%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+        }
+
+        .about-img img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        .about-text {
+            flex: 0 0 55%;
+        }
+
+        .about-text h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .about-text p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        /* Music Section */
+        .music {
+            background-color: var(--primary-color);
+        }
+
+        .music-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .music-item {
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .music-item:hover {
+            transform: translateY(-10px);
+        }
+
+        .music-img {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .music-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .music-item:hover .music-img img {
+            transform: scale(1.1);
+        }
+
+        .music-info {
+            padding: 20px;
+        }
+
+        .music-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .music-info p {
+            margin-bottom: 15px;
+        }
+
+        .music-player {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        /* Gallery Section */
+        .gallery {
+            background-color: var(--secondary-color);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+            height: 250px;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        /* Events Section */
+        .events {
+            background-color: var(--primary-color);
+        }
+
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .event-item {
+            background-color: var(--secondary-color);
+            border-radius: 4px;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .event-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .event-date {
+            flex: 0 0 15%;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .event-info {
+            flex: 0 0 65%;
+        }
+
+        .event-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .event-info p {
+            font-size: 1.1rem;
+        }
+
+        .event-ticket {
+            flex: 0 0 15%;
+            text-align: right;
+        }
+
+        /* Contact Section */
+        .contact {
+            background-color: var(--secondary-color);
+        }
+
+        .contact-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .contact-info {
+            flex: 0 0 45%;
+        }
+
+        .contact-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        .contact-info p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .contact-info-item i {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: var(--accent-color);
+        }
+
+        .contact-form {
+            flex: 0 0 50%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: var(--highlight-color);
+            color: var(--text-color);
+        }
+
+        .form-control::placeholder {
+            color: #aaa;
+        }
+
+        textarea.form-control {
+            height: 150px;
+            resize: none;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--primary-color);
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .social-icons {
+            margin-bottom: 20px;
+        }
+
+        .social-icon {
+            display: inline-block;
+            margin: 0 10px;
+            font-size: 1.5rem;
+            color: var(--text-color);
+            transition: color 0.3s ease;
+        }
+
+        .social-icon:hover {
+            color: var(--accent-color);
+        }
+
+        .footer-text {
+            font-size: 1rem;
+        }
+
+        .footer-text a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* Media Queries */
+        @media screen and (max-width: 768px) {
+            .header-content h1 {
+                font-size: 3rem;
+            }
+
+            .header-content p {
+                font-size: 1.2rem;
+            }
+
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background-color: var(--primary-color);
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+                padding: 20px 0;
+            }
+
+            .nav-menu.active {
+                left: 0;
+            }
+
+            .nav-item {
+                margin: 15px 0;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .hamburger.active .bar:nth-child(2) {
+                opacity: 0;
+            }
+
+            .hamburger.active .bar:nth-child(1) {
+                transform: translateY(8px) rotate(45deg);
+            }
+
+            .hamburger.active .bar:nth-child(3) {
+                transform: translateY(-8px) rotate(-45deg);
+            }
+
+            .about-img, .about-text, .contact-info, .contact-form {
+                flex: 0 0 100%;
+            }
+
+            .about-img {
+                margin-bottom: 30px;
+            }
+
+            .event-date, .event-info, .event-ticket {
+                flex: 0 0 100%;
+                text-align: left;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+          rel="stylesheet">
+</head>
+<body>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="navbar-container">
+        <a href="#" class="logo">Simon Wupper</a>
+        <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="#home" class="nav-link">Home</a></li>
+            <li class="nav-item"><a href="#about" class="nav-link">Über mich</a></li>
+            <li class="nav-item"><a href="#music" class="nav-link">Musik</a></li>
+            <li class="nav-item"><a href="#gallery" class="nav-link">Galerie</a></li>
+            <li class="nav-item"><a href="#events" class="nav-link">Termine</a></li>
+            <li class="nav-item"><a href="#contact" class="nav-link">Kontakt</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Header Section -->
+<header id="home">
+    <div class="header-content">
+        <h1>Simon Wupper</h1>
+        <p>Professioneller Schlagzeuger aus Berlin</p>
+        <a href="#music" class="btn">Meine Musik</a>
+    </div>
+</header>
+
+<!-- About Section -->
+<section id="about" class="about">
+    <div class="container">
+        <div class="section-title">
+            <h2>Über mich</h2>
+        </div>
+        <div class="about-content">
+            <div class="about-img">
+                <img src="/api/placeholder/600/600" alt="Simon Wupper">
+            </div>
+            <div class="about-text">
+                <h3>Passion für Rhythmus</h3>
+                <p>Als Simon das erste Mal mit dem Schlagzeug in Berührung kam, entfachte sich eine
+                    lebenslange Leidenschaft. Inspiriert von unterschiedlichsten Künstlern und Bands
+                    wie Red Hot Chili Peppers, John Coltrane, Bob Marley und vielen mehr, machte er
+                    sich auf den Weg, die weite Landschaft der Musik und des Trommelns zu
+                    erkunden.</p>
+                <p>Seit 2015 ist Simon als professioneller Schlagzeuger unterwegs und kann
+                    inzwischen auf eine lange Liste von Künstlern und Bands zurückblicken. Ob
+                    Musical, Theater, kleine Jazz-Kombos, Latin, Funk oder auch klassischer Rock -
+                    Simon beweist große Erfahrung, liebt die Vielseitigkeit und bedient jeden
+                    populären Stil mit Sicherheit.</p>
+                <p>Mit seinem einzigartigen Stil und seiner technischen Präzision bringt er Rhythmus
+                    und Energie in jedes Projekt, an dem er beteiligt ist.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Music Section -->
+<section id="music" class="music">
+    <div class="container">
+        <div class="section-title">
+            <h2>Musik</h2>
+        </div>
+        <div class="music-grid">
+            <div class="music-item">
+                <div class="music-img">
+                    <img src="/api/placeholder/400/300" alt="Trio Fuchs">
+                </div>
+                <div class="music-info">
+                    <h3>Trio Fuchs - Brushes</h3>
+                    <p>Ein entspanntes Jazz-Stück mit feinen Brush-Techniken.</p>
+                    <iframe class="music-player" height="80" src="about:blank"
+                            frameborder="0"></iframe>
+                </div>
+            </div>
+            <div class="music-item">
+                <div class="music-img">
+                    <img src="/api/placeholder/400/300" alt="Groovetown">
+                </div>
+                <div class="music-info">
+                    <h3>Groovetown - Lady Marmalade</h3>
+                    <p>Kraftvolle Interpretation des Soul-Klassikers.</p>
+                    <iframe class="music-player" height="80" src="about:blank"
+                            frameborder="0"></iframe>
+                </div>
+            </div>
+            <div class="music-item">
+                <div class="music-img">
+                    <img src="/api/placeholder/400/300" alt="Shandra Konzok">
+                </div>
+                <div class="music-info">
+                    <h3>Shandra Konzok - Hallelujah</h3>
+                    <p>Gefühlvolle Interpretation des Leonard Cohen Klassikers.</p>
+                    <iframe class="music-player" height="80" src="about:blank"
+                            frameborder="0"></iframe>
+                </div>
+            </div>
+            <div class="music-item">
+                <div class="music-img">
+                    <img src="/api/placeholder/400/300" alt="Groovetown">
+                </div>
+                <div class="music-info">
+                    <h3>Groovetown - Son Of A Preacherman</h3>
+                    <p>Groovige Version des Soul-Hits mit dynamischen Drums.</p>
+                    <iframe class="music-player" height="80" src="about:blank"
+                            frameborder="0"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Section -->
+<section id="gallery" class="gallery">
+    <div class="container">
+        <div class="section-title">
+            <h2>Galerie</h2>
+        </div>
+        <div class="gallery-grid">
+            <div class="gallery-item">
+                <img src="/api/placeholder/400/400" alt="Simon Wupper live">
+            </div>
+            <div class="gallery-item">
+                <img src="/api/placeholder/400/400" alt="Simon Wupper Drumset">
+            </div>
+            <div class="gallery-item">
+                <img src="/api/placeholder/400/400" alt="Simon Wupper Studio">
+            </div>
+            <div class="gallery-item">
+                <img src="/api/placeholder/400/400" alt="Simon Wupper Auftritt">
+            </div>
+            <div class="gallery-item">
+                <img src="/api/placeholder/400/400" alt="Simon Wupper Workshop">
+            </div>
+            <div class="gallery-item">
+                <img src="/api/placeholder/400/400" alt="Simon Wupper Band">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Events Section -->
+<section id="events" class="events">
+    <div class="container">
+        <div class="section-title">
+            <h2>Termine</h2>
+        </div>
+        <div class="event-list">
+            <div class="event-item">
+                <div class="event-date">20. Mai 2025</div>
+                <div class="event-info">
+                    <h3>Jazz Club Schlot</h3>
+                    <p>Berlin, Deutschland</p>
+                </div>
+                <div class="event-ticket">
+                    <a href="#" class="btn">Tickets</a>
+                </div>
+            </div>
+            <div class="event-item">
+                <div class="event-date">12. Juni 2025</div>
+                <div class="event-info">
+                    <h3>Groove Town Jubiläum</h3>
+                    <p>B-Flat, Berlin</p>
+                </div>
+                <div class="event-ticket">
+                    <a href="#" class="btn">Tickets</a>
+                </div>
+            </div>
+            <div class="event-item">
+                <div class="event-date">28. Juni 2025</div>
+                <div class="event-info">
+                    <h3>Summer Festival</h3>
+                    <p>Mauerpark, Berlin</p>
+                </div>
+                <div class="event-ticket">
+                    <a href="#" class="btn">Tickets</a>
+                </div>
+            </div>
+            <div class="event-item">
+                <div class="event-date">15. Juli 2025</div>
+                <div class="event-info">
+                    <h3>Trio Fuchs Tour</h3>
+                    <p>Jazzklub Kreuzberg, Berlin</p>
+                </div>
+                <div class="event-ticket">
+                    <a href="#" class="btn">Tickets</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="contact">
+    <div class="container">
+        <div class="section-title">
+            <h2>Kontakt</h2>
+        </div>
+        <div class="contact-content">
+            <div class="contact-info">
+                <h3>Lass uns in Kontakt treten</h3>
+                <p>Du hast ein Projekt, bei dem Du mit mir zusammenarbeiten möchtest? Oder Du
+                    möchtest Unterricht nehmen? Kontaktiere mich und wir sprechen über die
+                    Details.</p>
+                <div class="contact-info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Berlin, Deutschland</span>
+                </div>
+                <div class="contact-info-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>info@simonwupper.com</span>
+                </div>
+                <div class="contact-info-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+49 123 456789</span>
+                </div>
+                <div class="social-icons">
+                    <a href="https://www.instagram.com/simonwupper/" target="_blank"
+                       class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="https://soundcloud.com/simonwupper" target="_blank"
+                       class="social-icon"><i class="fab fa-soundcloud"></i></a>
+                    <a href="https://www.facebook.com/simonwupperdrums/" target="_blank"
+                       class="social-icon"><i class="fab fa-facebook"></i></a>
+                </div>
+            </div>
+            <div class="contact-form">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Dein Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" class="form-control" placeholder="Deine E-Mail"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Betreff">
+                    </div>
+                    <div class="form-group">
+                        <textarea class="form-control" placeholder="Deine Nachricht"
+                                  required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Nachricht senden</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="social-icons">
+        <a href="https://www.instagram.com/simonwupper/" target="_blank" class="social-icon"><i
+                class="fab fa-instagram"></i></a>
+        <a href="https://soundcloud.com/simonwupper" target="_blank" class="social-icon"><i
+                class="fab fa-soundcloud"></i></a>
+        <a href="https://www.facebook.com/simonwupperdrums/" target="_blank" class="social-icon"><i
+                class="fab fa-facebook"></i></a>
+    </div>
+    <p class="footer-text">&copy; 2025 Simon Wupper. Alle Rechte vorbehalten. | Design by <a
+            href="#">Dein Name</a></p>
+</footer>
+
+<script>
+    // Navbar scroll effect
+    window.addEventListener('scroll', function () {
+        const navbar = document.querySelector('.navbar');
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+
+    // Mobile menu
+    const hamburger = document.querySelector('.hamburger');
+    const navMenu = document.querySelector('.nav-menu');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    hamburger.addEventListener('click', function () {
+        hamburger.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            hamburger.classList.remove('active');
+            navMenu.classList.remove('active');
+        });
+    });
+
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 70,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Contact form submission
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        contactForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Hier würde normalerweise der Code zum Senden der Formulardaten stehen
+            alert('Danke für deine Nachricht! Ich werde mich so schnell wie möglich bei dir melden.');
+            contactForm.reset();
+        });
+    }
+
+    // Animation on scroll (simple implementation)
+    function animateOnScroll() {
+        const elements = document.querySelectorAll('.music-item, .gallery-item, .event-item, .about-content, .contact-content');
+
+        elements.forEach(element => {
+            const elementPosition = element.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight;
+
+            if (elementPosition < screenPosition - 100) {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }
+        });
+    }
+
+    // Initial setup for animations
+    document.addEventListener('DOMContentLoaded', function () {
+        const animatedElements = document.querySelectorAll('.music-item, .gallery-item, .event-item, .about-content, .contact-content');
+
+        animatedElements.forEach(element => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        });
+
+        animateOnScroll();
+    });
+
+    window.addEventListener('scroll', animateOnScroll);
+</script>
+</body>
+</html>
