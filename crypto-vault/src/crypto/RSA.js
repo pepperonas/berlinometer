@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Copy, Download, FileText, Key, Lock, RefreshCw, Save, Upload} from 'lucide-react';
-import { decryptAndroidRSA, encryptForAndroid } from './WebCryptoFallback';
+import { decryptAndroidRSA } from './WebCryptoFallback';
 
 // RSA-Komponente für CryptoVault
 export function RSAEncryption() {
@@ -678,50 +678,28 @@ export function RSAEncryption() {
                     return;
                 }
 
-                // Option für Android-kompatible Verschlüsselung (PKCS1 statt OAEP)
-                const useAndroidCompatibility = document.getElementById('useAndroidFormat')?.checked || false;
                 const publicKey = useExternalKey ? externalKeyObj : keyPair.subtle.publicKey;
                 const actualKeySize = useExternalKey ? 2048 : keySize; // Annahme für externen Schlüssel
                 
                 // Maximale Datenlänge prüfen
-                const maxLen = useAndroidCompatibility 
-                    ? ((actualKeySize / 8) - 11) // PKCS1 Overhead = 11 Bytes
-                    : ((actualKeySize / 8) - 42); // OAEP Overhead = 42 Bytes
+                const maxLen = ((actualKeySize / 8) - 42); // OAEP Overhead = 42 Bytes
                 
                 if (new TextEncoder().encode(inputText).length > maxLen) {
-                    setError(`Die Nachricht ist zu lang für ${useAndroidCompatibility ? 'RSA-PKCS1' : 'RSA-OAEP'} mit ${actualKeySize} Bit (max. ${maxLen} Bytes). Verwende kürzeren Text oder hybrid encryption.`);
+                    setError(`Die Nachricht ist zu lang für RSA-OAEP mit ${actualKeySize} Bit (max. ${maxLen} Bytes). Verwende kürzeren Text oder hybrid encryption.`);
                     return;
                 }
                 
-                let base64Result;
-                
-                if (useAndroidCompatibility) {
-                    // Android-kompatible Verschlüsselung mit PKCS1
-                    // Hier nutzen wir den Fallback mit der forge-Bibliothek
-                    try {
-                        base64Result = await encryptForAndroid(
-                            inputText, 
-                            useExternalKey ? externalPublicKey : keyPair.publicKey
-                        );
-                        setInfo('Text mit RSA/ECB/PKCS1Padding verschlüsselt (Android-App-Format)');
-                    } catch (error) {
-                        setError(`Android-Verschlüsselung fehlgeschlagen: ${error.message}`);
-                        console.error('Android RSA encryption error:', error);
-                        return;
-                    }
-                } else {
-                    // Standard WebCrypto-Verschlüsselung mit OAEP
-                    const encoded = new TextEncoder().encode(inputText);
-                    const encrypted = await window.crypto.subtle.encrypt(
-                        {name: "RSA-OAEP"},
-                        publicKey,
-                        encoded
-                    );
+                // Standard WebCrypto-Verschlüsselung mit OAEP
+                const encoded = new TextEncoder().encode(inputText);
+                const encrypted = await window.crypto.subtle.encrypt(
+                    {name: "RSA-OAEP"},
+                    publicKey,
+                    encoded
+                );
 
-                    // Als Base64 ausgeben
-                    base64Result = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
-                    setInfo('Text mit RSA-OAEP verschlüsselt (Web-App und Android-App mit OAEPWithSHA-256AndMGF1Padding kompatibel)');
-                }
+                // Als Base64 ausgeben
+                const base64Result = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+                setInfo('Text mit RSA-OAEP verschlüsselt');
                 
                 setOutputText(base64Result);
                 setTimeout(() => setInfo(''), 5000);
@@ -936,19 +914,6 @@ export function RSAEncryption() {
                     </button>
                 </div>
                 
-                {mode === 'encrypt' && (
-                    <div className="flex items-center mb-4 p-2 border rounded dark:border-gray-700 bg-amber-50 dark:bg-amber-900/20">
-                        <input
-                            type="checkbox"
-                            id="useAndroidFormat"
-                            className="mr-2"
-                        />
-                        <label htmlFor="useAndroidFormat" className="text-sm text-amber-800 dark:text-amber-300">
-                            Android-Kompatibilitätsmodus (RSA/ECB/PKCS1Padding) verwenden 
-                            <span className="text-xs">(für ältere Android-Versionen ohne OAEP-Unterstützung)</span>
-                        </label>
-                    </div>
-                )}
 
                 {mode === 'encrypt' && (
                     <div
@@ -991,15 +956,6 @@ export function RSAEncryption() {
                                     </button>
                                 </div>
 
-                                <div className="mb-2 p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-md text-xs">
-                                    <strong>Hinweis für Android-App-Kompatibilität:</strong>
-                                    <ul className="list-disc pl-4 mt-1">
-                                        <li>Diese Web-App unterstützt nun beide RSA-Formate: RSA-OAEP (Web-Standard) und RSA/ECB/PKCS1Padding (Android-Standard).</li>
-                                        <li>Beim Verschlüsseln wählen Sie das gewünschte Format mit der Checkbox "Android-Kompatibilitätsmodus" aus.</li>
-                                        <li>Beim Entschlüsseln werden beide Formate automatisch erkannt und verarbeitet.</li>
-                                        <li>Beim Import von Schlüsseln aus der Android-App werden automatisch alle Leerzeichen und Zeilenumbrüche entfernt.</li>
-                                    </ul>
-                                </div>
 
                                 {/* PEM-Datei hochladen */}
                                 <div className="flex items-center">
