@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speckle-Tracking Echokardiographie - Technische Analyse</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2C2E3B 0%, #3d4057 100%);
+            color: white;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            color: #4ECDC4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.1em;
+            color: #FFE66D;
+            margin-bottom: 10px;
+        }
+
+        .header .version {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.08);
+            margin: 30px 0;
+            padding: 35px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .section h2 {
+            color: #4ECDC4;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #4ECDC4;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            color: #FFE66D;
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 25px 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 25px 0;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            color: #2C2E3B;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .parameter-box {
+            background: linear-gradient(135deg, #4ECDC4, #44A08D);
+            color: #2C2E3B;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .parameter-box h4 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .formula {
+            background: rgba(255, 230, 109, 0.2);
+            border: 1px solid #FFE66D;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .technical-specs {
+            background: rgba(255, 107, 107, 0.15);
+            border-left: 4px solid #FF6B6B;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .measurement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .measurement-item {
+            background: rgba(78, 205, 196, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #4ECDC4;
+            text-align: center;
+        }
+
+        .measurement-item .value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #4ECDC4;
+        }
+
+        .measurement-item .unit {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .strain-visualization {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(45deg, #2C2E3B, #4ECDC4);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .myocardium {
+            width: 200px;
+            height: 200px;
+            border: 8px solid #FFE66D;
+            border-radius: 50%;
+            position: relative;
+            animation: contractility 2s ease-in-out infinite;
+        }
+
+        @keyframes contractility {
+            0%, 100% { 
+                transform: scale(1);
+                border-color: #FFE66D;
+            }
+            50% { 
+                transform: scale(0.85);
+                border-color: #FF6B6B;
+            }
+        }
+
+        .strain-marker {
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .marker-1 { top: 10px; left: 50%; animation: strain-motion 2s ease-in-out infinite; }
+        .marker-2 { top: 30%; right: 10px; animation: strain-motion 2s ease-in-out infinite 0.2s; }
+        .marker-3 { bottom: 30%; right: 10px; animation: strain-motion 2s ease-in-out infinite 0.4s; }
+        .marker-4 { bottom: 10px; left: 50%; animation: strain-motion 2s ease-in-out infinite 0.6s; }
+        .marker-5 { bottom: 30%; left: 10px; animation: strain-motion 2s ease-in-out infinite 0.8s; }
+        .marker-6 { top: 30%; left: 10px; animation: strain-motion 2s ease-in-out infinite 1s; }
+
+        @keyframes strain-motion {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-2px, -2px) scale(1.2); }
+        }
+
+        .algorithm-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-step {
+            background: rgba(78, 205, 196, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #4ECDC4;
+            text-align: center;
+            flex: 1;
+            min-width: 180px;
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5em;
+            color: #FFE66D;
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            background: rgba(78, 205, 196, 0.3);
+            color: #2C2E3B;
+            font-weight: bold;
+        }
+
+        .clinical-values {
+            background: linear-gradient(135deg, rgba(255, 230, 109, 0.2), rgba(255, 107, 107, 0.2));
+            border: 1px solid #FFE66D;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 25px 0;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .algorithm-flow { flex-direction: column; }
+            .flow-step::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Speckle-Tracking Echokardiographie</h1>
+            <p class="subtitle">Myokardiale Deformationsanalyse mittels 2D-Strain-Imaging</p>
+            <p class="version">Technische Dokumentation | Version 2.1 | 2025</p>
+        </div>
+
+        <div class="section">
+            <h2>Technische Grundlagen</h2>
+            
+            <div class="grid-2">
+                <div>
+                    <h3>Algorithmus-Prinzip</h3>
+                    <p>Speckle-Tracking basiert auf der frame-zu-frame Verfolgung von akustischen Markern (Speckles) im Myokard mittels Block-Matching-Algorithmen und optischem Fluss. Die Technologie nutzt die inhärente Textur des Ultraschallbildes zur Quantifizierung myokardialer Deformation.</p>
+                    
+                    <div class="technical-specs">
+                        <strong>Technische Spezifikationen:</strong><br>
+                        • Auflösung: Sub-Pixel-Genauigkeit (0.1-0.2 Pixel)<br>
+                        • Framerate: ≥60 fps (optimal 70-90 fps)<br>
+                        • Kernel-Größe: 20x20 bis 40x40 Pixel<br>
+                        • Suchfenster: 2-3x Kernel-Größe<br>
+                        • Tracking-Qualität: >95% erfolgreiche Verfolgung
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Physikalische Basis</h3>
+                    <div class="strain-visualization">
+                        <div class="myocardium">
+                            <div class="strain-marker marker-1"></div>
+                            <div class="strain-marker marker-2"></div>
+                            <div class="strain-marker marker-3"></div>
+                            <div class="strain-marker marker-4"></div>
+                            <div class="strain-marker marker-5"></div>
+                            <div class="strain-marker marker-6"></div>
+                        </div>
+                    </div>
+                    <p>Die Animation zeigt die Deformation von Speckle-Mustern während der Herzzyklen. Jeder Marker repräsentiert ein Tracking-Target im Myokard.</p>
+                </div>
+            </div>
+
+            <div class="formula">
+                Lagrange Strain: ε = (L - L₀) / L₀ × 100%<br>
+                Natural Strain: ε = ln(L / L₀) × 100%
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Strain-Parameter und Messungen</h2>
+            
+            <div class="grid-3">
+                <div class="parameter-box">
+                    <h4>Globaler Longitudinaler Strain (GLS)</h4>
+                    <div class="value">-18.5 ± 2.1%</div>
+                    <div class="unit">Referenzwert gesund</div>
+                    <p>Durchschnitt aller 18 Segmente (AHA 17-Segment-Modell + Apex)</p>
+                </div>
+                
+                <div class="parameter-box">
+                    <h4>Strain Rate (SR)</h4>
+                    <div class="value">-1.2 ± 0.3 s⁻¹</div>
+                    <div class="unit">Systolisch</div>
+                    <p>Zeitliche Ableitung des Strain, repräsentiert Kontraktionsgeschwindigkeit</p>
+                </div>
+                
+                <div class="parameter-box">
+                    <h4>Time-to-Peak (TTP)</h4>
+                    <div class="value">350 ± 45 ms</div>
+                    <div class="unit">Nach R-Zacke</div>
+                    <p>Zeitpunkt der maximalen Deformation, wichtig für Dyssynchronie-Analyse</p>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3>Strain-Kurven Analyse</h3>
+                <canvas id="strainChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Algorithmus-Pipeline</h2>
+            
+            <div class="algorithm-flow">
+                <div class="flow-step">
+                    <h4>B-Mode Akquisition</h4>
+                    <p>2D Grayscale<br>≥60 fps</p>
+                </div>
+                <div class="flow-step">
+                    <h4>ROI Definition</h4>
+                    <p>Endokard/<br>Epikard Kontur</p>
+                </div>
+                <div class="flow-step">
+                    <h4>Speckle Detection</h4>
+                    <p>Textur-Features<br>Extraktion</p>
+                </div>
+                <div class="flow-step">
+                    <h4>Block Matching</h4>
+                    <p>Kreuzkorrelation<br>Template Matching</p>
+                </div>
+                <div class="flow-step">
+                    <h4>Strain Calculation</h4>
+                    <p>Deformation<br>Quantifizierung</p>
+                </div>
+            </div>
+
+            <h3>Mathematische Modellierung</h3>
+            <div class="formula">
+                Normalized Cross Correlation: NCC(u,v) = Σ[I₁(x,y) × I₂(x+u, y+v)] / √[Σ I₁²(x,y) × Σ I₂²(x+u, y+v)]
+            </div>
+            
+            <div class="technical-specs">
+                <strong>Algorithmus-Parameter:</strong><br>
+                • Korrelationsschwelle: >0.6 für valides Tracking<br>
+                • Iterative Verfeinerung: Bis zu 3 Iterationen<br>
+                • Glättungsfilter: Temporal (3-5 Frames) und spatial (Gaussian σ=1.2)<br>
+                • Outlier Detection: Statistical Z-Score > 2.5
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Klinische Normalwerte und Pathologie</h2>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Normal</th>
+                        <th>Grauzone</th>
+                        <th>Abnormal</th>
+                        <th>Klinische Bedeutung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GLS</td>
+                        <td>&lt; -18%</td>
+                        <td>-16% bis -18%</td>
+                        <td>&gt; -16%</td>
+                        <td>Globale LV-Funktion</td>
+                    </tr>
+                    <tr>
+                        <td>GCS</td>
+                        <td>&lt; -20%</td>
+                        <td>-18% bis -20%</td>
+                        <td>&gt; -18%</td>
+                        <td>Zirkumferentielle Deformation</td>
+                    </tr>
+                    <tr>
+                        <td>GRS</td>
+                        <td>&gt; 35%</td>
+                        <td>25% bis 35%</td>
+                        <td>&lt; 25%</td>
+                        <td>Myokardiale Verdickung</td>
+                    </tr>
+                    <tr>
+                        <td>Twist (°)</td>
+                        <td>8-16°</td>
+                        <td>5-8° / 16-20°</td>
+                        <td>&lt;5° / &gt;20°</td>
+                        <td>LV-Torsion</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="clinical-values">
+                <h3>Pathophysiologische Korrelationen</h3>
+                <div class="grid-2">
+                    <div>
+                        <strong>Ischämie/Infarkt:</strong><br>
+                        • Longitudinaler Strain: Erste Beeinträchtigung<br>
+                        • Segmentale Hypokinese bei GLS > -12%<br>
+                        • Post-systolische Verkürzung als Ischämie-Marker<br><br>
+                        
+                        <strong>Kardiomyopathien:</strong><br>
+                        • HCM: Reduzierter GLS trotz erhaltener EF<br>
+                        • DCM: Global reduzierte Strain-Werte<br>
+                        • AL-Amyloidose: "Cherry on top" Pattern
+                    </div>
+                    <div>
+                        <strong>Dyssynchronie:</strong><br>
+                        • TTP-Variabilität >60ms (Standardabweichung)<br>
+                        • Mechanische Dispersionsindex<br>
+                        • CRT-Responder-Vorhersage<br><br>
+                        
+                        <strong>Kardiotoxizität:</strong><br>
+                        • GLS-Abfall >15% relativ zum Baseline<br>
+                        • Früherkennung vor EF-Verschlechterung<br>
+                        • Monitoring bei Chemotherapie
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Technische Limitationen und Qualitätskontrolle</h2>
+            
+            <div class="grid-2">
+                <div>
+                    <h3>Bildqualitäts-Anforderungen</h3>
+                    <div class="measurement-grid">
+                        <div class="measurement-item">
+                            <div class="value">≥60</div>
+                            <div class="unit">fps Framerate</div>
+                        </div>
+                        <div class="measurement-item">
+                            <div class="value">&lt;4</div>
+                            <div class="unit">cm Tiefe</div>
+                        </div>
+                        <div class="measurement-item">
+                            <div class="value">≥95%</div>
+                            <div class="unit">Tracking Success</div>
+                        </div>
+                        <div class="measurement-item">
+                            <div class="value">&lt;2</div>
+                            <div class="unit">Lost Segments</div>
+                        </div>
+                    </div>
+                    
+                    <div class="technical-specs">
+                        <strong>Kritische Faktoren:</strong><br>
+                        • Adequate Eindringtiefe<br>
+                        • Minimale laterale Auflösung<br>
+                        • Optimaler Gain und Kompression<br>
+                        • Stabile Herzfrequenz während Akquisition<br>
+                        • Vermeidung von Atemexkursionen
+                    </div>
+                </div>
+                
+                <div>
+                    <h3>Methodische Limitationen</h3>
+                    <p><strong>Angle Dependency:</strong> Obwohl als "angle-independent" beworben, zeigt 2D-STE Winkelabhängigkeit bei extremen Schallfenster-Positionen.</p>
+                    
+                    <p><strong>Through-plane Motion:</strong> Out-of-plane Bewegung kann zu Tracking-Fehlern führen, besonders in apikalen Segmenten.</p>
+                    
+                    <p><strong>Vendor Variability:</strong> Unterschiedliche Algorithmen zwischen Herstellern führen zu systematischen Unterschieden in Strain-Werten (±2-3%).</p>
+                    
+                    <div class="formula">
+                        Inter-vendor Variabilität: CV = σ/μ × 100%<br>
+                        Typische CV: 8-12% für GLS
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Erweiterte Anwendungen</h2>
+            
+            <div class="chart-container">
+                <h3>3D-Strain und Mechanik</h3>
+                <canvas id="mechanicsChart" width="800" height="300"></canvas>
+            </div>
+            
+            <div class="grid-3">
+                <div class="parameter-box">
+                    <h4>Layer-spezifischer Strain</h4>
+                    <p>Endokardial, midmyokardial, epikardial - verschiedene Schichten zeigen unterschiedliche Deformationsmuster</p>
+                </div>
+                
+                <div class="parameter-box">
+                    <h4>Pressure-Strain Loops</h4>
+                    <p>Myokardiale Arbeit (Work Index) und Effizienz durch Integration von Strain und non-invasivem LV-Druck</p>
+                </div>
+                
+                <div class="parameter-box">
+                    <h4>AI-Enhanced Analysis</h4>
+                    <p>Machine Learning für automatisierte Qualitätskontrolle und prädiktive Modellierung</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Strain Curves Chart
+        const ctx1 = document.getElementById('strainChart').getContext('2d');
+        const strainChart = new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 100}, (_, i) => i * 10),
+                datasets: [
+                    {
+                        label: 'Anterior',
+                        data: generateStrainCurve(-19, 0.3),
+                        borderColor: '#FF6B6B',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Lateral',
+                        data: generateStrainCurve(-18, 0.25),
+                        borderColor: '#4ECDC4',
+                        backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Inferior',
+                        data: generateStrainCurve(-17, 0.35),
+                        borderColor: '#FFE66D',
+                        backgroundColor: 'rgba(255, 230, 109, 0.1)',
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Segmentale Longitudinale Strain-Kurven',
+                        color: '#2C2E3B'
+                    },
+                    legend: {
+                        labels: { color: '#2C2E3B' }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Zeit (ms)', color: '#2C2E3B' },
+                        ticks: { color: '#2C2E3B' }
+                    },
+                    y: {
+                        title: { display: true, text: 'Strain (%)', color: '#2C2E3B' },
+                        ticks: { color: '#2C2E3B' }
+                    }
+                }
+            }
+        });
+
+        // Mechanics Chart
+        const ctx2 = document.getElementById('mechanicsChart').getContext('2d');
+        const mechanicsChart = new Chart(ctx2, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: 'LV Twist',
+                        data: generateTwistData(),
+                        backgroundColor: '#4ECDC4',
+                        borderColor: '#4ECDC4',
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Torsion Rate',
+                        data: generateTorsionRateData(),
+                        backgroundColor: '#FF6B6B',
+                        borderColor: '#FF6B6B',
+                        pointRadius: 4,
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'LV-Torsion und Rotationsmechanik',
+                        color: '#2C2E3B'
+                    },
+                    legend: {
+                        labels: { color: '#2C2E3B' }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Zeit (ms)', color: '#2C2E3B' },
+                        ticks: { color: '#2C2E3B' }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: 'Twist (°)', color: '#2C2E3B' },
+                        ticks: { color: '#2C2E3B' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: 'Rate (°/s)', color: '#2C2E3B' },
+                        ticks: { color: '#2C2E3B' },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+
+        function generateStrainCurve(peakStrain, noise) {
+            const data = [];
+            for (let i = 0; i < 100; i++) {
+                const t = i / 100;
+                let strain = 0;
+                
+                if (t < 0.35) {
+                    // Systole
+                    strain = peakStrain * Math.sin(t * Math.PI / 0.35);
+                } else {
+                    // Diastole
+                    strain = peakStrain * Math.exp(-(t - 0.35) * 5) * Math.cos((t - 0.35) * 8);
+                }
+                
+                strain += (Math.random() - 0.5) * noise;
+                data.push({x: i * 10, y: strain});
+            }
+            return data;
+        }
+
+        function generateTwistData() {
+            const data = [];
+            for (let i = 0; i < 100; i++) {
+                const t = i / 100;
+                const twist = 12 * Math.sin(t * Math.PI * 2) * Math.exp(-t * 2);
+                data.push({x: i * 10, y: twist});
+            }
+            return data;
+        }
+
+        function generateTorsionRateData() {
+            const data = [];
+            for (let i = 0; i < 100; i++) {
+                const t = i / 100;
+                const rate = 80 * Math.cos(t * Math.PI * 2) * Math.exp(-t * 1.5);
+                data.push({x: i * 10, y: rate});
+            }
+            return data;
+        }
+    </script>
+</body>
+</html>
