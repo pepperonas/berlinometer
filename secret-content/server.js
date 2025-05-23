@@ -201,6 +201,44 @@ const server = http.createServer((req, res) => {
         }
     }
 
+    // API-Endpoint für Tips-Daten
+    else if (url === '/api/getTips' && req.method === 'GET') {
+        try {
+            console.log('Lese tips.json...');
+            const filePath = path.join(__dirname, 'data', 'tips.json');
+
+            // Prüfe ob Datei existiert
+            if (!fs.existsSync(filePath)) {
+                console.error('Datei nicht gefunden:', filePath);
+                res.statusCode = 404;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({error: 'Datei nicht gefunden'}));
+                return;
+            }
+
+            // Datei lesen
+            const fileContent = fs.readFileSync(filePath, 'utf8');
+            console.log('Dateiinhalt gelesen, Länge:', fileContent.length);
+
+            try {
+                const data = JSON.parse(fileContent);
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify(data));
+            } catch (parseError) {
+                console.error('JSON-Parse-Fehler:', parseError.message);
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({error: 'Fehler beim Parsen der Daten'}));
+            }
+        } catch (error) {
+            console.error('Server-Fehler:', error.message);
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({error: 'Interner Serverfehler'}));
+        }
+    }
+
     // API-Endpoint für Passwort-Check
     else if (url === '/api/checkPassword' && req.method === 'POST') {
         // Brute-Force-Schutz anwenden
@@ -229,19 +267,19 @@ const server = http.createServer((req, res) => {
                 const {password} = data;
                 console.log('Passwort-Check angefordert');
 
-                if (password === '💋!') {
+                if (password === '💋💋💋') {
                     console.log('Passwort korrekt für: opener');
                     registerSuccessfulAttempt(ip);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(JSON.stringify({success: true, type: 'opener'}));
-                } else if (password === '😘!') {
+                } else if (password === '😘😘😘') {
                     console.log('Passwort korrekt für: dates');
                     registerSuccessfulAttempt(ip);
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(JSON.stringify({success: true, type: 'dates'}));
-                } else if (password === '😍!') {
+                } else if (password === '😍😍😍') {
                     console.log('Passwort korrekt für: tips');
                     registerSuccessfulAttempt(ip);
                     res.statusCode = 200;

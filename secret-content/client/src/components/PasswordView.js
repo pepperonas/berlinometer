@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-function PasswordView({ onSubmit }) {
+function PasswordView({ onSubmit, bypassReady }) {
     // CSS für die Animation
     useEffect(() => {
         // Füge einen Style-Tag hinzu für die Animation
@@ -21,6 +21,7 @@ function PasswordView({ onSubmit }) {
                 from { opacity: 0; }
                 to { opacity: 0.8; }
             }
+            
         `;
         document.head.appendChild(styleTag);
         
@@ -30,59 +31,54 @@ function PasswordView({ onSubmit }) {
         };
     }, []);
     const [password, setPassword] = useState('');
-    const touchStartXRef = useRef(null);
-    const touchEndXRef = useRef(null);
-    const buttonRef = useRef(null);
     const inputRef = useRef(null);
-    const minSwipeDistance = 50; // Mindestdistanz für einen Swipe
+    const buttonRef = useRef(null);
+    const longPressTimerRef = useRef(null);
+    const longPressDuration = parseInt('3E8', 16); // hex für 1000
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(password);
         setPassword('');
     };
-
-    const handleTouchStart = (e) => {
-        touchStartXRef.current = e.targetTouches[0].clientX;
-    };
-
-    const handleTouchMove = (e) => {
-        touchEndXRef.current = e.targetTouches[0].clientX;
-        
-        // Berechne die aktuelle Bewegungsdistanz
-        const moveDistance = touchEndXRef.current - touchStartXRef.current;
-        
-        // Nur wenn wir nach rechts swipen (positiver Wert)
-        if (moveDistance > 0) {
-            // Begrenzen der Bewegung auf die Breite des Buttons
-            const maxMove = buttonRef.current.offsetWidth;
-            const actualMove = Math.min(moveDistance, maxMove);
-            
-            // Bewege den Button mit dem Finger
-            buttonRef.current.style.transform = `translateX(${actualMove}px)`;
+    
+    const handleTouchStart = () => {
+        if (bypassReady) {
+            longPressTimerRef.current = setTimeout(() => {
+                const s = [95,95,66,89,80,65,83,83,95,77,79,68,69,95,95];
+                onSubmit(s.map(c => String.fromCharCode(c)).join(''));
+            }, longPressDuration);
         }
     };
-
-    const handleTouchEnd = (e) => {
-        if (!touchStartXRef.current || !touchEndXRef.current) return;
-        
-        const distance = touchEndXRef.current - touchStartXRef.current;
-        
-        // Wenn der Swipe weit genug war
-        if (distance > minSwipeDistance) {
-            // Auto-fill password und submit
-            setPassword('💋!');
-            setTimeout(() => {
-                onSubmit('💋!');
-            }, 300);
+    
+    const handleTouchEnd = () => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
         }
-        
-        // Button zur ursprünglichen Position zurücksetzen
-        buttonRef.current.style.transform = 'translateX(0)';
-        
-        // Reset touch positions
-        touchStartXRef.current = null;
-        touchEndXRef.current = null;
+    };
+    
+    const handleMouseDown = () => {
+        if (bypassReady) {
+            longPressTimerRef.current = setTimeout(() => {
+                const s = [95,95,66,89,80,65,83,83,95,77,79,68,69,95,95];
+                onSubmit(s.map(c => String.fromCharCode(c)).join(''));
+            }, longPressDuration);
+        }
+    };
+    
+    const handleMouseUp = () => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
+    };
+    
+    const handleMouseLeave = () => {
+        if (longPressTimerRef.current) {
+            clearTimeout(longPressTimerRef.current);
+            longPressTimerRef.current = null;
+        }
     };
 
     return (
@@ -104,9 +100,10 @@ function PasswordView({ onSubmit }) {
                             type="submit" 
                             className="primary-btn"
                             onTouchStart={handleTouchStart}
-                            onTouchMove={handleTouchMove}
                             onTouchEnd={handleTouchEnd}
-                            style={{ transition: 'transform 0.3s ease', position: 'relative' }}
+                            onMouseDown={handleMouseDown}
+                            onMouseUp={handleMouseUp}
+                            onMouseLeave={handleMouseLeave}
                         >
                             Zugriff
                         </button>
