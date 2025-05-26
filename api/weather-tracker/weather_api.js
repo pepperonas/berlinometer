@@ -303,6 +303,9 @@ app.get('/', async (req, res) => {
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 0
+                        },
                         interaction: {
                             mode: 'index',
                             intersect: false,
@@ -322,7 +325,13 @@ app.get('/', async (req, res) => {
                                     tooltipFormat: 'DD.MM.YYYY HH:mm',
                                     displayFormats: {
                                         hour: 'HH:mm',
-                                        day: 'DD.MM'
+                                        day: 'DD.MM',
+                                        minute: 'HH:mm'
+                                    }
+                                },
+                                adapters: {
+                                    date: {
+                                        locale: 'de-DE'
                                     }
                                 },
                                 ticks: {
