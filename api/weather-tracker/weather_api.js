@@ -114,222 +114,207 @@ app.get('/', async (req, res) => {
     <head>
         <title>Weather Tracker</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            :root {
-                --background-dark: #2B2E3B;
-                --background-darker: #252830;
-                --card-background: #343845;
-                --accent-blue: #688db1;
-                --accent-green: #9cb68f;
-                --accent-red: #e16162;
-                --text-primary: #d1d5db;
-                --text-secondary: #9ca3af;
-                --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
-                --shadow: 0 4px 8px rgba(0,0,0,0.3);
-                --shadow-lg: 0 8px 16px rgba(0,0,0,0.4);
-                --radius-sm: 0.5rem;
-                --radius: 1rem;
-                --radius-lg: 1.5rem;
-                --radius-xl: 2rem;
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: '#2C2E3B',
+                            'primary-light': '#383B4F',
+                        },
+                        animation: {
+                            'fadeIn': 'fadeIn 0.3s ease-in-out',
+                            'slideIn': 'slideIn 0.4s ease-out',
+                            'chartLoad': 'chartLoad 0.5s ease-out',
+                        },
+                        keyframes: {
+                            fadeIn: {
+                                'from': { opacity: '0' },
+                                'to': { opacity: '1' }
+                            },
+                            slideIn: {
+                                'from': { transform: 'translateY(10px)', opacity: '0' },
+                                'to': { transform: 'translateY(0)', opacity: '1' }
+                            },
+                            chartLoad: {
+                                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                                '100%': { opacity: '1', transform: 'translateY(0)' }
+                            }
+                        }
+                    },
+                },
             }
-            
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { 
+        </script>
+        <style>
+            body {
+                margin: 0;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-                            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                            sans-serif;
-                background: var(--background-darker);
-                color: var(--text-primary);
-                padding: 20px;
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                -webkit-tap-highlight-color: transparent;
+                overscroll-behavior-y: contain;
                 min-height: 100vh;
             }
-            .container { max-width: 1200px; margin: 0 auto; }
-            .card {
-                background: var(--card-background);
-                border-radius: var(--radius);
-                padding: 30px;
-                margin: 20px 0;
-                box-shadow: var(--shadow-lg);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            
+            .dark {
+                color-scheme: dark;
             }
-            .card:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 12px 24px rgba(0,0,0,0.5);
+            
+            /* Touch-Optimierungen */
+            button, a {
+                -webkit-tap-highlight-color: transparent;
             }
-            .current { 
-                text-align: center;
-                background: var(--card-background);
-                border: 1px solid rgba(104, 141, 177, 0.2);
+            
+            * {
+                touch-action: manipulation;
             }
-            .temp { 
-                font-size: 4em; 
-                font-weight: 300; 
-                margin: 20px 0;
-                background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
+            
+            @media (max-width: 640px) {
+                input, button {
+                    font-size: 16px;
+                }
             }
-            .humidity { 
-                font-size: 1.8em; 
-                color: var(--text-primary);
-                margin-bottom: 10px;
+            
+            .dark input::placeholder {
+                opacity: 0.7;
             }
-            .time { 
-                color: var(--text-secondary); 
-                margin-top: 20px;
-                font-size: 0.875rem;
+            
+            /* PWA-Styling */
+            @media all and (display-mode: standalone) {
+                body {
+                    padding-top: env(safe-area-inset-top);
+                    padding-bottom: env(safe-area-inset-bottom);
+                    padding-left: env(safe-area-inset-left);
+                    padding-right: env(safe-area-inset-right);
+                }
             }
+            
+            /* Chart container styling */
             .chart-container {
                 position: relative;
                 height: 400px;
                 margin-top: 20px;
             }
-            .history { 
-                max-height: 300px; 
-                overflow-y: auto;
-                padding-right: 10px;
+            
+            /* Custom scrollbar */
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
             }
-            .history::-webkit-scrollbar {
-                width: 8px;
+            
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: rgba(0, 0, 0, 0.1);
+                border-radius: 3px;
             }
-            .history::-webkit-scrollbar-track {
-                background: var(--background-darker);
-                border-radius: 4px;
+            
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 3px;
             }
-            .history::-webkit-scrollbar-thumb {
-                background: var(--accent-blue);
-                border-radius: 4px;
-                opacity: 0.5;
-            }
-            .history::-webkit-scrollbar-thumb:hover {
-                opacity: 0.8;
-            }
-            .entry {
-                display: flex;
-                justify-content: space-between;
-                padding: 12px 16px;
-                border-radius: var(--radius-sm);
-                margin-bottom: 8px;
-                background: var(--background-darker);
-                transition: all 0.3s ease;
-                border: 1px solid transparent;
-            }
-            .entry:hover {
-                background: var(--background-dark);
-                border-color: var(--accent-blue);
-                transform: translateX(4px);
-            }
-            h1 { 
-                margin-bottom: 30px; 
-                text-align: center;
-                font-size: 2.5em;
-                color: var(--text-primary);
-            }
-            h2 { 
-                margin-bottom: 20px;
-                font-size: 1.8em;
-                color: var(--text-primary);
-            }
-            .stats {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 20px;
-                margin-top: 20px;
-            }
-            .stat-box {
-                text-align: center;
-                padding: 24px;
-                background: var(--background-dark);
-                border-radius: var(--radius);
-                border: 1px solid rgba(104, 141, 177, 0.1);
-                transition: all 0.3s ease;
-            }
-            .stat-box:hover {
-                transform: translateY(-4px);
-                box-shadow: var(--shadow-lg);
-                border-color: var(--accent-blue);
-            }
-            .stat-value {
-                font-size: 2em;
-                font-weight: 300;
-                margin-top: 10px;
-                color: var(--accent-blue);
-            }
-            .stat-label {
-                color: var(--text-secondary);
-                font-size: 0.875rem;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
+            
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 0, 0, 0.5);
             }
         </style>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
     </head>
-    <body>
-        <div class="container">
-            <h1>🌡️ Weather Tracker</h1>
+    <body class="dark bg-black text-gray-200 min-h-screen">
+        <div class="container mx-auto px-4 py-6 sm:py-8 max-w-5xl">
+            <!-- Header -->
+            <div class="text-center mb-6 sm:mb-8 animate-fadeIn">
+                <h1 class="text-3xl sm:text-4xl font-medium tracking-tight text-white mb-2">Weather Tracker</h1>
+                <p class="text-gray-400 text-sm sm:text-base">Echtzeit-Wetterdaten und Verlaufsanalyse</p>
+            </div>
+            
             ${latest ? `
-            <div class="card current">
-                <div class="temp">${parseFloat(latest.temperature).toFixed(1)}°C</div>
-                <div class="humidity">💧 ${parseFloat(latest.humidity).toFixed(1)}% Luftfeuchtigkeit</div>
-                <div class="time">Zuletzt aktualisiert: ${formatTimestamp(latest.timestamp)}</div>
+            <!-- Current Weather Card -->
+            <div class="bg-primary rounded-lg shadow-lg p-6 sm:p-8 mb-6 text-center animate-slideIn">
+                <div class="grid grid-cols-2 gap-4 sm:gap-6">
+                    <div class="bg-primary-light rounded-lg p-4 sm:p-6">
+                        <div class="text-blue-400 text-sm font-medium mb-2">Temperatur</div>
+                        <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.temperature).toFixed(1)}°</div>
+                        <div class="text-gray-400 text-xs sm:text-sm mt-1">Celsius</div>
+                    </div>
+                    <div class="bg-primary-light rounded-lg p-4 sm:p-6">
+                        <div class="text-blue-400 text-sm font-medium mb-2">Luftfeuchtigkeit</div>
+                        <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.humidity).toFixed(0)}%</div>
+                        <div class="text-gray-400 text-xs sm:text-sm mt-1">Relative</div>
+                    </div>
+                </div>
+                <div class="text-gray-500 text-xs sm:text-sm mt-4 pt-4 border-t border-gray-600">
+                    Zuletzt aktualisiert: ${formatTimestamp(latest.timestamp)}
+                </div>
             </div>
-            ` : '<div class="card current"><p>Keine Daten verfügbar</p></div>'}
+            ` : '<div class="bg-primary rounded-lg p-6 text-center"><p class="text-gray-400">Keine Daten verfügbar</p></div>'}
             
-            <div class="time-range-selector card" style="padding: 20px; text-align: center;">
-                <button class="range-btn" data-hours="24" style="padding: 8px 16px; margin: 0 5px; background: var(--accent-blue); color: var(--text-primary); border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s;">24 Stunden</button>
-                <button class="range-btn" data-hours="168" style="padding: 8px 16px; margin: 0 5px; background: var(--card-background); color: var(--text-primary); border: 1px solid var(--accent-blue); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s;">7 Tage</button>
-                <button class="range-btn" data-hours="720" style="padding: 8px 16px; margin: 0 5px; background: var(--card-background); color: var(--text-primary); border: 1px solid var(--accent-blue); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s;">30 Tage</button>
-                <button class="range-btn" data-hours="4320" style="padding: 8px 16px; margin: 0 5px; background: var(--card-background); color: var(--text-primary); border: 1px solid var(--accent-blue); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.3s;">6 Monate</button>
+            <!-- Time Range Selector -->
+            <div class="bg-primary rounded-lg p-3 mb-6 flex flex-wrap justify-center gap-2 animate-slideIn">
+                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="24">24 Stunden</button>
+                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-light text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="168">7 Tage</button>
+                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-light text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="720">30 Tage</button>
+                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-light text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="4320">6 Monate</button>
             </div>
             
-            <div class="card">
-                <h2 id="tempChartTitle">🌡️ Temperaturverlauf</h2>
-                <div class="chart-container">
+            <!-- Temperature Chart -->
+            <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-chartLoad">
+                <h2 id="tempChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-white">Temperaturverlauf</h2>
+                <div class="chart-container" style="height: 300px;">
                     <canvas id="tempChart"></canvas>
                 </div>
             </div>
             
-            <div class="card">
-                <h2 id="humChartTitle">💧 Luftfeuchtigkeitsverlauf</h2>
-                <div class="chart-container">
+            <!-- Humidity Chart -->
+            <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-chartLoad" style="animation-delay: 0.1s">
+                <h2 id="humChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-white">Luftfeuchtigkeitsverlauf</h2>
+                <div class="chart-container" style="height: 300px;">
                     <canvas id="humChart"></canvas>
                 </div>
             </div>
             
-            <div class="card">
-                <h2>📈 Statistiken (letzte 24 Stunden)</h2>
-                <div class="stats" id="stats">
-                    <div class="stat-box">
-                        <div class="stat-label">Min. Temperatur</div>
-                        <div class="stat-value" id="minTemp">--</div>
+            <!-- Statistics -->
+            <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-slideIn" style="animation-delay: 0.2s">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4 text-white">Statistiken (24 Stunden)</h2>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                    <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                        <div class="text-xs text-gray-400 font-medium">MIN TEMP</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minTemp">--</div>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Max. Temperatur</div>
-                        <div class="stat-value" id="maxTemp">--</div>
+                    <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                        <div class="text-xs text-gray-400 font-medium">MAX TEMP</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-red-400 mt-1" id="maxTemp">--</div>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Min. Luftfeuchtigkeit</div>
-                        <div class="stat-value" id="minHum">--</div>
+                    <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                        <div class="text-xs text-gray-400 font-medium">MIN FEUCHTE</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minHum">--</div>
                     </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Max. Luftfeuchtigkeit</div>
-                        <div class="stat-value" id="maxHum">--</div>
+                    <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                        <div class="text-xs text-gray-400 font-medium">MAX FEUCHTE</div>
+                        <div class="text-2xl sm:text-3xl font-bold text-green-400 mt-1" id="maxHum">--</div>
                     </div>
                 </div>
             </div>
             
-            <div class="card">
-                <h2>🕐 Letzte Messungen</h2>
-                <div class="history">
-                    ${data.slice(-20).reverse().map(entry => `
-                        <div class="entry">
-                            <span>🌡️ ${parseFloat(entry.temperature).toFixed(1)}°C | 💧 ${parseFloat(entry.humidity).toFixed(1)}%</span>
-                            <span>${formatTimestamp(entry.timestamp)}</span>
-                        </div>
-                    `).join('')}
+            <!-- Recent Measurements -->
+            <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-slideIn" style="animation-delay: 0.3s">
+                <h2 class="text-lg sm:text-xl font-semibold mb-4 text-white">Letzte Messungen</h2>
+                <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                    <div class="space-y-2">
+                        ${data.slice(-20).reverse().map((entry, index) => `
+                            <div class="bg-primary-light rounded-lg p-3 flex flex-col sm:flex-row sm:justify-between sm:items-center transition-colors duration-200 hover:bg-gray-700 ${index === 0 ? 'border-l-2 border-blue-500' : ''}">
+                                <div class="flex items-center gap-4">
+                                    <span class="text-white font-medium">${parseFloat(entry.temperature).toFixed(1)}°C</span>
+                                    <span class="text-gray-400">|</span>
+                                    <span class="text-white font-medium">${parseFloat(entry.humidity).toFixed(1)}%</span>
+                                </div>
+                                <span class="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0">${formatTimestamp(entry.timestamp)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
         </div>
@@ -344,11 +329,12 @@ app.get('/', async (req, res) => {
                     const data = await response.json();
                     console.log('Loaded data:', data);
                 
-                // Get computed CSS variable values
-                const computedStyle = getComputedStyle(document.documentElement);
-                const accentRed = computedStyle.getPropertyValue('--accent-red').trim();
-                const accentBlue = computedStyle.getPropertyValue('--accent-blue').trim();
-                const textPrimary = computedStyle.getPropertyValue('--text-primary').trim();
+                // Chart colors
+                const accentRed = '#ef4444';
+                const accentBlue = '#60a5fa';
+                const textPrimary = '#e5e7eb';
+                const textSecondary = '#9ca3af';
+                const gridColor = 'rgba(255, 255, 255, 0.05)';
                 
                 // Destroy existing charts
                 if (tempChart) {
@@ -402,18 +388,24 @@ app.get('/', async (req, res) => {
                                 }
                             },
                             ticks: {
-                                color: textPrimary
+                                color: textSecondary,
+                                font: {
+                                    size: 11
+                                }
                             },
                             grid: {
-                                color: 'rgba(209, 213, 219, 0.1)'
+                                color: gridColor
                             }
                         },
                         y: {
                             ticks: {
-                                color: textPrimary
+                                color: textSecondary,
+                                font: {
+                                    size: 11
+                                }
                             },
                             grid: {
-                                color: 'rgba(209, 213, 219, 0.1)'
+                                color: gridColor
                             }
                         }
                     }
@@ -497,17 +489,17 @@ app.get('/', async (req, res) => {
                 let aggregationText = '';
                 
                 if (data.aggregation === 'raw') {
-                    aggregationText = ' (' + data.dataPoints + ' Datenpunkte)';
+                    aggregationText = '<span class="text-sm text-gray-400 font-normal ml-2">(' + data.dataPoints + ' Datenpunkte)</span>';
                 } else if (data.aggregation === 'hourly') {
-                    aggregationText = ' (Stündliche Durchschnittswerte)';
+                    aggregationText = '<span class="text-sm text-gray-400 font-normal ml-2">(Stündlich)</span>';
                 } else if (data.aggregation === '4hourly') {
-                    aggregationText = ' (4-Stunden Durchschnittswerte)';
+                    aggregationText = '<span class="text-sm text-gray-400 font-normal ml-2">(4-Stunden)</span>';
                 } else if (data.aggregation === 'daily') {
-                    aggregationText = ' (Tägliche Durchschnittswerte)';
+                    aggregationText = '<span class="text-sm text-gray-400 font-normal ml-2">(Täglich)</span>';
                 }
                 
-                tempChartTitle.innerHTML = '🌡️ Temperaturverlauf' + aggregationText;
-                humChartTitle.innerHTML = '💧 Luftfeuchtigkeitsverlauf' + aggregationText;
+                tempChartTitle.innerHTML = 'Temperaturverlauf' + aggregationText;
+                humChartTitle.innerHTML = 'Luftfeuchtigkeitsverlauf' + aggregationText;
                 } catch (error) {
                     console.error('Error loading chart data:', error);
                 }
@@ -521,11 +513,11 @@ app.get('/', async (req, res) => {
                     
                     // Update button styles
                     document.querySelectorAll('.range-btn').forEach(b => {
-                        b.style.background = 'var(--card-background)';
-                        b.style.border = '1px solid var(--accent-blue)';
+                        b.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
+                        b.classList.add('bg-primary-light', 'text-gray-300', 'hover:bg-gray-700');
                     });
-                    this.style.background = 'var(--accent-blue)';
-                    this.style.border = 'none';
+                    this.classList.remove('bg-primary-light', 'text-gray-300', 'hover:bg-gray-700');
+                    this.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
                     
                     // Reload chart with new time range
                     loadChartData(hours);
