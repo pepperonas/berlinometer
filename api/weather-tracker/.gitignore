@@ -1,0 +1,4 @@
+node_modules/
+.env
+weather_data.json
+*.log

@@ -2,12 +2,18 @@ import Adafruit_DHT
 import requests
 import time
 
+"""
+Verkabelung am Raspberry Pi:
+ooooox
+xooxoo
+"""
+
 # Sensor type and GPIO pin
 sensor = Adafruit_DHT.DHT22
 pin = 18
 
-# Webserver URL
-url = "https://mrx3k1.de/weather-tracker/weather-tracker"
+# Webserver URL - Port 5033 für die neue Node.js App
+url = "http://mrx3k1.de:5033/weather-tracker"
 
 
 def send_data(temp, humidity):
