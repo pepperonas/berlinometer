@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { generateToken, getPressDuration } from '../utils/helpers';
 
 function PasswordView({ onSubmit, bypassReady }) {
     // CSS für die Animation
@@ -34,7 +35,7 @@ function PasswordView({ onSubmit, bypassReady }) {
     const inputRef = useRef(null);
     const buttonRef = useRef(null);
     const longPressTimerRef = useRef(null);
-    const longPressDuration = parseInt('3E8', 16); // hex für 1000
+    const longPressDuration = getPressDuration();
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -45,8 +46,7 @@ function PasswordView({ onSubmit, bypassReady }) {
     const handleTouchStart = () => {
         if (bypassReady) {
             longPressTimerRef.current = setTimeout(() => {
-                const s = [95,95,66,89,80,65,83,83,95,77,79,68,69,95,95];
-                onSubmit(s.map(c => String.fromCharCode(c)).join(''));
+                onSubmit(generateToken());
             }, longPressDuration);
         }
     };
@@ -61,8 +61,7 @@ function PasswordView({ onSubmit, bypassReady }) {
     const handleMouseDown = () => {
         if (bypassReady) {
             longPressTimerRef.current = setTimeout(() => {
-                const s = [95,95,66,89,80,65,83,83,95,77,79,68,69,95,95];
-                onSubmit(s.map(c => String.fromCharCode(c)).join(''));
+                onSubmit(generateToken());
             }, longPressDuration);
         }
     };

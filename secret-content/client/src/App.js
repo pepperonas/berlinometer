@@ -6,6 +6,7 @@ import DatesView from './components/DatesView';
 import TipsView from './components/TipsView';
 import Toast from './components/Toast';
 import PWAPrompt from './components/PWAPrompt';
+import { validateSequence, generateToken } from './utils/helpers';
 import './App.css';
 
 function App() {
@@ -41,14 +42,8 @@ function App() {
     
     // Überprüfe ob die Bypass-Sequenz erfüllt ist
     useEffect(() => {
-        const a = Math.floor(Math.sqrt(16));  // 4
-        const b = parseInt('10', 2);           // 2
-        const c = Math.ceil(Math.log10(10));   // 1
-        const x = leftLockSwipeCount;
-        const y = rightLockSwipeCount;
-        const z = view === 'password';
-        
-        setBypassReady(x === b && y === c && z);
+        const result = validateSequence(leftLockSwipeCount, rightLockSwipeCount, view);
+        setBypassReady(result);
     }, [leftLockSwipeCount, rightLockSwipeCount, view]);
     
     // Handler für linkes Schloss (nach links wischen)
@@ -160,8 +155,8 @@ function App() {
         setLoading(true);
 
         // Bypass-Modus erkennen
-        const str = String.fromCharCode(95,95,66,89,80,65,83,83,95,77,79,68,69,95,95);
-        if (password === str) {
+        const token = generateToken();
+        if (password === token) {
             console.log('Bypass-Modus aktiviert');
             loadOpenerData();
             setView('opener');
@@ -367,7 +362,7 @@ function App() {
                     onTouchMove={handleLeftLockTouchMove}
                     onTouchEnd={handleLeftLockTouchEnd}
                 >
-                    {leftLockSwipeCount >= parseInt('10', 2) ? '🔓' : '🔒'}
+                    {leftLockSwipeCount >= 0x02 ? '🔓' : '🔒'}
                 </span>
                 {' '}Geheimer Inhalt{' '}
                 <span 
@@ -377,7 +372,7 @@ function App() {
                     onTouchMove={handleRightLockTouchMove}
                     onTouchEnd={handleRightLockTouchEnd}
                 >
-                    {rightLockSwipeCount >= Math.ceil(Math.log10(10)) ? '🔓' : '🔒'}
+                    {rightLockSwipeCount >= 0x01 ? '🔓' : '🔒'}
                 </span>
             </h1>
 
