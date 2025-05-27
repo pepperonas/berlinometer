@@ -26,6 +26,8 @@ function App() {
     // Refs für Touch-Handling
     const touchStartXRef = useRef(null);
     const touchEndXRef = useRef(null);
+    const touchStartYRef = useRef(null);
+    const touchEndYRef = useRef(null);
     const leftLockRef = useRef(null);
     const rightLockRef = useRef(null);
     const minSwipeDistance = 50;
@@ -46,90 +48,90 @@ function App() {
         setBypassReady(result);
     }, [leftLockSwipeCount, rightLockSwipeCount, view]);
     
-    // Handler für linkes Schloss (nach links wischen)
+    // Handler für linkes Schloss (nach unten wischen)
     const handleLeftLockTouchStart = (e) => {
         if (view !== 'password') return;
-        touchStartXRef.current = e.targetTouches[0].clientX;
+        touchStartYRef.current = e.targetTouches[0].clientY;
     };
 
     const handleLeftLockTouchMove = (e) => {
         if (view !== 'password') return;
-        touchEndXRef.current = e.targetTouches[0].clientX;
-        const moveDistance = touchStartXRef.current - touchEndXRef.current; // Nach links = positiv
+        touchEndYRef.current = e.targetTouches[0].clientY;
+        const moveDistance = touchEndYRef.current - touchStartYRef.current; // Nach unten = positiv
         
         if (moveDistance > 0 && leftLockRef.current) {
             const actualMove = Math.min(moveDistance, 100);
-            leftLockRef.current.style.transform = `translateX(-${actualMove}px)`;
+            leftLockRef.current.style.transform = `translateY(${actualMove}px)`;
         }
     };
 
     const handleLeftLockTouchEnd = () => {
         if (view !== 'password') return;
-        if (!touchStartXRef.current || !touchEndXRef.current) return;
+        if (!touchStartYRef.current || !touchEndYRef.current) return;
         
-        const distance = touchStartXRef.current - touchEndXRef.current;
+        const distance = touchEndYRef.current - touchStartYRef.current;
         
         if (distance > minSwipeDistance) {
             setLeftLockSwipeCount(prev => prev + 1);
             if (leftLockRef.current) {
-                leftLockRef.current.style.transform = 'translateX(-100px)';
+                leftLockRef.current.style.transform = 'translateY(100px)';
                 setTimeout(() => {
                     if (leftLockRef.current) {
-                        leftLockRef.current.style.transform = 'translateX(0)';
+                        leftLockRef.current.style.transform = 'translateY(0)';
                     }
                 }, 300);
             }
         } else {
             if (leftLockRef.current) {
-                leftLockRef.current.style.transform = 'translateX(0)';
+                leftLockRef.current.style.transform = 'translateY(0)';
             }
         }
         
-        touchStartXRef.current = null;
-        touchEndXRef.current = null;
+        touchStartYRef.current = null;
+        touchEndYRef.current = null;
     };
 
-    // Handler für rechtes Schloss (nach rechts wischen)
+    // Handler für rechtes Schloss (nach oben wischen)
     const handleRightLockTouchStart = (e) => {
         if (view !== 'password') return;
-        touchStartXRef.current = e.targetTouches[0].clientX;
+        touchStartYRef.current = e.targetTouches[0].clientY;
     };
 
     const handleRightLockTouchMove = (e) => {
         if (view !== 'password') return;
-        touchEndXRef.current = e.targetTouches[0].clientX;
-        const moveDistance = touchEndXRef.current - touchStartXRef.current; // Nach rechts = positiv
+        touchEndYRef.current = e.targetTouches[0].clientY;
+        const moveDistance = touchStartYRef.current - touchEndYRef.current; // Nach oben = positiv
         
         if (moveDistance > 0 && rightLockRef.current) {
             const actualMove = Math.min(moveDistance, 100);
-            rightLockRef.current.style.transform = `translateX(${actualMove}px)`;
+            rightLockRef.current.style.transform = `translateY(-${actualMove}px)`;
         }
     };
 
     const handleRightLockTouchEnd = () => {
         if (view !== 'password') return;
-        if (!touchStartXRef.current || !touchEndXRef.current) return;
+        if (!touchStartYRef.current || !touchEndYRef.current) return;
         
-        const distance = touchEndXRef.current - touchStartXRef.current;
+        const distance = touchStartYRef.current - touchEndYRef.current;
         
         if (distance > minSwipeDistance) {
             setRightLockSwipeCount(prev => prev + 1);
             if (rightLockRef.current) {
-                rightLockRef.current.style.transform = 'translateX(100px)';
+                rightLockRef.current.style.transform = 'translateY(-100px)';
                 setTimeout(() => {
                     if (rightLockRef.current) {
-                        rightLockRef.current.style.transform = 'translateX(0)';
+                        rightLockRef.current.style.transform = 'translateY(0)';
                     }
                 }, 300);
             }
         } else {
             if (rightLockRef.current) {
-                rightLockRef.current.style.transform = 'translateX(0)';
+                rightLockRef.current.style.transform = 'translateY(0)';
             }
         }
         
-        touchStartXRef.current = null;
-        touchEndXRef.current = null;
+        touchStartYRef.current = null;
+        touchEndYRef.current = null;
     };
 
     // Debugging-Funktion
@@ -362,7 +364,7 @@ function App() {
                     onTouchMove={handleLeftLockTouchMove}
                     onTouchEnd={handleLeftLockTouchEnd}
                 >
-                    {leftLockSwipeCount >= 0x02 ? '🔓' : '🔒'}
+                    {leftLockSwipeCount >= 0x01 ? '🔓' : '🔒'}
                 </span>
                 {' '}Geheimer Inhalt{' '}
                 <span 

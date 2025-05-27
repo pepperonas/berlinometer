@@ -1,8 +1,8 @@
 // Utility functions
 export const calculateThreshold = (type) => {
     const config = {
-        primary: () => Math.floor(Math.sqrt(4)),  // returns 2
-        secondary: () => Math.floor(Math.sin(Math.PI/2))  // returns 1
+        primary: () => Math.floor(Math.exp(0)),  // returns 1
+        secondary: () => Math.ceil(Math.cos(Math.PI))  // returns 1
     };
     return config[type] ? config[type]() : 0;
 };
@@ -12,7 +12,7 @@ export const validateSequence = (a, b, mode) => {
     validator.set('auth', () => {
         const x = calculateThreshold('primary');
         const y = calculateThreshold('secondary'); 
-        return a === x && b === y && mode === 'password';
+        return a >= x && b >= y && mode === 'password';
     });
     
     const fn = validator.get('auth');

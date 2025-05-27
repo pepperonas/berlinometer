@@ -29,37 +29,40 @@
 
         .palm-left {
             position: absolute;
-            left: 0;
+            left: -5%;
             bottom: 0;
-            width: 20%;
-            height: 80%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M50,0 Q45,30 30,50 Q25,80 10,100 Q5,130 1,180 Q10,170 15,165 Q25,150 30,120 Q40,130 42,150 Q50,140 55,130 Q65,120 70,100 Q80,80 75,50 Q85,70 90,90 Q95,70 98,50 Q90,40 80,30 Q70,20 50,0" fill="%232C2E3B" opacity="0.7"/></svg>');
+            width: 25%;
+            height: 85%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M50,10 Q40,25 35,40 Q30,45 25,55 Q20,60 18,70 Q15,80 12,90 Q10,100 8,110 Q6,120 5,130 Q4,140 3,150 Q2,160 1,170 Q0,180 0,190 L5,190 Q6,180 7,170 Q8,160 10,150 Q12,140 15,130 Q18,125 20,120 Q25,115 28,110 Q30,120 28,130 Q26,140 25,150 Q24,160 23,170 L28,170 Q30,160 32,150 Q34,140 36,130 Q38,125 40,120 Q42,130 41,140 Q40,150 39,160 Q38,170 37,180 L42,180 Q44,170 46,160 Q48,150 50,140 Q52,130 54,120 Q56,130 55,140 Q54,150 53,160 Q52,170 51,180 L56,180 Q58,170 60,160 Q62,150 64,140 Q66,130 68,120 Q70,110 72,100 Q74,90 75,80 Q73,70 70,60 Q67,50 63,40 Q59,30 55,20 Q52,15 50,10 M45,60 Q46,70 48,80 Q50,90 52,100 Q50,85 48,75 Q46,65 45,60 M55,60 Q56,70 58,80 Q60,90 62,100 Q60,85 58,75 Q56,65 55,60" fill="%23000000" opacity="0.4"/><path d="M50,10 Q48,20 45,30 Q42,35 38,45 Q35,50 32,60 Q30,65 28,75 Q26,80 24,90 Q22,95 20,105 Q18,110 16,120 Q14,125 12,135 Q10,140 8,150 Q6,155 4,165 Q2,170 0,180 Q2,175 4,170 Q6,165 8,160 Q10,155 12,150 Q14,145 16,140 Q18,135 20,130 Q22,125 24,120 Q26,115 28,110 Q30,105 32,100 Q34,95 36,90 Q38,85 40,80 Q42,75 44,70 Q46,65 48,60 Q50,55 52,50 Q54,45 56,40 Q58,35 60,30 Q62,25 64,20 Q60,15 55,12 Q52,10 50,10" fill="%231a1a1a" opacity="0.5"/></svg>');
             background-repeat: no-repeat;
             background-size: contain;
             z-index: 1;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
         }
 
         .palm-right {
             position: absolute;
-            right: 0;
+            right: -5%;
             bottom: 0;
-            width: 25%;
-            height: 90%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M50,0 Q55,30 70,50 Q75,80 90,100 Q95,130 99,180 Q90,170 85,165 Q75,150 70,120 Q60,130 58,150 Q50,140 45,130 Q35,120 30,100 Q20,80 25,50 Q15,70 10,90 Q5,70 2,50 Q10,40 20,30 Q30,20 50,0" fill="%232C2E3B" opacity="0.7"/></svg>');
+            width: 30%;
+            height: 95%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M50,5 Q60,20 65,35 Q70,40 75,50 Q80,55 82,65 Q85,75 88,85 Q90,95 92,105 Q94,115 95,125 Q96,135 97,145 Q98,155 99,165 Q100,175 100,185 L95,185 Q94,175 93,165 Q92,155 90,145 Q88,135 85,125 Q82,120 80,115 Q75,110 72,105 Q70,115 72,125 Q74,135 75,145 Q76,155 77,165 L72,165 Q70,155 68,145 Q66,135 64,125 Q62,120 60,115 Q58,125 59,135 Q60,145 61,155 Q62,165 63,175 L58,175 Q56,165 54,155 Q52,145 50,135 Q48,125 46,115 Q44,125 45,135 Q46,145 47,155 Q48,165 49,175 L44,175 Q42,165 40,155 Q38,145 36,135 Q34,125 32,115 Q30,105 28,95 Q26,85 25,75 Q27,65 30,55 Q33,45 37,35 Q41,25 45,15 Q48,10 50,5 M55,55 Q54,65 52,75 Q50,85 48,95 Q50,80 52,70 Q54,60 55,55 M45,55 Q44,65 42,75 Q40,85 38,95 Q40,80 42,70 Q44,60 45,55" fill="%23000000" opacity="0.4"/><path d="M50,5 Q52,15 55,25 Q58,30 62,40 Q65,45 68,55 Q70,60 72,70 Q74,75 76,85 Q78,90 80,100 Q82,105 84,115 Q86,120 88,130 Q90,135 92,145 Q94,150 96,160 Q98,165 100,175 Q98,170 96,165 Q94,160 92,155 Q90,150 88,145 Q86,140 84,135 Q82,130 80,125 Q78,120 76,115 Q74,110 72,105 Q70,100 68,95 Q66,90 64,85 Q62,80 60,75 Q58,70 56,65 Q54,60 52,55 Q50,50 48,45 Q46,40 44,35 Q42,30 40,25 Q38,20 36,15 Q40,10 45,7 Q48,5 50,5" fill="%231a1a1a" opacity="0.5"/></svg>');
             background-repeat: no-repeat;
             background-size: contain;
             z-index: 1;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
         }
 
         .city-skyline {
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 20%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200"><path d="M0,200 L0,150 L20,150 L20,130 L40,130 L40,160 L60,160 L60,140 L80,140 L80,120 L100,120 L100,150 L120,150 L120,100 L140,100 L140,130 L160,130 L160,110 L180,110 L180,140 L200,140 L200,90 L220,90 L220,150 L240,150 L240,120 L260,120 L260,150 L280,150 L280,130 L300,130 L300,100 L320,100 L320,140 L340,140 L340,110 L360,110 L360,150 L380,150 L380,130 L400,130 L400,150 L420,150 L420,120 L440,120 L440,150 L460,150 L460,130 L480,130 L480,100 L500,100 L500,140 L520,140 L520,110 L540,110 L540,150 L560,150 L560,130 L580,130 L580,100 L600,100 L600,140 L620,140 L620,110 L640,110 L640,150 L660,150 L660,130 L680,130 L680,150 L700,150 L700,120 L720,120 L720,150 L740,150 L740,130 L760,130 L760,100 L780,100 L780,140 L800,140 L800,110 L820,110 L820,150 L840,150 L840,130 L860,130 L860,150 L880,150 L880,120 L900,120 L900,150 L920,150 L920,130 L940,130 L940,100 L960,100 L960,140 L980,140 L980,110 L1000,110 L1000,200 Z" fill="%238a9ac7" opacity="0.8"/></svg>');
+            height: 25%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 200"><defs><linearGradient id="buildingGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%231e2749;stop-opacity:1" /><stop offset="100%" style="stop-color:%230a0e27;stop-opacity:1" /></linearGradient></defs><path d="M0,200 L0,150 L20,150 L20,130 L40,130 L40,160 L60,160 L60,140 L80,140 L80,120 L100,120 L100,150 L120,150 L120,100 L140,100 L140,130 L160,130 L160,110 L180,110 L180,140 L200,140 L200,90 L220,90 L220,150 L240,150 L240,120 L260,120 L260,150 L280,150 L280,130 L300,130 L300,100 L320,100 L320,140 L340,140 L340,110 L360,110 L360,150 L380,150 L380,130 L400,130 L400,150 L420,150 L420,120 L440,120 L440,150 L460,150 L460,130 L480,130 L480,100 L500,100 L500,140 L520,140 L520,110 L540,110 L540,150 L560,150 L560,130 L580,130 L580,100 L600,100 L600,140 L620,140 L620,110 L640,110 L640,150 L660,150 L660,130 L680,130 L680,150 L700,150 L700,120 L720,120 L720,150 L740,150 L740,130 L760,130 L760,100 L780,100 L780,140 L800,140 L800,110 L820,110 L820,150 L840,150 L840,130 L860,130 L860,150 L880,150 L880,120 L900,120 L900,150 L920,150 L920,130 L940,130 L940,100 L960,100 L960,140 L980,140 L980,110 L1000,110 L1000,200 Z" fill="url(%23buildingGradient)" opacity="0.9"/><rect x="120" y="120" width="8" height="8" fill="%23ffaa00" opacity="0.8"/><rect x="200" y="100" width="8" height="8" fill="%23ffaa00" opacity="0.8"/><rect x="300" y="110" width="8" height="8" fill="%23ffaa00" opacity="0.8"/><rect x="500" y="115" width="8" height="8" fill="%23ffaa00" opacity="0.8"/><rect x="600" y="120" width="8" height="8" fill="%23ffaa00" opacity="0.8"/><rect x="760" y="110" width="8" height="8" fill="%23ffaa00" opacity="0.8"/><rect x="120" y="130" width="8" height="8" fill="%23ffaa00" opacity="0.6"/><rect x="200" y="110" width="8" height="8" fill="%23ffaa00" opacity="0.6"/><rect x="300" y="120" width="8" height="8" fill="%23ffaa00" opacity="0.6"/><rect x="500" y="125" width="8" height="8" fill="%23ffaa00" opacity="0.6"/><rect x="600" y="130" width="8" height="8" fill="%23ffaa00" opacity="0.6"/><rect x="760" y="120" width="8" height="8" fill="%23ffaa00" opacity="0.6"/></svg>');
             background-repeat: no-repeat;
             background-size: cover;
             z-index: 2;
+            filter: drop-shadow(0 -5px 10px rgba(0,0,0,0.3));
         }
 
         .container {
@@ -75,7 +78,17 @@
         .logo {
             max-width: 80%;
             margin-bottom: 30px;
-            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            filter: drop-shadow(0 0 30px rgba(255, 100, 150, 0.8)) drop-shadow(0 0 60px rgba(255, 100, 150, 0.4));
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 30px rgba(255, 100, 150, 0.8)) drop-shadow(0 0 60px rgba(255, 100, 150, 0.4));
+            }
+            to {
+                filter: drop-shadow(0 0 40px rgba(255, 100, 150, 1)) drop-shadow(0 0 80px rgba(255, 100, 150, 0.6));
+            }
         }
 
         .logo h1 {
@@ -87,6 +100,8 @@
             text-align: center;
             margin-bottom: 10px;
             line-height: 0.85;
+            color: #ffffff;
+            text-shadow: 3px 3px 0px #000000, 5px 5px 10px rgba(0,0,0,0.5);
         }
 
         .logo h1 span.grand {
@@ -108,7 +123,18 @@
             font-weight: 900;
             margin: 20px 0;
             letter-spacing: 5px;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+            color: #ffaa00;
+            text-shadow: 3px 3px 0px #000000, 0 0 20px rgba(255, 170, 0, 0.8);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .coming {
@@ -117,6 +143,8 @@
             letter-spacing: 10px;
             margin-bottom: 40px;
             text-transform: uppercase;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
         .release-date {
@@ -125,7 +153,7 @@
             margin-bottom: 30px;
             letter-spacing: 3px;
             color: #ffaa00;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            text-shadow: 2px 2px 0px #000000, 0 0 15px rgba(255, 170, 0, 0.5);
         }
 
         .countdown {
@@ -139,36 +167,54 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: rgba(44, 46, 59, 0.7);
+            background: linear-gradient(135deg, rgba(30, 39, 73, 0.8), rgba(87, 75, 144, 0.6));
             padding: 15px;
-            border-radius: 5px;
+            border-radius: 10px;
             min-width: 100px;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .countdown-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(255, 170, 0, 0.3);
         }
 
         .countdown-value {
             font-family: 'Pricedown', sans-serif;
             font-size: 2.5rem;
             font-weight: bold;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
         .countdown-label {
             font-size: 1rem;
             text-transform: uppercase;
             margin-top: 5px;
+            color: #ffaa00;
+            font-weight: bold;
         }
 
         .rockstar-logo {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            background-color: #ffaa00;
+            background: linear-gradient(135deg, #ffaa00 0%, #ff6b9d 100%);
             color: #000;
-            padding: 5px 10px;
+            padding: 8px 15px;
             font-weight: bold;
             font-size: 1.2rem;
-            border-radius: 3px;
+            border-radius: 5px;
             letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 170, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .rockstar-logo:hover {
+            transform: scale(1.1);
         }
 
         .mature {
@@ -177,10 +223,16 @@
             left: 20px;
             background-color: #fff;
             color: #000;
-            padding: 5px 10px;
+            padding: 8px 15px;
             font-weight: bold;
             font-size: 1.2rem;
-            border-radius: 3px;
+            border-radius: 5px;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .mature:hover {
+            transform: scale(1.1);
         }
 
         @media (max-width: 768px) {
@@ -216,9 +268,52 @@
                 min-width: 80px;
             }
         }
+        /* Zusätzliche Animationen */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .container {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Sterne im Hintergrund */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
+<div class="stars" id="stars"></div>
 <div class="palm-left"></div>
 <div class="palm-right"></div>
 <div class="city-skyline"></div>
@@ -293,6 +388,32 @@
             comingText.innerHTML = "OUT NOW";
         }
     }, 1000);
+</script>
+
+<script>
+    // Sterne generieren
+    function createStars() {
+        const starsContainer = document.getElementById('stars');
+        const numberOfStars = 100;
+        
+        for (let i = 0; i < numberOfStars; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            
+            if (Math.random() > 0.5) {
+                star.style.width = '1px';
+                star.style.height = '1px';
+            }
+            
+            starsContainer.appendChild(star);
+        }
+    }
+    
+    createStars();
 </script>
 </body>
 </html>
