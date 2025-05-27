@@ -48,7 +48,7 @@ function App() {
         setBypassReady(result);
     }, [leftLockSwipeCount, rightLockSwipeCount, view]);
     
-    // Handler für linkes Schloss (nach unten wischen)
+    // Handler für linkes Schloss (nach oben wischen)
     const handleLeftLockTouchStart = (e) => {
         if (view !== 'password') return;
         touchStartYRef.current = e.targetTouches[0].clientY;
@@ -57,11 +57,11 @@ function App() {
     const handleLeftLockTouchMove = (e) => {
         if (view !== 'password') return;
         touchEndYRef.current = e.targetTouches[0].clientY;
-        const moveDistance = touchEndYRef.current - touchStartYRef.current; // Nach unten = positiv
+        const moveDistance = touchStartYRef.current - touchEndYRef.current; // Nach oben = positiv
         
         if (moveDistance > 0 && leftLockRef.current) {
             const actualMove = Math.min(moveDistance, 100);
-            leftLockRef.current.style.transform = `translateY(${actualMove}px)`;
+            leftLockRef.current.style.transform = `translateY(-${actualMove}px)`;
         }
     };
 
@@ -69,12 +69,12 @@ function App() {
         if (view !== 'password') return;
         if (!touchStartYRef.current || !touchEndYRef.current) return;
         
-        const distance = touchEndYRef.current - touchStartYRef.current;
+        const distance = touchStartYRef.current - touchEndYRef.current;
         
         if (distance > minSwipeDistance) {
             setLeftLockSwipeCount(prev => prev + 1);
             if (leftLockRef.current) {
-                leftLockRef.current.style.transform = 'translateY(100px)';
+                leftLockRef.current.style.transform = 'translateY(-100px)';
                 setTimeout(() => {
                     if (leftLockRef.current) {
                         leftLockRef.current.style.transform = 'translateY(0)';
