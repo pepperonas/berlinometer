@@ -38,6 +38,30 @@ async function initDatabase() {
 app.use(express.json());
 app.use(express.static('public'));
 
+// Store last valid reading for comparison
+let lastValidReading = null;
+
+// Store readings per minute to enforce rate limiting
+const recentReadings = new Map(); // Key: minute timestamp, Value: { data, insertedAt }
+
+// Validation constants
+const MAX_TEMP_CHANGE_PER_SECOND = 0.5; // Max 0.5°C change per second
+const MAX_HUM_CHANGE_PER_SECOND = 2.0; // Max 2% humidity change per second
+const MIN_TEMPERATURE = -50; // Minimum reasonable temperature
+const MAX_TEMPERATURE = 60; // Maximum reasonable temperature
+const MIN_HUMIDITY = 0; // Minimum humidity
+const MAX_HUMIDITY = 100; // Maximum humidity
+
+// Cleanup old entries from recentReadings every 5 minutes
+setInterval(() => {
+    const fiveMinutesAgo = Math.floor(Date.now() / 1000) - 300;
+    for (const [minute, data] of recentReadings.entries()) {
+        if (data.insertedAt < fiveMinutesAgo) {
+            recentReadings.delete(minute);
+        }
+    }
+}, 300000);
+
 async function loadData(limit = 1000) {
     try {
         const [rows] = await pool.execute(
@@ -55,6 +79,86 @@ async function loadData(limit = 1000) {
         console.error('Error loading data:', error);
         return [];
     }
+}
+
+async function getLastValidReading() {
+    try {
+        const [rows] = await pool.execute(
+            'SELECT temperature, humidity, timestamp FROM weather_data ORDER BY timestamp DESC LIMIT 1'
+        );
+        if (rows.length > 0) {
+            return {
+                temperature: parseFloat(rows[0].temperature),
+                humidity: parseFloat(rows[0].humidity),
+                timestamp: parseInt(rows[0].timestamp)
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error('Error getting last reading:', error);
+        return null;
+    }
+}
+
+async function checkIfMinuteHasData(timestamp) {
+    try {
+        // Round down to the minute
+        const minuteTimestamp = Math.floor(timestamp / 60) * 60;
+        const minuteEnd = minuteTimestamp + 60;
+        
+        const [rows] = await pool.execute(
+            'SELECT COUNT(*) as count FROM weather_data WHERE timestamp >= ? AND timestamp < ?',
+            [minuteTimestamp, minuteEnd]
+        );
+        
+        return rows[0].count > 0;
+    } catch (error) {
+        console.error('Error checking minute data:', error);
+        return false;
+    }
+}
+
+function validateSensorData(temperature, humidity, timestamp, lastReading) {
+    const errors = [];
+    
+    // Check absolute bounds
+    if (temperature < MIN_TEMPERATURE || temperature > MAX_TEMPERATURE) {
+        errors.push(`Temperature ${temperature}°C is outside reasonable range (${MIN_TEMPERATURE}°C to ${MAX_TEMPERATURE}°C)`);
+    }
+    
+    if (humidity < MIN_HUMIDITY || humidity > MAX_HUMIDITY) {
+        errors.push(`Humidity ${humidity}% is outside valid range (${MIN_HUMIDITY}% to ${MAX_HUMIDITY}%)`);
+    }
+    
+    // Check rate of change if we have a previous reading
+    if (lastReading) {
+        const timeDiff = timestamp - lastReading.timestamp;
+        
+        // Only check if readings are less than 10 minutes apart
+        // This accounts for the 1-minute rate limiting and potential gaps
+        if (timeDiff > 0 && timeDiff < 600) {
+            const tempChangePerSecond = Math.abs(temperature - lastReading.temperature) / timeDiff;
+            const humChangePerSecond = Math.abs(humidity - lastReading.humidity) / timeDiff;
+            
+            // For readings that are at least 60 seconds apart (due to rate limiting),
+            // we can be more lenient with the change rate
+            const effectiveMaxTempChange = timeDiff >= 60 ? MAX_TEMP_CHANGE_PER_SECOND * 1.5 : MAX_TEMP_CHANGE_PER_SECOND;
+            const effectiveMaxHumChange = timeDiff >= 60 ? MAX_HUM_CHANGE_PER_SECOND * 1.5 : MAX_HUM_CHANGE_PER_SECOND;
+            
+            if (tempChangePerSecond > effectiveMaxTempChange) {
+                errors.push(`Temperature change too rapid: ${tempChangePerSecond.toFixed(2)}°C/s (max: ${effectiveMaxTempChange.toFixed(1)}°C/s)`);
+            }
+            
+            if (humChangePerSecond > effectiveMaxHumChange) {
+                errors.push(`Humidity change too rapid: ${humChangePerSecond.toFixed(2)}%/s (max: ${effectiveMaxHumChange.toFixed(1)}%/s)`);
+            }
+        }
+    }
+    
+    return {
+        isValid: errors.length === 0,
+        errors: errors
+    };
 }
 
 async function saveData(temperature, humidity, timestamp) {
@@ -86,9 +190,60 @@ app.post('/weather-tracker', async (req, res) => {
         const hum = parseFloat(humidity);
         const ts = timestamp || Math.floor(Date.now() / 1000);
 
+        // Check rate limiting - only one entry per minute
+        const minuteTimestamp = Math.floor(ts / 60) * 60;
+        const minuteKey = minuteTimestamp.toString();
+        
+        // Check if we already have data for this minute in memory
+        if (recentReadings.has(minuteKey)) {
+            console.log(`Rate limited: Already have data for minute ${formatTimestamp(minuteTimestamp)}`);
+            return res.status(429).json({
+                error: 'Rate limited',
+                message: 'Only one reading per minute allowed',
+                nextAllowedTime: minuteTimestamp + 60
+            });
+        }
+        
+        // Check database for existing data in this minute
+        const hasMinuteData = await checkIfMinuteHasData(ts);
+        if (hasMinuteData) {
+            console.log(`Rate limited: Database already has data for minute ${formatTimestamp(minuteTimestamp)}`);
+            return res.status(429).json({
+                error: 'Rate limited',
+                message: 'Only one reading per minute allowed',
+                nextAllowedTime: minuteTimestamp + 60
+            });
+        }
+
+        // Initialize lastValidReading if needed
+        if (!lastValidReading) {
+            lastValidReading = await getLastValidReading();
+        }
+
+        // Validate the sensor data
+        const validation = validateSensorData(temp, hum, ts, lastValidReading);
+        
+        if (!validation.isValid) {
+            console.error(`Rejected sensor data: ${temp.toFixed(1)}°C, ${hum.toFixed(1)}% - Reasons:`, validation.errors);
+            return res.status(400).json({
+                error: 'Invalid sensor data',
+                reasons: validation.errors,
+                data: { temperature: temp, humidity: hum, timestamp: ts }
+            });
+        }
+
         await saveData(temp, hum, ts);
 
-        console.log(`Received: ${temp.toFixed(1)}°C, ${hum.toFixed(1)}% at ${formatTimestamp(ts)}`);
+        // Store in recent readings map
+        recentReadings.set(minuteKey, {
+            data: { temperature: temp, humidity: hum, timestamp: ts },
+            insertedAt: Math.floor(Date.now() / 1000)
+        });
+
+        // Update last valid reading
+        lastValidReading = { temperature: temp, humidity: hum, timestamp: ts };
+
+        console.log(`Accepted: ${temp.toFixed(1)}°C, ${hum.toFixed(1)}% at ${formatTimestamp(ts)}`);
 
         res.json({status: 'success'});
 
