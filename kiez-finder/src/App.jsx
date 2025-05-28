@@ -4,12 +4,17 @@ import './App.css'
 
 const API_KEY = 'AIzaSyC7ks_lygeT7pWKRILFVVGNb-IZxdJyohQ'
 
+const getMapHeight = () => {
+  const width = window.innerWidth;
+  if (width <= 480) return '300px';
+  if (width <= 768) return '350px';
+  return '400px';
+};
+
 const mapContainerStyle = {
   width: '100%',
-  height: '70vh',
-  borderRadius: '10px',
-  marginTop: '3rem',
-  marginBottom: '1rem'
+  height: getMapHeight(),
+  borderRadius: '10px'
 }
 
 const center = {
@@ -109,6 +114,8 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [map, setMap] = useState(null)
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  const [showInstallButton, setShowInstallButton] = useState(false)
 
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
@@ -220,10 +227,47 @@ function App() {
     }
   }, [isLoaded])
 
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      setShowInstallButton(true)
+    }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+
+    // Check if app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallButton(false)
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    }
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    
+    if (outcome === 'accepted') {
+      setShowInstallButton(false)
+    }
+    
+    setDeferredPrompt(null)
+  }
+
   return (
     <div className="app">
       <header>
         <h1>Kiez-Finder</h1>
+        {showInstallButton && (
+          <button onClick={handleInstallClick} className="install-button">
+            App installieren
+          </button>
+        )}
       </header>
 
       <main>
@@ -250,15 +294,17 @@ function App() {
           )}
           
           {isLoaded && (
-            <GoogleMap
-              mapContainerStyle={mapContainerStyle}
-              center={location || center}
-              onLoad={onLoad}
-              onUnmount={onUnmount}
-              options={mapOptions}
-            >
-              {location && <Marker position={location} animation={window.google?.maps?.Animation?.DROP} />}
-            </GoogleMap>
+            <div className="map-container">
+              <GoogleMap
+                mapContainerStyle={mapContainerStyle}
+                center={location || center}
+                onLoad={onLoad}
+                onUnmount={onUnmount}
+                options={mapOptions}
+              >
+                {location && <Marker position={location} animation={window.google?.maps?.Animation?.DROP} />}
+              </GoogleMap>
+            </div>
           )}
         </div>
       </main>
