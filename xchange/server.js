@@ -674,6 +674,73 @@ app.post(`${API_PREFIX}/create-share`, (req, res) => {
     }
 });
 
+// Preview-Route für bessere WhatsApp-Kompatibilität
+app.get(`${API_PREFIX}/preview/:shareId`, (req, res) => {
+    try {
+        const shareId = req.params.shareId;
+        const shares = getSharesDb();
+
+        if (!shares[shareId]) {
+            return res.status(404).send('Link nicht gefunden');
+        }
+
+        const shareInfo = shares[shareId];
+
+        if (shareInfo.expires && new Date(shareInfo.expires) < new Date()) {
+            delete shares[shareId];
+            saveSharesDb(shares);
+            return res.status(410).send('Link abgelaufen');
+        }
+
+        const formatFileSize = (bytes) => {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+
+        const fileSize = formatFileSize(shareInfo.fileSize);
+        const downloadUrl = `${req.protocol}://${req.get('host')}${API_PREFIX}/share/${shareId}?dl=1`;
+
+        return res.send(`
+            <!DOCTYPE html>
+            <html lang="de">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${shareInfo.fileName} (${fileSize})</title>
+                
+                <!-- WhatsApp optimierte Meta Tags -->
+                <meta property="og:title" content="${shareInfo.fileName} (${fileSize})">
+                <meta property="og:description" content="Datei herunterladen - ${fileSize}">
+                <meta property="og:image" content="https://mrx3k1.de/content/xchange.jpg">
+                <meta property="og:type" content="website">
+                <meta property="og:url" content="${req.protocol}://${req.get('host')}${req.originalUrl}">
+                
+                <meta name="description" content="${shareInfo.fileName} (${fileSize}) - Datei herunterladen">
+            </head>
+            <body style="font-family: Arial, sans-serif; margin: 40px; text-align: center;">
+                <h1>${shareInfo.fileName}</h1>
+                <p>Dateigröße: ${fileSize}</p>
+                <a href="${downloadUrl}" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+                    Download starten
+                </a>
+                <script>
+                    // Auto-redirect nach 3 Sekunden
+                    setTimeout(() => {
+                        window.location.href = '${downloadUrl}';
+                    }, 3000);
+                </script>
+            </body>
+            </html>
+        `);
+    } catch (error) {
+        console.error('Fehler beim Verarbeiten des Preview-Links:', error);
+        res.status(500).send('Serverfehler');
+    }
+});
+
 // Share-Link abrufen (Download der geteilten Datei)
 app.get(`${API_PREFIX}/share/:shareId`, (req, res) => {
     try {
@@ -936,6 +1003,10 @@ app.get(`${API_PREFIX}/share/:shareId`, (req, res) => {
             `);
         }
 
+        // WhatsApp User-Agent Detection
+        const userAgent = req.headers['user-agent'] || '';
+        const isWhatsApp = userAgent.includes('WhatsApp') || userAgent.includes('facebookexternalhit');
+        
         // Wenn Accept-Header HTML enthält und kein direkter Download angefordert wurde,
         // zeigen wir eine Download-Seite an
         const acceptHeader = req.headers.accept || '';
@@ -976,30 +1047,19 @@ app.get(`${API_PREFIX}/share/:shareId`, (req, res) => {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>xchange | Download ${shareInfo.fileName}</title>
                     
-                    <!-- WhatsApp Meta Tags (müssen zuerst stehen) -->
+                    <!-- Open Graph Meta Tags (explizit für WhatsApp/Facebook) -->
                     <meta property="og:type" content="website">
-                    <meta property="og:title" content="${shareInfo.fileName} (${fileSize})">
-                    <meta property="og:description" content="Download verfügbar - ${fileSize}">
+                    <meta property="og:title" content="${shareInfo.fileName.replace(/"/g, '&quot;')} (${fileSize})">
+                    <meta property="og:description" content="Datei-Download verfügbar - Größe: ${fileSize}">
+                    <meta property="og:url" content="${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.headers.host}${req.originalUrl}">
                     <meta property="og:image" content="https://mrx3k1.de/content/xchange.jpg">
                     <meta property="og:image:width" content="512">
                     <meta property="og:image:height" content="512">
                     <meta property="og:image:type" content="image/jpeg">
-                    <meta property="og:url" content="${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.headers.host}${req.originalUrl}">
                     <meta property="og:site_name" content="xchange">
                     
                     <!-- Standard Meta Tags -->
-                    <meta name="description" content="${shareInfo.fileName} (${fileSize}) - Download verfügbar">
-                    <meta name="title" content="${shareInfo.fileName} (${fileSize})">
-                    
-                    <!-- WhatsApp Cache Buster -->
-                    <meta property="og:updated_time" content="${Date.now()}">
-                    <meta property="article:modified_time" content="${new Date().toISOString()}">
-                    
-                    <!-- Twitter Card Meta Tags -->
-                    <meta name="twitter:card" content="summary_large_image">
-                    <meta name="twitter:title" content="${shareInfo.fileName} (${fileSize})">
-                    <meta name="twitter:description" content="Download verfügbar - ${fileSize}">
-                    <meta name="twitter:image" content="https://mrx3k1.de/content/xchange.jpg">
+                    <meta name="description" content="${shareInfo.fileName.replace(/"/g, '&quot;')} (${fileSize}) - Datei herunterladen">
                     
                     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬇️</text></svg>">
                     <style>
