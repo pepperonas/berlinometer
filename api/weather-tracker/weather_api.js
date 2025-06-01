@@ -45,8 +45,8 @@ let lastValidReading = null;
 const recentReadings = new Map(); // Key: minute timestamp, Value: { data, insertedAt }
 
 // Validation constants
-const MAX_TEMP_CHANGE_PER_SECOND = 0.5; // Max 0.5°C change per second
-const MAX_HUM_CHANGE_PER_SECOND = 2.0; // Max 2% humidity change per second
+const MAX_TEMP_CHANGE_PER_MINUTE = 2.0; // Max 2°C change per minute
+const MAX_HUM_CHANGE_PER_MINUTE = 5.0; // Max 5% humidity change per minute
 const MIN_TEMPERATURE = -50; // Minimum reasonable temperature
 const MAX_TEMPERATURE = 60; // Maximum reasonable temperature
 const MIN_HUMIDITY = 0; // Minimum humidity
@@ -134,23 +134,33 @@ function validateSensorData(temperature, humidity, timestamp, lastReading) {
     if (lastReading) {
         const timeDiff = timestamp - lastReading.timestamp;
         
-        // Only check if readings are less than 10 minutes apart
-        // This accounts for the 1-minute rate limiting and potential gaps
-        if (timeDiff > 0 && timeDiff < 600) {
-            const tempChangePerSecond = Math.abs(temperature - lastReading.temperature) / timeDiff;
-            const humChangePerSecond = Math.abs(humidity - lastReading.humidity) / timeDiff;
+        // Check rate of change for all time differences > 0
+        if (timeDiff > 0) {
+            const tempChange = Math.abs(temperature - lastReading.temperature);
+            const humChange = Math.abs(humidity - lastReading.humidity);
             
-            // For readings that are at least 60 seconds apart (due to rate limiting),
-            // we can be more lenient with the change rate
-            const effectiveMaxTempChange = timeDiff >= 60 ? MAX_TEMP_CHANGE_PER_SECOND * 1.5 : MAX_TEMP_CHANGE_PER_SECOND;
-            const effectiveMaxHumChange = timeDiff >= 60 ? MAX_HUM_CHANGE_PER_SECOND * 1.5 : MAX_HUM_CHANGE_PER_SECOND;
+            // Calculate max allowed change based on time difference (scaled to 1 minute)
+            const timeFactorMinutes = Math.max(timeDiff / 60, 1); // At least 1 minute for scaling
+            const maxAllowedTempChange = MAX_TEMP_CHANGE_PER_MINUTE * timeFactorMinutes;
+            const maxAllowedHumChange = MAX_HUM_CHANGE_PER_MINUTE * timeFactorMinutes;
             
-            if (tempChangePerSecond > effectiveMaxTempChange) {
-                errors.push(`Temperature change too rapid: ${tempChangePerSecond.toFixed(2)}°C/s (max: ${effectiveMaxTempChange.toFixed(1)}°C/s)`);
+            // Reject normal limit violations, but allow after sensor gaps (10+ minutes)
+            const isAfterLongGap = timeDiff >= 600; // 10+ minutes gap
+            
+            if (tempChange > maxAllowedTempChange) {
+                if (isAfterLongGap) {
+                    console.warn(`Temperature change after sensor gap: ${tempChange.toFixed(2)}°C over ${(timeDiff/60).toFixed(1)} minutes - allowing due to gap`);
+                } else {
+                    errors.push(`Temperature change too high: ${tempChange.toFixed(2)}°C over ${(timeDiff/60).toFixed(1)} minutes (max: ${maxAllowedTempChange.toFixed(1)}°C)`);
+                }
             }
             
-            if (humChangePerSecond > effectiveMaxHumChange) {
-                errors.push(`Humidity change too rapid: ${humChangePerSecond.toFixed(2)}%/s (max: ${effectiveMaxHumChange.toFixed(1)}%/s)`);
+            if (humChange > maxAllowedHumChange) {
+                if (isAfterLongGap) {
+                    console.warn(`Humidity change after sensor gap: ${humChange.toFixed(2)}% over ${(timeDiff/60).toFixed(1)} minutes - allowing due to gap`);
+                } else {
+                    errors.push(`Humidity change too high: ${humChange.toFixed(2)}% over ${(timeDiff/60).toFixed(1)} minutes (max: ${maxAllowedHumChange.toFixed(1)}%)`);
+                }
             }
         }
     }
