@@ -1,1 +1,10 @@
-{}
+{
+  "test-share-123": {
+    "fileId": "test-file-456",
+    "fileName": "Test-Datei.pdf",
+    "fileSize": 1024000,
+    "fileType": "application/pdf",
+    "created": "2025-06-01T01:00:00.000Z",
+    "expires": null
+  }
+}
