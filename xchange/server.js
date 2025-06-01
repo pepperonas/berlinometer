@@ -4,7 +4,6 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const {v4: uuidv4} = require('uuid');
-const { createCanvas } = require('canvas');
 
 const app = express();
 const port = process.env.PORT || 5009;
@@ -209,11 +208,6 @@ function authMiddleware(req, res, next) {
 
     // Prüfe auf Share-Endpoint - dieser ist ohne Auth erlaubt
     if (req.path.startsWith(`${API_PREFIX}/share/`) && req.method === 'GET') {
-        return next();
-    }
-
-    // Prüfe auf Thumbnail-Endpoint - dieser ist ohne Auth erlaubt
-    if (req.path.startsWith(`${API_PREFIX}/thumbnail/`) && req.method === 'GET') {
         return next();
     }
 
@@ -980,43 +974,21 @@ app.get(`${API_PREFIX}/share/:shareId`, (req, res) => {
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>📥 ${shareInfo.fileName} - xchange</title>
+                    <title>xchange | Download ${shareInfo.fileName}</title>
                     
-                    <!-- Open Graph Meta Tags für Link-Vorschauen (WhatsApp optimiert) -->
-                    <meta property="og:title" content="📥 ${shareInfo.fileName}">
-                    <meta property="og:description" content="Datei herunterladen (${fileSize}) - Verfügbar über xchange">
+                    <!-- Open Graph Meta Tags für Link-Vorschauen -->
+                    <meta property="og:title" content="${shareInfo.fileName}">
+                    <meta property="og:description" content="Download-Link für ${shareInfo.fileName} (${fileSize})">
                     <meta property="og:type" content="website">
-                    <meta property="og:url" content="${protocol}://${host}${API_PREFIX}/share/${shareId}">
-                    <meta property="og:image" content="${protocol}://${host}${API_PREFIX}/thumbnail/${shareId}">
-                    <meta property="og:image:secure_url" content="${protocol}://${host}${API_PREFIX}/thumbnail/${shareId}">
-                    <meta property="og:image:type" content="image/png">
-                    <meta property="og:image:width" content="1200">
-                    <meta property="og:image:height" content="630">
-                    <meta property="og:image:alt" content="Download ${shareInfo.fileName} über xchange">
-                    <meta property="og:site_name" content="xchange">
-                    <meta property="og:locale" content="de_DE">
-                    
-                    <!-- WhatsApp spezifische Meta Tags -->
-                    <meta name="theme-color" content="#688db1">
-                    <meta name="apple-mobile-web-app-capable" content="yes">
-                    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-                    <meta name="application-name" content="xchange">
-                    <meta name="mobile-web-app-capable" content="yes">
+                    <meta property="og:image" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' fill='%232B2E3B'/><text x='256' y='340' font-family='Arial' font-size='300' text-anchor='middle' fill='%23688db1'>⬇️</text></svg>">
+                    <meta property="og:image:width" content="512">
+                    <meta property="og:image:height" content="512">
                     
                     <!-- Twitter Card Meta Tags -->
                     <meta name="twitter:card" content="summary_large_image">
-                    <meta name="twitter:title" content="📥 ${shareInfo.fileName}">
-                    <meta name="twitter:description" content="Datei herunterladen (${fileSize}) - Verfügbar über xchange">
-                    <meta name="twitter:image" content="${protocol}://${host}${API_PREFIX}/thumbnail/${shareId}">
-                    <meta name="twitter:image:alt" content="xchange Download - ${shareInfo.fileName}">
-                    
-                    <!-- Zusätzliche Meta Tags für bessere Kompatibilität -->
-                    <meta name="description" content="Download ${shareInfo.fileName} (${fileSize}) über xchange - Sicher und einfach">
-                    <meta name="author" content="xchange - File Sharing">
-                    <meta name="robots" content="noindex, nofollow">
-                    
-                    <!-- Preload für bessere Performance -->
-                    <link rel="preload" href="${protocol}://${host}${API_PREFIX}/thumbnail/${shareId}" as="image" type="image/png">
+                    <meta name="twitter:title" content="${shareInfo.fileName}">
+                    <meta name="twitter:description" content="Download-Link für ${shareInfo.fileName} (${fileSize})">
+                    <meta name="twitter:image" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' fill='%232B2E3B'/><text x='256' y='340' font-family='Arial' font-size='300' text-anchor='middle' fill='%23688db1'>⬇️</text></svg>">
                     
                     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬇️</text></svg>">
                     <style>
@@ -1171,139 +1143,6 @@ app.get(`${API_PREFIX}/share/:shareId`, (req, res) => {
     } catch (error) {
         console.error('Fehler beim Verarbeiten des Share-Links:', error);
         res.status(500).send('Ein Serverfehler ist aufgetreten');
-    }
-});
-
-// Thumbnail-Endpoint für WhatsApp-kompatible Link-Vorschauen
-app.get(`${API_PREFIX}/thumbnail/:shareId`, (req, res) => {
-    try {
-        const shareId = req.params.shareId;
-        const shares = getSharesDb();
-
-        // Überprüfen, ob der Share existiert
-        if (!shares[shareId]) {
-            return res.status(404).send('Share nicht gefunden');
-        }
-
-        const shareInfo = shares[shareId];
-
-        // Überprüfen, ob der Share abgelaufen ist (nur wenn ein Ablaufdatum gesetzt ist)
-        if (shareInfo.expires && new Date(shareInfo.expires) < new Date()) {
-            // Abgelaufenen Share löschen
-            delete shares[shareId];
-            saveSharesDb(shares);
-            return res.status(410).send('Share abgelaufen');
-        }
-
-        // PNG-Thumbnail mit Canvas generieren (WhatsApp optimiert: 1200x630)
-        const canvas = createCanvas(1200, 630);
-        const ctx = canvas.getContext('2d');
-
-        // Hintergrund mit Gradient
-        const gradient = ctx.createLinearGradient(0, 0, 1200, 630);
-        gradient.addColorStop(0, '#2B2E3B');
-        gradient.addColorStop(1, '#343845');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 1200, 630);
-
-        // Zentriertes Layout - Download-Emoji oben
-        ctx.fillStyle = '#688db1';
-        ctx.font = 'bold 200px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('⬇️', 600, 220);
-
-        // Dateiname zentriert unten (mehrzeilig wenn nötig)
-        let fileName = shareInfo.fileName;
-        ctx.fillStyle = '#d1d5db';
-        ctx.font = 'bold 42px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        // Text wrapping für langen Dateinamen
-        const maxWidth = 1000;
-        const lineHeight = 50;
-        let startY = 400;
-        
-        if (ctx.measureText(fileName).width > maxWidth) {
-            // Text umbrechen
-            const words = fileName.split(' ');
-            let lines = [];
-            let currentLine = '';
-            
-            for (let i = 0; i < words.length; i++) {
-                const testLine = currentLine + words[i] + ' ';
-                if (ctx.measureText(testLine).width > maxWidth && i > 0) {
-                    lines.push(currentLine.trim());
-                    currentLine = words[i] + ' ';
-                } else {
-                    currentLine = testLine;
-                }
-            }
-            if (currentLine.trim()) {
-                lines.push(currentLine.trim());
-            }
-            
-            // Maximal 3 Zeilen anzeigen
-            const maxLines = 3;
-            if (lines.length > maxLines) {
-                lines = lines.slice(0, maxLines - 1);
-                lines.push(lines[lines.length - 1] + '...');
-            }
-            
-            // Zentriert ausgeben
-            const totalHeight = lines.length * lineHeight;
-            let y = startY - (totalHeight / 2) + (lineHeight / 2);
-            
-            lines.forEach(line => {
-                ctx.fillText(line, 600, y);
-                y += lineHeight;
-            });
-        } else {
-            ctx.fillText(fileName, 600, startY);
-        }
-
-        // Kleiner "xchange" Text unten
-        ctx.fillStyle = '#9ca3af';
-        ctx.font = '24px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText('xchange', 600, 600);
-
-        // PNG als Buffer generieren
-        const buffer = canvas.toBuffer('image/png');
-
-        // Response Headers setzen
-        res.setHeader('Content-Type', 'image/png');
-        res.setHeader('Content-Length', buffer.length);
-        res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 Stunde Cache
-        res.send(buffer);
-
-    } catch (error) {
-        console.error('Fehler beim Generieren des Thumbnails:', error);
-        
-        // Fallback: WhatsApp optimierter SVG wenn Canvas fehlschlägt
-        let fileName = shareInfo.fileName;
-        if (fileName.length > 35) {
-            fileName = fileName.substring(0, 32) + '...';
-        }
-        
-        const svgFallback = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
-            <defs>
-                <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#2B2E3B;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:#343845;stop-opacity:1" />
-                </linearGradient>
-            </defs>
-            <rect width="1200" height="630" fill="url(#bg)"/>
-            <text x="600" y="220" font-family="Arial" font-size="200" text-anchor="middle" fill="#688db1" font-weight="bold">⬇️</text>
-            <text x="600" y="400" font-family="Arial" font-size="42" text-anchor="middle" fill="#d1d5db" font-weight="bold">${fileName}</text>
-            <text x="600" y="600" font-family="Arial" font-size="24" text-anchor="middle" fill="#9ca3af">xchange</text>
-        </svg>`;
-        
-        res.setHeader('Content-Type', 'image/svg+xml');
-        res.setHeader('Cache-Control', 'public, max-age=3600');
-        res.send(svgFallback);
     }
 });
 
