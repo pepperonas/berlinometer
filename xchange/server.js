@@ -976,19 +976,30 @@ app.get(`${API_PREFIX}/share/:shareId`, (req, res) => {
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <title>xchange | Download ${shareInfo.fileName}</title>
                     
-                    <!-- Open Graph Meta Tags für Link-Vorschauen -->
-                    <meta property="og:title" content="${shareInfo.fileName}">
-                    <meta property="og:description" content="Download-Link für ${shareInfo.fileName} (${fileSize})">
+                    <!-- WhatsApp Meta Tags (müssen zuerst stehen) -->
                     <meta property="og:type" content="website">
-                    <meta property="og:image" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' fill='%232B2E3B'/><text x='256' y='340' font-family='Arial' font-size='300' text-anchor='middle' fill='%23688db1'>⬇️</text></svg>">
+                    <meta property="og:title" content="${shareInfo.fileName} (${fileSize})">
+                    <meta property="og:description" content="Download verfügbar - ${fileSize}">
+                    <meta property="og:image" content="https://mrx3k1.de/content/xchange.jpg">
                     <meta property="og:image:width" content="512">
                     <meta property="og:image:height" content="512">
+                    <meta property="og:image:type" content="image/jpeg">
+                    <meta property="og:url" content="${req.headers['x-forwarded-proto'] || req.protocol}://${req.headers['x-forwarded-host'] || req.headers.host}${req.originalUrl}">
+                    <meta property="og:site_name" content="xchange">
+                    
+                    <!-- Standard Meta Tags -->
+                    <meta name="description" content="${shareInfo.fileName} (${fileSize}) - Download verfügbar">
+                    <meta name="title" content="${shareInfo.fileName} (${fileSize})">
+                    
+                    <!-- WhatsApp Cache Buster -->
+                    <meta property="og:updated_time" content="${Date.now()}">
+                    <meta property="article:modified_time" content="${new Date().toISOString()}">
                     
                     <!-- Twitter Card Meta Tags -->
                     <meta name="twitter:card" content="summary_large_image">
-                    <meta name="twitter:title" content="${shareInfo.fileName}">
-                    <meta name="twitter:description" content="Download-Link für ${shareInfo.fileName} (${fileSize})">
-                    <meta name="twitter:image" content="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' fill='%232B2E3B'/><text x='256' y='340' font-family='Arial' font-size='300' text-anchor='middle' fill='%23688db1'>⬇️</text></svg>">
+                    <meta name="twitter:title" content="${shareInfo.fileName} (${fileSize})">
+                    <meta name="twitter:description" content="Download verfügbar - ${fileSize}">
+                    <meta name="twitter:image" content="https://mrx3k1.de/content/xchange.jpg">
                     
                     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬇️</text></svg>">
                     <style>
