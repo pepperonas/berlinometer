@@ -587,6 +587,11 @@ class BPMTracker {
         this.lastUpdateTime = 0;
         this.bpmHistory = [];
         this.maxHistorySize = 3; // Von 5 auf 3 reduziert - schnellere Anpassung
+        
+        // Rolling average für stabilere BPM-Anzeige
+        this.rollingBPMValues = [];
+        this.rollingWindowDuration = 5.0; // 5 Sekunden Zeitfenster
+        this.displayBPM = null; // Der angezeigte BPM-Wert (geglättet)
     }
 
     // Aktualisiert den BPM-Tracker mit einem neuen Wert
@@ -599,6 +604,9 @@ class BPMTracker {
             this.confidence = 0.3; // Start mit mittlerer Konfidenz
             this.lastUpdateTime = timestamp;
             this.bpmHistory.push(newBPM);
+            // Initialisiere rolling average
+            this.rollingBPMValues.push({ timestamp: timestamp, bpm: newBPM });
+            this.displayBPM = newBPM;
             return;
         }
 
@@ -620,6 +628,9 @@ class BPMTracker {
 
         // Kombiniere alten und neuen BPM-Wert mit Median als Referenz
         this._mergeBPM(forgetFactor, newBPM, medianBPM);
+        
+        // Aktualisiere rolling average für Display
+        this.updateRollingAverage(timestamp);
     }
 
     // Berechnet den Median der BPM-Historie
@@ -673,11 +684,48 @@ class BPMTracker {
         }
     }
 
+    // Aktualisiert den rolling average mit dem aktuellen BPM-Wert
+    updateRollingAverage(timestamp) {
+        if (this.currentBPM === null) return;
+        
+        // Füge aktuellen BPM-Wert zum rolling window hinzu
+        this.rollingBPMValues.push({ timestamp: timestamp, bpm: this.currentBPM });
+        
+        // Entferne alte Werte außerhalb des Zeitfensters
+        const cutoffTime = timestamp - this.rollingWindowDuration;
+        this.rollingBPMValues = this.rollingBPMValues.filter(item => item.timestamp > cutoffTime);
+        
+        // Berechne gewichteten Durchschnitt (neuere Werte haben mehr Gewicht)
+        if (this.rollingBPMValues.length > 0) {
+            let weightedSum = 0;
+            let totalWeight = 0;
+            
+            const latestTime = this.rollingBPMValues[this.rollingBPMValues.length - 1].timestamp;
+            
+            for (const item of this.rollingBPMValues) {
+                // Gewicht basiert auf Zeit (neuere Werte haben mehr Gewicht)
+                const age = latestTime - item.timestamp;
+                const weight = Math.exp(-age / 2.0); // Exponentieller Abfall
+                
+                weightedSum += item.bpm * weight;
+                totalWeight += weight;
+            }
+            
+            this.displayBPM = Math.round(weightedSum / totalWeight);
+        }
+    }
+    
+    // Gibt den geglätteten BPM-Wert für die Anzeige zurück
+    getDisplayBPM() {
+        return this.displayBPM;
+    }
+
     // Gibt aktuellen Zustand zurück
     getState() {
         return {
             bpm: this.currentBPM,
-            confidence: this.confidence
+            confidence: this.confidence,
+            displayBPM: this.displayBPM
         };
     }
 
@@ -899,13 +947,20 @@ class BPMAnalyzer {
     // Gibt aktuellen BPM-Wert zurück
     getCurBPM() {
         const state = this.bpmTracker.getState();
-        return state.bpm;
+        // Verwende den geglätteten Display-BPM statt des rohen Wertes
+        return state.displayBPM || state.bpm;
     }
 
     // Gibt Qualität der aktuellen BPM-Erkennung zurück
     getCurBPMQuality() {
         const state = this.bpmTracker.getState();
         return state.confidence;
+    }
+    
+    // Gibt den ungeglätteten BPM-Wert zurück (für Diagnose)
+    getRawBPM() {
+        const state = this.bpmTracker.getState();
+        return state.bpm;
     }
 
     // Gibt die Anzahl der erkannten Hits zurück

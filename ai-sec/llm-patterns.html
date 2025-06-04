@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM-Patterns für bessere Ergebnisse - KI & Cybersicherheit</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="container">
+                <h1>KI & Cybersicherheit</h1>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="privacy-concerns.html">Datenschutz bei KI</a></li>
+                    <li><a href="ai-policy-filter.html">KI als Richtlinien-Filter</a></li>
+                    <li><a href="ai-security-practice.html">KI-Sicherheitstraining</a></li>
+                    <li><a href="ai-cyber-tabletop.html">KI-Cyber-Tabletops</a></li>
+                    <li><a href="ai-simulation-training.html">KI-Simulationstraining</a></li>
+                    <li><a href="capital-framework.html">CAPITAL Framework</a></li>
+                    <li><a href="llm-patterns.html">LLM-Patterns</a></li>
+                    <li><a href="template-pattern.html">Template Pattern</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="content-page">
+        <section class="content-header">
+            <div class="container">
+                <h2>Intelligente Prompt-Patterns für Large Language Models</h2>
+                <p class="lead">Wie Sie mit cleveren Techniken die KI zu besseren Antworten führen</p>
+            </div>
+        </section>
+
+        <section class="content-body">
+            <div class="container">
+                <p>Eine interessante Eigenschaft großer Sprachmodelle ist, dass sie in vielen Fällen tatsächlich besser denken können, wenn sie ein Problem in viele kleinere Probleme zerlegen. Manchmal können sie sogar besser argumentieren, wenn sie ihren Denkprozess erklären.</p>
+
+                <div class="highlight">
+                    <p><strong>Der Schlüssel:</strong> Große Sprachmodelle haben in ihren Trainingsdaten gesehen, wie Probleme in einzelne Schritte zerlegt werden. Wenn sie diesen Schritten folgen können, wissen sie, was als Nächstes zu generieren ist.</p>
+                </div>
+
+                <h3>Das Cognitive Verifier Pattern</h3>
+                
+                <p>Das Cognitive Verifier Pattern ist genau für diesen Zweck gedacht. Wir sagen dem Sprachmodell einfach:</p>
+
+                <div class="info-box">
+                    <h5>🧠 Der magische Prompt</h5>
+                    <p><em>"Wenn dir eine Frage gestellt wird, befolge diese Regeln:<br>
+                    1. Generiere zusätzliche Fragen, die helfen würden, die Hauptfrage genauer zu beantworten<br>
+                    2. Kombiniere die Antworten auf die einzelnen Fragen zur finalen Antwort"</em></p>
+                </div>
+
+                <h3>Ein praktisches Beispiel</h3>
+
+                <div class="terminal-demo">
+                    <h4>🦟 Die Mücken-Frage</h4>
+                    <div class="terminal">
+                        <div class="command">Nutzer: "Wie viele Mücken leben wahrscheinlich in meinem Vorgarten?"</div>
+                        <div class="output">
+<strong>KI generiert Unterfragen:</strong><br>
+1. Wie groß ist Ihr Vorgarten?<br>
+2. Wie ist das Klima in Ihrer Gegend?<br>
+3. Welche Jahreszeit haben wir?<br>
+4. Gibt es stehendes Wasser in der Nähe?<br>
+5. Welche Pflanzen wachsen dort?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="key-point">
+                    <strong>Was hier passiert:</strong> Die KI hat eine vage Frage genommen und automatisch die wichtigsten Faktoren identifiziert, die die Antwort beeinflussen. Das hilft sowohl der KI als auch uns, strukturierter zu denken!
+                </div>
+
+                <h3>Die Antwort wird präziser</h3>
+
+                <p>Nachdem die Unterfragen beantwortet wurden (z.B. "250 m² Garten, Südost-USA, April, kein stehendes Wasser"), liefert die KI eine fundierte Schätzung:</p>
+
+                <div class="diagram">
+                    <h4>Das Ergebnis</h4>
+                    <div class="scenario-box">
+                        <p><strong>Schätzung:</strong> Einige Dutzend bis einige hundert Mücken</p>
+                        <p><strong>Begründung:</strong> Basierend auf Populationsdichte ohne Wasserquellen</p>
+                        <p><strong>Zusatzinfo:</strong> Eine weibliche Mücke kann bis zu 300 Eier legen</p>
+                    </div>
+                </div>
+
+                <h3>Warum funktioniert das so gut?</h3>
+
+                <div class="flow-diagram">
+                    <div class="flow-item">
+                        <div class="icon">❓</div>
+                        <span>Vage Frage</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">
+                        <div class="icon">🔍</div>
+                        <span>Automatische Zerlegung</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item">
+                        <div class="icon">📝</div>
+                        <span>Detaillierte Unterfragen</span>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-item highlight">
+                        <div class="icon">✅</div>
+                        <span>Präzise Antwort</span>
+                    </div>
+                </div>
+
+                <h3>Das Audience Persona Pattern</h3>
+
+                <p>Während das Cognitive Verifier Pattern die KI hilft, besser zu denken, hilft das Audience Persona Pattern ihr, besser zu kommunizieren. Die Idee: Wir sagen der KI nicht, WAS sie sagen soll, sondern für WEN sie es sagt.</p>
+
+                <div class="info-box">
+                    <h5>🎭 Das Prinzip</h5>
+                    <p>Statt komplizierte Regeln aufzustellen, sagen wir einfach: "Erkläre das für [Zielgruppe]" - und die KI passt automatisch Sprache, Beispiele und Komplexität an.</p>
+                </div>
+
+                <h3>Beispiel: Large Language Models erklären</h3>
+
+                <div class="comparison-diagram">
+                    <div class="comparison-item">
+                        <h5>👨‍💼 Für Laien</h5>
+                        <p><em>"Erkläre mir LLMs. Ich habe keinen IT-Hintergrund."</em></p>
+                        <p class="positive">→ "Ein LLM ist wie ein virtueller Schreiber, der Sätze verstehen und erstellen kann..."</p>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="comparison-item">
+                        <h5>🧒 Für Zweitklässler</h5>
+                        <p><em>"Erkläre mir LLMs. Ich bin in der 2. Klasse und werde schnell gelangweilt."</em></p>
+                        <p class="positive">→ "Stell dir einen Roboter-Freund vor, der super gut in Wortspielen ist..."</p>
+                    </div>
+                </div>
+
+                <h3>Die extremen Beispiele</h3>
+
+                <div class="terminal-demo">
+                    <h4>⛵ Für Christoph Kolumbus</h4>
+                    <div class="terminal">
+                        <div class="command">Prompt: "Erkläre LLMs. Nimm an, ich bin Christoph Kolumbus."</div>
+                        <div class="output">
+"Grüße, Christoph Kolumbus! Stellt Euch einen magischen Schreiber vor, der unzählige Bücher, Schriftrollen und Manuskripte aus aller Welt gelesen hat. Dieser Schreiber kann vorhersagen, was als Nächstes in einem Satz kommt..."
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terminal-demo">
+                    <h4>🔢 Nur in Mathematik</h4>
+                    <div class="terminal">
+                        <div class="command">Prompt: "Erkläre LLMs. Ich akzeptiere nur mathematische Erklärungen."</div>
+                        <div class="output">
+"Ein Sprachmodell ist eine Wahrscheinlichkeitsverteilung P(w₁, w₂, ..., wₙ) über Sequenzen von Tokens..."
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Warum diese Patterns so mächtig sind</h3>
+
+                <div class="action-steps">
+                    <h4>Vorteile des Cognitive Verifier Patterns</h4>
+                    <ul>
+                        <li>
+                            <strong>Automatische Problemzerlegung</strong>
+                            <p>Die KI identifiziert selbstständig relevante Aspekte</p>
+                        </li>
+                        <li>
+                            <strong>Bessere Antwortqualität</strong>
+                            <p>Durch strukturiertes Vorgehen werden Antworten präziser</p>
+                        </li>
+                        <li>
+                            <strong>Lerneffekt für Nutzer</strong>
+                            <p>Sie lernen, welche Faktoren wichtig sind</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="action-steps">
+                    <h4>Vorteile des Audience Persona Patterns</h4>
+                    <ul>
+                        <li>
+                            <strong>Automatische Anpassung</strong>
+                            <p>Sprache und Beispiele passen sich der Zielgruppe an</p>
+                        </li>
+                        <li>
+                            <strong>Keine komplizierten Regeln nötig</strong>
+                            <p>Ein einfacher Hinweis auf die Zielgruppe reicht</p>
+                        </li>
+                        <li>
+                            <strong>Kreative Erklärungsansätze</strong>
+                            <p>Die KI findet überraschende Wege, Konzepte zu vermitteln</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <h3>Praktische Anwendung</h3>
+
+                <div class="highlight">
+                    <p><strong>Tipp für die Praxis:</strong> Kombinieren Sie beide Patterns! Lassen Sie die KI erst das Problem mit dem Cognitive Verifier Pattern zerlegen und dann die Antwort mit dem Audience Persona Pattern für Ihre Zielgruppe aufbereiten.</p>
+                </div>
+
+                <div class="key-point">
+                    <p><strong>Beispiel-Kombination:</strong><br>
+                    1. "Zerlege diese Frage in Unterfragen: Wie sichere ich meine Webseite?"<br>
+                    2. "Erkläre die Antwort für einen Kleinunternehmer ohne IT-Kenntnisse"</p>
+                </div>
+
+                <h3>Die Zukunft intelligenter Prompts</h3>
+
+                <p>Diese Patterns zeigen uns: Wir müssen der KI nicht alles vorkauen. Oft reicht es, ihr die richtige Denkstruktur oder das richtige Publikum zu nennen. Sie verfügt über das Wissen - wir müssen ihr nur helfen, es richtig zu organisieren und zu präsentieren.</p>
+
+                <div class="diagram">
+                    <h4>Ihre neuen Superkräfte</h4>
+                    <div style="background: #e8eaf6; padding: 30px; border-radius: 8px; margin: 20px 0;">
+                        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; text-align: center;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">🧩</div>
+                                <strong>Probleme zerlegen</strong><br>
+                                <small>Mit dem Cognitive Verifier</small>
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">🎯</div>
+                                <strong>Zielgenau kommunizieren</strong><br>
+                                <small>Mit dem Audience Persona</small>
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">🚀</div>
+                                <strong>Bessere Ergebnisse</strong><br>
+                                <small>Durch clevere Prompts</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Martin Pfeffer - KI & Cybersicherheit Kompendium. Alle Rechte vorbehalten.</p>
+        </div>
+    </footer>
+</body>
+</html>
