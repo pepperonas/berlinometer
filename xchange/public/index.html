@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>xchange | Online Speicher</title>
+    <meta name="description" content="Online Speicher für Dateien mit Upload und Download Funktionalität">
+    <meta name="theme-color" content="#688db1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="xchange">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬇️</text></svg>">
+    <link rel="manifest" href="/xchange/manifest.json">
+    <link rel="apple-touch-icon" href="/xchange/apple-touch-icon.png">
     <style>
         :root {
             /* Dunkles Theme basierend auf #2C2E3B */
@@ -1250,6 +1257,45 @@
 
         // Status alle 30 Sekunden prüfen
         setInterval(checkApiAvailability, 30000);
+        
+        // Service Worker registrieren für PWA-Funktionalität
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/xchange/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registriert:', registration);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    showToast('App-Update verfügbar - Seite neu laden', 'success');
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.log('Service Worker Registrierung fehlgeschlagen:', error);
+                    });
+            });
+        }
+        
+        // PWA Installation prompt
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('PWA Installation verfügbar');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Optional: Show custom install button
+            showToast('App kann installiert werden!', 'success');
+        });
+        
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('PWA wurde installiert');
+            showToast('App erfolgreich installiert!', 'success');
+        });
     });
 </script>
 </body>
