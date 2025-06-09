@@ -7,6 +7,7 @@ const App: React.FC = () => {
   const [showToast, setShowToast] = useState<boolean>(false);
   const [showPwned, setShowPwned] = useState<boolean>(false);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -46,11 +47,11 @@ const App: React.FC = () => {
     setShowConfetti(true);
     setShowPwned(true);
     
-    // Animation nach 5 Sekunden beenden
+    // Animation nach 10 Sekunden beenden
     setTimeout(() => {
       setShowConfetti(false);
       setShowPwned(false);
-    }, 5000);
+    }, 10000);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,12 +84,69 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    // Autofokus auf das Eingabefeld setzen, wenn keine Disclaimer angezeigt wird
+    if (!showDisclaimer && inputRef.current) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+    
     return () => {
       if (longPressTimerRef.current) {
         clearTimeout(longPressTimerRef.current);
       }
     };
-  }, []);
+  }, [showDisclaimer]);
+
+  const handleContinue = () => {
+    setShowDisclaimer(false);
+  };
+
+  // Disclaimer-Seite anzeigen
+  if (showDisclaimer) {
+    return (
+      <div className="disclaimer-container">
+        <div className="disclaimer-content">
+          <div className="disclaimer-header">
+            <h1>🍔 McFly</h1>
+            <div className="disclaimer-subtitle">McDonald's Bestellnummer-Display</div>
+          </div>
+          
+          <div className="disclaimer-warning">
+            <h2>⚠️ Disclaimer</h2>
+            <p>Diese App dient zu Demonstrationszwecken</p>
+          </div>
+          
+          <div className="disclaimer-features">
+            <h3>Funktionen:</h3>
+            <ul>
+              <li>📱 Bestellnummer eingeben wenn die echte McDonald's App nicht funktioniert</li>
+              <li>🔧 Backup-Lösung für defekte Smartphones</li>
+              <li>🎯 Demonstration/Test-Zwecke</li>
+            </ul>
+          </div>
+          
+          <div className="disclaimer-description">
+            <p>
+              Gib deine Bestellnummer manuell ein und zeige sie zur Abholung vor - 
+              perfekt als Backup wenn die echte McDonald's App nicht funktioniert.
+            </p>
+          </div>
+          
+          <div className="easter-egg-hint">
+            <h4>🎉 Easter Egg</h4>
+            <p>Probiere die Bestellnummer <strong>3001</strong> für eine Überraschung!</p>
+          </div>
+          
+          <button className="continue-button" onClick={handleContinue}>
+            Weiter zur App →
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -107,17 +165,22 @@ const App: React.FC = () => {
       {showPwned && (
         <div className="pwned-overlay">
           <div className="pwned-message">
-            <div className="hacker-text">YOU HAVE BEEN</div>
+            <div className="fastfood-text">RONALD McDONALD HAS BEEN</div>
             <div className="pwned-text">PWNED</div>
-            <div className="hacker-subtitle">[ SYSTEM COMPROMISED ]</div>
-            <div className="matrix-rain">
-              {[...Array(20)].map((_, i) => (
-                <div key={i} className="matrix-column" style={{left: `${i * 5}%`}}>
-                  {[...Array(10)].map((_, j) => (
-                    <span key={j} className="matrix-char">
-                      {String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}
-                    </span>
-                  ))}
+            <div className="fastfood-subtitle">[ 🍟 FAST FOOD OVERLOAD 🍔 ]</div>
+            <div className="fastfood-rain">
+              {[...Array(30)].map((_, i) => (
+                <div key={i} className={`fastfood-item fastfood-item-${i % 6}`} style={{
+                  left: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 2}s`,
+                  animationDuration: `${2 + Math.random() * 2}s`
+                }}>
+                  {i % 6 === 0 && '🍔'}
+                  {i % 6 === 1 && '🍟'}
+                  {i % 6 === 2 && '🥤'}
+                  {i % 6 === 3 && '🍕'}
+                  {i % 6 === 4 && '🌭'}
+                  {i % 6 === 5 && '🧀'}
                 </div>
               ))}
             </div>
