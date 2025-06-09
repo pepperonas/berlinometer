@@ -1,0 +1,189 @@
+@font-face {
+  font-family: 'Zurich';
+  src: url('./assets/zurich_blk_wgl.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+.app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Container für mobile Simulation auf Desktop */
+.mobile-container {
+  position: relative;
+  width: 375px;
+  height: 812px;
+  max-width: 100vw;
+  max-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+
+.number-input {
+  position: absolute;
+  top: 20px;
+  right: 8px;
+  width: 55px;
+  height: 178px;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: 'Zurich', Arial, sans-serif;
+  font-size: 42px;
+  font-weight: bold;
+  color: #000000;
+  text-align: center;
+  caret-color: transparent;
+  cursor: text;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+.number-input::-webkit-outer-spin-button,
+.number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.number-input:focus {
+  outline: none;
+  caret-color: transparent;
+}
+
+.number-input::selection {
+  background: transparent;
+}
+
+.number-input::-moz-selection {
+  background: transparent;
+}
+
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  z-index: 1000;
+  animation: toast-fade 2s ease-in-out forwards;
+}
+
+@keyframes toast-fade {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  90% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+}
+
+/* Desktop: Smartphone-Simulation */
+@media screen and (min-width: 769px) {
+  .mobile-container {
+    width: 375px;
+    height: 812px;
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  }
+  
+  .number-input {
+    top: 20px;
+    right: 8px;
+    width: 55px;
+    height: 178px;
+    font-size: 42px;
+  }
+}
+
+/* Tablet: Vollbild aber responsive */
+@media screen and (max-width: 768px) and (min-width: 481px) {
+  .mobile-container {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .number-input {
+    top: 2%;
+    right: 2%;
+    width: 14%;
+    height: 22%;
+    font-size: clamp(28px, 5vw, 42px);
+  }
+}
+
+/* Mobile: Vollbild */
+@media screen and (max-width: 480px) {
+  .mobile-container {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .number-input {
+    top: 1%;
+    right: 4%;
+    width: 20%;
+    height: 25%;
+    font-size: clamp(37px, 9vw, 55px);
+  }
+}
