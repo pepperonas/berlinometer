@@ -7,36 +7,49 @@
     <style>
         :root {
             --primary-color: #2C2E3B;
-            --accent-color: #4f5275;
-            --text-color: #e4e4e7;
-            --background-color: #1e1f2b;
-            --card-color: #2a2b3d;
+            --primary-light: #383B4F;
+            --text-color: #ffffff;
+            --text-secondary: #e5e7eb;
+            --text-muted: #9ca3af;
+            --background-color: #2C2E3B;
+            --card-color: #383B4F;
+            --blue-300: #93c5fd;
+            --blue-600: #2563eb;
+            --blue-700: #1d4ed8;
             --border-radius: 8px;
-            --shadow: 0 2px 5px rgba(0,0,0,0.3);
-            --padding: 20px;
-            --yellow: #facc15;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --padding: 24px;
         }
         
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                sans-serif;
+            touch-action: manipulation;
         }
         
         body {
             background-color: var(--background-color);
             color: var(--text-color);
             line-height: 1.6;
-            padding: 20px;
+            padding: 16px 16px 64px;
+            min-height: 100vh;
+            transition: colors 300ms;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: contain;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1024px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 24px;
         }
         
         @media (max-width: 768px) {
@@ -47,13 +60,13 @@
         
         .header {
             grid-column: 1 / -1;
-            background-color: #353748;
+            background-color: var(--card-color);
             color: var(--text-color);
             padding: var(--padding);
             border-radius: var(--border-radius);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             box-shadow: var(--shadow);
-            border-left: 4px solid var(--yellow);
+            animation: fadeIn 0.3s ease-in-out;
         }
         
         .card {
@@ -61,11 +74,21 @@
             padding: var(--padding);
             border-radius: var(--border-radius);
             box-shadow: var(--shadow);
+            animation: slideIn 0.4s ease-out;
         }
         
-        h1, h2, h3 {
-            margin-bottom: 15px;
-            color: var(--text-color);
+        h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: var(--blue-300);
+            line-height: 1.2;
+        }
+        
+        h2, h3 {
+            margin-bottom: 16px;
+            color: var(--blue-300);
+            font-weight: 600;
         }
         
         .form-group {
@@ -74,49 +97,53 @@
         
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 500;
-            color: var(--text-color);
+            color: var(--text-secondary);
         }
         
         input, select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #4a4d65;
-            background-color: #232534;
+            padding: 12px;
+            border: 1px solid #4b5563;
+            background-color: var(--primary-color);
             color: var(--text-color);
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 16px;
+            transition: all 0.3s;
         }
         
         input:focus, select:focus {
             outline: none;
-            border-color: var(--yellow);
+            border-color: var(--blue-600);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
         }
         
         button {
-            background-color: var(--yellow);
-            color: #1e1f2b;
+            background-color: var(--blue-600);
+            color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 9999px;
             cursor: pointer;
             font-size: 16px;
             font-weight: 600;
-            transition: background-color 0.3s, transform 0.2s;
-            margin-top: 10px;
+            transition: all 0.3s;
+            margin-top: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
         
         button:hover {
-            background-color: #eab308;
-            transform: scale(1.05);
+            background-color: var(--blue-700);
+            transform: scale(1.02);
         }
         
         .result-row {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #3a3c4e;
+            padding: 12px 0;
+            border-bottom: 1px solid #4b5563;
+            transition: background-color 0.2s;
         }
         
         .result-row:last-child {
@@ -125,12 +152,12 @@
         
         .result-label {
             font-weight: 500;
-            color: var(--text-color);
+            color: var(--text-secondary);
         }
         
         .result-value {
             font-weight: 700;
-            color: var(--yellow);
+            color: var(--blue-300);
         }
         
         .tabs {
@@ -139,21 +166,23 @@
         }
         
         .tab {
-            padding: 10px 20px;
+            padding: 12px 24px;
             cursor: pointer;
-            background-color: #232534;
-            color: var(--text-color);
-            border-radius: 4px 4px 0 0;
-            transition: background-color 0.3s;
+            background-color: var(--primary-color);
+            color: var(--text-secondary);
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s;
+            font-weight: 500;
         }
         
         .tab:hover {
-            background-color: #3a3c4e;
+            background-color: #4b5563;
+            transform: scale(1.02);
         }
         
         .tab.active {
-            background-color: var(--yellow);
-            color: #1e1f2b;
+            background-color: var(--blue-600);
+            color: white;
             font-weight: 600;
         }
         
@@ -166,22 +195,73 @@
         }
         
         .summary-card {
-            margin-top: 20px;
-            background-color: #353748;
-            border: 1px solid var(--yellow);
+            margin-top: 24px;
+            background-color: var(--primary-color);
+            border: 1px solid var(--blue-600);
+            animation: slideIn 0.5s ease-out;
         }
         
         .chart-container {
             height: 300px;
             margin-top: 20px;
         }
+        
+        /* PWA Animationen und Transitions */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes chartLoad {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .animate-slideIn {
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        .animate-chartLoad {
+            animation: chartLoad 0.5s ease-out;
+        }
+        
+        /* Besseres Touch-Feedback für mobile Geräte */
+        button, a {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 32px;
+            padding-top: 16px;
+            padding-bottom: 8px;
+            text-align: center;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 640px) {
+            /* Optimierung für kleine Bildschirme */
+            input, button {
+                font-size: 16px; /* Verhindert Zoom auf iOS bei Focus */
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Brutto-Netto-Rechner für Deutschland</h1>
-            <p>Berechne Dein Nettogehalt und Abgaben nach aktuellen Steuersätzen</p>
+            <h1>💰 Brutto-Netto-Rechner für Deutschland 2025</h1>
+            <p style="color: var(--text-secondary);">Berechne Dein Nettogehalt und Abgaben nach den aktuellen Steuersätzen 2025</p>
         </div>
         
         <div class="card">
@@ -258,7 +338,7 @@
             
             <div class="form-group">
                 <label for="additional-health">Zusatzbeitrag Krankenkasse (%)</label>
-                <input type="number" id="additional-health" min="0" max="3" step="0.1" value="1.3">
+                <input type="number" id="additional-health" min="0" max="4" step="0.1" value="2.5">
             </div>
             
             <button id="calculate-btn">Berechnen</button>
@@ -362,6 +442,11 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Footer - matching weather app -->
+        <div class="footer">
+            Made with ❤️ by Martin Pfeffer
+        </div>
     </div>
     
     <script>
@@ -390,27 +475,34 @@
             });
         });
         
-        // Steuersätze und Konstanten (vereinfachte Version)
+        // Steuersätze und Konstanten für 2025
         const taxConstants = {
-            // Einkommensteuer 2024
-            basicAllowance: 11604, // Grundfreibetrag
-            taxZone2Start: 11604,
-            taxZone2End: 17005,
-            taxZone3Start: 17006,
-            taxZone3End: 66761,
-            taxZone4Start: 66762,
+            // Einkommensteuer 2025
+            basicAllowance: 12096, // Grundfreibetrag
+            taxZone2Start: 12097,
+            taxZone2End: 17430,
+            taxZone3Start: 17431,
+            taxZone3End: 68480,
+            taxZone4Start: 68481,
             taxZone4End: 277825,
             taxZone5Start: 277826,
             
-            // Sozialversicherungsbeiträge 2024 (prozentual)
-            pensionRate: 18.6 / 100, // Rentenversicherung
-            unemploymentRate: 2.6 / 100, // Arbeitslosenversicherung
-            careRate: 3.4 / 100, // Pflegeversicherung
-            careRateChildless: 4.0 / 100, // Pflegeversicherung für Kinderlose über 23
+            // Kinderfreibetrag 2025 (pro Kind)
+            childAllowance: 6672, // Erhöhung für 2025
             
-            // Beitragsbemessungsgrenzen 2024
-            pensionCap: 7550 * 12, // Rentenversicherung
-            healthCap: 5175 * 12,  // Krankenversicherung
+            // Sozialversicherungsbeiträge 2025 (Arbeitnehmeranteil)
+            pensionRate: 18.6 / 100, // Rentenversicherung (9,3% Arbeitnehmeranteil)
+            unemploymentRate: 2.6 / 100, // Arbeitslosenversicherung (1,3% Arbeitnehmeranteil)
+            healthRate: 14.6 / 100, // Krankenversicherung Grundbeitrag (7,3% Arbeitnehmeranteil)
+            additionalHealthRate: 5.0 / 100, // Zusatzbeitrag durchschnittlich (2,5% Arbeitnehmeranteil)
+            careRate: 3.6 / 100, // Pflegeversicherung (1,8% Arbeitnehmeranteil)
+            careRateChildless: 4.8 / 100, // Pflegeversicherung für Kinderlose (1,8% + 0,6% = 2,4% Arbeitnehmeranteil)
+            careRateReduction: 0.5 / 100, // Abschlag pro Kind ab dem 2. Kind (0,25% Arbeitnehmeranteil)
+            
+            // Beitragsbemessungsgrenzen 2025
+            pensionCap: 96600, // Rentenversicherung (West) - 8.050 € × 12
+            pensionCapEast: 93000, // Rentenversicherung (Ost) - 7.750 € × 12
+            healthCap: 66150,  // Krankenversicherung - 5.512,50 € × 12
             
             // Kirchensteuersätze nach Bundesland
             churchTaxRates: {
@@ -419,60 +511,131 @@
                 'rp': 0.09, 'sl': 0.09, 'sn': 0.09, 'st': 0.09, 'sh': 0.09, 'th': 0.09
             },
             
-            // Steuerklassen-Faktoren (vereinfacht)
-            taxClassFactors: {
-                '1': 1.0,    // Single
-                '2': 0.85,   // Alleinerziehend
-                '3': 0.70,   // Verheiratet, Alleinverdiener
-                '4': 0.95,   // Verheiratet, beide verdienen
-                '5': 1.2,    // Verheiratet, weniger verdienend
-                '6': 1.3     // Nebenjob
+            // Pauschbeträge nach Steuerklasse
+            taxClassAllowances: {
+                '1': { werbungskosten: 1230, sonderausgaben: 36, vorsorgepauschale: 0 },
+                '2': { werbungskosten: 1230, sonderausgaben: 36, vorsorgepauschale: 0, entlastung: 4260 },
+                '3': { werbungskosten: 1230, sonderausgaben: 36, vorsorgepauschale: 0 },
+                '4': { werbungskosten: 1230, sonderausgaben: 36, vorsorgepauschale: 0 },
+                '5': { werbungskosten: 1230, sonderausgaben: 36, vorsorgepauschale: 0 },
+                '6': { werbungskosten: 0, sonderausgaben: 0, vorsorgepauschale: 0 }
             },
             
             // Solidaritätszuschlag
-            soliFreeLimit: 17004,  // Freigrenze
+            soliFreeLimit: 19950,  // Freigrenze für Einkommensteuer 2025
             soliRate: 0.055        // 5.5%
         };
         
-        // Funktion zur Berechnung der Einkommensteuer (vereinfacht)
-        function calculateIncomeTax(yearlyIncome, taxClass) {
-            // Grundfreibetrag anwenden
-            let taxableIncome = Math.max(0, yearlyIncome - taxConstants.basicAllowance);
+        // Funktion zur Berechnung der Einkommensteuer nach Grundtabelle 2025
+        function calculateIncomeTax(yearlyIncome, taxClass, children = 0, socialContributions = 0) {
+            // Bruttoarbeitslohn minus Sozialversicherungsbeiträge = zu versteuerndes Bruttoeinkommen
+            let taxableGrossIncome = yearlyIncome - socialContributions;
             
-            // Steuerklassenfaktor anwenden (vereinfacht)
-            const factor = taxConstants.taxClassFactors[taxClass];
-            taxableIncome *= factor;
+            // Abzugsfähige Beträge je nach Steuerklasse
+            const allowances = taxConstants.taxClassAllowances[taxClass];
+            let deductions = allowances.werbungskosten + allowances.sonderausgaben;
+            
+            // Kinderfreibeträge hinzufügen
+            const childDeduction = children * taxConstants.childAllowance;
+            deductions += childDeduction;
+            
+            // Entlastungsbetrag für Alleinerziehende (Steuerklasse 2)
+            if (taxClass === '2' && allowances.entlastung) {
+                deductions += allowances.entlastung;
+            }
+            
+            // Zu versteuerndes Einkommen berechnen
+            let taxableIncome = Math.max(0, taxableGrossIncome - deductions);
             
             let tax = 0;
             
-            // Progressive Steuerzonen
-            if (yearlyIncome <= taxConstants.basicAllowance) {
+            // Progressive Steuerzonen nach Grundtabelle 2025
+            if (taxableIncome <= taxConstants.basicAllowance) {
                 tax = 0;
-            } else if (yearlyIncome <= taxConstants.taxZone2End) {
-                // Zone 2: 14% bis 20%
-                const y = (yearlyIncome - taxConstants.taxZone2Start) / 10000;
-                tax = (714 * y + 1400) * y;
-            } else if (yearlyIncome <= taxConstants.taxZone3End) {
-                // Zone 3: 24% bis 42%
-                const z = (yearlyIncome - taxConstants.taxZone3Start) / 10000;
-                tax = (938.24 * z + 2397) * z + 1016.36;
-            } else if (yearlyIncome <= taxConstants.taxZone4End) {
-                // Zone 4: 42%
-                tax = 0.42 * yearlyIncome - 10409.34;
+            } else if (taxableIncome <= taxConstants.taxZone2End) {
+                // Zone 2: Progressionszone 1 (14% bis 24%) - 2025 angepasst
+                const y = (taxableIncome - taxConstants.basicAllowance) / 10000;
+                tax = (922.98 * y + 1400) * y;
+            } else if (taxableIncome <= taxConstants.taxZone3End) {
+                // Zone 3: Progressionszone 2 (24% bis 42%) - 2025 angepasst
+                const z = (taxableIncome - taxConstants.taxZone3Start) / 10000;
+                tax = (181.19 * z + 2397) * z + 1025.38;
+            } else if (taxableIncome <= taxConstants.taxZone4End) {
+                // Zone 4: Proportionalzone 1 (42%)
+                tax = 0.42 * taxableIncome - 11294.68;
             } else {
-                // Zone 5: 45%
-                tax = 0.45 * yearlyIncome - 18693.64;
+                // Zone 5: Proportionalzone 2 (45%)
+                tax = 0.45 * taxableIncome - 19619.93;
             }
             
-            return Math.max(0, tax);
+            // Steuerklasse 3: Splittingtabelle (Ehegattensplitting)
+            if (taxClass === '3') {
+                // Bei Steuerklasse 3 wird die Hälfte des Einkommens besteuert und dann verdoppelt
+                const halfIncome = taxableIncome / 2;
+                let halfTax = 0;
+                
+                if (halfIncome <= taxConstants.basicAllowance) {
+                    halfTax = 0;
+                } else if (halfIncome <= taxConstants.taxZone2End) {
+                    const y = (halfIncome - taxConstants.basicAllowance) / 10000;
+                    halfTax = (922.98 * y + 1400) * y;
+                } else if (halfIncome <= taxConstants.taxZone3End) {
+                    const z = (halfIncome - taxConstants.taxZone3Start) / 10000;
+                    halfTax = (181.19 * z + 2397) * z + 1025.38;
+                } else if (halfIncome <= taxConstants.taxZone4End) {
+                    halfTax = 0.42 * halfIncome - 11294.68;
+                } else {
+                    halfTax = 0.45 * halfIncome - 19619.93;
+                }
+                
+                tax = halfTax * 2;
+            }
+            
+            // Steuerklasse 5: Erhöhte Besteuerung
+            if (taxClass === '5') {
+                tax *= 1.15; // Vereinfachte Erhöhung um 15%
+            }
+            
+            // Steuerklasse 6: Keine Freibeträge, höchste Besteuerung
+            if (taxClass === '6') {
+                // Neuberechnung ohne Freibeträge
+                tax = 0;
+                if (yearlyIncome <= 1000) {
+                    tax = 0;
+                } else if (yearlyIncome <= taxConstants.taxZone2End) {
+                    const y = (yearlyIncome - 1000) / 10000;
+                    tax = (922.98 * y + 1400) * y;
+                } else if (yearlyIncome <= taxConstants.taxZone3End) {
+                    const z = (yearlyIncome - taxConstants.taxZone3Start) / 10000;
+                    tax = (181.19 * z + 2397) * z + 1025.38;
+                } else if (yearlyIncome <= taxConstants.taxZone4End) {
+                    tax = 0.42 * yearlyIncome - 11294.68;
+                } else {
+                    tax = 0.45 * yearlyIncome - 19619.93;
+                }
+            }
+            
+            return Math.max(0, Math.round(tax));
         }
         
         // Funktion zur Berechnung des Solidaritätszuschlags
         function calculateSolidarityTax(incomeTax) {
-            // Vereinfachte Berechnung
-            if (incomeTax <= taxConstants.soliFreeLimit) {
+            // Solidaritätszuschlag 2025: Freigrenze bei 19.950 € Einkommensteuer
+            const yearlyLimit = taxConstants.soliFreeLimit;
+            
+            if (incomeTax <= yearlyLimit) {
                 return 0;
             }
+            
+            // Gleitzone zwischen 19.950 € und 34.595 €
+            const glideZoneEnd = yearlyLimit * 1.734; // ca. 34.595 €
+            if (incomeTax <= glideZoneEnd) {
+                const excess = incomeTax - yearlyLimit;
+                const rate = Math.min(0.055, excess * 0.119 / (glideZoneEnd - yearlyLimit));
+                return excess * rate;
+            }
+            
+            // Voller Satz ab 34.595 €
             return incomeTax * taxConstants.soliRate;
         }
         
@@ -487,17 +650,30 @@
         // Funktion zur Berechnung der Krankenversicherung
         function calculateHealthInsurance(yearlyIncome, rate, additionalRate) {
             const cappedIncome = Math.min(yearlyIncome, taxConstants.healthCap);
+            // Gesamtbeitragssatz: 14,6% + Zusatzbeitrag (durchschnittlich 2,5%)
+            // Arbeitnehmeranteil: 7,3% + 1,25% = 8,55% (wird aber durch rate/2 berechnet)
             const totalRate = (rate + additionalRate) / 100;
             
             return cappedIncome * (totalRate / 2); // Arbeitnehmeranteil
         }
         
-        // Funktion zur Berechnung der Pflegeversicherung
+        // Funktion zur Berechnung der Pflegeversicherung 2025
         function calculateCareInsurance(yearlyIncome, children) {
             const cappedIncome = Math.min(yearlyIncome, taxConstants.healthCap);
-            const rate = (children > 0) ? taxConstants.careRate : taxConstants.careRateChildless;
+            let rate = taxConstants.careRateChildless; // 2,4% für Kinderlose (Arbeitnehmeranteil)
             
-            return cappedIncome * (rate / 2); // Arbeitnehmeranteil
+            // Mit Kindern: Grundbeitrag 1,8% (Arbeitnehmeranteil)
+            if (children > 0) {
+                rate = taxConstants.careRate;
+                
+                // Ab dem 2. Kind gibt es weitere Abschläge (0,25% pro Kind bis max. 1%)
+                if (children >= 2) {
+                    const reduction = Math.min((children - 1) * taxConstants.careRateReduction, 0.02);
+                    rate = Math.max(rate - reduction, 0.018); // Mindestens 1,8%
+                }
+            }
+            
+            return cappedIncome * (rate / 2); // Bereits Arbeitnehmeranteil
         }
         
         // Funktion zur Berechnung der Rentenversicherung
@@ -552,15 +728,18 @@
             const healthRate = parseFloat(document.getElementById('health-insurance').value);
             const additionalHealthRate = parseFloat(document.getElementById('additional-health').value);
             
-            // Berechnung der Steuern und Abgaben
-            const yearlyIncomeTax = calculateIncomeTax(yearlyGross, taxClass);
-            const yearlySolidarity = calculateSolidarityTax(yearlyIncomeTax);
-            const yearlyChurch = calculateChurchTax(yearlyIncomeTax, state, isChurchMember);
-            
+            // Erst Sozialabgaben berechnen
             const yearlyHealth = calculateHealthInsurance(yearlyGross, healthRate, additionalHealthRate);
             const yearlyCare = calculateCareInsurance(yearlyGross, children);
             const yearlyPension = calculatePensionInsurance(yearlyGross);
             const yearlyUnemployment = calculateUnemploymentInsurance(yearlyGross);
+            
+            const totalSocialContributions = yearlyHealth + yearlyCare + yearlyPension + yearlyUnemployment;
+            
+            // Dann Einkommensteuer mit Sozialabgaben-Abzug berechnen
+            const yearlyIncomeTax = calculateIncomeTax(yearlyGross, taxClass, children, totalSocialContributions);
+            const yearlySolidarity = calculateSolidarityTax(yearlyIncomeTax);
+            const yearlyChurch = calculateChurchTax(yearlyIncomeTax, state, isChurchMember);
             
             const yearlyTotalDeductions = yearlyIncomeTax + yearlySolidarity + yearlyChurch + 
                                        yearlyHealth + yearlyCare + yearlyPension + yearlyUnemployment;
