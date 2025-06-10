@@ -189,8 +189,23 @@ function App() {
                     </div>
                 )}
 
+                <div className="mt-8 text-center">
+                    <a
+                        href="https://mrx3k1.de/weather-tracker/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-block px-6 py-3 rounded-lg font-medium transition-colors ${
+                            darkMode 
+                                ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                        }`}
+                    >
+                        Weather Tracker
+                    </a>
+                </div>
+
                 <div
-                    className={`mt-8 pt-4 pb-2 text-center text-m ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                    className={`mt-4 pt-4 pb-2 text-center text-m ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                     Made with ❤️ by Martin Pfeffer
                 </div>
             </div>

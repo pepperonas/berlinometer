@@ -148,6 +148,10 @@ const App: React.FC = () => {
                     <button className="continue-button" onClick={handleContinue}>
                         Weiter zur App →
                     </button>
+                    
+                    <div className="disclaimer-footer">
+                        Made with ❤️ by Martin Pfeffer
+                    </div>
                 </div>
             </div>
         );
