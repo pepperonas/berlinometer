@@ -3,22 +3,24 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
-    background-color: #1a1b26;
-    color: #c0caf5;
+    padding: 1rem 1rem 4rem;
     min-height: 100vh;
-    font-family: sans-serif;
-    max-width: 480px; /* Einheitliche maximale Breite für alle Elemente */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    max-width: 1024px; /* max-w-5xl like weather app */
     margin: 0 auto;
+    transition: colors 0.3s;
 }
 
 .heading {
     font-size: 2rem;
     font-weight: bold;
     margin-bottom: 1.25rem;
-    color: #7aa2f7;
+    color: #93c5fd; /* text-blue-300 */
     text-align: center;
-    width: 100%; /* Volle Breite */
+    width: 100%;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
 .controls-area {
@@ -38,22 +40,25 @@
 .tab {
     flex: 1;
     padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    background-color: #2C2E3B;
-    color: #c0caf5;
+    border-radius: 0.5rem;
+    background-color: #383B4F; /* primary-light */
+    color: #e5e7eb;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     text-align: center;
-    width: 100%; /* Volle Breite */
+    width: 100%;
+    font-weight: 500;
 }
 
 .tab:hover {
-    background-color: #3d59a1;
+    background-color: #4b5563; /* gray-600 */
+    transform: scale(1.02);
 }
 
 .tab.active {
-    background-color: #3d59a1;
+    background-color: #2563eb; /* blue-600 */
+    color: white;
 }
 
 .position-dropdown {
@@ -64,17 +69,19 @@
 .dropdown-button {
     width: 100%;
     padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    background-color: #2C2E3B;
-    color: #c0caf5;
+    border-radius: 0.5rem;
+    background-color: #383B4F; /* primary-light */
+    color: #e5e7eb;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     text-align: center;
+    font-weight: 500;
 }
 
 .dropdown-button:hover {
-    background-color: #3d59a1;
+    background-color: #4b5563;
+    transform: scale(1.02);
 }
 
 .dropdown-content {
@@ -82,11 +89,12 @@
     right: 0;
     top: 100%;
     z-index: 1;
-    background-color: #2C2E3B;
-    border-radius: 0.25rem;
-    width: 100%; /* Gleiche Breite wie der Button */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    background-color: #383B4F;
+    border-radius: 0.5rem;
+    width: 100%;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     margin-top: 0.25rem;
+    animation: slideIn 0.2s ease-out;
 }
 
 .dropdown-item {
@@ -97,29 +105,37 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #c0caf5;
+    color: #e5e7eb;
     transition: background-color 0.2s;
 }
 
-.dropdown-item:hover, .dropdown-item.active {
-    background-color: #3d59a1;
+.dropdown-item:hover {
+    background-color: #4b5563;
+}
+
+.dropdown-item.active {
+    background-color: #2563eb;
+    color: white;
 }
 
 .selected-cards {
     width: 100%;
     margin-bottom: 1rem;
-    padding: 0.75rem;
-    background-color: #2C2E3B;
-    border-radius: 0.25rem;
+    padding: 1rem;
+    background-color: #383B4F;
+    border-radius: 0.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    animation: slideIn 0.4s ease-out;
 }
 
 .selected-info {
-    color: #9aa5ce;
+    color: #e5e7eb;
     line-height: 1.5;
+    font-weight: 500;
 }
 
 .selected-cards {
@@ -146,29 +162,32 @@
 .card-display {
     display: inline-block;
     padding: 0.25rem 0.5rem;
-    background-color: #262938;
-    border-radius: 0.25rem;
+    background-color: #2C2E3B;
+    border-radius: 0.375rem;
     font-weight: bold;
     margin-right: 0.25rem;
+    transition: transform 0.2s;
 }
 
 .card-display.red {
-    color: #f7768e;
+    color: #ef4444; /* red-500 */
 }
 
 .reset-button {
-    background-color: #414868;
-    color: #c0caf5;
+    background-color: #4b5563;
+    color: #e5e7eb;
     border: none;
-    border-radius: 0.25rem;
-    padding: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     font-size: 0.875rem;
+    font-weight: 500;
 }
 
 .reset-button:hover {
-    background-color: #5a5f79;
+    background-color: #6b7280;
+    transform: scale(1.05);
 }
 
 .card-selection-area {
@@ -187,59 +206,67 @@
     flex: 1;
     padding: 0.75rem;
     font-size: 1.25rem;
-    border-radius: 0.25rem;
-    background-color: #2C2E3B;
-    color: #c0caf5;
+    border-radius: 0.5rem;
+    background-color: #383B4F;
+    color: #e5e7eb;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     text-align: center;
+    font-weight: 600;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .suit-button:hover {
-    background-color: #3d59a1;
+    background-color: #4b5563;
+    transform: scale(1.05);
 }
 
 .suit-button.active {
-    background-color: #3d59a1;
+    background-color: #2563eb;
+    color: white;
 }
 
 .suit-button.red {
-    color: #f7768e;
+    color: #ef4444;
 }
 
 .values-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
-    padding: 0.75rem;
-    background-color: #2C2E3B;
-    border-radius: 0.25rem;
-    width: 100%; /* Volle Breite */
-    box-sizing: border-box; /* Stellt sicher, dass Padding innerhalb der Breite enthalten ist */
+    padding: 1rem;
+    background-color: #383B4F;
+    border-radius: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    animation: slideIn 0.3s ease-out;
 }
 
 .value-button {
     padding: 0.75rem;
-    border-radius: 0.25rem;
-    background-color: #262938;
-    color: #c0caf5;
+    border-radius: 0.375rem;
+    background-color: #2C2E3B;
+    color: #e5e7eb;
     border: none;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     font-weight: bold;
 }
 
 .value-button:hover:not(:disabled) {
-    background-color: #3d59a1;
+    background-color: #4b5563;
+    transform: scale(1.05);
 }
 
 .value-button.selected {
-    background-color: #3d59a1;
+    background-color: #2563eb;
+    color: white;
 }
 
 .value-button.red {
-    color: #f7768e;
+    color: #ef4444;
 }
 
 .value-button:disabled {
@@ -257,55 +284,62 @@
 
 .analyze-button {
     flex: 2;
-    padding: 0.75rem;
-    background-color: #3d59a1;
+    padding: 0.75rem 1.5rem;
+    background-color: #2563eb;
     color: white;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 9999px; /* rounded-full */
     cursor: pointer;
-    transition: background-color 0.3s;
-    font-weight: bold;
+    transition: all 0.3s;
+    font-weight: 600;
     font-size: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .analyze-button:hover:not(:disabled) {
-    background-color: #5171d2;
+    background-color: #1d4ed8;
+    transform: scale(1.02);
 }
 
 .analyze-button:disabled {
-    background-color: #414868;
+    background-color: #6b7280;
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.5;
 }
 
 .reset-all-button {
     flex: 1;
     padding: 0.75rem;
-    background-color: #414868;
-    color: #c0caf5;
+    background-color: #6b7280;
+    color: #e5e7eb;
     border: none;
-    border-radius: 0.25rem;
+    border-radius: 9999px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
+    font-weight: 600;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .reset-all-button:hover {
-    background-color: #5a5f79;
+    background-color: #4b5563;
+    transform: scale(1.02);
 }
 
 .result-container {
     width: 100%;
-    padding: 1rem;
-    border-radius: 0.25rem;
-    background-color: #2C2E3B;
-    border: 1px solid #414868;
-    box-sizing: border-box; /* Stellt sicher, dass Padding innerhalb der Breite enthalten ist */
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background-color: #383B4F;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+    animation: slideIn 0.4s ease-out;
 }
 
 .result-title {
     font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    color: #a9b1d6;
+    margin-bottom: 0.75rem;
+    color: #93c5fd;
+    font-weight: 600;
 }
 
 .decision {
@@ -316,29 +350,30 @@
 }
 
 .decision.raise {
-    color: #9ece6a;
+    color: #10b981; /* green-500 */
 }
 
 .decision.call {
-    color: #e0af68;
+    color: #f59e0b; /* amber-500 */
 }
 
 .decision.fold {
-    color: #f7768e;
+    color: #ef4444; /* red-500 */
 }
 
 .explanation {
     margin-bottom: 0.75rem;
-    color: #a9b1d6;
+    color: #d1d5db;
     font-size: 0.95rem;
 }
 
 .confidence-bar {
     width: 100%;
-    background-color: #414868;
+    background-color: #4b5563;
     border-radius: 9999px;
     height: 0.625rem;
     overflow: hidden;
+    margin-top: 0.5rem;
 }
 
 .confidence-level {
@@ -347,15 +382,15 @@
 }
 
 .confidence-level.high {
-    background-color: #9ece6a;
+    background-color: #10b981;
 }
 
 .confidence-level.medium {
-    background-color: #e0af68;
+    background-color: #f59e0b;
 }
 
 .confidence-level.low {
-    background-color: #f7768e;
+    background-color: #ef4444;
 }
 
 .confidence-text {
@@ -363,19 +398,20 @@
     font-size: 0.875rem;
     margin-top: 0.25rem;
     margin-bottom: 1rem;
-    color: #9aa5ce;
+    color: #9ca3af;
 }
 
 .position-impact {
-    border-top: 1px solid #414868;
+    border-top: 1px solid #4b5563;
     padding-top: 1rem;
-    width: 100%; /* Volle Breite */
+    width: 100%;
 }
 
 .impact-title {
     font-size: 1.125rem;
     margin-bottom: 0.5rem;
-    color: #a9b1d6;
+    color: #93c5fd;
+    font-weight: 600;
 }
 
 .position-table {
@@ -386,21 +422,24 @@
 
 .position-row {
     display: flex;
-    background-color: #262938;
-    width: 100%; /* Volle Breite */
+    background-color: #2C2E3B;
+    width: 100%;
+    transition: background-color 0.2s;
 }
 
 .position-row:nth-child(odd) {
-    background-color: #2C2E3B;
+    background-color: #383B4F;
 }
 
 .position-row.header {
-    background-color: #414868;
+    background-color: #4b5563;
     font-weight: bold;
+    color: #e5e7eb;
 }
 
 .position-row.active {
-    background-color: #3d4166;
+    background-color: #1e3a8a;
+    color: white;
 }
 
 .position-cell {
@@ -415,15 +454,15 @@
 }
 
 .position-cell.action.raise {
-    color: #9ece6a;
+    color: #10b981;
 }
 
 .position-cell.action.call {
-    color: #e0af68;
+    color: #f59e0b;
 }
 
 .position-cell.action.fold {
-    color: #f7768e;
+    color: #ef4444;
 }
 
 /* Responsive Anpassungen */
@@ -459,28 +498,29 @@
     width: 100%;
     margin-top: 1.5rem;
     margin-bottom: 1.5rem;
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
     overflow: hidden;
-    background-color: #2C2E3B;
+    background-color: #383B4F;
     box-sizing: border-box;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .accordion-header {
     width: 100%;
     padding: 0.75rem 1rem;
-    background-color: #3d59a1;
+    background-color: #2563eb;
     color: #ffffff;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
     box-sizing: border-box;
 }
 
 .accordion-header:hover {
-    background-color: #4f6ab2;
+    background-color: #1d4ed8;
 }
 
 .accordion-icon {
@@ -489,15 +529,17 @@
 
 .accordion-content {
     padding: 0.5rem;
-    background-color: #2C2E3B;
-    border-top: 1px solid #414868;
+    background-color: #383B4F;
+    border-top: 1px solid #4b5563;
     max-height: 350px;
     overflow-y: auto;
+    animation: slideIn 0.3s ease-out;
 }
 
 .hand-category {
     padding: 0.75rem;
-    border-bottom: 1px solid #414868;
+    border-bottom: 1px solid #4b5563;
+    transition: background-color 0.2s;
 }
 
 .hand-category:last-child {
@@ -505,18 +547,18 @@
 }
 
 .hand-title {
-    font-weight: bold;
-    color: #7aa2f7;
+    font-weight: 600;
+    color: #93c5fd;
     margin-bottom: 0.25rem;
 }
 
 .hand-description {
-    color: #c0caf5;
+    color: #e5e7eb;
     margin-bottom: 0.25rem;
 }
 
 .hand-example {
-    color: #9aa5ce;
+    color: #9ca3af;
     font-size: 0.9rem;
     font-style: italic;
 }

@@ -844,6 +844,18 @@ const PokerAdvisor = () => {
                     </div>
                 )}
             </div>
+            
+            {/* Footer - matching weather app */}
+            <div style={{
+                marginTop: '2rem',
+                paddingTop: '1rem',
+                paddingBottom: '0.5rem',
+                textAlign: 'center',
+                color: '#9ca3af',
+                width: '100%'
+            }}>
+                Made with ❤️ by Martin Pfeffer
+            </div>
         </div>
     );
 };

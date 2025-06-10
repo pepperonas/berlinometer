@@ -388,24 +388,23 @@ app.get('/', async (req, res) => {
         <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
     </head>
-    <body class="dark bg-black text-gray-200 min-h-screen">
+    <body class="min-h-screen transition-colors duration-300 bg-primary text-white">
         <div class="container mx-auto px-4 py-6 sm:py-8 max-w-5xl">
             <!-- Header -->
-            <div class="text-center mb-6 sm:mb-8 animate-fadeIn">
-                <h1 class="text-3xl sm:text-4xl font-medium tracking-tight text-white mb-2">Weather Tracker</h1>
-                <p class="text-gray-400 text-sm sm:text-base">Echtzeit-Wetterdaten und Verlaufsanalyse</p>
+            <div class="flex justify-between items-center mb-4 sm:mb-8">
+                <h1 class="text-2xl sm:text-4xl font-bold tracking-tight text-blue-300">Weather Tracker</h1>
             </div>
             
             ${latest ? `
             <!-- Current Weather Card -->
             <div class="bg-primary rounded-lg shadow-lg p-6 sm:p-8 mb-6 text-center animate-slideIn">
                 <div class="grid grid-cols-2 gap-4 sm:gap-6">
-                    <div class="bg-primary-light rounded-lg p-4 sm:p-6">
+                    <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
                         <div class="text-blue-400 text-sm font-medium mb-2">Temperatur</div>
                         <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.temperature).toFixed(1)}°</div>
                         <div class="text-gray-400 text-xs sm:text-sm mt-1">Celsius</div>
                     </div>
-                    <div class="bg-primary-light rounded-lg p-4 sm:p-6">
+                    <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
                         <div class="text-blue-400 text-sm font-medium mb-2">Luftfeuchtigkeit</div>
                         <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.humidity).toFixed(0)}%</div>
                         <div class="text-gray-400 text-xs sm:text-sm mt-1">Relative</div>
@@ -418,16 +417,16 @@ app.get('/', async (req, res) => {
             ` : '<div class="bg-primary rounded-lg p-6 text-center"><p class="text-gray-400">Keine Daten verfügbar</p></div>'}
             
             <!-- Time Range Selector -->
-            <div class="bg-primary rounded-lg p-3 mb-6 flex flex-wrap justify-center gap-2 animate-slideIn">
-                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="24">24 Stunden</button>
-                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-light text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="168">7 Tage</button>
-                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-light text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="720">30 Tage</button>
-                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 bg-primary-light text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="4320">6 Monate</button>
+            <div class="bg-primary-light rounded-lg p-3 mb-6 flex flex-wrap justify-center gap-2 animate-slideIn">
+                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="24">24 Stunden</button>
+                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gray-600 text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="168">7 Tage</button>
+                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gray-600 text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="720">30 Tage</button>
+                <button class="range-btn px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gray-600 text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" data-hours="4320">6 Monate</button>
             </div>
             
             <!-- Temperature Chart -->
             <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-chartLoad">
-                <h2 id="tempChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-white">Temperaturverlauf</h2>
+                <h2 id="tempChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Temperaturverlauf</h2>
                 <div class="chart-container" style="height: 300px;">
                     <canvas id="tempChart"></canvas>
                 </div>
@@ -435,7 +434,7 @@ app.get('/', async (req, res) => {
             
             <!-- Humidity Chart -->
             <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-chartLoad" style="animation-delay: 0.1s">
-                <h2 id="humChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-white">Luftfeuchtigkeitsverlauf</h2>
+                <h2 id="humChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Luftfeuchtigkeitsverlauf</h2>
                 <div class="chart-container" style="height: 300px;">
                     <canvas id="humChart"></canvas>
                 </div>
@@ -443,7 +442,7 @@ app.get('/', async (req, res) => {
             
             <!-- Statistics -->
             <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-slideIn" style="animation-delay: 0.2s">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4 text-white">Statistiken (24 Stunden)</h2>
+                <h2 class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Statistiken (24 Stunden)</h2>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
                         <div class="text-xs text-gray-400 font-medium">MIN TEMP</div>
@@ -466,7 +465,7 @@ app.get('/', async (req, res) => {
             
             <!-- Recent Measurements -->
             <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-slideIn" style="animation-delay: 0.3s">
-                <h2 class="text-lg sm:text-xl font-semibold mb-4 text-white">Letzte Messungen</h2>
+                <h2 class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Letzte Messungen</h2>
                 <div class="max-h-64 overflow-y-auto custom-scrollbar">
                     <div class="space-y-2">
                         ${data.slice(-20).reverse().map((entry, index) => `
@@ -482,6 +481,33 @@ app.get('/', async (req, res) => {
                     </div>
                 </div>
             </div>
+            
+            <!-- Update Button -->
+            <div class="mt-6 sm:mt-8 text-center mb-6">
+                <button
+                    class="text-sm sm:text-base font-semibold py-2 px-4 sm:px-6 rounded-full shadow-md transition duration-300 bg-blue-600 hover:bg-blue-700 text-white"
+                    onclick="location.reload()"
+                >
+                    JETZT AKTUALISIEREN!
+                </button>
+            </div>
+            
+            <!-- Weather App Link -->
+            <div class="mt-8 text-center">
+                <a
+                    href="https://mrx3k1.de/weather/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-block px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                    Weather App
+                </a>
+            </div>
+            
+            <!-- Footer -->
+            <div class="mt-4 pt-4 pb-2 text-center text-m text-gray-400">
+                Made with ❤️ by Martin Pfeffer
+            </div>
         </div>
         <script>
             let tempChart = null;
@@ -494,12 +520,12 @@ app.get('/', async (req, res) => {
                     const data = await response.json();
                     console.log('Loaded data:', data);
                 
-                // Chart colors
+                // Chart colors - matching weather app theme
                 const accentRed = '#ef4444';
-                const accentBlue = '#60a5fa';
-                const textPrimary = '#e5e7eb';
+                const accentBlue = '#3b82f6';
+                const textPrimary = '#ffffff';
                 const textSecondary = '#9ca3af';
-                const gridColor = 'rgba(255, 255, 255, 0.05)';
+                const gridColor = 'rgba(255, 255, 255, 0.1)';
                 
                 // Destroy existing charts
                 if (tempChart) {
@@ -679,9 +705,9 @@ app.get('/', async (req, res) => {
                     // Update button styles
                     document.querySelectorAll('.range-btn').forEach(b => {
                         b.classList.remove('bg-blue-600', 'text-white', 'hover:bg-blue-700');
-                        b.classList.add('bg-primary-light', 'text-gray-300', 'hover:bg-gray-700');
+                        b.classList.add('bg-gray-600', 'text-gray-300', 'hover:bg-gray-700');
                     });
-                    this.classList.remove('bg-primary-light', 'text-gray-300', 'hover:bg-gray-700');
+                    this.classList.remove('bg-gray-600', 'text-gray-300', 'hover:bg-gray-700');
                     this.classList.add('bg-blue-600', 'text-white', 'hover:bg-blue-700');
                     
                     // Reload chart with new time range
