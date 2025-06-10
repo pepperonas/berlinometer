@@ -339,9 +339,353 @@ app.get(`${API_PREFIX}/login`, (req, res) => {
                 text-align: center;
                 display: none;
             }
+            
+            /* Cloud and Wind Animation */
+            .cloud-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                z-index: -1;
+            }
+            
+            .cloud {
+                position: absolute;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 100px;
+                opacity: 0.8;
+            }
+            
+            .cloud::before,
+            .cloud::after {
+                content: '';
+                position: absolute;
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 100px;
+            }
+            
+            .cloud1 {
+                width: 100px;
+                height: 40px;
+                top: 20%;
+                animation: drift 25s infinite;
+            }
+            
+            .cloud1::before {
+                width: 50px;
+                height: 50px;
+                top: -25px;
+                left: 10px;
+            }
+            
+            .cloud1::after {
+                width: 60px;
+                height: 40px;
+                top: -15px;
+                right: 10px;
+            }
+            
+            .cloud2 {
+                width: 80px;
+                height: 35px;
+                top: 40%;
+                animation: drift 35s infinite;
+                animation-delay: -5s;
+            }
+            
+            .cloud2::before {
+                width: 60px;
+                height: 45px;
+                top: -22px;
+                left: 15px;
+            }
+            
+            .cloud2::after {
+                width: 50px;
+                height: 35px;
+                top: -12px;
+                right: 15px;
+            }
+            
+            .cloud3 {
+                width: 120px;
+                height: 45px;
+                top: 60%;
+                animation: drift 30s infinite;
+                animation-delay: -10s;
+            }
+            
+            .cloud3::before {
+                width: 70px;
+                height: 55px;
+                top: -27px;
+                left: 20px;
+            }
+            
+            .cloud3::after {
+                width: 65px;
+                height: 45px;
+                top: -17px;
+                right: 20px;
+            }
+            
+            .cloud4 {
+                width: 90px;
+                height: 38px;
+                top: 80%;
+                animation: drift 40s infinite;
+                animation-delay: -15s;
+            }
+            
+            .cloud4::before {
+                width: 55px;
+                height: 48px;
+                top: -24px;
+                left: 12px;
+            }
+            
+            .cloud4::after {
+                width: 58px;
+                height: 38px;
+                top: -14px;
+                right: 12px;
+            }
+            
+            .cloud5 {
+                width: 110px;
+                height: 42px;
+                top: 15%;
+                animation: drift 28s infinite;
+                animation-delay: -20s;
+            }
+            
+            .cloud5::before {
+                width: 65px;
+                height: 52px;
+                top: -26px;
+                left: 18px;
+            }
+            
+            .cloud5::after {
+                width: 60px;
+                height: 42px;
+                top: -16px;
+                right: 18px;
+            }
+            
+            .cloud6 {
+                width: 95px;
+                height: 36px;
+                top: 35%;
+                animation: drift 32s infinite;
+                animation-delay: -25s;
+            }
+            
+            .cloud6::before {
+                width: 58px;
+                height: 46px;
+                top: -23px;
+                left: 14px;
+            }
+            
+            .cloud6::after {
+                width: 55px;
+                height: 36px;
+                top: -13px;
+                right: 14px;
+            }
+            
+            .cloud7 {
+                width: 85px;
+                height: 33px;
+                top: 55%;
+                animation: drift 38s infinite;
+                animation-delay: -30s;
+            }
+            
+            .cloud7::before {
+                width: 52px;
+                height: 43px;
+                top: -21px;
+                left: 11px;
+            }
+            
+            .cloud7::after {
+                width: 48px;
+                height: 33px;
+                top: -11px;
+                right: 11px;
+            }
+            
+            .cloud8 {
+                width: 105px;
+                height: 40px;
+                top: 75%;
+                animation: drift 26s infinite;
+                animation-delay: -35s;
+            }
+            
+            .cloud8::before {
+                width: 62px;
+                height: 50px;
+                top: -25px;
+                left: 16px;
+            }
+            
+            .cloud8::after {
+                width: 57px;
+                height: 40px;
+                top: -15px;
+                right: 16px;
+            }
+            
+            @keyframes drift {
+                from {
+                    transform: translateX(-200px);
+                }
+                to {
+                    transform: translateX(calc(100vw + 200px));
+                }
+            }
+            
+            /* Wind effect lines */
+            .wind-line {
+                position: absolute;
+                height: 1px;
+                background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+                animation: wind 3s infinite ease-in-out;
+            }
+            
+            .wind-line1 {
+                width: 150px;
+                top: 30%;
+                left: -150px;
+                animation-delay: 0s;
+            }
+            
+            .wind-line2 {
+                width: 200px;
+                top: 50%;
+                left: -200px;
+                animation-delay: 0.5s;
+            }
+            
+            .wind-line3 {
+                width: 180px;
+                top: 70%;
+                left: -180px;
+                animation-delay: 1s;
+            }
+            
+            .wind-line4 {
+                width: 120px;
+                top: 25%;
+                left: -120px;
+                animation-delay: 1.5s;
+            }
+            
+            .wind-line5 {
+                width: 220px;
+                top: 45%;
+                left: -220px;
+                animation-delay: 2s;
+            }
+            
+            .wind-line6 {
+                width: 160px;
+                top: 65%;
+                left: -160px;
+                animation-delay: 2.5s;
+            }
+            
+            .wind-line7 {
+                width: 140px;
+                top: 85%;
+                left: -140px;
+                animation-delay: 3s;
+            }
+            
+            .wind-line8 {
+                width: 190px;
+                top: 15%;
+                left: -190px;
+                animation-delay: 3.5s;
+            }
+            
+            /* Stärkere Windböen */
+            .wind-gust {
+                position: absolute;
+                height: 2px;
+                background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08), transparent);
+                animation: gust 4s infinite ease-out;
+            }
+            
+            .wind-gust1 {
+                width: 300px;
+                top: 40%;
+                left: -300px;
+                animation-delay: 0s;
+            }
+            
+            .wind-gust2 {
+                width: 250px;
+                top: 60%;
+                left: -250px;
+                animation-delay: 2s;
+            }
+            
+            @keyframes wind {
+                0% {
+                    transform: translateX(0) scaleX(0);
+                    opacity: 0;
+                }
+                50% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateX(calc(100vw + 200px)) scaleX(1);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes gust {
+                0% {
+                    transform: translateX(0) scaleX(0.5);
+                    opacity: 0;
+                }
+                30% {
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: translateX(calc(100vw + 300px)) scaleX(1.5);
+                    opacity: 0;
+                }
+            }
         </style>
     </head>
     <body>
+        <div class="cloud-container">
+            <div class="cloud cloud1"></div>
+            <div class="cloud cloud2"></div>
+            <div class="cloud cloud3"></div>
+            <div class="cloud cloud4"></div>
+            <div class="cloud cloud5"></div>
+            <div class="cloud cloud6"></div>
+            <div class="cloud cloud7"></div>
+            <div class="cloud cloud8"></div>
+            <div class="wind-line wind-line1"></div>
+            <div class="wind-line wind-line2"></div>
+            <div class="wind-line wind-line3"></div>
+            <div class="wind-line wind-line4"></div>
+            <div class="wind-line wind-line5"></div>
+            <div class="wind-line wind-line6"></div>
+            <div class="wind-line wind-line7"></div>
+            <div class="wind-line wind-line8"></div>
+            <div class="wind-gust wind-gust1"></div>
+            <div class="wind-gust wind-gust2"></div>
+        </div>
         <div class="login-container">
             <div class="login-header">
                 <h1>xchange | Login</h1>
