@@ -4,397 +4,493 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Altersdurchschnitt, ÖPNV & Arbeitsplätze in Berlin</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="navigation.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Arial', sans-serif;
+        /* Heatmap spezifische Styles */
+        .heatmap-container {
+            background: #383B4F;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
-        body {
-            background-color: #2C2E3B;
-            color: #fff;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-        
-        .container {
+        #berlin-map {
             width: 100%;
-            max-width: 1000px;
-            padding: 20px;
-            background-color: #34364a;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
+            height: auto;
+            max-width: 800px;
+            margin: 0 auto;
+            display: block;
         }
-        
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
-            color: #fff;
-        }
-        
-        .map-container {
-            position: relative;
-            width: 100%;
-            height: 600px;
-        }
-        
-        svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
-        }
-        
-        path {
-            transition: all 0.3s ease;
+
+        #berlin-map path {
+            stroke: #1f2937;
+            stroke-width: 1;
             cursor: pointer;
-            stroke: #2C2E3B;
+            transition: all 0.3s ease;
+        }
+
+        #berlin-map path:hover {
+            stroke: #93c5fd;
             stroke-width: 2;
+            filter: brightness(1.2);
         }
-        
-        path:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-            stroke-width: 3;
-        }
-        
-        text {
-            fill: white;
+
+        #berlin-map text {
+            fill: #ffffff;
             font-size: 12px;
-            font-weight: bold;
             pointer-events: none;
-            text-shadow: 1px 1px 2px #000;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
-        
+
         .label-name {
             font-size: 14px;
             font-weight: bold;
         }
         
         .label-info {
-            font-size: 11px;
-        }
-        
-        .legend {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #3d3f54;
-            border-radius: 5px;
-        }
-        
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin: 5px 15px;
-        }
-        
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            margin-right: 5px;
-            border-radius: 4px;
-        }
-        
-        .info-panel {
-            margin-top: 20px;
-            background-color: #3d3f54;
-            padding: 20px;
-            border-radius: 10px;
-            width: 100%;
-        }
-        
-        .info-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            align-items: center;
-        }
-        
-        .info-title {
-            font-size: 22px;
-            font-weight: bold;
-        }
-        
-        .info-detail {
-            margin: 8px 0;
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .info-label {
-            font-weight: bold;
-            color: #abb1f0;
-        }
-        
-        .tooltip {
-            position: absolute;
-            background-color: #1e1f2c;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 100;
-            pointer-events: none;
-            max-width: 300px;
+            font-size: 10px;
+            fill: #e5e7eb;
         }
         
         .tabs {
             display: flex;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: var(--spacing-4);
+            flex-wrap: wrap;
+            gap: var(--spacing-2);
         }
         
         .tab {
-            padding: 10px 20px;
-            margin: 0 5px;
-            background-color: #3d3f54;
-            border-radius: 5px;
+            padding: var(--spacing-2) var(--spacing-4);
+            background-color: var(--background-darker);
+            border-radius: var(--radius);
             cursor: pointer;
             transition: all 0.3s ease;
+            border: 1px solid var(--accent-blue);
         }
         
         .tab:hover {
-            background-color: #4d4f64;
+            background-color: var(--accent-blue);
         }
         
         .tab.active {
-            background-color: #5e60a5;
+            background-color: var(--accent-blue);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         
-        .chart-container {
-            width: 100%;
-            height: 300px;
-            margin-top: 20px;
-            background-color: #3d3f54;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .heatmap-legend {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .heatmap-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .heatmap-legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #4b5563;
+        }
+        
+        .heatmap-tooltip {
+            position: absolute;
+            background: #1f2937;
+            color: #ffffff;
+            padding: 0.75rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            z-index: 1000;
+            font-size: 0.875rem;
+            border: 1px solid #374151;
+            display: none;
+        }
+        
+        .heatmap-info-panel {
+            background: #383B4F;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            border: 1px solid #4b5563;
+        }
+
+        .heatmap-info-title {
+            color: #93c5fd;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .heatmap-info-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #4b5563;
+        }
+
+        .heatmap-info-detail:last-child {
+            border-bottom: none;
+        }
+
+        .heatmap-info-label {
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .heatmap-info-value {
+            color: #e5e7eb;
         }
         
         .data-cards {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-4);
+            margin: var(--spacing-6) 0;
         }
         
-        .data-card {
-            width: calc(33% - 10px);
-            background-color: #3d3f54;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .data-card-small {
+            background-color: var(--background-darker);
+            border-radius: var(--radius);
+            padding: var(--spacing-3);
+            text-align: center;
+            border: 1px solid var(--accent-blue);
         }
         
         .data-card-title {
             font-size: 16px;
-            margin-bottom: 10px;
-            color: #fff;
-            text-align: center;
+            margin-bottom: var(--spacing-2);
+            color: var(--text-primary);
         }
         
         .data-card-value {
             font-size: 24px;
             font-weight: bold;
-            text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: var(--spacing-2);
+            color: var(--accent-blue);
         }
         
         .data-card-subtitle {
             font-size: 12px;
-            text-align: center;
-            color: #abb1f0;
+            color: var(--text-secondary);
+        }
+        
+        .hidden {
+            display: none;
         }
         
         @media (max-width: 768px) {
-            .data-card {
-                width: 100%;
+            #berlin-map text {
+                font-size: 10px;
+            }
+            .label-info {
+                font-size: 8px;
+            }
+            .heatmap-legend {
+                font-size: 0.875rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Altersdurchschnitt, ÖPNV & Arbeitsplätze in Berlin</h1>
-        
-        <div class="tabs">
-            <div class="tab active" data-type="alter">Altersdurchschnitt</div>
-            <div class="tab" data-type="oepnv">ÖPNV-Anbindung</div>
-            <div class="tab" data-type="arbeit">Arbeitsplätze</div>
-            <div class="tab" data-type="gesamt">Gesamtindex</div>
-        </div>
-        
-        <div class="map-container" id="map">
-            <svg viewBox="0 0 800 600" id="berlin-map">
-                <!-- Berlin Bezirke SVG Pfade -->
-                <!-- Hier werden per JavaScript die Pfade eingefügt -->
-            </svg>
-        </div>
-        
-        <div class="legend" id="legend-alter">
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #6fff00;"></div>
-                <span>Sehr junger Altersdurchschnitt (< 40 Jahre)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #c6ff00;"></div>
-                <span>Junger Altersdurchschnitt (40-41 Jahre)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffeb00;"></div>
-                <span>Mittlerer Altersdurchschnitt (41-43 Jahre)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffb700;"></div>
-                <span>Hoher Altersdurchschnitt (43-45 Jahre)</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff7b00;"></div>
-                <span>Sehr hoher Altersdurchschnitt (> 45 Jahre)</span>
-            </div>
-        </div>
-        
-        <div class="legend" id="legend-oepnv" style="display: none;">
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff3b00;"></div>
-                <span>Sehr hohe ÖPNV-Dichte</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff7b00;"></div>
-                <span>Hohe ÖPNV-Dichte</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffb700;"></div>
-                <span>Mittlere ÖPNV-Dichte</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffeb00;"></div>
-                <span>Moderate ÖPNV-Dichte</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: "#c6ff00";"></div>
-                <span>Niedrige ÖPNV-Dichte</span>
-            </div>
-        </div>
-        
-        <div class="legend" id="legend-arbeit" style="display: none;">
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff3b00;"></div>
-                <span>Sehr hohe Arbeitsplatzdichte</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff7b00;"></div>
-                <span>Hohe Arbeitsplatzdichte</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffb700;"></div>
-                <span>Mittlere Arbeitsplatzdichte</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffeb00;"></div>
-                <span>Moderate Arbeitsplatzdichte</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: "#c6ff00";"></div>
-                <span>Niedrige Arbeitsplatzdichte</span>
-            </div>
-        </div>
-        
-        <div class="legend" id="legend-gesamt" style="display: none;">
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff3b00;"></div>
-                <span>Stark urbanes Profil</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff7b00;"></div>
-                <span>Urbanes Profil</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffb700;"></div>
-                <span>Moderat urbanes Profil</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffeb00;"></div>
-                <span>Gemischtes Profil</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: "#c6ff00";"></div>
-                <span>Suburbanes Profil</span>
-            </div>
-        </div>
-    </div>
-    
-    <div class="container">
-        <div class="data-cards">
-            <div class="data-card">
-                <div class="data-card-title">Durchschnittsalter Berlin</div>
-                <div class="data-card-value">42,8 Jahre</div>
-                <div class="data-card-subtitle">Jüngster Bezirk: Friedrichshain-Kreuzberg (39,4 Jahre)</div>
-            </div>
-            <div class="data-card">
-                <div class="data-card-title">Bevölkerungsdichte</div>
-                <div class="data-card-value">4.244 Einw./km²</div>
-                <div class="data-card-subtitle">Höchste Dichte: Friedrichshain-Kreuzberg (13.942 Einw./km²)</div>
-            </div>
-            <div class="data-card">
-                <div class="data-card-title">Gesamtbevölkerung</div>
-                <div class="data-card-value">3,9 Mio.</div>
-                <div class="data-card-subtitle">Größter Bezirk: Pankow (425.840 Einwohner)</div>
-            </div>
-        </div>
-    
-        <div class="info-panel" id="info-panel">
-            <div class="info-header">
-                <div class="info-title">Berlinweite Informationen</div>
-            </div>
-            <div class="info-detail">
-                <span class="info-label">Altersdurchschnitt in Berlin:</span>
-                <span>42,8 Jahre</span>
-            </div>
-            <div class="info-detail">
-                <span class="info-label">Jüngste Bezirke:</span>
-                <span>Friedrichshain-Kreuzberg (39,4 J.) und Mitte (39,6 J.)</span>
-            </div>
-            <div class="info-detail">
-                <span class="info-label">Ältester Bezirk:</span>
-                <span>Steglitz-Zehlendorf (46,5 Jahre)</span>
-            </div>
-            <div class="info-detail">
-                <span class="info-label">ÖPNV-Anbindung:</span>
-                <span>U-Bahn, S-Bahn, Tram, Bus - über 2.600 km Strecke</span>
-            </div>
-            <div class="info-detail">
-                <span class="info-label">Arbeitsmarkt:</span>
-                <span>2,19 Mio. Erwerbstätige (2023)</span>
-            </div>
-            <div class="info-detail">
-                <span class="info-label">Arbeitslosenquote:</span>
-                <span>9,7% (November 2024)</span>
-            </div>
-            <div class="info-detail">
-                <span class="info-label">Bruttoinlandsprodukt:</span>
-                <span>193,2 Mrd. Euro (2023)</span>
-            </div>
-        </div>
-        
-        <div class="chart-container" id="chart">
-            <!-- Hier wird ein Chart per JavaScript eingefügt -->
-        </div>
-    </div>
-    
-    <div class="tooltip" id="tooltip"></div>
+    <header>
+        <!-- Navigation wird via JavaScript geladen -->
+    </header>
 
+    <main class="content-page">
+        <section class="content-header">
+            <div class="container">
+                <h2>Altersdurchschnitt, ÖPNV & Arbeitsplätze in Berlin</h2>
+                <p class="lead">Soziodemografische Faktoren für Immobilieninvestoren</p>
+            </div>
+        </section>
+
+        <section class="content-body">
+            <div class="container">
+                <div class="info-box">
+                    <h5>🏢 Demografische Analyse Berlin</h5>
+                    <p>Diese interaktive Analyse zeigt wichtige soziodemografische Faktoren, die für Immobilieninvestoren relevant sind: Altersdurchschnitt, ÖPNV-Anbindung und Arbeitsplatzdichte nach Berliner Bezirken.</p>
+                </div>
+                
+                <div class="data-cards">
+                    <div class="data-card-small">
+                        <div class="data-card-title">Durchschnittsalter Berlin</div>
+                        <div class="data-card-value">42,8 Jahre</div>
+                        <div class="data-card-subtitle">Jüngster Bezirk: Friedrichshain-Kreuzberg (39,4 Jahre)</div>
+                    </div>
+                    <div class="data-card-small">
+                        <div class="data-card-title">Bevölkerungsdichte</div>
+                        <div class="data-card-value">4.244 Einw./km²</div>
+                        <div class="data-card-subtitle">Höchste Dichte: Friedrichshain-Kreuzberg (13.942 Einw./km²)</div>
+                    </div>
+                    <div class="data-card-small">
+                        <div class="data-card-title">Gesamtbevölkerung</div>
+                        <div class="data-card-value">3,9 Mio.</div>
+                        <div class="data-card-subtitle">Größter Bezirk: Pankow (425.840 Einwohner)</div>
+                    </div>
+                </div>
+                
+                <div class="tabs">
+                    <div class="tab active" data-type="alter">Altersdurchschnitt</div>
+                    <div class="tab" data-type="oepnv">ÖPNV-Anbindung</div>
+                    <div class="tab" data-type="arbeit">Arbeitsplätze</div>
+                    <div class="tab" data-type="gesamt">Gesamtindex</div>
+                </div>
+                
+                <div class="map-container" id="map">
+                    <svg viewBox="0 0 800 600" id="berlin-map">
+                        <!-- Berlin Bezirke SVG Pfade werden per JavaScript eingefügt -->
+                    </svg>
+                </div>
+                
+                <div class="heatmap-legend" id="legend-alter">
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #6fff00;"></div>
+                        <span>Sehr junger Altersdurchschnitt (< 40 Jahre)</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #c6ff00;"></div>
+                        <span>Junger Altersdurchschnitt (40-41 Jahre)</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ffeb00;"></div>
+                        <span>Mittlerer Altersdurchschnitt (41-43 Jahre)</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ffb700;"></div>
+                        <span>Hoher Altersdurchschnitt (43-45 Jahre)</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ff7b00;"></div>
+                        <span>Sehr hoher Altersdurchschnitt (> 45 Jahre)</span>
+                    </div>
+                </div>
+                
+                <div class="heatmap-legend hidden" id="legend-oepnv">
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ff3b00;"></div>
+                        <span>Sehr hohe ÖPNV-Dichte</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ff7b00;"></div>
+                        <span>Hohe ÖPNV-Dichte</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ffb700;"></div>
+                        <span>Mittlere ÖPNV-Dichte</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ffeb00;"></div>
+                        <span>Moderate ÖPNV-Dichte</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #c6ff00;"></div>
+                        <span>Niedrige ÖPNV-Dichte</span>
+                    </div>
+                </div>
+                
+                <div class="heatmap-legend hidden" id="legend-arbeit">
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ff3b00;"></div>
+                        <span>Sehr hohe Arbeitsplatzdichte</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ff7b00;"></div>
+                        <span>Hohe Arbeitsplatzdichte</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ffb700;"></div>
+                        <span>Mittlere Arbeitsplatzdichte</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ffeb00;"></div>
+                        <span>Moderate Arbeitsplatzdichte</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #c6ff00;"></div>
+                        <span>Niedrige Arbeitsplatzdichte</span>
+                    </div>
+                </div>
+                
+                <div class="heatmap-legend hidden" id="legend-gesamt">
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ff3b00;"></div>
+                        <span>Stark urbanes Profil</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ff7b00;"></div>
+                        <span>Urbanes Profil</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ffb700;"></div>
+                        <span>Moderat urbanes Profil</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #ffeb00;"></div>
+                        <span>Gemischtes Profil</span>
+                    </div>
+                    <div class="heatmap-legend-item">
+                        <div class="heatmap-legend-color" style="background-color: #c6ff00;"></div>
+                        <span>Suburbanes Profil</span>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h4 class="chart-title">Bezirksvergleich nach ausgewähltem Kriterium</h4>
+                    <canvas id="sozioChart" width="400" height="300"></canvas>
+                </div>
+                
+                <h3>Detaillierte Bezirksanalyse</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bezirk</th>
+                            <th>Altersdurchschnitt</th>
+                            <th>Einwohner</th>
+                            <th>Bevölkerungsdichte</th>
+                            <th>ÖPNV-Score</th>
+                            <th>Arbeitsplatzdichte</th>
+                            <th>Anteil Ausländer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background-color: rgba(111, 255, 0, 0.1);">
+                            <td><strong>Friedrichshain-Kreuzberg</strong></td>
+                            <td>39,4 Jahre</td>
+                            <td>266.958</td>
+                            <td>13.086 Einw./km²</td>
+                            <td>9,5/10</td>
+                            <td>Hoch</td>
+                            <td>28,5%</td>
+                        </tr>
+                        <tr style="background-color: rgba(111, 255, 0, 0.1);">
+                            <td><strong>Mitte</strong></td>
+                            <td>39,6 Jahre</td>
+                            <td>395.656</td>
+                            <td>10.059 Einw./km²</td>
+                            <td>9,8/10</td>
+                            <td>Sehr hoch</td>
+                            <td>37,4%</td>
+                        </tr>
+                        <tr style="background-color: rgba(198, 255, 0, 0.1);">
+                            <td><strong>Pankow</strong></td>
+                            <td>41,2 Jahre</td>
+                            <td>425.840</td>
+                            <td>4.125 Einw./km²</td>
+                            <td>7,5/10</td>
+                            <td>Mittel</td>
+                            <td>18,1%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 235, 0, 0.1);">
+                            <td><strong>Neukölln</strong></td>
+                            <td>42,0 Jahre</td>
+                            <td>329.488</td>
+                            <td>7.332 Einw./km²</td>
+                            <td>7,2/10</td>
+                            <td>Mittel</td>
+                            <td>28,4%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 183, 0, 0.1);">
+                            <td><strong>Lichtenberg</strong></td>
+                            <td>43,0 Jahre</td>
+                            <td>303.341</td>
+                            <td>5.804 Einw./km²</td>
+                            <td>6,5/10</td>
+                            <td>Mittel</td>
+                            <td>20,5%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 183, 0, 0.1);">
+                            <td><strong>Tempelhof-Schöneberg</strong></td>
+                            <td>43,5 Jahre</td>
+                            <td>351.565</td>
+                            <td>6.624 Einw./km²</td>
+                            <td>8,0/10</td>
+                            <td>Mittel-Hoch</td>
+                            <td>22,8%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 183, 0, 0.1);">
+                            <td><strong>Treptow-Köpenick</strong></td>
+                            <td>43,8 Jahre</td>
+                            <td>282.775</td>
+                            <td>1.686 Einw./km²</td>
+                            <td>4,0/10</td>
+                            <td>Niedrig</td>
+                            <td>16,9%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 183, 0, 0.1);">
+                            <td><strong>Spandau</strong></td>
+                            <td>44,2 Jahre</td>
+                            <td>257.091</td>
+                            <td>2.797 Einw./km²</td>
+                            <td>5,0/10</td>
+                            <td>Niedrig</td>
+                            <td>21,3%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 183, 0, 0.1);">
+                            <td><strong>Marzahn-Hellersdorf</strong></td>
+                            <td>44,5 Jahre</td>
+                            <td>280.426</td>
+                            <td>4.544 Einw./km²</td>
+                            <td>5,0/10</td>
+                            <td>Niedrig</td>
+                            <td>18,6%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 183, 0, 0.1);">
+                            <td><strong>Reinickendorf</strong></td>
+                            <td>44,8 Jahre</td>
+                            <td>273.677</td>
+                            <td>3.050 Einw./km²</td>
+                            <td>5,5/10</td>
+                            <td>Moderat</td>
+                            <td>21,2%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 123, 0, 0.1);">
+                            <td><strong>Charlottenburg-Wilmersdorf</strong></td>
+                            <td>45,1 Jahre</td>
+                            <td>343.853</td>
+                            <td>5.312 Einw./km²</td>
+                            <td>8,8/10</td>
+                            <td>Hoch</td>
+                            <td>24,9%</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 123, 0, 0.1);">
+                            <td><strong>Steglitz-Zehlendorf</strong></td>
+                            <td>46,5 Jahre</td>
+                            <td>316.852</td>
+                            <td>3.089 Einw./km²</td>
+                            <td>6,0/10</td>
+                            <td>Moderat</td>
+                            <td>16,8%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="highlight">
+                    <p><strong>Investment-Insights:</strong> Für Immobilieninvestoren sind besonders Bezirke mit jungem Altersdurchschnitt, guter ÖPNV-Anbindung und hoher Arbeitsplatzdichte interessant. Friedrichshain-Kreuzberg und Mitte bieten das beste Gesamtpaket, während Gebiete wie Lichtenberg und Neukölln ein gutes Preis-Leistungs-Verhältnis bei aufstrebender Entwicklung bieten.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">Made with ❤️ by Martin Pfeffer</p>
+        </div>
+    </footer>
+
+    <div class="heatmap-tooltip" id="tooltip"></div>
+
+    <script src="navigation.js"></script>
     <script>
         // Bezirksdaten
         const bezirke = [
@@ -689,9 +785,7 @@
         ];
 
         const svgMap = document.getElementById('berlin-map');
-        const infoPanel = document.getElementById('info-panel');
         const tooltip = document.getElementById('tooltip');
-        const chartContainer = document.getElementById('chart');
         const tabs = document.querySelectorAll('.tab');
         const legends = document.querySelectorAll('[id^="legend-"]');
         
@@ -714,10 +808,13 @@
         // Legend aktualisieren
         function updateLegend() {
             legends.forEach(legend => {
-                legend.style.display = 'none';
+                legend.classList.add('hidden');
             });
             
-            document.getElementById(`legend-${currentType}`).style.display = 'flex';
+            const activeLegend = document.getElementById(`legend-${currentType}`);
+            if (activeLegend) {
+                activeLegend.classList.remove('hidden');
+            }
         }
 
         // Karte aktualisieren basierend auf dem ausgewählten Tab
@@ -743,88 +840,76 @@
             });
         }
 
-        // Chart aktualisieren
+        // Chart
+        const ctx = document.getElementById('sozioChart').getContext('2d');
+        let sozioChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '',
+                    data: [],
+                    backgroundColor: [],
+                    borderColor: '#333',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        
         function updateChart() {
-            let chartTitle = '';
-            let dataPoints = [];
+            let data, labels, title, colors;
             
             switch(currentType) {
                 case 'alter':
-                    chartTitle = 'Altersdurchschnitt nach Bezirken (in Jahren)';
-                    dataPoints = bezirke.map(b => ({ name: b.name, value: b.alter }));
-                    dataPoints.sort((a, b) => a.value - b.value); // Aufsteigend für Alter
+                    labels = ['Friedrichshain-Kreuzberg', 'Mitte', 'Pankow', 'Neukölln', 'Lichtenberg', 'Tempelhof-Schöneberg', 'Treptow-Köpenick', 'Spandau', 'Marzahn-Hellersdorf', 'Reinickendorf', 'Charlottenburg-Wilmersdorf', 'Steglitz-Zehlendorf'];
+                    data = [39.4, 39.6, 41.2, 42.0, 43.0, 43.5, 43.8, 44.2, 44.5, 44.8, 45.1, 46.5];
+                    title = 'Altersdurchschnitt nach Bezirken (Jahre)';
+                    colors = ['#6fff00', '#6fff00', '#c6ff00', '#ffeb00', '#ffb700', '#ffb700', '#ffb700', '#ffb700', '#ffb700', '#ffb700', '#ff7b00', '#ff7b00'];
                     break;
                 case 'oepnv':
-                    chartTitle = 'ÖPNV-Anbindung nach Bezirken (Score)';
-                    dataPoints = bezirke.map(b => ({ name: b.name, value: b.oepnv_score }));
-                    dataPoints.sort((a, b) => b.value - a.value); // Absteigend
+                    labels = ['Mitte', 'Friedrichshain-Kreuzberg', 'Charlottenburg-Wilmersdorf', 'Tempelhof-Schöneberg', 'Pankow', 'Neukölln', 'Lichtenberg', 'Steglitz-Zehlendorf', 'Reinickendorf', 'Spandau', 'Marzahn-Hellersdorf', 'Treptow-Köpenick'];
+                    data = [9.8, 9.5, 8.8, 8.0, 7.5, 7.2, 6.5, 6.0, 5.5, 5.0, 5.0, 4.0];
+                    title = 'ÖPNV-Anbindung nach Bezirken (Score 1-10)';
+                    colors = ['#ff3b00', '#ff3b00', '#ff7b00', '#ff7b00', '#ffb700', '#ffb700', '#ffb700', '#ffb700', '#ffeb00', '#ffeb00', '#ffeb00', '#c6ff00'];
                     break;
                 case 'arbeit':
-                    chartTitle = 'Arbeitsplatzdichte nach Bezirken (Score)';
-                    dataPoints = bezirke.map(b => ({ name: b.name, value: b.arbeit_score }));
-                    dataPoints.sort((a, b) => b.value - a.value); // Absteigend
+                    labels = ['Mitte', 'Charlottenburg-Wilmersdorf', 'Friedrichshain-Kreuzberg', 'Tempelhof-Schöneberg', 'Pankow', 'Lichtenberg', 'Neukölln', 'Steglitz-Zehlendorf', 'Reinickendorf', 'Spandau', 'Marzahn-Hellersdorf', 'Treptow-Köpenick'];
+                    data = [9.7, 9.2, 8.5, 7.0, 7.0, 6.0, 6.0, 5.5, 5.0, 4.5, 4.0, 4.5];
+                    title = 'Arbeitsplatzdichte nach Bezirken (Score 1-10)';
+                    colors = ['#ff3b00', '#ff3b00', '#ff7b00', '#ffb700', '#ffb700', '#ffeb00', '#ffeb00', '#ffeb00', '#ffeb00', '#c6ff00', '#c6ff00', '#c6ff00'];
                     break;
                 case 'gesamt':
-                    chartTitle = 'Gesamtindex Urbanität nach Bezirken (Score)';
-                    dataPoints = bezirke.map(b => ({ name: b.name, value: b.gesamt_score }));
-                    dataPoints.sort((a, b) => b.value - a.value); // Absteigend
+                    labels = ['Mitte', 'Friedrichshain-Kreuzberg', 'Charlottenburg-Wilmersdorf', 'Tempelhof-Schöneberg', 'Pankow', 'Neukölln', 'Lichtenberg', 'Steglitz-Zehlendorf', 'Reinickendorf', 'Spandau', 'Marzahn-Hellersdorf', 'Treptow-Köpenick'];
+                    data = [9.7, 9.3, 8.5, 7.8, 7.2, 6.5, 6.2, 5.2, 5.0, 4.2, 4.5, 4.0];
+                    title = 'Gesamtindex Urbanität nach Bezirken (Score 1-10)';
+                    colors = ['#ff3b00', '#ff3b00', '#ff7b00', '#ffb700', '#ffb700', '#ffb700', '#ffb700', '#ffeb00', '#ffeb00', '#c6ff00', '#c6ff00', '#c6ff00'];
                     break;
             }
             
-            // Chart generieren
-            let chartHTML = `<h3 style="margin-bottom: 15px; color: #fff;">${chartTitle}</h3>
-                            <div style="display: flex; flex-direction: column; height: 220px;">`;
-            
-            const maxValue = Math.max(...dataPoints.map(d => d.value));
-            const minValue = Math.min(...dataPoints.map(d => d.value));
-            
-            dataPoints.forEach(point => {
-                let percentage;
-                if (currentType === 'alter') {
-                    // Für Alter: Jüngere Bezirke sollen längere Balken haben
-                    const invertedValue = maxValue - (point.value - minValue);
-                    percentage = (invertedValue / (maxValue - minValue) * 100).toFixed(0);
-                } else {
-                    percentage = (point.value / maxValue * 100).toFixed(0);
-                }
-                
-                const color = getColorForValue(point.value, maxValue, minValue, currentType);
-                
-                chartHTML += `<div style="display: flex; align-items: center; margin: 5px 0;">
-                                <div style="width: 110px; text-align: right; margin-right: 10px; font-size: 12px;">${point.name}</div>
-                                <div style="flex-grow: 1; height: 18px; position: relative;">
-                                    <div style="position: absolute; height: 100%; width: ${percentage}%; background-color: ${color}; border-radius: 3px;"></div>
-                                    <div style="position: absolute; right: -45px; width: 40px; text-align: right; font-size: 12px;">${point.value.toFixed(1)}</div>
-                                </div>
-                             </div>`;
-            });
-            
-            chartHTML += `</div>`;
-            chartContainer.innerHTML = chartHTML;
+            sozioChart.data.labels = labels;
+            sozioChart.data.datasets[0].data = data;
+            sozioChart.data.datasets[0].label = title;
+            sozioChart.data.datasets[0].backgroundColor = colors;
+            sozioChart.options.plugins.title = {
+                display: true,
+                text: title
+            };
+            sozioChart.update();
         }
         
-        // Hilfsfunktion zur Farbbestimmung für Chart
-        function getColorForValue(value, maxValue, minValue, type) {
-            if (type === 'alter') {
-                // Für Alter: Jüngere Bezirke sind grün, ältere rot
-                if (value < 40) return '#6fff00';
-                if (value < 41) return '#c6ff00';
-                if (value < 43) return '#ffeb00';
-                if (value < 45) return '#ffb700';
-                return '#ff7b00';
-            } else {
-                // Für andere Kategorien: Höhere Werte sind rot, niedrigere grün
-                const percentage = (value - minValue) / (maxValue - minValue);
-                
-                if (percentage > 0.85) return '#ff3b00';
-                if (percentage > 0.7) return '#ff7b00';
-                if (percentage > 0.55) return '#ffb700';
-                if (percentage > 0.4) return '#ffeb00';
-                if (percentage > 0.25) return '#c6ff00';
-                return '#6fff00';
-            }
-        }
-
         // SVG Pfade für die Bezirke erstellen
         bezirke.forEach(bezirk => {
             // Pfad erstellen
@@ -874,10 +959,6 @@
                 tooltip.style.display = 'none';
             });
             
-            path.addEventListener('click', () => {
-                updateInfoPanel(bezirk);
-            });
-            
             svgMap.appendChild(path);
             
             // Bezirksnamen als Text hinzufügen
@@ -899,115 +980,6 @@
             infoText.textContent = `${bezirk.alter} Jahre`;
             svgMap.appendChild(infoText);
         });
-        
-        // Info-Panel aktualisieren
-        function updateInfoPanel(bezirk) {
-            let content = '';
-            
-            switch(currentType) {
-                case 'alter':
-                    content = `
-                        <div class="info-header">
-                            <div class="info-title">${bezirk.name}</div>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Altersdurchschnitt:</span>
-                            <span>${bezirk.alter} Jahre</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Einwohnerzahl:</span>
-                            <span>${bezirk.einwohner.toLocaleString()}</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Fläche:</span>
-                            <span>${bezirk.flaeche} km²</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Bevölkerungsdichte:</span>
-                            <span>${bezirk.bevDichte} Einwohner/km²</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Anteil Ausländer:</span>
-                            <span>${bezirk.anteilAuslaender}%</span>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'oepnv':
-                    content = `
-                        <div class="info-header">
-                            <div class="info-title">${bezirk.name} - ÖPNV-Anbindung</div>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">ÖPNV-Score:</span>
-                            <span>${bezirk.oepnv_score}/10</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">U-Bahn-Stationen:</span>
-                            <span>${bezirk.uBahn}</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">S-Bahn-Stationen:</span>
-                            <span>${bezirk.sBahn}</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Besonderheiten:</span>
-                            <span>${bezirk.oepnv_text}</span>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'arbeit':
-                    content = `
-                        <div class="info-header">
-                            <div class="info-title">${bezirk.name} - Arbeitsplätze</div>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Arbeitsplatzdichte-Score:</span>
-                            <span>${bezirk.arbeit_score}/10</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Niveau der Arbeitsplatzdichte:</span>
-                            <span>${bezirk.arbeitsDichte}</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Besonderheiten:</span>
-                            <span>${bezirk.arbeit_text}</span>
-                        </div>
-                    `;
-                    break;
-                    
-                case 'gesamt':
-                    content = `
-                        <div class="info-header">
-                            <div class="info-title">${bezirk.name} - Gesamtprofil</div>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Gesamtindex:</span>
-                            <span>${bezirk.gesamt_score}/10</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Altersdurchschnitt:</span>
-                            <span>${bezirk.alter} Jahre</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">ÖPNV-Score:</span>
-                            <span>${bezirk.oepnv_score}/10</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Arbeitsplatzdichte:</span>
-                            <span>${bezirk.arbeit_score}/10</span>
-                        </div>
-                        <div class="info-detail">
-                            <span class="info-label">Bevölkerungsdichte:</span>
-                            <span>${bezirk.bevDichte} Einwohner/km²</span>
-                        </div>
-                    `;
-                    break;
-            }
-            
-            infoPanel.innerHTML = content;
-        }
         
         // Label-Texte aktualisieren basierend auf Tab
         function updateLabels() {
@@ -1032,7 +1004,7 @@
             });
         }
         
-        // Chart initialisieren
+        // Initial chart update
         updateChart();
     </script>
 </body>

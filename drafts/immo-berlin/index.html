@@ -4,287 +4,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Immo Berlin - Übersicht</title>
-    <link rel="stylesheet" href="css/dark-theme.css">
-    <style>
-        /* Zusätzliche spezifische Stile für die Indexseite */
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        li {
-            margin-bottom: var(--spacing-4);
-            border-left: 3px solid var(--accent-blue);
-            padding-left: var(--spacing-4);
-            transition: var(--transition-normal);
-        }
-
-        li:hover {
-            border-left-color: var(--accent-green);
-            transform: translateX(3px);
-        }
-
-        a {
-            color: var(--text-primary);
-            text-decoration: none;
-            font-size: 1.125rem;
-            display: block;
-            padding: var(--spacing-1) 0;
-            transition: var(--transition-fast);
-        }
-
-        a:hover {
-            color: var(--accent-blue);
-            text-decoration: none;
-        }
-
-        .description {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-top: var(--spacing-1);
-        }
-
-        #update-message {
-            background-color: var(--background-darker);
-            padding: var(--spacing-3);
-            border-radius: var(--radius);
-            margin-top: var(--spacing-8);
-            font-size: 0.875rem;
-            border-left: 3px solid var(--accent-green);
-        }
-
-        #loading {
-            color: var(--text-secondary);
-            margin: var(--spacing-4) 0;
-            font-style: italic;
-        }
-
-        .update-btn {
-            margin-left: var(--spacing-2);
-            padding: var(--spacing-1) var(--spacing-3);
-            background-color: var(--accent-green);
-            color: white;
-            border: none;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: var(--transition-fast);
-        }
-
-        .update-btn:hover {
-            background-color: #8ba680;
-            transform: translateY(-1px);
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="navigation.css">
 </head>
 <body>
-<h1>Immo Berlin - Übersicht</h1>
+    <header>
+        <!-- Navigation wird via JavaScript geladen -->
+    </header>
 
-<div id="loading">Seiten werden geladen...</div>
-<ul id="page-list"></ul>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>Immo Berlin Analytics</h2>
+                <p class="lead">Umfassende Immobilienanalysen für Berlin - Von Bezirksvergleichen bis hin zu Investitionspotentialen</p>
+            </div>
+        </section>
 
-<div id="update-message">
-    Diese Seite aktualisiert sich automatisch, wenn neue HTML-Dateien hinzugefügt werden.
-    <button onclick="findHtmlFiles()" class="update-btn">
-        Manuell aktualisieren
-    </button>
-</div>
+        <section style="padding: 4rem 0; background-color: #2C2E3B;">
+            <div class="container">
+                <h3 style="font-size: 2rem; margin-bottom: 2rem; text-align: center; color: #93c5fd; font-weight: 600; line-height: 1.3;">Verfügbare Analysen</h3>
+                <div class="analytics-grid" id="analytics-grid">
+                    <!-- Wird via JavaScript geladen -->
+                </div>
+                
+                <div id="update-message" class="highlight" style="margin-top: 2rem;">
+                    Diese Seite aktualisiert sich automatisch, wenn neue HTML-Dateien hinzugefügt werden.
+                    <button onclick="loadAnalytics()" class="btn" style="margin-left: 1rem;">
+                        Manuell aktualisieren
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
 
-<script>
-    // Bekannte HTML-Dateien als Fallback
-    const knownFiles = [
-        {
-            url: "berlin-bezirke-vergleich.html",
-            title: "Berlin Bezirke Vergleich",
-            description: "Vergleich der verschiedenen Bezirke in Berlin"
-        },
-        {
-            url: "mieten-berlin-bezirke.html",
-            title: "Mieten Berlin Bezirke",
-            description: "Informationen zu Mieten in verschiedenen Berliner Bezirken"
-        },
-        {
-            url: "mieten-berlin-potenzial.html",
-            title: "Mieten Berlin Potenzial",
-            description: "Potenzialanalyse für Mietobjekte in Berlin"
-        },
-        {
-            url: "berlin-bezirke-ranking-investor.html",
-            title: "Berliner Bezirke Ranking für Investoren",
-            description: "Ranking der Berliner Bezirke aus Investorensicht nach Kaufpreis/Mietertrag und Wertsteigerung"
-        },
-        {
-            url: "berlin-mietvertraege-vergleich.html",
-            title: "Feste vs. Befristete Mietverträge in Berlin",
-            description: "Gegenüberstellung von unbefristeten und befristeten Mietverträgen für Berliner Vermieter"
-        },
-        {
-            url: "berlin-heatmap-bevoelkerung.html",
-            title: "Berlin Heatmap Bevölkerung",
-            description: "Visualisierung der Bevölkerungsdichte in Berlin als Heatmap"
-        },
-        {
-            url: "berlin-immobilien-heatmap.html",
-            title: "Berlin Immobilien Heatmap",
-            description: "Heatmap der Immobilienpreise in Berlin"
-        },
-        {
-            url: "berlin-mietpreise-heatmap.html",
-            title: "Berlin Mietpreise Heatmap",
-            description: "Visualisierung der Mietpreise in Berlin als Heatmap"
-        },
-        {
-            url: "berlin-kultur-heatmap.html",
-            title: "Berlin Kultur Heatmap",
-            description: "Visualisierung der kulturellen Angebote in Berlin als Heatmap"
-        },
-        {
-            url: "berlin-soziodata-heatmap.html",
-            title: "Berlin Sozio-Data Heatmap",
-            description: "Visualisierung weiterer Faktoren in Berlin als Heatmap"
-        },
-        {
-            url: "berlin-gentrifizierung-potenzial.html",
-            title: "Berlin Gentrifizierung Potenzial",
-            description: "Analyse des Gentrifizierungspotenzials in Berliner Bezirken"
-        },
-        {
-            url: "berlin-rendite-wertsteigerung-vergleich.html",
-            title: "Mietrendite vs. Wertsteigerung Berlin",
-            description: "Vergleich von Mietrendite und Wertsteigerung bei Immobilieninvestitionen in Berlin"
-        }
-    ];
+    <footer>
+        <div class="container">
+            <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">Made with ❤️ by Martin Pfeffer</p>
+        </div>
+    </footer>
 
-    // Formatiert einen Dateinamen in einen lesbaren Titel
-    function formatTitle(filename) {
-        return filename
-            .replace('.html', '')
-            .replace(/-/g, ' ')
-            .split(' ')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-    }
-
-    // Generiert eine Beschreibung basierend auf dem Titel
-    function generateDescription(title) {
-        if (title.includes("Ranking") || title.includes("Ranking")) {
-            return "Ranking der Berliner Bezirke aus Investorensicht";
-        } else if (title.includes("Bezirke")) {
-            return "Informationen zu Berliner Bezirken";
-        } else if (title.includes("Mieten")) {
-            return "Daten zu Mietpreisen in Berlin";
-        } else if (title.includes("Potenzial")) {
-            return "Potenzialanalyse für den Berliner Immobilienmarkt";
-        } else if (title.includes("Vergleich")) {
-            return "Vergleichende Daten zu Berlin";
-        } else {
-            return "Informationen zum Berliner Immobilienmarkt";
-        }
-    }
-
-    // Fügt eine Seite zur Liste hinzu
-    function addPage(url, title, description) {
-        const pageList = document.getElementById('page-list');
-        const li = document.createElement('li');
-
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = "_blank";
-        a.textContent = title || formatTitle(url);
-
-        const desc = document.createElement('div');
-        desc.className = 'description';
-        desc.textContent = description || generateDescription(title || url);
-
-        li.appendChild(a);
-        li.appendChild(desc);
-        pageList.appendChild(li);
-    }
-
-    // Sucht HTML-Dateien im aktuellen Verzeichnis
-    async function findHtmlFiles() {
-        const pageList = document.getElementById('page-list');
-        const loading = document.getElementById('loading');
-
-        pageList.innerHTML = ''; // Liste leeren
-        loading.style.display = 'block';
-
-        // Versuche 1: XMLHttpRequest, um Verzeichnis zu scannen
-        function scanDirectoryWithXHR() {
-            return new Promise((resolve) => {
-                const xhr = new XMLHttpRequest();
-                xhr.open('GET', '.', true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4 && xhr.status === 200) {
-                        const parser = new DOMParser();
-                        const htmlDoc = parser.parseFromString(xhr.responseText, 'text/html');
-                        const links = htmlDoc.querySelectorAll('a');
-
-                        const htmlFiles = Array.from(links)
-                            .map(link => link.getAttribute('href'))
-                            .filter(href => href && href.endsWith('.html') && href !== 'index.html');
-
-                        resolve(htmlFiles);
-                    } else if (xhr.readyState === 4) {
-                        resolve([]);
-                    }
-                };
-                xhr.send();
-            });
-        }
-
-        // Versuche 2: Fetch API
-        async function scanDirectoryWithFetch() {
-            try {
-                const response = await fetch('.');
-                const text = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                const links = Array.from(doc.querySelectorAll('a'));
-
-                return links
-                    .map(link => link.getAttribute('href'))
-                    .filter(href => href && href.endsWith('.html') && href !== 'index.html');
-            } catch (e) {
-                console.error("Fetch fehlgeschlagen:", e);
-                return [];
+    <script src="navigation.js"></script>
+    <script>
+        // Bekannte Analysen
+        const knownAnalytics = [
+            {
+                url: "berlin-bezirke-vergleich.html",
+                title: "Bezirke Vergleich",
+                description: "Umfassender Vergleich aller Berliner Bezirke nach verschiedenen Kriterien wie Wohnungsmarkt, Bevölkerung und Infrastruktur",
+                icon: "📊"
+            },
+            {
+                url: "berlin-bezirke-ranking-investor.html",
+                title: "Investor Ranking",
+                description: "Ranking der Berliner Bezirke aus Investorensicht nach Kaufpreis/Mietertrag und Wertsteigerung",
+                icon: "💰"
+            },
+            {
+                url: "berlin-gentrifizierung-potenzial.html",
+                title: "Gentrifizierung Potenzial",
+                description: "Analyse des Gentrifizierungspotenzials in verschiedenen Berliner Bezirken",
+                icon: "📈"
+            },
+            {
+                url: "berlin-heatmap-bevoelkerung.html",
+                title: "Bevölkerung Heatmap",
+                description: "Visualisierung der Bevölkerungsdichte in Berlin als interaktive Heatmap",
+                icon: "👥"
+            },
+            {
+                url: "berlin-immobilien-heatmap.html",
+                title: "Immobilien Heatmap",
+                description: "Heatmap der Immobilienpreise und -verfügbarkeit in Berlin",
+                icon: "🏢"
+            },
+            {
+                url: "berlin-kultur-heatmap.html",
+                title: "Kultur Heatmap",
+                description: "Visualisierung der kulturellen Angebote und Infrastruktur in Berlin",
+                icon: "🎭"
+            },
+            {
+                url: "berlin-mietpreise-heatmap.html",
+                title: "Mietpreise Heatmap",
+                description: "Interaktive Visualisierung der Mietpreise in allen Berliner Bezirken",
+                icon: "💸"
+            },
+            {
+                url: "berlin-mietvertraege-vergleich.html",
+                title: "Mietverträge Vergleich",
+                description: "Gegenüberstellung von unbefristeten und befristeten Mietverträgen für Berliner Vermieter",
+                icon: "📋"
+            },
+            {
+                url: "berlin-rendite-wertsteigerung-vergleich.html",
+                title: "Rendite & Wertsteigerung",
+                description: "Vergleich von Mietrendite und Wertsteigerung bei Immobilieninvestitionen in Berlin",
+                icon: "📊"
+            },
+            {
+                url: "berlin-soziodata-heatmap.html",
+                title: "Soziodata Heatmap",
+                description: "Visualisierung sozioökonomischer Daten und demografischer Trends in Berlin",
+                icon: "🏘️"
+            },
+            {
+                url: "mieten-berlin-bezirke.html",
+                title: "Mieten Bezirke",
+                description: "Detaillierte Mietpreisinformationen für alle Berliner Bezirke",
+                icon: "🏘️"
+            },
+            {
+                url: "mieten-berlin-potenzial.html",
+                title: "Mieten Potenzial",
+                description: "Potenzialanalyse für Mietobjekte und Mietpreisentwicklung in Berlin",
+                icon: "🔍"
             }
+        ];
+
+        // Erstellt eine Analytics-Karte
+        function createAnalyticsCard(analytics) {
+            return `
+                <div class="analytics-card">
+                    <h4>${analytics.icon} ${analytics.title}</h4>
+                    <p>${analytics.description}</p>
+                    <a href="${analytics.url}" class="btn">Analyse öffnen</a>
+                </div>
+            `;
         }
 
-        try {
-            // Versuche beide Methoden
-            let htmlFiles = await scanDirectoryWithXHR();
-
-            if (htmlFiles.length === 0) {
-                htmlFiles = await scanDirectoryWithFetch();
-            }
-
-            // Wenn beide Methoden fehlschlagen, verwende die bekannten Dateien
-            if (htmlFiles.length === 0) {
-                console.log("Verwende bekannte Dateien als Fallback");
-                knownFiles.forEach(file => {
-                    addPage(file.url, file.title, file.description);
-                });
-            } else {
-                // Sonst zeige die gefundenen Dateien an
-                htmlFiles.forEach(file => {
-                    const title = formatTitle(file);
-                    const description = generateDescription(title);
-                    addPage(file, title, description);
-                });
-            }
-        } catch (error) {
-            console.error("Fehler beim Scannen des Verzeichnisses:", error);
-            // Fallback zu bekannten Dateien
-            knownFiles.forEach(file => {
-                addPage(file.url, file.title, file.description);
-            });
+        // Lädt die Analytics-Karten
+        function loadAnalytics() {
+            const grid = document.getElementById('analytics-grid');
+            
+            // Zeige bekannte Analysen
+            grid.innerHTML = knownAnalytics.map(analytics => createAnalyticsCard(analytics)).join('');
         }
 
-        loading.style.display = 'none';
-    }
-
-    // Starte den Scan beim Laden der Seite
-    document.addEventListener('DOMContentLoaded', findHtmlFiles);
-</script>
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAnalytics();
+        });
+    </script>
 </body>
 </html>

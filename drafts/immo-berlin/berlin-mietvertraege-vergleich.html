@@ -4,353 +4,320 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Feste vs. Befristete Mietverträge in Berlin</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="navigation.css">
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
-        }
-        .intro {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
         .comparison-container {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-6);
+            margin: var(--spacing-6) 0;
         }
+        
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         .comparison-column {
-            flex: 1;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #383B4F;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+        
         .column-title {
             text-align: center;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            padding-bottom: var(--spacing-2);
+            margin-bottom: var(--spacing-3);
             border-bottom: 2px solid;
             font-weight: bold;
             font-size: 1.2em;
         }
+        
         .unbefristet .column-title {
-            color: #2980b9;
-            border-color: #2980b9;
+            color: #93c5fd;
+            border-color: #93c5fd;
         }
+        
         .befristet .column-title {
             color: #e74c3c;
             border-color: #e74c3c;
         }
+        
         .pros-cons {
-            margin-top: 15px;
+            margin-top: var(--spacing-3);
         }
-        .pros h4, .pros-title {
-            color: #27ae60;
+        
+        .pros h4 {
+            color: #10b981;
         }
-        .cons h4, .cons-title {
+        
+        .cons h4 {
             color: #c0392b;
         }
+        
         .pros ul, .cons ul {
-            padding-left: 20px;
+            padding-left: var(--spacing-4);
         }
+        
         .pros li, .cons li {
-            margin-bottom: 8px;
+            margin-bottom: var(--spacing-2);
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        th {
-            background-color: #34495e;
-            color: white;
-            font-weight: bold;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+        
         .recommendation {
-            background-color: #e8f4f8;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 30px 0;
-            border-left: 4px solid #3498db;
+            background-color: #383B4F;
+            border-left: 4px solid #93c5fd;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+        
         .legal-note {
-            background-color: #fff3cd;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 30px;
+            background-color: #383B4F;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
             border-left: 4px solid #ffc107;
-            font-size: 0.9em;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
+        
         .conclusion {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-top: 30px;
+            background-color: #383B4F;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        .section {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-top: 30px;
-        }
-        .highlight {
+        
+        .highlight-text {
             font-weight: bold;
-            color: #2c3e50;
-            background-color: #f8f9fa;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
-        .footer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: 14px;
-            color: #7f8c8d;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        .disclaimer {
-            font-size: 12px;
-            color: #95a5a6;
-            font-style: italic;
-            margin-top: 20px;
-        }
-        .return-link {
-            display: inline-block;
-            margin-top: 30px;
-            text-decoration: none;
-            color: #3498db;
-            padding: 10px 15px;
-            background-color: #ecf0f1;
-            border-radius: 5px;
-        }
-        .return-link:hover {
-            background-color: #dfe6e9;
+            background-color: #4b5563;
+            color: #93c5fd;
+            padding: 2px 6px;
+            border-radius: 4px;
         }
     </style>
 </head>
 <body>
-    <h1>Feste vs. Befristete Mietverträge in Berlin</h1>
-    
-    <div class="intro">
-        <h2>Mietverträge in Berlin: Unbefristet oder befristet?</h2>
-        <p>Für Vermieter in Berlin stellt sich häufig die Frage, ob ein unbefristeter oder ein befristeter Mietvertrag vorteilhafter ist. Diese Entscheidung kann erhebliche Auswirkungen auf die Rentabilität und die langfristige Verwaltung der Immobilie haben. Nachfolgend eine detaillierte Gegenüberstellung beider Modelle aus Vermietersicht.</p>
-    </div>
-    
-    <div class="comparison-container">
-        <div class="comparison-column unbefristet">
-            <div class="column-title">Unbefristeter Mietvertrag</div>
-            <p>Bei unbefristeten Mietverträgen wird kein Enddatum festgelegt. Der Vertrag läuft auf unbestimmte Zeit und kann nur durch Kündigung beendet werden.</p>
-            
-            <div class="pros">
-                <h4>Vorteile</h4>
-                <ul>
-                    <li><strong>Langfristige Planungssicherheit</strong> bei zuverlässigen Mietern</li>
-                    <li><strong>Geringerer Verwaltungsaufwand</strong> (weniger Mieterwechsel)</li>
-                    <li><strong>Stabile Mieteinnahmen</strong> ohne Leerstandszeiten</li>
-                    <li>Wertsteigerung der Immobilie möglich durch <strong>kontinuierliche Instandhaltung</strong></li>
-                    <li>Möglichkeit zur <strong>gesetzlichen Mieterhöhung</strong> (Mietspiegel, Modernisierung)</li>
-                    <li><strong>Vertrauensaufbau</strong> mit langfristigen Mietern</li>
-                </ul>
+    <header>
+        <!-- Navigation wird via JavaScript geladen -->
+    </header>
+
+    <main class="content-page">
+        <section class="content-header">
+            <div class="container">
+                <h2>Feste vs. Befristete Mietverträge in Berlin</h2>
+                <p class="lead">Strategische Entscheidung für Vermieter im Berliner Immobilienmarkt</p>
             </div>
-            
-            <div class="cons">
-                <h4>Nachteile</h4>
-                <ul>
-                    <li><strong>Schwierigere Kündigung</strong> seitens des Vermieters</li>
-                    <li>Deutliche <strong>Einschränkungen bei Eigenbedarfskündigungen</strong> in Berlin</li>
-                    <li><strong>Geringere Flexibilität</strong> bei Mietanpassungen</li>
-                    <li>Bei <strong>problematischen Mietern</strong> langwierige rechtliche Prozesse</li>
-                    <li><strong>Begrenztes Potenzial</strong> für schnelle Mietsteigerungen</li>
-                    <li>Gefahr, bei <strong>steigenden Marktmieten</strong> unter Marktniveau zu vermieten</li>
-                </ul>
+        </section>
+
+        <section class="content-body">
+            <div class="container">
+                <div class="info-box">
+                    <h5>📋 Mietverträge in Berlin: Unbefristet oder befristet?</h5>
+                    <p>Für Vermieter in Berlin stellt sich häufig die Frage, ob ein unbefristeter oder ein befristeter Mietvertrag vorteilhafter ist. Diese Entscheidung kann erhebliche Auswirkungen auf die Rentabilität und die langfristige Verwaltung der Immobilie haben.</p>
+                </div>
+                
+                <div class="comparison-container">
+                    <div class="comparison-column unbefristet">
+                        <div class="column-title">Unbefristeter Mietvertrag</div>
+                        <p>Bei unbefristeten Mietverträgen wird kein Enddatum festgelegt. Der Vertrag läuft auf unbestimmte Zeit und kann nur durch Kündigung beendet werden.</p>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>Vorteile</h4>
+                                <ul>
+                                    <li><strong>Langfristige Planungssicherheit</strong> bei zuverlässigen Mietern</li>
+                                    <li><strong>Geringerer Verwaltungsaufwand</strong> (weniger Mieterwechsel)</li>
+                                    <li><strong>Stabile Mieteinnahmen</strong> ohne Leerstandszeiten</li>
+                                    <li>Wertsteigerung der Immobilie möglich durch <strong>kontinuierliche Instandhaltung</strong></li>
+                                    <li>Möglichkeit zur <strong>gesetzlichen Mieterhöhung</strong> (Mietspiegel, Modernisierung)</li>
+                                    <li><strong>Vertrauensaufbau</strong> mit langfristigen Mietern</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="cons">
+                                <h4>Nachteile</h4>
+                                <ul>
+                                    <li><strong>Schwierigere Kündigung</strong> seitens des Vermieters</li>
+                                    <li>Deutliche <strong>Einschränkungen bei Eigenbedarfskündigungen</strong> in Berlin</li>
+                                    <li><strong>Geringere Flexibilität</strong> bei Mietanpassungen</li>
+                                    <li>Bei <strong>problematischen Mietern</strong> langwierige rechtliche Prozesse</li>
+                                    <li><strong>Begrenztes Potenzial</strong> für schnelle Mietsteigerungen</li>
+                                    <li>Gefahr, bei <strong>steigenden Marktmieten</strong> unter Marktniveau zu vermieten</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="comparison-column befristet">
+                        <div class="column-title">Befristeter Mietvertrag</div>
+                        <p>Befristete Mietverträge haben ein festgelegtes Enddatum, zu dem das Mietverhältnis automatisch endet, sofern keine Verlängerung vereinbart wird.</p>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>Vorteile</h4>
+                                <ul>
+                                    <li><strong>Höhere Flexibilität</strong> für den Vermieter</li>
+                                    <li>Möglichkeit zur <strong>regelmäßigen Neuvermietung</strong> zu Marktpreisen</li>
+                                    <li><strong>Einfachere Beendigung</strong> problematischer Mietverhältnisse</li>
+                                    <li>Bessere <strong>Planbarkeit von Renovierungen</strong> oder Umbauten</li>
+                                    <li>Leichtere <strong>Anpassung an Marktveränderungen</strong></li>
+                                    <li><strong>Höheres Potenzial</strong> für Mietsteigerungen in begehrten Lagen</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="cons">
+                                <h4>Nachteile</h4>
+                                <ul>
+                                    <li><strong>Gesetzliche Einschränkungen</strong> für Befristungen (Befristungsgrund erforderlich)</li>
+                                    <li><strong>Höherer Verwaltungsaufwand</strong> durch häufigere Mieterwechsel</li>
+                                    <li><strong>Potenzielle Leerstandszeiten</strong> zwischen Mietverhältnissen</li>
+                                    <li><strong>Renovierungskosten</strong> bei Mieterwechseln</li>
+                                    <li><strong>Unsicherheit</strong> über die Qualität neuer Mieter</li>
+                                    <li>In Berlin: <strong>Politische Risiken</strong> durch zunehmend mieterfreundliche Gesetzgebung</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>Rechtliche Rahmenbedingungen in Berlin</h3>
+                
+                <div class="data-card">
+                    <h4>Besonderheiten für unbefristete Mietverträge</h4>
+                    <ul>
+                        <li>Unterliegen der <span class="highlight-text">Mietpreisbremse</span> bei Neuvermietung (max. 10% über dem Mietspiegel)</li>
+                        <li>Mieterhöhungen nur bis zur <span class="highlight-text">ortsüblichen Vergleichsmiete</span> und max. 15% innerhalb von 3 Jahren</li>
+                        <li>Starker <span class="highlight-text">Kündigungsschutz</span> für Mieter</li>
+                        <li>Eigenbedarfskündigungen unterliegen <span class="highlight-text">strengen Prüfungen</span></li>
+                    </ul>
+                </div>
+                
+                <div class="data-card">
+                    <h4>Besonderheiten für befristete Mietverträge</h4>
+                    <ul>
+                        <li>Befristungen benötigen einen <span class="highlight-text">gesetzlich anerkannten Befristungsgrund</span> (§ 575 BGB)</li>
+                        <li>Gültige Befristungsgründe sind z.B.:
+                            <ul>
+                                <li>Eigenbedarf zu einem späteren Zeitpunkt</li>
+                                <li>Geplante Modernisierungen oder Umbauten</li>
+                                <li>Geplante gewerbliche Nutzung</li>
+                            </ul>
+                        </li>
+                        <li>Der Befristungsgrund muss bei Vertragsabschluss <span class="highlight-text">schriftlich mitgeteilt</span> werden</li>
+                        <li>Ohne gültigen Befristungsgrund wird der Vertrag automatisch <span class="highlight-text">unbefristet</span></li>
+                    </ul>
+                </div>
+                
+                <h3>Finanzieller Vergleich</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspekt</th>
+                            <th>Unbefristeter Mietvertrag</th>
+                            <th>Befristeter Mietvertrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Langfristige Rendite</td>
+                            <td>Stabil, aber moderater</td>
+                            <td>Potenziell höher, aber schwankender</td>
+                        </tr>
+                        <tr>
+                            <td>Anpassung an Marktmieten</td>
+                            <td>Eingeschränkt (Mietspiegel, 15%-Grenze)</td>
+                            <td>Bei Neuvermietung möglich (Mietpreisbremse beachten)</td>
+                        </tr>
+                        <tr>
+                            <td>Leerstandsrisiko</td>
+                            <td>Gering bei guten Mietern</td>
+                            <td>Höher durch häufigere Wechsel</td>
+                        </tr>
+                        <tr>
+                            <td>Instandhaltungskosten</td>
+                            <td>Gleichmäßig verteilt</td>
+                            <td>Oft Ballungbei Mieterwechseln</td>
+                        </tr>
+                        <tr>
+                            <td>Verwaltungskosten</td>
+                            <td>Niedriger</td>
+                            <td>Höher (Neuvermietungen, Besichtigungen)</td>
+                        </tr>
+                        <tr>
+                            <td>Rechtliche Risiken</td>
+                            <td>Moderat (schwierige Kündigung)</td>
+                            <td>Höher (Anfechtung der Befristung)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="recommendation">
+                    <h3>Empfehlung für verschiedene Bezirke</h3>
+                    <p>Je nach Bezirk können unterschiedliche Strategien sinnvoll sein:</p>
+                    
+                    <div class="grid-2">
+                        <div>
+                            <h4>Eher unbefristete Mietverträge empfehlenswert:</h4>
+                            <ul>
+                                <li><strong>Marzahn-Hellersdorf, Spandau, Reinickendorf:</strong> Hier sind die Mietsteigerungspotenziale moderater, dafür bieten stabile Mietverhältnisse Planungssicherheit.</li>
+                                <li><strong>Außenbezirke mit geringerer Nachfrage:</strong> Längere Leerstandszeiten bei häufigen Mieterwechseln können hier die Rendite stärker belasten.</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h4>Eher befristete Mietverträge empfehlenswert:</h4>
+                            <ul>
+                                <li><strong>Friedrichshain-Kreuzberg, Mitte, Prenzlauer Berg:</strong> Hohe Nachfrage ermöglicht schnelle Neuvermietung, starkes Mietsteigerungspotenzial.</li>
+                                <li><strong>Aufwertungsgebiete wie Neukölln, Wedding:</strong> Schnelle Entwicklung der Viertel kann bei regelmäßiger Neuvermietung besser genutzt werden.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-card">
+                    <h3>Hybridstrategien für maximale Rendite</h3>
+                    <p>Viele erfahrene Vermieter in Berlin kombinieren beide Ansätze:</p>
+                    <ul>
+                        <li><strong>Anfängliche Befristung:</strong> Mietvertrag zunächst für 2-3 Jahre befristen (mit validem Grund)</li>
+                        <li><strong>Evaluationsphase:</strong> Während dieser Zeit Zuverlässigkeit des Mieters beurteilen</li>
+                        <li><strong>Selektive Fortführung:</strong> Bei guten Mietern Angebot eines unbefristeten Vertrags, bei problematischen Mietern Ende des Mietverhältnisses</li>
+                        <li><strong>Portfolio-Mix:</strong> Verschiedene Objekte mit unterschiedlichen Vertragsmodellen</li>
+                    </ul>
+                </div>
+                
+                <div class="conclusion">
+                    <h3>Fazit</h3>
+                    <p>Die Entscheidung zwischen unbefristeten und befristeten Mietverträgen in Berlin hängt von mehreren Faktoren ab:</p>
+                    <ul>
+                        <li><strong>Bezirk und Mikrolage</strong> der Immobilie</li>
+                        <li><strong>Aktuelles und zukünftiges Mietpreisniveau</strong> im Verhältnis zum Kaufpreis</li>
+                        <li><strong>Persönliche Präferenzen</strong> hinsichtlich Verwaltungsaufwand vs. Renditeoptimierung</li>
+                        <li><strong>Langfristige Pläne</strong> mit der Immobilie (Verkauf, Selbstnutzung, langfristiges Investment)</li>
+                        <li><strong>Risikotoleranz</strong> bezüglich regulatorischer Änderungen und Rechtsstreitigkeiten</li>
+                    </ul>
+                    <p>In der aktuellen Situation auf dem Berliner Wohnungsmarkt (2025) mit anhaltend hohem Nachfragedruck und Unsicherheiten durch häufige regulatorische Eingriffe bietet eine <span class="highlight-text">flexible Mischstrategie</span> oftmals die beste Kombination aus Sicherheit und Renditepotenzial.</p>
+                </div>
+                
+                <div class="legal-note">
+                    <h4>⚖️ Rechtlicher Hinweis</h4>
+                    <p>Die Informationen in diesem Dokument dienen nur zu Informationszwecken und ersetzen keine rechtliche Beratung. Die Mietgesetzgebung in Berlin unterliegt regelmäßigen Änderungen. Vor Abschluss von Mietverträgen sollte stets rechtlicher Rat eingeholt werden.</p>
+                </div>
             </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">Made with ❤️ by Martin Pfeffer</p>
         </div>
-        
-        <div class="comparison-column befristet">
-            <div class="column-title">Befristeter Mietvertrag</div>
-            <p>Befristete Mietverträge haben ein festgelegtes Enddatum, zu dem das Mietverhältnis automatisch endet, sofern keine Verlängerung vereinbart wird.</p>
-            
-            <div class="pros">
-                <h4>Vorteile</h4>
-                <ul>
-                    <li><strong>Höhere Flexibilität</strong> für den Vermieter</li>
-                    <li>Möglichkeit zur <strong>regelmäßigen Neuvermietung</strong> zu Marktpreisen</li>
-                    <li><strong>Einfachere Beendigung</strong> problematischer Mietverhältnisse</li>
-                    <li>Bessere <strong>Planbarkeit von Renovierungen</strong> oder Umbauten</li>
-                    <li>Leichtere <strong>Anpassung an Marktveränderungen</strong></li>
-                    <li><strong>Höheres Potenzial</strong> für Mietsteigerungen in begehrten Lagen</li>
-                </ul>
-            </div>
-            
-            <div class="cons">
-                <h4>Nachteile</h4>
-                <ul>
-                    <li><strong>Gesetzliche Einschränkungen</strong> für Befristungen (Befristungsgrund erforderlich)</li>
-                    <li><strong>Höherer Verwaltungsaufwand</strong> durch häufigere Mieterwechsel</li>
-                    <li><strong>Potenzielle Leerstandszeiten</strong> zwischen Mietverhältnissen</li>
-                    <li><strong>Renovierungskosten</strong> bei Mieterwechseln</li>
-                    <li><strong>Unsicherheit</strong> über die Qualität neuer Mieter</li>
-                    <li>In Berlin: <strong>Politische Risiken</strong> durch zunehmend mieterfreundliche Gesetzgebung</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
-    <div class="section">
-        <h2>Rechtliche Rahmenbedingungen in Berlin</h2>
-        
-        <h3>Besonderheiten für unbefristete Mietverträge</h3>
-        <ul>
-            <li>Unterliegen der <strong>Mietpreisbremse</strong> bei Neuvermietung (max. 10% über dem Mietspiegel)</li>
-            <li>Mieterhöhungen nur bis zur <strong>ortsüblichen Vergleichsmiete</strong> und max. 15% innerhalb von 3 Jahren</li>
-            <li>Starker <strong>Kündigungsschutz</strong> für Mieter</li>
-            <li>Eigenbedarfskündigungen unterliegen <strong>strengen Prüfungen</strong></li>
-        </ul>
-        
-        <h3>Besonderheiten für befristete Mietverträge</h3>
-        <ul>
-            <li>Befristungen benötigen einen <strong>gesetzlich anerkannten Befristungsgrund</strong> (§ 575 BGB)</li>
-            <li>Gültige Befristungsgründe sind z.B.:</li>
-            <ul>
-                <li>Eigenbedarf zu einem späteren Zeitpunkt</li>
-                <li>Geplante Modernisierungen oder Umbauten</li>
-                <li>Geplante gewerbliche Nutzung</li>
-            </ul>
-            <li>Der Befristungsgrund muss bei Vertragsabschluss <strong>schriftlich mitgeteilt</strong> werden</li>
-            <li>Ohne gültigen Befristungsgrund wird der Vertrag automatisch <strong>unbefristet</strong></li>
-        </ul>
-    </div>
-    
-    <div class="section">
-        <h2>Finanzieller Vergleich</h2>
-        
-        <table>
-            <thead>
-                <tr>
-                    <th>Aspekt</th>
-                    <th>Unbefristeter Mietvertrag</th>
-                    <th>Befristeter Mietvertrag</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Langfristige Rendite</td>
-                    <td>Stabil, aber moderater</td>
-                    <td>Potenziell höher, aber schwankender</td>
-                </tr>
-                <tr>
-                    <td>Anpassung an Marktmieten</td>
-                    <td>Eingeschränkt (Mietspiegel, 15%-Grenze)</td>
-                    <td>Bei Neuvermietung möglich (Mietpreisbremse beachten)</td>
-                </tr>
-                <tr>
-                    <td>Leerstandsrisiko</td>
-                    <td>Gering bei guten Mietern</td>
-                    <td>Höher durch häufigere Wechsel</td>
-                </tr>
-                <tr>
-                    <td>Instandhaltungskosten</td>
-                    <td>Gleichmäßig verteilt</td>
-                    <td>Oft ballung bei Mieterwechseln</td>
-                </tr>
-                <tr>
-                    <td>Verwaltungskosten</td>
-                    <td>Niedriger</td>
-                    <td>Höher (Neuvermietungen, Besichtigungen)</td>
-                </tr>
-                <tr>
-                    <td>Rechtliche Risiken</td>
-                    <td>Moderat (schwierige Kündigung)</td>
-                    <td>Höher (Anfechtung der Befristung)</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    
-    <div class="recommendation">
-        <h2>Empfehlung für verschiedene Bezirke</h2>
-        <p>Je nach Bezirk können unterschiedliche Strategien sinnvoll sein:</p>
-        
-        <h3>Eher unbefristete Mietverträge empfehlenswert:</h3>
-        <ul>
-            <li><strong>Marzahn-Hellersdorf, Spandau, Reinickendorf:</strong> Hier sind die Mietsteigerungspotenziale moderater, dafür bieten stabile Mietverhältnisse Planungssicherheit.</li>
-            <li><strong>Außenbezirke mit geringerer Nachfrage:</strong> Längere Leerstandszeiten bei häufigen Mieterwechseln können hier die Rendite stärker belasten.</li>
-        </ul>
-        
-        <h3>Eher befristete Mietverträge empfehlenswert:</h3>
-        <ul>
-            <li><strong>Friedrichshain-Kreuzberg, Mitte, Prenzlauer Berg:</strong> Hohe Nachfrage ermöglicht schnelle Neuvermietung, starkes Mietsteigerungspotenzial.</li>
-            <li><strong>Aufwertungsgebiete wie Neukölln, Wedding:</strong> Schnelle Entwicklung der Viertel kann bei regelmäßiger Neuvermietung besser genutzt werden.</li>
-        </ul>
-    </div>
-    
-    <div class="section">
-        <h2>Hybridstrategien für maximale Rendite</h2>
-        <p>Viele erfahrene Vermieter in Berlin kombinieren beide Ansätze:</p>
-        <ul>
-            <li><strong>Anfängliche Befristung:</strong> Mietvertrag zunächst für 2-3 Jahre befristen (mit validem Grund)</li>
-            <li><strong>Evaluationsphase:</strong> Während dieser Zeit Zuverlässigkeit des Mieters beurteilen</li>
-            <li><strong>Selektive Fortführung:</strong> Bei guten Mietern Angebot eines unbefristeten Vertrags, bei problematischen Mietern Ende des Mietverhältnisses</li>
-            <li><strong>Portfolio-Mix:</strong> Verschiedene Objekte mit unterschiedlichen Vertragsmodellen</li>
-        </ul>
-    </div>
-    
-    <div class="conclusion">
-        <h2>Fazit</h2>
-        <p>Die Entscheidung zwischen unbefristeten und befristeten Mietverträgen in Berlin hängt von mehreren Faktoren ab:</p>
-        <ul>
-            <li><strong>Bezirk und Mikrolage</strong> der Immobilie</li>
-            <li><strong>Aktuelles und zukünftiges Mietpreisniveau</strong> im Verhältnis zum Kaufpreis</li>
-            <li><strong>Persönliche Präferenzen</strong> hinsichtlich Verwaltungsaufwand vs. Renditeoptimierung</li>
-            <li><strong>Langfristige Pläne</strong> mit der Immobilie (Verkauf, Selbstnutzung, langfristiges Investment)</li>
-            <li><strong>Risikotoleranz</strong> bezüglich regulatorischer Änderungen und Rechtsstreitigkeiten</li>
-        </ul>
-        <p>In der aktuellen Situation auf dem Berliner Wohnungsmarkt (2024) mit anhaltend hohem Nachfragedruck und Unsicherheiten durch häufige regulatorische Eingriffe bietet eine <strong>flexible Mischstrategie</strong> oftmals die beste Kombination aus Sicherheit und Renditepotenzial.</p>
-    </div>
-    
-    <div class="legal-note">
-        <h3>Rechtlicher Hinweis</h3>
-        <p>Die Informationen in diesem Dokument dienen nur zu Informationszwecken und ersetzen keine rechtliche Beratung. Die Mietgesetzgebung in Berlin unterliegt regelmäßigen Änderungen. Vor Abschluss von Mietverträgen sollte stets rechtlicher Rat eingeholt werden.</p>
-    </div>
-    
-    <a href="index.html" class="return-link">Zurück zur Übersicht</a>
-    
-    <div class="footer">
-        <p>© 2024 Immo Berlin Analyse | Stand: Mai 2024</p>
-    </div>
+    </footer>
+
+    <script src="navigation.js"></script>
 </body>
 </html>

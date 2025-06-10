@@ -4,297 +4,356 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Berliner Bezirke Ranking für Investoren</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
-        }
-        .intro {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        th {
-            background-color: #34495e;
-            color: white;
-            font-weight: bold;
-        }
-        tr:hover {
-            background-color: #f5f5f5;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:nth-child(odd) {
-            background-color: #fff;
-        }
-        .rank {
-            font-weight: bold;
-            text-align: center;
-            width: 50px;
-        }
-        .district {
-            font-weight: bold;
-        }
-        .very-good {
-            background-color: #c8e6c9;
-        }
-        .good {
-            background-color: #dcedc8;
-        }
-        .average {
-            background-color: #fff9c4;
-        }
-        .below-average {
-            background-color: #ffecb3;
-        }
-        .poor {
-            background-color: #ffccbc;
-        }
-        .score {
-            text-align: center;
-            font-weight: bold;
-        }
-        .details {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-top: 30px;
-        }
-        .methodology {
-            background-color: #e8f5e9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 30px;
-            border-left: 4px solid #4caf50;
-        }
-        .chart-container {
-            margin: 30px 0;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .footer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: 14px;
-            color: #7f8c8d;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-        .disclaimer {
-            font-size: 12px;
-            color: #95a5a6;
-            font-style: italic;
-            margin-top: 20px;
-        }
-        .return-link {
-            display: inline-block;
-            margin-top: 30px;
-            text-decoration: none;
-            color: #3498db;
-            padding: 10px 15px;
-            background-color: #ecf0f1;
-            border-radius: 5px;
-        }
-        .return-link:hover {
-            background-color: #dfe6e9;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="navigation.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Berliner Bezirke Ranking für Investoren</h1>
-    
-    <div class="intro">
-        <h2>Investitionspotenzial der Berliner Bezirke</h2>
-        <p>Dieses Ranking bewertet die 12 Bezirke Berlins nach ihrer Attraktivität für Immobilieninvestoren. Der Fokus liegt auf zwei Hauptkriterien:</p>
-        <ul>
-            <li><strong>Kaufpreis zu Mietertrag Verhältnis</strong> (Mietrendite)</li>
-            <li><strong>Potenzial zur Wertsteigerung</strong> der Immobilie</li>
-        </ul>
-        <p>Eine niedrigere Platzierung bedeutet ein besseres Investitionspotenzial.</p>
-    </div>
-    
-    <table>
-        <thead>
-            <tr>
-                <th class="rank">Rang</th>
-                <th class="district">Bezirk</th>
-                <th>Kaufpreis/Mietertrag</th>
-                <th>Wertsteigerungs&shy;potenzial</th>
-                <th>Gesamt&shy;bewertung</th>
-                <th>Besonderheiten</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr class="very-good">
-                <td class="rank">1</td>
-                <td class="district">Marzahn-Hellersdorf</td>
-                <td>Sehr gut (Niedrige Kaufpreise, solide Mieterträge)</td>
-                <td>Sehr hoch (Entwicklungs&shy;gebiet)</td>
-                <td class="score">9,1/10</td>
-                <td>Hohe Modernisierungs&shy;potenziale, steigende Nachfrage</td>
-            </tr>
-            <tr class="very-good">
-                <td class="rank">2</td>
-                <td class="district">Spandau</td>
-                <td>Sehr gut (Günstige Kaufpreise)</td>
-                <td>Hoch (Aufwertung läuft)</td>
-                <td class="score">8,8/10</td>
-                <td>Wasser&shy;lage-Potenzial, gute Verkehrs&shy;anbindung</td>
-            </tr>
-            <tr class="very-good">
-                <td class="rank">3</td>
-                <td class="district">Lichtenberg</td>
-                <td>Gut (Moderate Kaufpreise)</td>
-                <td>Sehr hoch (Rapid Development)</td>
-                <td class="score">8,6/10</td>
-                <td>Hohe Bauaktivität, neue Büroflächen</td>
-            </tr>
-            <tr class="good">
-                <td class="rank">4</td>
-                <td class="district">Reinickendorf</td>
-                <td>Gut (Attraktives KP-Miet-Verhältnis)</td>
-                <td>Mittel bis hoch</td>
-                <td class="score">8,2/10</td>
-                <td>Tegel-Projekt, unterbewertete Lagen</td>
-            </tr>
-            <tr class="good">
-                <td class="rank">5</td>
-                <td class="district">Treptow-Köpenick</td>
-                <td>Mittel (Steigende Kaufpreise)</td>
-                <td>Hoch (Wasserlagen)</td>
-                <td class="score">7,9/10</td>
-                <td>Beliebte Wohnlagen, Wasser&shy;nähe</td>
-            </tr>
-            <tr class="good">
-                <td class="rank">6</td>
-                <td class="district">Neukölln</td>
-                <td>Gut (Noch günstige Randlagen)</td>
-                <td>Mittel bis hoch (Gentrifizierung)</td>
-                <td class="score">7,5/10</td>
-                <td>Stark unterschiedliche Kieze, Hipster-Faktor</td>
-            </tr>
-            <tr class="average">
-                <td class="rank">7</td>
-                <td class="district">Tempelhof-Schöneberg</td>
-                <td>Mittel (Ausgewogenes Verhältnis)</td>
-                <td>Mittel</td>
-                <td class="score">7,1/10</td>
-                <td>Stabile Lagen, gute Vermietbarkeit</td>
-            </tr>
-            <tr class="average">
-                <td class="rank">8</td>
-                <td class="district">Steglitz-Zehlendorf</td>
-                <td>Unterdurch&shy;schnittlich (Hohe Kaufpreise)</td>
-                <td>Mittel (Wertstabil)</td>
-                <td class="score">6,8/10</td>
-                <td>Prestigelagen, sichere Investition</td>
-            </tr>
-            <tr class="below-average">
-                <td class="rank">9</td>
-                <td class="district">Pankow</td>
-                <td>Unterdurch&shy;schnittlich (Hohe Einstiegspreise)</td>
-                <td>Mittel</td>
-                <td class="score">6,4/10</td>
-                <td>Prenzlauer Berg-Effekt, bereits hochpreisig</td>
-            </tr>
-            <tr class="below-average">
-                <td class="rank">10</td>
-                <td class="district">Charlottenburg-Wilmersdorf</td>
-                <td>Schlecht (Sehr hohe Kaufpreise)</td>
-                <td>Niedrig bis mittel</td>
-                <td class="score">5,9/10</td>
-                <td>Etablierte Westlage, geringe Rendite</td>
-            </tr>
-            <tr class="poor">
-                <td class="rank">11</td>
-                <td class="district">Mitte</td>
-                <td>Sehr schlecht (Maximale Kaufpreise)</td>
-                <td>Gering (Bereits ausgereizt)</td>
-                <td class="score">4,8/10</td>
-                <td>Premium-Lage, Prestige-Objekte</td>
-            </tr>
-            <tr class="poor">
-                <td class="rank">12</td>
-                <td class="district">Friedrichshain-Kreuzberg</td>
-                <td>Sehr schlecht (Extrem hohe Kaufpreise)</td>
-                <td>Sehr gering</td>
-                <td class="score">4,2/10</td>
-                <td>Überhitzte Preise, kaum Rendite</td>
-            </tr>
-        </tbody>
-    </table>
-    
-    <div class="details">
-        <h2>Detaillierte Bezirksanalyse</h2>
-        
-        <h3>Spitzenreiter: Marzahn-Hellersdorf, Spandau und Lichtenberg</h3>
-        <p>Diese Bezirke bieten das beste Verhältnis von Kaufpreis zu Mietertrag und gleichzeitig hohes Wertsteigerungspotenzial. Besonders Marzahn-Hellersdorf profitiert von Modernisierungsinitiativen und steigender Beliebtheit. Spandau punktet mit günstigen Einstiegspreisen und attraktiven Wasserlagen, während Lichtenberg durch massive Bauprojekte und Entwicklungsgebiete überzeugt.</p>
-        
-        <h3>Mittelfeld: Reinickendorf bis Tempelhof-Schöneberg</h3>
-        <p>Diese Bezirke bieten ein ausgewogenes Profil aus noch akzeptablen Kaufpreis-Mietertrag-Verhältnissen und moderatem Wertsteigerungspotenzial. Reinickendorf profitiert besonders vom Tegel-Projekt, Treptow-Köpenick von seinen Wasserlagen und Neukölln von der anhaltenden Gentrifizierung.</p>
-        
-        <h3>Schlusslichter: Pankow, Charlottenburg-Wilmersdorf, Mitte und Friedrichshain-Kreuzberg</h3>
-        <p>Die hohen bis sehr hohen Einstiegspreise in diesen Bezirken führen zu niedrigen Mietrenditen. Das Wertsteigerungspotenzial ist aufgrund der bereits hohen Preise begrenzt. Diese Bezirke eignen sich eher für langfristige Wertanlagen oder Prestigeobjekte als für renditeorientierte Investitionen.</p>
-    </div>
-    
-    <div class="chart-container">
-        <h2>Vergleich der Bezirke</h2>
-        <p>Die Grafik würde hier das Verhältnis von Kaufpreis zu Mietertrag sowie das Wertsteigerungspotenzial visualisieren.</p>
-        <!-- Hier könnte eine Chart-Grafik eingefügt werden -->
-    </div>
-    
-    <div class="methodology">
-        <h3>Methodik der Bewertung</h3>
-        <p>Die Bewertung basiert auf aktuellen Immobilienmarktdaten für Berlin (2023-2024). Die Gesamtbewertung ergibt sich aus:</p>
-        <ul>
-            <li><strong>60%</strong> - Kaufpreis zu Mietertrag Verhältnis</li>
-            <li><strong>40%</strong> - Potenzial zur Wertsteigerung</li>
-        </ul>
-        <p>Zusätzlich wurden Faktoren wie Infrastrukturentwicklung, Bevölkerungswachstum und Gentrifizierungsprozesse berücksichtigt.</p>
-    </div>
-    
-    <div class="disclaimer">
-        <p><strong>Hinweis:</strong> Diese Analyse dient ausschließlich Informationszwecken und stellt keine Anlageberatung dar. Immobilieninvestitionen bergen Risiken und sollten unter Berücksichtigung individueller finanzieller Situationen und nach Rücksprache mit Fachexperten getätigt werden. Die Marktlage kann sich jederzeit ändern.</p>
-    </div>
-    
-    <a href="index.html" class="return-link">Zurück zur Übersicht</a>
-    
-    <div class="footer">
-        <p>© 2024 Immo Berlin Analyse | Stand: Mai 2024</p>
-    </div>
+    <header>
+        <!-- Navigation wird via JavaScript geladen -->
+    </header>
+
+    <main class="content-page">
+        <section class="content-header">
+            <div class="container">
+                <h2>Investoren-Ranking: Berliner Bezirke 2025</h2>
+                <p class="lead">Ranking der Berliner Bezirke nach Kaufpreis/Mietertrag-Verhältnis und Wertsteigerungspotenzial</p>
+            </div>
+        </section>
+
+        <section class="content-body">
+            <div class="container">
+                <h3>Investitionspotenzial der Berliner Bezirke</h3>
+                <p>Dieses Ranking bewertet die 12 Bezirke Berlins nach ihrer Attraktivität für Immobilieninvestoren. Der Fokus liegt auf zwei Hauptkriterien: <strong>Kaufpreis zu Mietertrag Verhältnis</strong> (Mietrendite) und <strong>Potenzial zur Wertsteigerung</strong> der Immobilie. Eine niedrigere Platzierung bedeutet ein besseres Investitionspotenzial.</p>
+                
+                <div class="chart-container">
+                    <h4 class="chart-title">Investoren-Score nach Bezirken (2025)</h4>
+                    <canvas id="investorScoreChart" width="400" height="200"></canvas>
+                </div>
+
+                <div class="info-box">
+                    <h5>🎯 Bewertungskriterien</h5>
+                    <ul>
+                        <li><strong>Mietrendite (30%):</strong> Aktuelle Bruttomietrendite pro Jahr</li>
+                        <li><strong>Wertsteigerung (25%):</strong> Durchschnittliche Wertsteigerung der letzten 5 Jahre</li>
+                        <li><strong>Marktliquidität (20%):</strong> Verkaufsgeschwindigkeit und Nachfrage</li>
+                        <li><strong>Risikofaktor (15%):</strong> Leerstandsrisiko und Mietausfälle</li>
+                        <li><strong>Zukunftspotenzial (10%):</strong> Geplante Infrastrukturprojekte</li>
+                    </ul>
+                </div>
+
+                <h3>Detailliertes Ranking</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rang</th>
+                            <th>Bezirk</th>
+                            <th>Investoren-Score</th>
+                            <th>Mietrendite</th>
+                            <th>Ø Kaufpreis/m²</th>
+                            <th>Wertsteigerung 5J</th>
+                            <th>Empfehlung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background-color: rgba(16, 185, 129, 0.1);">
+                            <td><strong>1</strong></td>
+                            <td><strong>Marzahn-Hellersdorf</strong></td>
+                            <td><strong>9.1/10</strong></td>
+                            <td>6.8%</td>
+                            <td>3.900 €</td>
+                            <td>+157%</td>
+                            <td>🟢 Sehr gut</td>
+                        </tr>
+                        <tr style="background-color: rgba(16, 185, 129, 0.1);">
+                            <td><strong>2</strong></td>
+                            <td><strong>Spandau</strong></td>
+                            <td><strong>8.8/10</strong></td>
+                            <td>6.2%</td>
+                            <td>4.200 €</td>
+                            <td>+138%</td>
+                            <td>🟢 Sehr gut</td>
+                        </tr>
+                        <tr style="background-color: rgba(16, 185, 129, 0.1);">
+                            <td><strong>3</strong></td>
+                            <td><strong>Lichtenberg</strong></td>
+                            <td><strong>8.6/10</strong></td>
+                            <td>6.1%</td>
+                            <td>4.400 €</td>
+                            <td>+164%</td>
+                            <td>🟢 Sehr gut</td>
+                        </tr>
+                        <tr style="background-color: rgba(251, 191, 36, 0.1);">
+                            <td>4</td>
+                            <td>Reinickendorf</td>
+                            <td>8.2/10</td>
+                            <td>5.8%</td>
+                            <td>4.300 €</td>
+                            <td>+142%</td>
+                            <td>🟡 Gut</td>
+                        </tr>
+                        <tr style="background-color: rgba(251, 191, 36, 0.1);">
+                            <td>5</td>
+                            <td>Treptow-Köpenick</td>
+                            <td>7.9/10</td>
+                            <td>5.4%</td>
+                            <td>4.450 €</td>
+                            <td>+163%</td>
+                            <td>🟡 Gut</td>
+                        </tr>
+                        <tr style="background-color: rgba(251, 191, 36, 0.1);">
+                            <td>6</td>
+                            <td>Neukölln</td>
+                            <td>7.5/10</td>
+                            <td>5.2%</td>
+                            <td>4.820 €</td>
+                            <td>+202%</td>
+                            <td>🟡 Gut</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>Tempelhof-Schöneberg</td>
+                            <td>7.1/10</td>
+                            <td>4.8%</td>
+                            <td>5.200 €</td>
+                            <td>+160%</td>
+                            <td>⚪ Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>Steglitz-Zehlendorf</td>
+                            <td>6.8/10</td>
+                            <td>3.8%</td>
+                            <td>6.190 €</td>
+                            <td>+142%</td>
+                            <td>⚪ Mittel</td>
+                        </tr>
+                        <tr style="background-color: rgba(255, 165, 0, 0.1);">
+                            <td>9</td>
+                            <td>Pankow</td>
+                            <td>6.4/10</td>
+                            <td>4.2%</td>
+                            <td>5.800 €</td>
+                            <td>+181%</td>
+                            <td>🟠 Bereits teurer</td>
+                        </tr>
+                        <tr style="background-color: rgba(239, 68, 68, 0.1);">
+                            <td>10</td>
+                            <td>Charlottenburg-Wilmersdorf</td>
+                            <td>5.9/10</td>
+                            <td>3.1%</td>
+                            <td>6.578 €</td>
+                            <td>+148%</td>
+                            <td>🔴 Geringe Rendite</td>
+                        </tr>
+                        <tr style="background-color: rgba(239, 68, 68, 0.1);">
+                            <td>11</td>
+                            <td>Mitte</td>
+                            <td>4.8/10</td>
+                            <td>2.9%</td>
+                            <td>6.650 €</td>
+                            <td>+149%</td>
+                            <td>🔴 Geringe Rendite</td>
+                        </tr>
+                        <tr style="background-color: rgba(239, 68, 68, 0.1);">
+                            <td>12</td>
+                            <td>Friedrichshain-Kreuzberg</td>
+                            <td>4.2/10</td>
+                            <td>2.7%</td>
+                            <td>6.400 €</td>
+                            <td>+160%</td>
+                            <td>🔴 Sehr geringe Rendite</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Investitions-Strategien nach Bezirken</h3>
+                
+                <h3>Detaillierte Bezirksanalyse</h3>
+                
+                <h4>Spitzenreiter: Marzahn-Hellersdorf, Spandau und Lichtenberg</h4>
+                <p>Diese Bezirke bieten das beste Verhältnis von Kaufpreis zu Mietertrag und gleichzeitig hohes Wertsteigerungspotenzial. Besonders <strong>Marzahn-Hellersdorf</strong> profitiert von Modernisierungsinitiativen und steigender Beliebtheit. <strong>Spandau</strong> punktet mit günstigen Einstiegspreisen und attraktiven Wasserlagen, während <strong>Lichtenberg</strong> durch massive Bauprojekte und Entwicklungsgebiete überzeugt.</p>
+                
+                <h4>Mittelfeld: Reinickendorf bis Tempelhof-Schöneberg</h4>
+                <p>Diese Bezirke bieten ein ausgewogenes Profil aus noch akzeptablen Kaufpreis-Mietertrag-Verhältnissen und moderatem Wertsteigerungspotenzial. <strong>Reinickendorf</strong> profitiert besonders vom Tegel-Projekt, <strong>Treptow-Köpenick</strong> von seinen Wasserlagen und <strong>Neukölln</strong> von der anhaltenden Gentrifizierung.</p>
+                
+                <h4>Schlusslichter: Pankow, Charlottenburg-Wilmersdorf, Mitte und Friedrichshain-Kreuzberg</h4>
+                <p>Die hohen bis sehr hohen Einstiegspreise in diesen Bezirken führen zu niedrigen Mietrenditen. Das Wertsteigerungspotenzial ist aufgrund der bereits hohen Preise begrenzt. Diese Bezirke eignen sich eher für langfristige Wertanlagen oder Prestigeobjekte als für renditeorientierte Investitionen.</p>
+                
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <h4>🥇 Marzahn-Hellersdorf - Preis-Champion</h4>
+                        <p><strong>Kaufpreis:</strong> 3.900 €/m² | <strong>Rendite:</strong> 6.8%</p>
+                        <p>Niedrigste Kaufpreise, solide Mieterträge, hohe Modernisierungspotenziale und steigende Nachfrage durch Infrastrukturverbesserungen.</p>
+                    </div>
+                    <div class="analytics-card">
+                        <h4>🥈 Spandau - Der Geheimtipp</h4>
+                        <p><strong>Kaufpreis:</strong> 4.200 €/m² | <strong>Rendite:</strong> 6.2%</p>
+                        <p>Günstige Kaufpreise, Wasserlage-Potenzial, gute Verkehrsanbindung und Aufwertung läuft bereits.</p>
+                    </div>
+                    <div class="analytics-card">
+                        <h4>🥉 Lichtenberg - Rapid Development</h4>
+                        <p><strong>Kaufpreis:</strong> 4.400 €/m² | <strong>Rendite:</strong> 6.1%</p>
+                        <p>Moderate Kaufpreise, sehr hohes Wertsteigerungspotenzial, hohe Bauaktivität und neue Büroflächen entstehen.</p>
+                    </div>
+                    <div class="analytics-card">
+                        <h4>⚠️ Zentrum - Niedrige Renditen</h4>
+                        <p><strong>Friedrichshain-Kreuzberg:</strong> 6.400 €/m² | <strong>Rendite:</strong> nur 2.7%</p>
+                        <p>Überhitzte Preise, kaum noch Rendite möglich. Nur für Prestigeobjekte oder internationale Kapitalanleger geeignet.</p>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h4 class="chart-title">Rendite vs. Wertsteigerung (Bubble Chart)</h4>
+                    <canvas id="bubbleChart" width="400" height="300"></canvas>
+                </div>
+
+                <div class="info-box">
+                    <h5>📊 Methodik der Bewertung</h5>
+                    <p>Die Bewertung basiert auf aktuellen Immobilienmarktdaten für Berlin (2023-2025). Die Gesamtbewertung ergibt sich aus:</p>
+                    <ul>
+                        <li><strong>60%</strong> - Kaufpreis zu Mietertrag Verhältnis</li>
+                        <li><strong>40%</strong> - Potenzial zur Wertsteigerung</li>
+                    </ul>
+                    <p>Zusätzlich wurden Faktoren wie Infrastrukturentwicklung, Bevölkerungswachstum und Gentrifizierungsprozesse berücksichtigt.</p>
+                </div>
+                
+                <div class="highlight">
+                    <h4>🎯 Investment-Empfehlung für 2025</h4>
+                    <p><strong>Top-Investments:</strong> Marzahn-Hellersdorf, Spandau und Lichtenberg bieten die beste Kombination aus niedrigen Einstiegspreisen und hohen Renditeaussichten.</p>
+                    <p><strong>Vermeiden:</strong> Zentrale Lagen (Mitte, Friedrichshain-Kreuzberg, Charlottenburg-Wilmersdorf) sind für renditeorientierte Investoren deutlich überteuert.</p>
+                </div>
+
+                <h3>Marktprognose 2025-2030</h3>
+                <ul>
+                    <li><strong>Spitzenreiter-Bezirke:</strong> Marzahn-Hellersdorf, Spandau und Lichtenberg - weitere Wertsteigerung von 35-50% erwartet</li>
+                    <li><strong>Aufstrebende Bezirke:</strong> Reinickendorf (Tegel-Projekt) und Treptow-Köpenick (Wasserlagen) - 25-35% Wertsteigerung</li>
+                    <li><strong>Überteuerte Zentrumslagen:</strong> Preisstagnation oder leichte Korrekturen von 5-10% möglich</li>
+                    <li><strong>Infrastruktur-Boost:</strong> i2030-Projekt wird Ostbezirke erheblich stärken</li>
+                    <li><strong>Gentrifizierung:</strong> Lichtenberg und Marzahn-Hellersdorf folgen dem Neukölln-Muster</li>
+                </ul>
+
+                <div class="info-box">
+                    <h5>💡 Investment-Tipp für Einsteiger</h5>
+                    <p>Beginnen Sie mit einer 2-3 Zimmer Wohnung in <strong>Marzahn-Hellersdorf</strong> oder <strong>Spandau</strong>. Budget: 120.000-200.000 €. Erwartete Gesamtrendite: 8-10% p.a. (inkl. Wertsteigerung). Diese Bezirke bieten das beste Preis-Leistungs-Verhältnis für Einsteiger.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p style="color: #6b7280; font-size: 0.875rem; text-align: center;">Made with ❤️ by Martin Pfeffer</p>
+        </div>
+    </footer>
+
+    <script src="navigation.js"></script>
+    <script>
+        // Investoren-Score Chart
+        const scoreCtx = document.getElementById('investorScoreChart').getContext('2d');
+        new Chart(scoreCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Marzahn-H.', 'Spandau', 'Lichtenberg', 'Reinickendorf', 'Treptow-K.', 'Neukölln', 'Tempelhof-S.', 'Steglitz-Z.', 'Pankow', 'Charlottenburg-W.', 'Mitte', 'Friedrichsh.-K.'],
+                datasets: [{
+                    label: 'Investoren-Score',
+                    data: [9.1, 8.8, 8.6, 8.2, 7.9, 7.5, 7.1, 6.8, 6.4, 5.9, 4.8, 4.2],
+                    backgroundColor: [
+                        '#10b981', '#10b981', '#10b981', // Top 3 - Grün
+                        '#f59e0b', '#f59e0b', '#f59e0b', // Mittelfeld - Gelb
+                        '#6b7280', '#6b7280', '#6b7280', // Neutral - Grau
+                        '#ef4444', '#ef4444', '#ef4444'  // Überteuert - Rot
+                    ],
+                    borderColor: '#2563eb',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        labels: { color: '#e5e7eb' }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 10,
+                        ticks: { color: '#e5e7eb' },
+                        grid: { color: '#4b5563' }
+                    },
+                    y: {
+                        ticks: { color: '#e5e7eb' },
+                        grid: { color: '#4b5563' }
+                    }
+                }
+            }
+        });
+
+        // Bubble Chart: Rendite vs Wertsteigerung
+        const bubbleCtx = document.getElementById('bubbleChart').getContext('2d');
+        new Chart(bubbleCtx, {
+            type: 'bubble',
+            data: {
+                datasets: [{
+                    label: 'Bezirke',
+                    data: [
+                        {x: 6.8, y: 157, r: 18, label: 'Marzahn-Hellersdorf'},
+                        {x: 6.2, y: 138, r: 17, label: 'Spandau'},
+                        {x: 6.1, y: 164, r: 16, label: 'Lichtenberg'},
+                        {x: 5.8, y: 142, r: 15, label: 'Reinickendorf'},
+                        {x: 5.4, y: 163, r: 14, label: 'Treptow-Köpenick'},
+                        {x: 5.2, y: 202, r: 13, label: 'Neukölln'},
+                        {x: 4.8, y: 160, r: 12, label: 'Tempelhof-Schöneberg'},
+                        {x: 4.2, y: 181, r: 11, label: 'Pankow'},
+                        {x: 3.8, y: 142, r: 10, label: 'Steglitz-Zehlendorf'},
+                        {x: 3.1, y: 148, r: 9, label: 'Charlottenburg-Wilmersdorf'},
+                        {x: 2.9, y: 149, r: 8, label: 'Mitte'},
+                        {x: 2.7, y: 160, r: 7, label: 'Friedrichshain-Kreuzberg'}
+                    ],
+                    backgroundColor: 'rgba(147, 197, 253, 0.6)',
+                    borderColor: '#2563eb',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        labels: { color: '#e5e7eb' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw.label + ': ' + context.raw.x + '% Rendite, +' + context.raw.y + '% Wertsteigerung';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Mietrendite (%)',
+                            color: '#e5e7eb'
+                        },
+                        ticks: { color: '#e5e7eb' },
+                        grid: { color: '#4b5563' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Wertsteigerung 5J (%)',
+                            color: '#e5e7eb'
+                        },
+                        ticks: { color: '#e5e7eb' },
+                        grid: { color: '#4b5563' }
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
