@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Berlin Bezirksvergleich 2025: Wohnungsmarkt, Bevölkerung & Infrastruktur</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #263238;
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.2rem;
+            text-align: center;
+        }
+        
+        h2 {
+            color: #0277bd;
+            border-bottom: 2px solid #0277bd;
+            padding-bottom: 8px;
+            margin-top: 40px;
+        }
+        
+        h3 {
+            color: #01579b;
+        }
+        
+        .intro {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .bezirk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .bezirk-card {
+            background-color: white;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .bezirk-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .bezirk-header {
+            background-color: #0277bd;
+            color: white;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .bezirk-content {
+            padding: 15px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-box {
+            background-color: #e1f5fe;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #01579b;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #555;
+        }
+        
+        .pros-cons {
+            display: flex;
+            margin-top: 15px;
+        }
+        
+        .pros, .cons {
+            flex: 1;
+        }
+        
+        .pros h4, .cons h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        
+        .pros h4 {
+            color: #388e3c;
+        }
+        
+        .cons h4 {
+            color: #d32f2f;
+        }
+        
+        .pros ul, .cons ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .pros li, .cons li {
+            margin-bottom: 5px;
+        }
+        
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #0277bd;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #0277bd;
+            color: white;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .budget-box {
+            background-color: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 30px 0;
+        }
+        
+        .budget-title {
+            color: #2e7d32;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .disclaimer {
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        footer {
+            background-color: #263238;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            margin-top: 50px;
+        }
+        
+        .footer-content {
+            font-size: 0.9rem;
+        }
+        
+        .update-date {
+            font-style: italic;
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+        
+        /* Tab System für die Bezirksdetails */
+        .tab-system {
+            margin-top: 30px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            background-color: #f5f5f5;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button:hover {
+            background-color: #e3f2fd;
+        }
+        
+        .tab-button.active {
+            background-color: #0277bd;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: white;
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .bezirk-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pros-cons {
+                flex-direction: column;
+            }
+            
+            .pros, .cons {
+                margin-bottom: 15px;
+            }
+            
+            .tab-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .tab-button {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Berlin Bezirksvergleich 2025</h1>
+            <p style="text-align: center; margin-top: 10px;">Wohnungsmarkt, Bevölkerung, Kultur & Infrastruktur</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section class="intro">
+            <h2>Übersicht der Berliner Bezirke</h2>
+            <p>Berlin gliedert sich in 12 Bezirke, die sich in ihren Charakteristika stark unterscheiden. Jeder Bezirk bietet unterschiedliche Vorteile und Herausforderungen für potenzielle Wohnungskäufer. In dieser umfassenden Analyse vergleichen wir alle Bezirke anhand wichtiger Faktoren wie Bevölkerungsstruktur, Immobilienpreise, kulturelles Angebot und Verkehrsanbindung, um Ihnen die Entscheidung für den Kauf einer Wohnung (40-50qm bis 200.000€) zu erleichtern.</p>
+            
+            <p>Im aktuellen Berliner Immobilienmarkt (Stand Mai 2025) zeigt sich eine Stabilisierung der Kaufpreise nach den Korrekturen der letzten Jahre. Der durchschnittliche Quadratmeterpreis für Wohnungen liegt bei etwa 5.416€, mit deutlichen Unterschieden zwischen den Bezirken. Bei einem Budget von 200.000€ und einer Wohnungsgröße von 40-50m² kommen vor allem die Randbezirke und aufstrebende Gebiete in Frage.</p>
+        </section>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">Durchschnittspreise pro m² nach Bezirken (2025)</h3>
+            <canvas id="priceChart" height="300"></canvas>
+        </div>
+        
+        <section class="budget-box">
+            <h3 class="budget-title">Bezirke im Budget für 40-50m² bis 200.000€</h3>
+            <p>Bei einem Budget von 200.000€ und einer Wohnungsgröße von 40-50m² liegt Ihr maximaler Quadratmeterpreis bei etwa 4.000-5.000€, abhängig von der genauen Größe. Mit diesen Parametern sind folgende Bezirke besonders interessant:</p>
+            <ul>
+                <li><strong>Marzahn-Hellersdorf</strong> - Mit durchschnittlich 3.900€/m² ist dieser Bezirk sehr gut für Ihr Budget geeignet</li>
+                <li><strong>Spandau</strong> - Mit durchschnittlich 4.200€/m² bietet gute Möglichkeiten</li>
+                <li><strong>Lichtenberg</strong> - Mit ca. 4.400€/m² noch im Rahmen und guter Entwicklungsperspektive</li>
+                <li><strong>Reinickendorf</strong> - Mit etwa 4.300€/m² und guter Infrastruktur</li>
+                <li><strong>Teile von Treptow-Köpenick</strong> - In einigen Gebieten finden sich Wohnungen im angestrebten Preissegment</li>
+            </ul>
+        </section>
+        
+        <div class="tab-system">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="openTab(event, 'wohnungsmarkt')">Wohnungsmarkt</button>
+                <button class="tab-button" onclick="openTab(event, 'bevoelkerung')">Bevölkerung</button>
+                <button class="tab-button" onclick="openTab(event, 'kultur')">Kulturelles Angebot</button>
+                <button class="tab-button" onclick="openTab(event, 'verkehr')">Verkehrsanbindung</button>
+            </div>
+            
+            <div id="wohnungsmarkt" class="tab-content active">
+                <h3>Wohnungsmarkt nach Bezirken</h3>
+                <p>Der Berliner Wohnungsmarkt hat sich nach Jahren starker Preisanstiege und einer anschließenden Korrekturphase inzwischen stabilisiert. Die Quadratmeterpreise variieren stark je nach Bezirk, mit den höchsten Preisen in den zentralen Lagen wie Mitte, Charlottenburg-Wilmersdorf und Friedrichshain-Kreuzberg.</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bezirk</th>
+                            <th>Ø Kaufpreis (€/m²)</th>
+                            <th>Ø Mietpreis (€/m²)</th>
+                            <th>Preisentwicklung (12 Monate)</th>
+                            <th>Potenzial für Wertsteigerung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mitte</td>
+                            <td>6.650</td>
+                            <td>24,43</td>
+                            <td>+1,2%</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Friedrichshain-Kreuzberg</td>
+                            <td>6.400</td>
+                            <td>16,15</td>
+                            <td>+0,9%</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Pankow</td>
+                            <td>5.800</td>
+                            <td>14,50</td>
+                            <td>+1,4%</td>
+                            <td>Hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Charlottenburg-Wilmersdorf</td>
+                            <td>6.578</td>
+                            <td>15,35</td>
+                            <td>+0,8%</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Tempelhof-Schöneberg</td>
+                            <td>5.200</td>
+                            <td>14,20</td>
+                            <td>+1,6%</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Neukölln</td>
+                            <td>4.820</td>
+                            <td>13,80</td>
+                            <td>-7,0%</td>
+                            <td>Hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Treptow-Köpenick</td>
+                            <td>4.450</td>
+                            <td>12,90</td>
+                            <td>+5,8%</td>
+                            <td>Sehr hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Steglitz-Zehlendorf</td>
+                            <td>6.190</td>
+                            <td>13,50</td>
+                            <td>+0,7%</td>
+                            <td>Niedrig</td>
+                        </tr>
+                        <tr>
+                            <td>Marzahn-Hellersdorf</td>
+                            <td>3.900</td>
+                            <td>11,41</td>
+                            <td>+2,8%</td>
+                            <td>Hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Lichtenberg</td>
+                            <td>4.400</td>
+                            <td>11,92</td>
+                            <td>+5,8%</td>
+                            <td>Sehr hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Reinickendorf</td>
+                            <td>4.300</td>
+                            <td>12,30</td>
+                            <td>+2,2%</td>
+                            <td>Hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Spandau</td>
+                            <td>4.200</td>
+                            <td>11,44</td>
+                            <td>+1,8%</td>
+                            <td>Hoch</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>Preistrends nach Wohnungsgröße</h3>
+                <p>Die Quadratmeterpreise variieren in Berlin nicht nur nach Bezirk, sondern auch stark nach Wohnungsgröße. Kleinere Wohnungen haben in der Regel höhere Quadratmeterpreise:</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Wohnungsgröße</th>
+                            <th>Durchschnittlicher Kaufpreis (€/m²)</th>
+                            <th>Durchschnittliche Miete (€/m²)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>30 m² (1-Zimmer)</td>
+                            <td>5.900</td>
+                            <td>24,24</td>
+                        </tr>
+                        <tr>
+                            <td>40-50 m² (1-2 Zimmer)</td>
+                            <td>5.600</td>
+                            <td>19,50</td>
+                        </tr>
+                        <tr>
+                            <td>60 m² (2-Zimmer)</td>
+                            <td>5.400</td>
+                            <td>18,82</td>
+                        </tr>
+                        <tr>
+                            <td>80 m² (3-Zimmer)</td>
+                            <td>5.200</td>
+                            <td>18,60</td>
+                        </tr>
+                        <tr>
+                            <td>100 m² (3-4 Zimmer)</td>
+                            <td>5.100</td>
+                            <td>18,46</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="bevoelkerung" class="tab-content">
+                <h3>Bevölkerungsstruktur der Berliner Bezirke</h3>
+                <p>Berlin hatte Ende 2023 insgesamt etwa 3,85 Millionen Einwohner, mit einem Durchschnittsalter von 42,8 Jahren. Die Bezirke weisen deutliche demografische Unterschiede auf, die für potenzielle Wohnungskäufer relevant sein können.</p>
+                
+                <div class="chart-container">
+                    <h4 class="chart-title">Einwohnerzahlen nach Bezirken (2023)</h4>
+                    <canvas id="populationChart" height="300"></canvas>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bezirk</th>
+                            <th>Einwohnerzahl</th>
+                            <th>Durchschnittsalter</th>
+                            <th>Ausländeranteil</th>
+                            <th>Bevölkerungsentwicklung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pankow</td>
+                            <td>424.307</td>
+                            <td>41,3</td>
+                            <td>20,5%</td>
+                            <td>Steigend</td>
+                        </tr>
+                        <tr>
+                            <td>Mitte</td>
+                            <td>395.656</td>
+                            <td>39,6</td>
+                            <td>37,4%</td>
+                            <td>Stagnierend</td>
+                        </tr>
+                        <tr>
+                            <td>Tempelhof-Schöneberg</td>
+                            <td>352.000</td>
+                            <td>43,2</td>
+                            <td>22,6%</td>
+                            <td>Leicht steigend</td>
+                        </tr>
+                        <tr>
+                            <td>Charlottenburg-Wilmersdorf</td>
+                            <td>342.000</td>
+                            <td>45,1</td>
+                            <td>27,8%</td>
+                            <td>Stabil</td>
+                        </tr>
+                        <tr>
+                            <td>Neukölln</td>
+                            <td>329.476</td>
+                            <td>40,5</td>
+                            <td>30,2%</td>
+                            <td>Leicht steigend</td>
+                        </tr>
+                        <tr>
+                            <td>Friedrichshain-Kreuzberg</td>
+                            <td>290.000</td>
+                            <td>39,4</td>
+                            <td>28,5%</td>
+                            <td>Steigend</td>
+                        </tr>
+                        <tr>
+                            <td>Steglitz-Zehlendorf</td>
+                            <td>308.000</td>
+                            <td>46,5</td>
+                            <td>18,3%</td>
+                            <td>Stabil</td>
+                        </tr>
+                        <tr>
+                            <td>Lichtenberg</td>
+                            <td>308.286</td>
+                            <td>42,7</td>
+                            <td>22,4%</td>
+                            <td>Steigend</td>
+                        </tr>
+                        <tr>
+                            <td>Treptow-Köpenick</td>
+                            <td>285.000</td>
+                            <td>44,8</td>
+                            <td>16,9%</td>
+                            <td>Stark steigend</td>
+                        </tr>
+                        <tr>
+                            <td>Marzahn-Hellersdorf</td>
+                            <td>275.000</td>
+                            <td>43,9</td>
+                            <td>18,5%</td>
+                            <td>Leicht steigend</td>
+                        </tr>
+                        <tr>
+                            <td>Reinickendorf</td>
+                            <td>265.000</td>
+                            <td>44,6</td>
+                            <td>21,3%</td>
+                            <td>Stabil</td>
+                        </tr>
+                        <tr>
+                            <td>Spandau</td>
+                            <td>250.000</td>
+                            <td>43,8</td>
+                            <td>23,9%</td>
+                            <td>Leicht steigend</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>Bevölkerungstrends und Prognosen</h4>
+                <p>Nach Prognosen des Demographieportals wird die Berliner Bevölkerung weiter wachsen und könnte im Jahr 2035 erstmals seit 1944 wieder vier Millionen überschreiten. Besonders stark wachsen die Bezirke am Stadtrand mit guter Infrastruktur, wie Treptow-Köpenick, Pankow und Lichtenberg.</p>
+                
+                <p>Friedrichshain-Kreuzberg und Mitte haben mit 39,4 bzw. 39,6 Jahren die jüngste Bevölkerung, während in Steglitz-Zehlendorf das höchste Durchschnittsalter (46,5 Jahre) zu finden ist. Diese demografischen Unterschiede beeinflussen auch die Art der lokalen Infrastruktur und das kulturelle Angebot.</p>
+            </div>
+            
+            <div id="kultur" class="tab-content">
+                <h3>Kulturelles Angebot nach Bezirken</h3>
+                <p>Berlin ist bekannt für sein reichhaltiges kulturelles Angebot. Die Stadt verfügt über drei Opernhäuser, über 150 Theater, mehr als 175 Museen, ca. 300 Galerien, über 250 öffentliche Bibliotheken und 130 Kinos. Die Verteilung dieser kulturellen Einrichtungen ist jedoch über die Bezirke sehr unterschiedlich.</p>
+                
+                <div class="chart-container">
+                    <h4 class="chart-title">Kulturelle Einrichtungen nach Bezirken (2025)</h4>
+                    <canvas id="cultureChart" height="300"></canvas>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bezirk</th>
+                            <th>Museen</th>
+                            <th>Theater</th>
+                            <th>Kinos</th>
+                            <th>Bibliotheken</th>
+                            <th>Kulturhäuser</th>
+                            <th>Kulturelles Gesamtangebot</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mitte</td>
+                            <td>67</td>
+                            <td>35</td>
+                            <td>18</td>
+                            <td>12</td>
+                            <td>15</td>
+                            <td>Sehr hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Friedrichshain-Kreuzberg</td>
+                            <td>22</td>
+                            <td>31</td>
+                            <td>15</td>
+                            <td>8</td>
+                            <td>12</td>
+                            <td>Sehr hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Charlottenburg-Wilmersdorf</td>
+                            <td>29</td>
+                            <td>24</td>
+                            <td>14</td>
+                            <td>10</td>
+                            <td>9</td>
+                            <td>Hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Pankow</td>
+                            <td>16</td>
+                            <td>19</td>
+                            <td>10</td>
+                            <td>15</td>
+                            <td>8</td>
+                            <td>Hoch</td>
+                        </tr>
+                        <tr>
+                            <td>Neukölln</td>
+                            <td>8</td>
+                            <td>15</td>
+                            <td>8</td>
+                            <td>8</td>
+                            <td>10</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Tempelhof-Schöneberg</td>
+                            <td>9</td>
+                            <td>12</td>
+                            <td>9</td>
+                            <td>9</td>
+                            <td>6</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Steglitz-Zehlendorf</td>
+                            <td>7</td>
+                            <td>5</td>
+                            <td>6</td>
+                            <td>10</td>
+                            <td>5</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Treptow-Köpenick</td>
+                            <td>6</td>
+                            <td>4</td>
+                            <td>4</td>
+                            <td>12</td>
+                            <td>7</td>
+                            <td>Mittel-niedrig</td>
+                        </tr>
+                        <tr>
+                            <td>Lichtenberg</td>
+                            <td>5</td>
+                            <td>3</td>
+                            <td>3</td>
+                            <td>8</td>
+                            <td>6</td>
+                            <td>Niedrig</td>
+                        </tr>
+                        <tr>
+                            <td>Reinickendorf</td>
+                            <td>4</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>8</td>
+                            <td>5</td>
+                            <td>Niedrig</td>
+                        </tr>
+                        <tr>
+                            <td>Marzahn-Hellersdorf</td>
+                            <td>3</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>6</td>
+                            <td>5</td>
+                            <td>Niedrig</td>
+                        </tr>
+                        <tr>
+                            <td>Spandau</td>
+                            <td>4</td>
+                            <td>3</td>
+                            <td>2</td>
+                            <td>7</td>
+                            <td>4</td>
+                            <td>Niedrig</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>Kulturelle Entwicklung und Trends</h4>
+                <p>In den letzten Jahren war besonders in den aufstrebenden Bezirken wie Neukölln, Lichtenberg und Teilen von Marzahn-Hellersdorf eine Zunahme kultureller Aktivitäten zu beobachten. Kreative und Kulturschaffende, die durch steigende Mieten aus den zentralen Bezirken verdrängt wurden, haben neue Kulturräume in diesen Gebieten etabliert.</p>
+                
+                <p>Trotz Kürzungen im Kulturhaushalt 2025 bleibt das kulturelle Angebot in Berlin insgesamt auf hohem Niveau. Die städtische Förderung konzentriert sich zunehmend auf dezentrale Kulturangebote, um die kulturelle Teilhabe in allen Bezirken zu erhöhen.</p>
+            </div>
+            
+            <div id="verkehr" class="tab-content">
+                <h3>Verkehrsanbindung und Infrastruktur</h3>
+                <p>Die Berliner Bezirke unterscheiden sich stark in ihrer Verkehrsanbindung und Infrastruktur. Insbesondere für Pendler und mobilitätsorientierte Wohnungskäufer ist die Qualität der ÖPNV-Anbindung ein entscheidender Faktor.</p>
+                
+                <div class="chart-container">
+                    <h4 class="chart-title">ÖPNV-Qualität nach Bezirken (2025)</h4>
+                    <canvas id="transportChart" height="300"></canvas>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Bezirk</th>
+                            <th>U-Bahn</th>
+                            <th>S-Bahn</th>
+                            <th>Tram</th>
+                            <th>Bus</th>
+                            <th>Fahrrad-Infrastruktur</th>
+                            <th>ÖPNV-Bewertung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Mitte</td>
+                            <td>Sehr gut</td>
+                            <td>Sehr gut</td>
+                            <td>Gut</td>
+                            <td>Sehr gut</td>
+                            <td>Gut</td>
+                            <td>Ausgezeichnet</td>
+                        </tr>
+                        <tr>
+                            <td>Friedrichshain-Kreuzberg</td>
+                            <td>Sehr gut</td>
+                            <td>Sehr gut</td>
+                            <td>Gut</td>
+                            <td>Gut</td>
+                            <td>Sehr gut</td>
+                            <td>Ausgezeichnet</td>
+                        </tr>
+                        <tr>
+                            <td>Charlottenburg-Wilmersdorf</td>
+                            <td>Sehr gut</td>
+                            <td>Gut</td>
+                            <td>Begrenzt</td>
+                            <td>Sehr gut</td>
+                            <td>Gut</td>
+                            <td>Sehr gut</td>
+                        </tr>
+                        <tr>
+                            <td>Tempelhof-Schöneberg</td>
+                            <td>Gut</td>
+                            <td>Gut</td>
+                            <td>Begrenzt</td>
+                            <td>Gut</td>
+                            <td>Mittel</td>
+                            <td>Gut</td>
+                        </tr>
+                        <tr>
+                            <td>Pankow</td>
+                            <td>Begrenzt</td>
+                            <td>Gut</td>
+                            <td>Sehr gut</td>
+                            <td>Gut</td>
+                            <td>Gut</td>
+                            <td>Gut</td>
+                        </tr>
+                        <tr>
+                            <td>Neukölln</td>
+                            <td>Gut</td>
+                            <td>Begrenzt</td>
+                            <td>Begrenzt</td>
+                            <td>Gut</td>
+                            <td>Mittel</td>
+                            <td>Mittel-gut</td>
+                        </tr>
+                        <tr>
+                            <td>Lichtenberg</td>
+                            <td>Begrenzt</td>
+                            <td>Gut</td>
+                            <td>Gut</td>
+                            <td>Gut</td>
+                            <td>Mittel</td>
+                            <td>Mittel-gut</td>
+                        </tr>
+                        <tr>
+                            <td>Steglitz-Zehlendorf</td>
+                            <td>Begrenzt</td>
+                            <td>Gut</td>
+                            <td>Keine</td>
+                            <td>Gut</td>
+                            <td>Mittel</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Treptow-Köpenick</td>
+                            <td>Keine</td>
+                            <td>Gut</td>
+                            <td>Begrenzt</td>
+                            <td>Mittel</td>
+                            <td>Gut</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Reinickendorf</td>
+                            <td>Begrenzt</td>
+                            <td>Begrenzt</td>
+                            <td>Keine</td>
+                            <td>Gut</td>
+                            <td>Niedrig</td>
+                            <td>Mittel</td>
+                        </tr>
+                        <tr>
+                            <td>Spandau</td>
+                            <td>Begrenzt</td>
+                            <td>Begrenzt</td>
+                            <td>Keine</td>
+                            <td>Mittel</td>
+                            <td>Niedrig</td>
+                            <td>Mittel-niedrig</td>
+                        </tr>
+                        <tr>
+                            <td>Marzahn-Hellersdorf</td>
+                            <td>Keine</td>
+                            <td>Begrenzt</td>
+                            <td>Gut</td>
+                            <td>Mittel</td>
+                            <td>Mittel</td>
+                            <td>Mittel-niedrig</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>Infrastrukturprojekte und Zukunftsperspektiven</h4>
+                <p>Berlin investiert aktuell stark in den Ausbau der Verkehrsinfrastruktur. Wichtige laufende Projekte sind:</p>
+                <ul>
+                    <li>Ausbau des Straßenbahnnetzes in den Berliner Nordwesten</li>
+                    <li>Verlängerung der U3 bis zum Mexikoplatz</li>
+                    <li>Neubau der Straßenbahnstrecke Hauptbahnhof – U-Bahnhof Turmstraße (Moabit)</li>
+                    <li>Ausbau des Schienenpersonennahverkehrs entlang des östlichen Berliner Eisenbahnaußenrings</li>
+                    <li>Infrastrukturprojekt i2030 für leistungsfähigere Strecken zwischen Berlin und Brandenburg</li>
+                    <li>Erweiterung des Fahrradnetzes mit neuen Radwegen und Fahrradabstellanlagen</li>
+                </ul>
+                
+                <p>Diese Projekte werden die Verkehrsanbindung besonders in den bisher weniger gut erschlossenen Außenbezirken deutlich verbessern und können dort mittelfristig zu steigenden Immobilienpreisen führen.</p>
+            </div>
+        </div>
+        
+        <section>
+            <h2>Bezirksprofile im Detail</h2>
+            <p>Im Folgenden finden Sie detaillierte Profile für die Bezirke, die für Ihr Budget (40-50m² bis 200.000€) besonders relevant sind:</p>
+            
+            <div class="bezirk-grid">
+                <!-- Lichtenberg -->
+                <div class="bezirk-card">
+                    <div class="bezirk-header">Lichtenberg</div>
+                    <div class="bezirk-content">
+                        <div class="stat-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">4.400 €</div>
+                                <div class="stat-label">Ø Kaufpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">11,92 €</div>
+                                <div class="stat-label">Ø Mietpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">308.286</div>
+                                <div class="stat-label">Einwohner</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">42,7</div>
+                                <div class="stat-label">Durchschnittsalter</div>
+                            </div>
+                        </div>
+                        
+                        <p>Lichtenberg hat sich in den letzten Jahren stark entwickelt und bietet eine gute Kombination aus noch erschwinglichen Preisen und steigender Attraktivität. Der Bezirk profitiert von großen Neubauvorhaben und verbesserten Grünflächen.</p>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>Vorteile</h4>
+                                <ul>
+                                    <li>Hohe Preissteigerung (+5,8%) zeigt Potenzial</li>
+                                    <li>Gute S-Bahn- und Tram-Anbindung</li>
+                                    <li>Große Neubauvorhaben</li>
+                                    <li>Bezahlbare Mieten</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>Nachteile</h4>
+                                <ul>
+                                    <li>Weniger kulturelles Angebot</li>
+                                    <li>Teilweise noch industrielles Image</li>
+                                    <li>Ungleiche Entwicklung innerhalb des Bezirks</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Marzahn-Hellersdorf -->
+                <div class="bezirk-card">
+                    <div class="bezirk-header">Marzahn-Hellersdorf</div>
+                    <div class="bezirk-content">
+                        <div class="stat-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">3.900 €</div>
+                                <div class="stat-label">Ø Kaufpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">11,41 €</div>
+                                <div class="stat-label">Ø Mietpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">275.000</div>
+                                <div class="stat-label">Einwohner</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">43,9</div>
+                                <div class="stat-label">Durchschnittsalter</div>
+                            </div>
+                        </div>
+                        
+                        <p>Marzahn-Hellersdorf bietet die günstigsten Quadratmeterpreise in Berlin und ist damit ideal für Käufer mit begrenztem Budget. Der Bezirk hat in den letzten Jahren umfangreiche Modernisierungen erfahren und verfügt über große Grünflächen.</p>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>Vorteile</h4>
+                                <ul>
+                                    <li>Niedrigste Kaufpreise in Berlin</li>
+                                    <li>Viele renovierte Wohnungen</li>
+                                    <li>Gute Tram-Anbindung</li>
+                                    <li>Viele Grünflächen</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>Nachteile</h4>
+                                <ul>
+                                    <li>Begrenzte kulturelle Angebote</li>
+                                    <li>Längere Fahrzeiten ins Zentrum</li>
+                                    <li>Keine U-Bahn-Anbindung</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Spandau -->
+                <div class="bezirk-card">
+                    <div class="bezirk-header">Spandau</div>
+                    <div class="bezirk-content">
+                        <div class="stat-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">4.200 €</div>
+                                <div class="stat-label">Ø Kaufpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">11,44 €</div>
+                                <div class="stat-label">Ø Mietpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">250.000</div>
+                                <div class="stat-label">Einwohner</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">43,8</div>
+                                <div class="stat-label">Durchschnittsalter</div>
+                            </div>
+                        </div>
+                        
+                        <p>Spandau bietet eine interessante Mischung aus historischer Altstadt und ruhigen Wohngebieten. Die Preise sind noch moderat, und die historische Bausubstanz bietet besonders in der Altstadt Potenzial.</p>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>Vorteile</h4>
+                                <ul>
+                                    <li>Historische Altstadt</li>
+                                    <li>Günstige Quadratmeterpreise</li>
+                                    <li>Wassernahe Lagen</li>
+                                    <li>Gute Pendlerverbindung zum Hauptbahnhof</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>Nachteile</h4>
+                                <ul>
+                                    <li>Teilweise längere Fahrzeiten</li>
+                                    <li>Weniger kulturelles Angebot</li>
+                                    <li>Begrenzte ÖPNV-Anbindung in Randbereichen</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reinickendorf -->
+                <div class="bezirk-card">
+                    <div class="bezirk-header">Reinickendorf</div>
+                    <div class="bezirk-content">
+                        <div class="stat-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">4.300 €</div>
+                                <div class="stat-label">Ø Kaufpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">12,30 €</div>
+                                <div class="stat-label">Ø Mietpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">265.000</div>
+                                <div class="stat-label">Einwohner</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">44,6</div>
+                                <div class="stat-label">Durchschnittsalter</div>
+                            </div>
+                        </div>
+                        
+                        <p>Reinickendorf bietet eine große Vielfalt an Wohnlagen - von urban bis hin zu fast dörflichen Strukturen. Besonders der Ortsteil Tegel ist nach der Flughafenschließung ein interessantes Entwicklungsgebiet.</p>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>Vorteile</h4>
+                                <ul>
+                                    <li>Gute Mischung aus urbanen und ruhigen Lagen</li>
+                                    <li>Attraktive Wasserlagen am Tegeler See</li>
+                                    <li>Entwicklungspotenzial durch TXL-Nachnutzung</li>
+                                    <li>Relativ gute Verkehrsanbindung</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>Nachteile</h4>
+                                <ul>
+                                    <li>Heterogene Wohnqualität je nach Ortsteil</li>
+                                    <li>Begrenzte kulturelle Angebote</li>
+                                    <li>Ungleichmäßiger Ausbau der Fahrradinfrastruktur</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Treptow-Köpenick -->
+                <div class="bezirk-card">
+                    <div class="bezirk-header">Treptow-Köpenick</div>
+                    <div class="bezirk-content">
+                        <div class="stat-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">4.450 €</div>
+                                <div class="stat-label">Ø Kaufpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">12,90 €</div>
+                                <div class="stat-label">Ø Mietpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">285.000</div>
+                                <div class="stat-label">Einwohner</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">44,8</div>
+                                <div class="stat-label">Durchschnittsalter</div>
+                            </div>
+                        </div>
+                        
+                        <p>Treptow-Köpenick ist der größte Berliner Bezirk mit einer starken Ausrichtung auf Wasser- und Grünflächen. Die Preisentwicklung von +5,8% zeigt das wachsende Interesse an diesem vielseitigen Bezirk.</p>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>Vorteile</h4>
+                                <ul>
+                                    <li>Zahlreiche Wasserlagen</li>
+                                    <li>Hoher Grünflächenanteil</li>
+                                    <li>Starke Preissteigerung zeigt Potenzial</li>
+                                    <li>Verbesserte S-Bahn-Anbindung durch Ostkreuz-Ausbau</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>Nachteile</h4>
+                                <ul>
+                                    <li>Große Entfernungen innerhalb des Bezirks</li>
+                                    <li>Keine U-Bahn-Anbindung</li>
+                                    <li>Begrenzte Einkaufsmöglichkeiten in manchen Ortsteilen</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Neukölln (Nord) -->
+                <div class="bezirk-card">
+                    <div class="bezirk-header">Neukölln (Randgebiete)</div>
+                    <div class="bezirk-content">
+                        <div class="stat-grid">
+                            <div class="stat-box">
+                                <div class="stat-value">4.820 €</div>
+                                <div class="stat-label">Ø Kaufpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">13,80 €</div>
+                                <div class="stat-label">Ø Mietpreis/m²</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">329.476</div>
+                                <div class="stat-label">Einwohner</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">40,5</div>
+                                <div class="stat-label">Durchschnittsalter</div>
+                            </div>
+                        </div>
+                        
+                        <p>Während Nord-Neukölln mittlerweile zu den angesagten und teuren Vierteln zählt, bieten die südlichen Bereiche (Britz, Buckow, Rudow) noch erschwingliche Preise mit guter Infrastruktur.</p>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>Vorteile</h4>
+                                <ul>
+                                    <li>Preisrückgang im letzten Jahr (-7%)</li>
+                                    <li>Gute U-Bahn-Anbindung</li>
+                                    <li>Wachsende kulturelle Szene</li>
+                                    <li>Hohe Internationalisierung</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>Nachteile</h4>
+                                <ul>
+                                    <li>Stark unterschiedliche Wohnqualität je nach Lage</li>
+                                    <li>Hohe Gentrifizierung im Norden</li>
+                                    <li>Teilweise soziale Probleme</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>Fazit und Empfehlungen</h2>
+            <p>Für Käufer einer 40-50m² Wohnung mit einem Budget bis 200.000€ bieten sich in Berlin 2025 verschiedene Optionen an. Als besonders empfehlenswert haben sich folgende Bezirke herauskristallisiert:</p>
+            
+            <ol>
+                <li><strong>Lichtenberg</strong> - Bietet die beste Kombination aus Preisniveau, Entwicklungspotenzial und Infrastruktur. Die umfangreichen Neubauvorhaben und die steigende Attraktivität machen den Bezirk zu einer klugen langfristigen Investition.</li>
+                <li><strong>Treptow-Köpenick</strong> - Für Käufer, die Wert auf Naturverbundenheit und Wasserlagen legen. Die verbesserte Verkehrsanbindung und die positive Preisentwicklung sprechen für diesen Bezirk.</li>
+                <li><strong>Marzahn-Hellersdorf</strong> - Die günstigsten Quadratmeterpreise in Berlin ermöglichen hier den Kauf größerer Wohnungen. Für Käufer, die bereit sind, längere Fahrzeiten zu akzeptieren, bietet dieser Bezirk ein ausgezeichnetes Preis-Leistungs-Verhältnis.</li>
+                <li><strong>Reinickendorf</strong> - Besonders der Bereich um Tegel hat durch die Nachnutzung des ehemaligen Flughafens großes Entwicklungspotenzial. Die vielfältigen Wohnlagen bieten attraktive Optionen für unterschiedliche Lebensstile.</li>
+                <li><strong>Südliches Neukölln</strong> - Die Randgebiete von Neukölln profitieren von der Nähe zum aufstrebenden Nord-Neukölln, ohne bereits dessen Preisniveau erreicht zu haben.</li>
+            </ol>
+            
+            <p>Bei der Entscheidung für einen Bezirk sollten persönliche Präferenzen hinsichtlich Pendelzeit, kulturellem Angebot und gewünschter Nachbarschaftsatmosphäre berücksichtigt werden. Für Pendler ist die Qualität der ÖPNV-Anbindung besonders wichtig, während für Familien die Verfügbarkeit von Grünflächen und Bildungseinrichtungen entscheidend sein kann.</p>
+            
+            <p>Angesichts der erwarteten Zinserhöhungen in der zweiten Jahreshälfte 2025 kann ein zeitnaher Kauf vorteilhaft sein. Die aktuelle Stabilisierung des Marktes bietet eine günstige Gelegenheit zum Einstieg, bevor die Preise in den aufstrebenden Bezirken wieder stärker anziehen.</p>
+        </section>
+        
+        <div class="disclaimer">
+            <p>Hinweis: Die hier dargestellten Daten basieren auf öffentlich verfügbaren Statistiken, Marktberichten und eigenen Recherchen. Stand: Mai 2025. Alle Angaben ohne Gewähr.</p>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>Berlin Bezirksvergleich 2025</p>
+                <p class="update-date">Letzte Aktualisierung: Mai 2025</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+        // Function to handle tabs
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabbuttons;
+            
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            tabbuttons = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].classList.remove("active");
+            }
+            
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        
+        // Chart initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            // Price chart
+            var ctxPrice = document.getElementById('priceChart').getContext('2d');
+            var priceChart = new Chart(ctxPrice, {
+                type: 'bar',
+                data: {
+                    labels: ['Mitte', 'Charlottenburg-Wilmersdorf', 'Friedrichshain-Kreuzberg', 'Pankow', 'Steglitz-Zehlendorf', 'Tempelhof-Schöneberg', 'Neukölln', 'Treptow-Köpenick', 'Lichtenberg', 'Reinickendorf', 'Spandau', 'Marzahn-Hellersdorf'],
+                    datasets: [{
+                        label: 'Durchschnittlicher Kaufpreis (€/m²)',
+                        data: [6650, 6578, 6400, 5800, 6190, 5200, 4820, 4450, 4400, 4300, 4200, 3900],
+                        backgroundColor: [
+                            '#1976d2', '#1976d2', '#1976d2', '#1976d2', '#1976d2', '#1976d2',
+                            '#4fc3f7', '#4fc3f7', '#4fc3f7', '#4fc3f7', '#4fc3f7', '#4fc3f7'
+                        ],
+                        borderColor: [
+                            '#0d47a1', '#0d47a1', '#0d47a1', '#0d47a1', '#0d47a1', '#0d47a1',
+                            '#0288d1', '#0288d1', '#0288d1', '#0288d1', '#0288d1', '#0288d1'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 3500
+                        }
+                    }
+                }
+            });
+            
+            // Population chart
+            var ctxPopulation = document.getElementById('populationChart').getContext('2d');
+            var populationChart = new Chart(ctxPopulation, {
+                type: 'bar',
+                data: {
+                    labels: ['Pankow', 'Mitte', 'Tempelhof-Schöneberg', 'Charlottenburg-Wilmersdorf', 'Neukölln', 'Friedrichshain-Kreuzberg', 'Steglitz-Zehlendorf', 'Lichtenberg', 'Treptow-Köpenick', 'Marzahn-Hellersdorf', 'Reinickendorf', 'Spandau'],
+                    datasets: [{
+                        label: 'Einwohnerzahl',
+                        data: [424307, 395656, 352000, 342000, 329476, 290000, 308000, 308286, 285000, 275000, 265000, 250000],
+                        backgroundColor: [
+                            '#4caf50', '#4caf50', '#4caf50', '#4caf50', '#4caf50', '#4caf50',
+                            '#81c784', '#81c784', '#81c784', '#81c784', '#81c784', '#81c784'
+                        ],
+                        borderColor: [
+                            '#2e7d32', '#2e7d32', '#2e7d32', '#2e7d32', '#2e7d32', '#2e7d32',
+                            '#388e3c', '#388e3c', '#388e3c', '#388e3c', '#388e3c', '#388e3c'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 200000
+                        }
+                    }
+                }
+            });
+            
+            // Culture chart
+            var ctxCulture = document.getElementById('cultureChart').getContext('2d');
+            var cultureChart = new Chart(ctxCulture, {
+                type: 'radar',
+                data: {
+                    labels: ['Museen', 'Theater', 'Kinos', 'Bibliotheken', 'Kulturhäuser', 'Galerien'],
+                    datasets: [
+                        {
+                            label: 'Mitte',
+                            data: [67, 35, 18, 12, 15, 95],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgb(255, 99, 132)',
+                            pointBackgroundColor: 'rgb(255, 99, 132)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(255, 99, 132)'
+                        },
+                        {
+                            label: 'Friedrichshain-Kreuzberg',
+                            data: [22, 31, 15, 8, 12, 65],
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgb(54, 162, 235)',
+                            pointBackgroundColor: 'rgb(54, 162, 235)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(54, 162, 235)'
+                        },
+                        {
+                            label: 'Lichtenberg',
+                            data: [5, 3, 3, 8, 6, 8],
+                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                            borderColor: 'rgb(255, 206, 86)',
+                            pointBackgroundColor: 'rgb(255, 206, 86)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(255, 206, 86)'
+                        },
+                        {
+                            label: 'Marzahn-Hellersdorf',
+                            data: [3, 2, 2, 6, 5, 4],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgb(75, 192, 192)',
+                            pointBackgroundColor: 'rgb(75, 192, 192)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgb(75, 192, 192)'
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0
+                        }
+                    }
+                }
+            });
+            
+            // Transport chart
+            var ctxTransport = document.getElementById('transportChart').getContext('2d');
+            var transportChart = new Chart(ctxTransport, {
+                type: 'horizontalBar',
+                data: {
+                    labels: ['Mitte', 'Friedrichshain-Kreuzberg', 'Charlottenburg-Wilmersdorf', 'Tempelhof-Schöneberg', 'Pankow', 'Neukölln', 'Lichtenberg', 'Steglitz-Zehlendorf', 'Treptow-Köpenick', 'Reinickendorf', 'Spandau', 'Marzahn-Hellersdorf'],
+                    datasets: [{
+                        label: 'ÖPNV-Qualität (Skala 1-10)',
+                        data: [9.5, 9.3, 8.7, 8.1, 7.8, 7.2, 7.0, 6.5, 6.2, 5.8, 5.5, 5.2],
+                        backgroundColor: [
+                            '#673ab7', '#673ab7', '#673ab7', '#673ab7', '#673ab7', '#673ab7',
+                            '#9575cd', '#9575cd', '#9575cd', '#9575cd', '#9575cd', '#9575cd'
+                        ],
+                        borderColor: [
+                            '#4527a0', '#4527a0', '#4527a0', '#4527a0', '#4527a0', '#4527a0',
+                            '#5e35b1', '#5e35b1', '#5e35b1', '#5e35b1', '#5e35b1', '#5e35b1'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: false,
+                            min: 4,
+                            max: 10
+                        }
+                    }
+                }
+            });
+        });
+    </script>

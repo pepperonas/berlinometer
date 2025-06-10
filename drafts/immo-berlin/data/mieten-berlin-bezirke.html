@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Durchschnittsmieten in Berliner Bezirken 2025</title>
+    <link rel="stylesheet" href="css/dark-theme.css">
+    <style>
+        /* Specific styles for this page */
+        header {
+            background-color: #d81a60;
+        }
+
+        h2 {
+            color: #d81a60;
+            border-bottom: 2px solid #d81a60;
+        }
+
+        th {
+            background-color: #d81a60;
+        }
+
+        .bezirk-teuer {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+
+        .bezirk-mittel {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .bezirk-guenstig {
+            color: #388e3c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Durchschnittsmieten in Berliner Bezirken</h1>
+            <p class="updated">Stand: Mai 2025</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section>
+            <h2>Überblick zum Mietmarkt in Berlin</h2>
+            <p>Die Mietpreise in Berlin sind in den letzten Jahren kontinuierlich gestiegen. Laut aktuellen Erhebungen liegt die durchschnittliche Kaltmiete in Berlin im Jahr 2025 je nach Quelle zwischen 12,78 €/m² und 19,56 €/m².</p>
+            
+            <div class="info-box">
+                <p><strong>Hinweis:</strong> Die Mietpreisangaben auf dieser Seite basieren auf verschiedenen Quellen (ImmoScout24, Wohnungsboerse.net, Engelvoelkers) und können je nach Erhebungsmethode und Datenbasis voneinander abweichen. Die offiziellen Mietspiegel-Werte des Berliner Senats liegen deutlich niedriger bei etwa 7,21 €/m² (Bestandsmieten), während die hier dargestellten Werte sich hauptsächlich auf Angebotsmieten beziehen.</p>
+            </div>
+        </section>
+        
+        <section>
+            <h2>Durchschnittsmieten nach Bezirken</h2>
+            
+            <div class="chart-container">
+                <canvas id="mietChart" width="400" height="200"></canvas>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Bezirk</th>
+                        <th>Durchschnittsmiete (€/m²)</th>
+                        <th>Preiskategorie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Mitte</td>
+                        <td>24,43 €</td>
+                        <td class="bezirk-teuer">Teuer</td>
+                    </tr>
+                    <tr>
+                        <td>Friedrichshain-Kreuzberg</td>
+                        <td>16,15 €</td>
+                        <td class="bezirk-teuer">Teuer</td>
+                    </tr>
+                    <tr>
+                        <td>Charlottenburg-Wilmersdorf</td>
+                        <td>15,35 €</td>
+                        <td class="bezirk-teuer">Teuer</td>
+                    </tr>
+                    <tr>
+                        <td>Pankow</td>
+                        <td>14,50 €</td>
+                        <td class="bezirk-mittel">Mittel</td>
+                    </tr>
+                    <tr>
+                        <td>Tempelhof-Schöneberg</td>
+                        <td>14,20 €</td>
+                        <td class="bezirk-mittel">Mittel</td>
+                    </tr>
+                    <tr>
+                        <td>Neukölln</td>
+                        <td>13,80 €</td>
+                        <td class="bezirk-mittel">Mittel</td>
+                    </tr>
+                    <tr>
+                        <td>Steglitz-Zehlendorf</td>
+                        <td>13,50 €</td>
+                        <td class="bezirk-mittel">Mittel</td>
+                    </tr>
+                    <tr>
+                        <td>Treptow-Köpenick</td>
+                        <td>12,90 €</td>
+                        <td class="bezirk-mittel">Mittel</td>
+                    </tr>
+                    <tr>
+                        <td>Reinickendorf</td>
+                        <td>12,30 €</td>
+                        <td class="bezirk-mittel">Mittel</td>
+                    </tr>
+                    <tr>
+                        <td>Lichtenberg</td>
+                        <td>11,92 €</td>
+                        <td class="bezirk-guenstig">Günstig</td>
+                    </tr>
+                    <tr>
+                        <td>Spandau</td>
+                        <td>11,44 €</td>
+                        <td class="bezirk-guenstig">Günstig</td>
+                    </tr>
+                    <tr>
+                        <td>Marzahn-Hellersdorf</td>
+                        <td>11,41 €</td>
+                        <td class="bezirk-guenstig">Günstig</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p class="source">Quellen: ImmoScout24 (Q1 2025), Wohnungsboerse.net (April 2025)</p>
+        </section>
+        
+        <section>
+            <h2>Preistrends nach Wohnungsgröße</h2>
+            <p>Die Quadratmeterpreise variieren je nach Wohnungsgröße. Kleinere Wohnungen haben in der Regel höhere Quadratmeterpreise:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Wohnungsgröße</th>
+                        <th>Durchschnittliche Miete (€/m²)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>30 m² (1-Zimmer)</td>
+                        <td>24,24 €</td>
+                    </tr>
+                    <tr>
+                        <td>60 m² (2-Zimmer)</td>
+                        <td>18,82 €</td>
+                    </tr>
+                    <tr>
+                        <td>100 m² (3-4 Zimmer)</td>
+                        <td>18,46 €</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p class="source">Quelle: Wohnungsboerse.net (April 2025)</p>
+        </section>
+        
+        <section>
+            <h2>Preisentwicklung</h2>
+            <p>Im Vergleich zum Vorjahr (Q1 2024) sind die Angebotsmieten in Berlin um etwa 6% gestiegen, von durchschnittlich 12,05 €/m² auf 12,78 €/m². Der offizielle Berliner Mietspiegel für Bestandsmieten zeigt dagegen nur einen moderaten Anstieg von 0,7%, von 7,16 €/m² auf 7,21 €/m².</p>
+            
+            <div class="info-box">
+                <p><strong>Wichtig:</strong> Bei Mietpreisangaben ist zwischen Bestandsmieten (bereits vermietete Wohnungen) und Angebotsmieten (neu zu vermietende Wohnungen) zu unterscheiden. Die Angebotsmieten liegen in der Regel deutlich höher als die Bestandsmieten.</p>
+            </div>
+        </section>
+        
+        <section>
+            <h2>Günstigste und teuerste Kieze</h2>
+            <p>Die günstigsten Mieten findet man in Blankenfelde mit durchschnittlich 10,14 €/m². Die höchsten Mieten werden in Berlin-Mitte mit durchschnittlich 24,43 €/m² verlangt.</p>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 Mietpreisübersicht Berlin | Datenstand: Mai 2025 | Alle Angaben ohne Gewähr</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx = document.getElementById('mietChart').getContext('2d');
+            var mietChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mitte', 'Friedrichshain-Kreuzberg', 'Charlottenburg-Wilmersdorf', 'Pankow', 'Tempelhof-Schöneberg', 'Neukölln', 'Steglitz-Zehlendorf', 'Treptow-Köpenick', 'Reinickendorf', 'Lichtenberg', 'Spandau', 'Marzahn-Hellersdorf'],
+                    datasets: [{
+                        label: 'Durchschnittsmiete (€/m²)',
+                        data: [24.43, 16.15, 15.35, 14.50, 14.20, 13.80, 13.50, 12.90, 12.30, 11.92, 11.44, 11.41],
+                        backgroundColor: [
+                            '#d32f2f', '#d32f2f', '#d32f2f',
+                            '#ff9800', '#ff9800', '#ff9800', '#ff9800', '#ff9800', '#ff9800',
+                            '#388e3c', '#388e3c', '#388e3c'
+                        ],
+                        borderColor: [
+                            '#b71c1c', '#b71c1c', '#b71c1c',
+                            '#e65100', '#e65100', '#e65100', '#e65100', '#e65100', '#e65100',
+                            '#1b5e20', '#1b5e20', '#1b5e20'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Preis in €/m²'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Berliner Bezirke'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Durchschnittsmieten in Berliner Bezirken (Q1/2025)',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
