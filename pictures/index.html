@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #202124;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 16px 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 400;
+            color: #1a73e8;
+        }
+
+        .gallery-container {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .photo-item {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            background: #f1f3f4;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .photo-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            color: white;
+            padding: 12px;
+            transform: translateY(100%);
+            transition: transform 0.2s ease;
+        }
+
+        .photo-item:hover .photo-overlay {
+            transform: translateY(0);
+        }
+
+        .photo-title {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            font-size: 18px;
+            color: #5f6368;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f1f3f4;
+            border-top: 4px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5f6368;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 2px;
+            }
+            
+            .photo-item img {
+                height: 150px;
+            }
+            
+            .gallery-container {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Fotos</h1>
+    </div>
+
+    <div class="gallery-container">
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            Lade Fotos...
+        </div>
+
+        <div class="gallery" id="gallery"></div>
+
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-state-icon">📷</div>
+            <p>Keine Fotos gefunden</p>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modal-close">✕</button>
+            <img id="modal-image" src="" alt="">
+        </div>
+    </div>
+
+    <script>
+        const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+        const gallery = document.getElementById('gallery');
+        const loading = document.getElementById('loading');
+        const emptyState = document.getElementById('empty-state');
+        const modal = document.getElementById('modal');
+        const modalImage = document.getElementById('modal-image');
+        const modalClose = document.getElementById('modal-close');
+
+        async function loadImages() {
+            try {
+                const response = await fetch('/pictures/api/images');
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('API Error:', data.error);
+                    await displayImages([]);
+                    return;
+                }
+                
+                console.log('Gefundene Bilder:', data.images);
+                await displayImages(data.images);
+            } catch (error) {
+                console.error('Fehler beim Laden der Bilder:', error);
+                const fallbackImages = [
+                    'videoueberwachung-goerli.jpg',
+                    'videoueberwachung-goerli-2.jpg'
+                ];
+                console.log('Verwende Fallback-Bilder');
+                await displayImages(fallbackImages);
+            }
+        }
+
+        async function displayImages(imageFiles) {
+            loading.style.display = 'none';
+            
+            if (imageFiles.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            for (const fileName of imageFiles) {
+                await createImageElement(fileName);
+            }
+        }
+
+        function createImageElement(fileName) {
+            return new Promise((resolve) => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                
+                const img = document.createElement('img');
+                img.src = `res/${fileName}`;
+                img.alt = fileName;
+                img.loading = 'lazy';
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'photo-overlay';
+                
+                const title = document.createElement('div');
+                title.className = 'photo-title';
+                title.textContent = fileName;
+                
+                overlay.appendChild(title);
+                photoItem.appendChild(img);
+                photoItem.appendChild(overlay);
+                
+                photoItem.addEventListener('click', () => {
+                    modalImage.src = img.src;
+                    modalImage.alt = img.alt;
+                    modal.classList.add('active');
+                });
+                
+                img.onload = () => {
+                    gallery.appendChild(photoItem);
+                    resolve();
+                };
+                
+                img.onerror = () => {
+                    console.log(`Fehler beim Laden von ${fileName}`);
+                    resolve();
+                };
+            });
+        }
+
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                modal.classList.remove('active');
+            }
+        });
+
+        loadImages();
+    </script>
+</body>
+</html>
