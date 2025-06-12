@@ -11,26 +11,62 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border-color: rgba(218, 220, 224, 0.5);
+            --shadow-color: rgba(32, 33, 36, 0.1);
+            --hover-shadow: rgba(0, 0, 0, 0.2);
+            --modal-bg: rgba(0, 0, 0, 0.9);
+            --overlay-gradient: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            --item-bg: #f1f3f4;
+            --accent-color: #1a73e8;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #202124;
+            --bg-secondary: #292a2d;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --border-color: rgba(95, 99, 104, 0.5);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --hover-shadow: rgba(0, 0, 0, 0.5);
+            --modal-bg: rgba(0, 0, 0, 0.95);
+            --overlay-gradient: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            --item-bg: #303134;
+            --accent-color: #8ab4f8;
+        }
+
         body {
             font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8f9fa;
-            color: #202124;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .header {
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 1px 6px var(--shadow-color);
             padding: 16px 24px;
             position: sticky;
             top: 0;
             z-index: 100;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .header h1 {
-            font-size: 24px;
-            font-weight: 400;
-            color: #1a73e8;
+            font-size: 22px;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            margin: 0;
         }
 
         .gallery-container {
@@ -44,6 +80,12 @@
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 4px;
             justify-content: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .photo-item {
@@ -51,13 +93,31 @@
             cursor: pointer;
             overflow: hidden;
             border-radius: 8px;
-            transition: all 0.2s ease;
-            background: #f1f3f4;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--item-bg);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInUp 0.6s ease-out forwards;
+        }
+
+        .photo-item:nth-child(even) {
+            animation-delay: 0.1s;
+        }
+
+        .photo-item:nth-child(3n) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .photo-item:hover {
-            transform: scale(1.02);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 32px var(--hover-shadow);
             z-index: 10;
         }
 
@@ -77,7 +137,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            background: var(--overlay-gradient);
             color: white;
             padding: 12px;
             transform: translateY(100%);
@@ -101,15 +161,16 @@
             justify-content: center;
             align-items: center;
             height: 200px;
-            font-size: 18px;
-            color: #5f6368;
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 400;
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f1f3f4;
-            border-top: 4px solid #1a73e8;
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--item-bg);
+            border-top: 3px solid var(--accent-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-right: 12px;
@@ -127,26 +188,43 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .modal.active {
             display: flex;
+            background: var(--modal-bg);
+            opacity: 1;
         }
 
         .modal-content {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 80%;
+            max-height: 80vh;
             position: relative;
+            transform: scale(0.7);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
         }
 
         .modal-content img {
             max-width: 100%;
-            max-height: 100%;
+            max-height: 80vh;
+            width: auto;
+            height: auto;
             object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.4);
         }
 
         .modal-close {
@@ -156,30 +234,100 @@
             background: rgba(255,255,255,0.9);
             border: none;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .modal-close:hover {
             background: white;
+            transform: scale(1.1);
+        }
+
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0.8;
+        }
+
+        .modal-nav:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+            opacity: 1;
+        }
+
+        .modal-nav.prev {
+            left: 20px;
+        }
+
+        .modal-nav.next {
+            right: 20px;
+        }
+
+        .modal-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .modal-nav:disabled:hover {
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.9);
         }
 
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            color: #5f6368;
+            color: var(--text-secondary);
         }
 
         .empty-state-icon {
             font-size: 48px;
             margin-bottom: 16px;
             opacity: 0.5;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 24px;
+        }
+
+        .theme-toggle:hover {
+            background: var(--item-bg);
+            transform: scale(1.1);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
         }
 
         @media (max-width: 768px) {
@@ -201,6 +349,9 @@
 <body>
     <div class="header">
         <h1>Fotos</h1>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Theme wechseln">
+            <span id="theme-icon">🌙</span>
+        </button>
     </div>
 
     <div class="gallery-container">
@@ -220,18 +371,49 @@
     <div class="modal" id="modal">
         <div class="modal-content">
             <button class="modal-close" id="modal-close">✕</button>
+            <button class="modal-nav prev" id="modal-prev">‹</button>
+            <button class="modal-nav next" id="modal-next">›</button>
             <img id="modal-image" src="" alt="">
         </div>
     </div>
 
     <script>
-        const supportedFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
+        const imageCache = new Map();
         const gallery = document.getElementById('gallery');
         const loading = document.getElementById('loading');
         const emptyState = document.getElementById('empty-state');
         const modal = document.getElementById('modal');
         const modalImage = document.getElementById('modal-image');
         const modalClose = document.getElementById('modal-close');
+        const modalPrev = document.getElementById('modal-prev');
+        const modalNext = document.getElementById('modal-next');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        let currentImages = [];
+        let currentImageIndex = 0;
+
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        themeToggle.addEventListener('click', toggleTheme);
 
         async function loadImages() {
             try {
@@ -245,6 +427,7 @@
                 }
                 
                 console.log('Gefundene Bilder:', data.images);
+                currentImages = data.images;
                 await displayImages(data.images);
             } catch (error) {
                 console.error('Fehler beim Laden der Bilder:', error);
@@ -253,6 +436,7 @@
                     'videoueberwachung-goerli-2.jpg'
                 ];
                 console.log('Verwende Fallback-Bilder');
+                currentImages = fallbackImages;
                 await displayImages(fallbackImages);
             }
         }
@@ -265,20 +449,28 @@
                 return;
             }
 
-            for (const fileName of imageFiles) {
-                await createImageElement(fileName);
-            }
+            const imagePromises = imageFiles.map((fileName, index) => {
+                return createImageElement(fileName, index);
+            });
+            
+            await Promise.all(imagePromises);
         }
 
-        function createImageElement(fileName) {
+        function createImageElement(fileName, index) {
             return new Promise((resolve) => {
                 const photoItem = document.createElement('div');
                 photoItem.className = 'photo-item';
+                photoItem.dataset.index = index;
                 
                 const img = document.createElement('img');
-                img.src = `res/${fileName}`;
+                
+                const isSmallImage = fileName.includes('thumb') || fileName.includes('small');
+                const size = isSmallImage ? '' : '?w=400';
+                
+                img.src = `res/${fileName}${size}`;
                 img.alt = fileName;
                 img.loading = 'lazy';
+                img.decoding = 'async';
                 
                 const overlay = document.createElement('div');
                 overlay.className = 'photo-overlay';
@@ -292,9 +484,7 @@
                 photoItem.appendChild(overlay);
                 
                 photoItem.addEventListener('click', () => {
-                    modalImage.src = img.src;
-                    modalImage.alt = img.alt;
-                    modal.classList.add('active');
+                    openModal(index);
                 });
                 
                 img.onload = () => {
@@ -309,22 +499,102 @@
             });
         }
 
-        modalClose.addEventListener('click', () => {
+        function openModal(index) {
+            currentImageIndex = index;
+            showCurrentImage();
+            modal.classList.add('active');
+            updateNavButtons();
+            
+            preloadAdjacentImages();
+        }
+        
+        function preloadAdjacentImages() {
+            const prevIndex = currentImageIndex - 1;
+            const nextIndex = currentImageIndex + 1;
+            
+            if (prevIndex >= 0 && currentImages[prevIndex]) {
+                const prevImg = new Image();
+                prevImg.src = `res/${currentImages[prevIndex]}`;
+            }
+            
+            if (nextIndex < currentImages.length && currentImages[nextIndex]) {
+                const nextImg = new Image();
+                nextImg.src = `res/${currentImages[nextIndex]}`;
+            }
+        }
+
+        function showCurrentImage() {
+            if (currentImages[currentImageIndex]) {
+                const fileName = currentImages[currentImageIndex];
+                
+                if (imageCache.has(fileName)) {
+                    modalImage.src = imageCache.get(fileName);
+                    modalImage.alt = fileName;
+                } else {
+                    modalImage.src = `res/${fileName}`;
+                    modalImage.alt = fileName;
+                    imageCache.set(fileName, modalImage.src);
+                }
+            }
+        }
+
+        function updateNavButtons() {
+            modalPrev.disabled = currentImageIndex === 0;
+            modalNext.disabled = currentImageIndex === currentImages.length - 1;
+        }
+
+        function showPreviousImage() {
+            if (currentImageIndex > 0) {
+                currentImageIndex--;
+                showCurrentImage();
+                updateNavButtons();
+            }
+        }
+
+        function showNextImage() {
+            if (currentImageIndex < currentImages.length - 1) {
+                currentImageIndex++;
+                showCurrentImage();
+                updateNavButtons();
+            }
+        }
+
+        function closeModal() {
             modal.classList.remove('active');
-        });
+        }
+
+        modalClose.addEventListener('click', closeModal);
+        modalPrev.addEventListener('click', showPreviousImage);
+        modalNext.addEventListener('click', showNextImage);
 
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                modal.classList.remove('active');
+                closeModal();
             }
         });
 
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                modal.classList.remove('active');
+            if (!modal.classList.contains('active')) return;
+            
+            switch(e.key) {
+                case 'Escape':
+                    closeModal();
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    showPreviousImage();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    showNextImage();
+                    break;
             }
         });
 
+        // Initialize theme on page load
+        initTheme();
+        
+        // Load images
         loadImages();
     </script>
 </body>
