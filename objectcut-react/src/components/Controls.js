@@ -19,7 +19,7 @@ const Controls = ({
             const reader = new FileReader();
 
             reader.onload = (event) => {
-                onLoadImage(event.target.result);
+                onLoadImage(event.target.result, file.name);
             };
 
             reader.readAsDataURL(file);

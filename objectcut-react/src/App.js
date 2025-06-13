@@ -14,16 +14,18 @@ function App() {
     const [extractionMethod, setExtractionMethod] = useState('AI Background Removal');
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState(null);
+    const [originalFileName, setOriginalFileName] = useState(null);
 
     const canvasRef = useRef(null);
 
-    const handleImageLoad = (imageData) => {
+    const handleImageLoad = (imageData, fileName) => {
         setOriginalImage(imageData);
         setDisplayedImage(imageData);
         setExtractedImage(null);
         setHasSelection(false);
         setSelectionCoords(null);
         setError(null);
+        setOriginalFileName(fileName);
     };
 
     const handleSelectionChange = (hasSelection, coords) => {
@@ -79,9 +81,15 @@ function App() {
     const savePNG = () => {
         if (!extractedImage) return;
 
+        let downloadName = 'extracted-object.png';
+        if (originalFileName) {
+            const nameWithoutExtension = originalFileName.substring(0, originalFileName.lastIndexOf('.')) || originalFileName;
+            downloadName = `${nameWithoutExtension}-cut.png`;
+        }
+
         const link = document.createElement('a');
         link.href = extractedImage;
-        link.download = 'extracted-object.png';
+        link.download = downloadName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
