@@ -18,6 +18,18 @@ function Forecast({ forecast }) {
     return Math.round(sum / dayData.length);
   };
 
+  // Hilfsfunktion, um die minimale Temperatur zu erhalten
+  const getMinTemp = (dayData) => {
+    const temps = dayData.map(item => item.main.temp_min);
+    return Math.round(Math.min(...temps));
+  };
+
+  // Hilfsfunktion, um die maximale Temperatur zu erhalten
+  const getMaxTemp = (dayData) => {
+    const temps = dayData.map(item => item.main.temp_max);
+    return Math.round(Math.max(...temps));
+  };
+
   // Hilfsfunktion, um das häufigste Wettersymbol zu erhalten
   const getMostFrequentIcon = (dayData) => {
     const iconCount = {};
@@ -54,6 +66,8 @@ function Forecast({ forecast }) {
             const date = new Date(dayData[0].dt * 1000);
             const dayName = getDayName(date);
             const avgTemp = getAverageTemp(dayData);
+            const minTemp = getMinTemp(dayData);
+            const maxTemp = getMaxTemp(dayData);
             const icon = getMostFrequentIcon(dayData);
             const iconUrl = `https://openweathermap.org/img/wn/${icon}@2x.png`;
             const description = dayData[0].weather[0].description;
@@ -81,7 +95,11 @@ function Forecast({ forecast }) {
                   <p className={`capitalize text-xs sm:text-sm mb-1 sm:mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
                     {description}
                   </p>
-                  <p className="text-xl sm:text-2xl font-bold">{avgTemp}°C</p>
+                  <div className="flex items-center space-x-1">
+                    <p className="text-lg sm:text-xl font-bold text-blue-500">{minTemp}°</p>
+                    <span className="text-sm sm:text-base">/</span>
+                    <p className="text-lg sm:text-xl font-bold text-red-500">{maxTemp}°</p>
+                  </div>
                 </div>
             );
           })}

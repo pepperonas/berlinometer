@@ -23,9 +23,13 @@ function WeatherCard({ weather }) {
           </div>
 
           <div className="text-center sm:text-right">
-            <p className="text-3xl sm:text-5xl font-bold">{Math.round(weather.main.temp)}°C</p>
+            <div className="flex items-center justify-center sm:justify-end space-x-2">
+              <p className="text-2xl sm:text-4xl font-bold text-blue-500">{Math.round(weather.main.temp_min)}°</p>
+              <span className="text-xl sm:text-3xl">/</span>
+              <p className="text-2xl sm:text-4xl font-bold text-red-500">{Math.round(weather.main.temp_max)}°</p>
+            </div>
             <p className={`text-sm sm:text-base ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-              Gefühlt: {Math.round(weather.main.feels_like)}°C
+              Aktuell: {Math.round(weather.main.temp)}°C
             </p>
           </div>
         </div>
@@ -38,14 +42,6 @@ function WeatherCard({ weather }) {
           <div className={`p-2 sm:p-3 rounded-lg ${darkMode ? 'bg-primary' : 'bg-blue-50'}`}>
             <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Wind</p>
             <p className="text-lg sm:text-xl font-semibold">{Math.round(weather.wind.speed * 3.6)} km/h</p>
-          </div>
-          <div className={`p-2 sm:p-3 rounded-lg ${darkMode ? 'bg-primary' : 'bg-blue-50'}`}>
-            <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Max. Temp.</p>
-            <p className="text-lg sm:text-xl font-semibold">{Math.round(weather.main.temp_max)}°C</p>
-          </div>
-          <div className={`p-2 sm:p-3 rounded-lg ${darkMode ? 'bg-primary' : 'bg-blue-50'}`}>
-            <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Min. Temp.</p>
-            <p className="text-lg sm:text-xl font-semibold">{Math.round(weather.main.temp_min)}°C</p>
           </div>
         </div>
       </div>
