@@ -65,6 +65,94 @@ export default function BlackStoriesApp() {
 
   return (
     <div className="app-container">
+      {/* Animated werewolf silhouettes */}
+      <div className="werewolf-silhouette werewolf-1"></div>
+      <div className="werewolf-silhouette werewolf-2"></div>
+      <div className="werewolf-silhouette werewolf-3"></div>
+      
+      {/* Animated shadow figures */}
+      <div className="shadow-figure shadow-1"></div>
+      <div className="shadow-figure shadow-2"></div>
+      <div className="shadow-figure shadow-3"></div>
+      <div className="shadow-figure shadow-4"></div>
+      
+      {/* Blood drops */}
+      <div className="blood-drop blood-drop-1"></div>
+      <div className="blood-drop blood-drop-2"></div>
+      <div className="blood-drop blood-drop-3"></div>
+      <div className="blood-drop blood-drop-4"></div>
+      <div className="blood-drop blood-drop-5"></div>
+      <div className="blood-drop blood-drop-6"></div>
+      <div className="blood-drop blood-drop-7"></div>
+      <div className="blood-drop blood-drop-8"></div>
+      <div className="blood-drop blood-drop-9"></div>
+      <div className="blood-drop blood-drop-10"></div>
+      
+      {/* Blood splatter */}
+      <div className="blood-splatter blood-splatter-1"></div>
+      <div className="blood-splatter blood-splatter-2"></div>
+      <div className="blood-splatter blood-splatter-3"></div>
+      <div className="blood-splatter blood-splatter-4"></div>
+      
+      {/* Blood trails */}
+      <div className="blood-trail blood-trail-1"></div>
+      <div className="blood-trail blood-trail-2"></div>
+      <div className="blood-trail blood-trail-3"></div>
+      
+      {/* Blood puddles */}
+      <div className="blood-puddle blood-puddle-1"></div>
+      <div className="blood-puddle blood-puddle-2"></div>
+      <div className="blood-puddle blood-puddle-3"></div>
+      
+      {/* Blood streaks */}
+      <div className="blood-streak blood-streak-1"></div>
+      <div className="blood-streak blood-streak-2"></div>
+      <div className="blood-streak blood-streak-3"></div>
+      
+      {/* Blood mist */}
+      <div className="blood-mist blood-mist-1"></div>
+      <div className="blood-mist blood-mist-2"></div>
+      
+      {/* More blood drops */}
+      <div className="blood-drop blood-drop-11"></div>
+      <div className="blood-drop blood-drop-12"></div>
+      <div className="blood-drop blood-drop-13"></div>
+      <div className="blood-drop blood-drop-14"></div>
+      <div className="blood-drop blood-drop-15"></div>
+      
+      {/* Additional blood splatters */}
+      <div className="blood-splatter blood-splatter-5"></div>
+      <div className="blood-splatter blood-splatter-6"></div>
+      
+      {/* Blood drips on walls */}
+      <div className="blood-drip blood-drip-1"></div>
+      <div className="blood-drip blood-drip-2"></div>
+      <div className="blood-drip blood-drip-3"></div>
+      
+      {/* Blood pools */}
+      <div className="blood-pool blood-pool-1"></div>
+      <div className="blood-pool blood-pool-2"></div>
+      
+      {/* Lightning flash */}
+      <div className="lightning-flash"></div>
+      
+      {/* Lightning bolts */}
+      <div className="lightning-bolt lightning-bolt-1"></div>
+      <div className="lightning-bolt lightning-bolt-2"></div>
+      <div className="lightning-bolt lightning-bolt-3"></div>
+      
+      {/* Lightning branches */}
+      <div className="lightning-branch lightning-branch-1"></div>
+      <div className="lightning-branch lightning-branch-2"></div>
+      <div className="lightning-branch lightning-branch-3"></div>
+      <div className="lightning-branch lightning-branch-4"></div>
+      
+      {/* Dark fog */}
+      <div className="dark-fog dark-fog-1"></div>
+      <div className="dark-fog dark-fog-2"></div>
+      <div className="dark-fog dark-fog-3"></div>
+      <div className="dark-fog dark-fog-4"></div>
+      
       <div className="content-wrapper">
         {/* Header */}
         <header className="header">
