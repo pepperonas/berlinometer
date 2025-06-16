@@ -1,25 +1,49 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, RotateCcw, ChevronRight, ChevronLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Eye, EyeOff, RotateCcw, ChevronRight, ChevronLeft, Shuffle } from 'lucide-react';
 import blackStories from '../data/stories';
 import './BlackStoriesApp.css';
 
+// Fisher-Yates shuffle algorithm
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 export default function BlackStoriesApp() {
+  const [shuffledStories, setShuffledStories] = useState([]);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
   const [showHints, setShowHints] = useState(false);
   const [revealedHints, setRevealedHints] = useState([]);
 
-  const currentStory = blackStories[currentStoryIndex];
+  // Initialize shuffled stories on component mount
+  useEffect(() => {
+    setShuffledStories(shuffleArray(blackStories));
+  }, []);
+
+  const currentStory = shuffledStories[currentStoryIndex] || blackStories[0];
 
   const nextStory = () => {
-    setCurrentStoryIndex((prev) => (prev + 1) % blackStories.length);
+    setCurrentStoryIndex((prev) => (prev + 1) % shuffledStories.length);
     setShowSolution(false);
     setShowHints(false);
     setRevealedHints([]);
   };
 
   const prevStory = () => {
-    setCurrentStoryIndex((prev) => (prev - 1 + blackStories.length) % blackStories.length);
+    setCurrentStoryIndex((prev) => (prev - 1 + shuffledStories.length) % shuffledStories.length);
+    setShowSolution(false);
+    setShowHints(false);
+    setRevealedHints([]);
+  };
+
+  const reshuffleStories = () => {
+    setShuffledStories(shuffleArray(blackStories));
+    setCurrentStoryIndex(0);
     setShowSolution(false);
     setShowHints(false);
     setRevealedHints([]);
@@ -80,6 +104,15 @@ export default function BlackStoriesApp() {
               <RotateCcw size={20} />
               Zurücksetzen
             </button>
+
+            <button
+              onClick={reshuffleStories}
+              className="btn btn-secondary"
+              title="Alle Geschichten neu mischen"
+            >
+              <Shuffle size={20} />
+              Neu mischen
+            </button>
           </div>
 
           {/* Hints Section */}
@@ -124,7 +157,7 @@ export default function BlackStoriesApp() {
           </button>
           
           <span className="story-counter">
-            Story {currentStoryIndex + 1} von {blackStories.length}
+            Story {currentStoryIndex + 1} von {shuffledStories.length}
           </span>
           
           <button
