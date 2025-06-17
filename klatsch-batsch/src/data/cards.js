@@ -344,8 +344,8 @@ export const cards = [
     },
     {
         id: 50,
-        title: "Würfel-Duell",
-        description: "Würfle mit einem Gegner deiner Wahl. Niedrigere Zahl trinkt die Differenz in Schlücken.",
+        title: "Hot Seat",
+        description: "Setze dich in die Mitte. Jeder stellt dir eine Frage. Antworte ehrlich oder trinke 2 pro Frage.",
         color: "#0891B2",
         persistent: false
     },
@@ -379,8 +379,8 @@ export const cards = [
     },
     {
         id: 55,
-        title: "Team Battle",
-        description: "Teilt euch in 2 Teams. Das Team mit weniger Mitgliedern trinkt je 3 Schlücke.",
+        title: "Münz-Meister",
+        description: "Wirf eine Münze auf den Tisch. Jeder rät Kopf oder Zahl. Alle die falsch liegen trinken 2.",
         color: "#2563EB",
         persistent: false
     },

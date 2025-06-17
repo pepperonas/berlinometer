@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/klatsch-batsch/static/css/main.52ba4016.css",
-    "main.js": "/klatsch-batsch/static/js/main.479eb911.js",
+    "main.css": "/klatsch-batsch/static/css/main.9e15dc2f.css",
+    "main.js": "/klatsch-batsch/static/js/main.bafb06e0.js",
     "index.html": "/klatsch-batsch/index.html",
-    "main.52ba4016.css.map": "/klatsch-batsch/static/css/main.52ba4016.css.map",
-    "main.479eb911.js.map": "/klatsch-batsch/static/js/main.479eb911.js.map"
+    "main.9e15dc2f.css.map": "/klatsch-batsch/static/css/main.9e15dc2f.css.map",
+    "main.bafb06e0.js.map": "/klatsch-batsch/static/js/main.bafb06e0.js.map"
   },
   "entrypoints": [
-    "static/css/main.52ba4016.css",
-    "static/js/main.479eb911.js"
+    "static/css/main.9e15dc2f.css",
+    "static/js/main.bafb06e0.js"
   ]
 }
