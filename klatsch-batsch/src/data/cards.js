@@ -1,0 +1,22 @@
+export const cards = [
+    { id: 1, title: "Wasserfall", description: "Alle fangen gleichzeitig an zu trinken. Man darf erst absetzen, wenn die Person rechts neben einem aufhört oder das Glas leer ist. Der Kartenzieher darf absetzen wann er möchte.", color: "#3B82F6", persistent: false },
+    { id: 2, title: "Schlücke verteilen", description: "Du darfst 3 Schlücke an andere Spieler verteilen.", color: "#10B981", persistent: false },
+    { id: 3, title: "Selbst trinken", description: "Du musst 2 Schlücke trinken.", color: "#EF4444", persistent: false },
+    { id: 4, title: "Alle Frauen trinken", description: "Alle Frauen müssen 2 Schlücke trinken.", color: "#EC4899", persistent: false },
+    { id: 5, title: "Alle Männer trinken", description: "Alle Männer müssen 2 Schlücke trinken.", color: "#6366F1", persistent: false },
+    { id: 6, title: "Besitzer-Power", description: "Der Besitzer des Spiels darf 5 Schlücke verteilen.", color: "#F59E0B", persistent: false },
+    { id: 7, title: "Altersbonus", description: "Die älteste Person darf 3 Schlücke verteilen.", color: "#8B5CF6", persistent: false },
+    { id: 8, title: "Freeze!", description: "Du darfst jederzeit einfrieren. Alle müssen es nachmachen. Die letzte Person trinkt 3 Schlücke.", color: "#06B6D4", persistent: true },
+    { id: 9, title: "Finger-Tipp", description: "Du darfst jederzeit einen Finger auf den Tisch legen. Der Letzte trinkt 3 Schlücke.", color: "#84CC16", persistent: true },
+    { id: 10, title: "Führerschein-Check", description: "Alle zeigen schnell ihren Führerschein. Wer keinen hat trinkt. Der Schnellste verteilt 3 Schlücke.", color: "#F97316", persistent: false },
+    { id: 11, title: "Aufräum-Dienst", description: "Du musst eine Runde lang die Spielumgebung aufräumen (ohne zu trinken).", color: "#64748B", persistent: false },
+    { id: 12, title: "Nachricht oder Ex", description: "Schicke eine vorgeschlagene Nachricht an deine letzte Kontaktperson oder exe dein Getränk.", color: "#E11D48", persistent: false },
+    { id: 13, title: "Foto oder Ex", description: "Zeige dein aktuellstes Galerie-Bild oder exe dein Getränk.", color: "#7C3AED", persistent: false },
+    { id: 14, title: "Trinkbuddy", description: "Wähle einen Trinkbuddy. Er trinkt immer mit dir mit, bis eine neue Buddy-Karte gezogen wird.", color: "#2563EB", persistent: true },
+    { id: 15, title: "Questionmaster", description: "Wer deine Fragen beantwortet, muss trinken. Gilt bis zum nächsten Questionmaster.", color: "#DC2626", persistent: true },
+    { id: 16, title: "Medusa", description: "Niemand darf dir in die Augen schauen. Wer es tut, trinkt einen Schluck.", color: "#059669", persistent: true },
+    { id: 17, title: "Neue Regel", description: "Erfinde eine Regel (z.B. nur mit links trinken). Bei Verstoß: Strafschluck!", color: "#7C2D12", persistent: true },
+    { id: 18, title: "King's Cup", description: "Fülle das Glas in der Mitte mit deinem Getränk.", color: "#991B1B", persistent: false },
+    { id: 19, title: "Reimzeit", description: "Sage ein Wort. Reihum muss gereimt werden. Wer in 5 Sekunden nichts hat, trinkt.", color: "#0891B2", persistent: false },
+    { id: 20, title: "Anstarr-Duell", description: "Wähle einen Gegner. Starrt euch an. Wer zuerst lacht, trinkt 3 Schlücke.", color: "#65A30D", persistent: false }
+];

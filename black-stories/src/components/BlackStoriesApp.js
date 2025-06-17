@@ -133,19 +133,45 @@ export default function BlackStoriesApp() {
       <div className="blood-pool blood-pool-1"></div>
       <div className="blood-pool blood-pool-2"></div>
       
-      {/* Lightning flash */}
-      <div className="lightning-flash"></div>
+      {/* Lightning flash backgrounds */}
+      <div className="lightning-flash lightning-flash-1"></div>
+      <div className="lightning-flash lightning-flash-2"></div>
+      <div className="lightning-flash lightning-flash-3"></div>
       
-      {/* Lightning bolts */}
-      <div className="lightning-bolt lightning-bolt-1"></div>
-      <div className="lightning-bolt lightning-bolt-2"></div>
-      <div className="lightning-bolt lightning-bolt-3"></div>
-      
-      {/* Lightning branches */}
-      <div className="lightning-branch lightning-branch-1"></div>
-      <div className="lightning-branch lightning-branch-2"></div>
-      <div className="lightning-branch lightning-branch-3"></div>
-      <div className="lightning-branch lightning-branch-4"></div>
+      {/* Realistic SVG Lightning bolts */}
+      <svg className="lightning-svg lightning-svg-1" viewBox="0 0 200 400">
+        <path className="lightning-path main-bolt" d="M100,10 L85,45 L105,80 L75,125 L95,160 L70,200 L90,240 L65,285 L85,320 L60,365 L80,390"/>
+        <path className="lightning-path branch" d="M85,45 L65,55 L50,75"/>
+        <path className="lightning-path branch" d="M105,80 L125,85 L140,105 L155,125"/>
+        <path className="lightning-path branch" d="M75,125 L55,135 L40,155"/>
+        <path className="lightning-path branch" d="M95,160 L115,165 L130,185"/>
+        <path className="lightning-path sub-branch" d="M140,105 L150,95 L165,100"/>
+        <path className="lightning-path sub-branch" d="M55,135 L45,125 L35,130"/>
+        <path className="lightning-path branch" d="M90,240 L110,250 L125,270"/>
+        <path className="lightning-path sub-branch" d="M125,270 L135,275 L145,290"/>
+      </svg>
+
+      <svg className="lightning-svg lightning-svg-2" viewBox="0 0 180 450">
+        <path className="lightning-path main-bolt" d="M90,15 L105,50 L80,90 L100,130 L75,175 L95,220 L70,265 L85,310 L60,355 L75,400 L55,435"/>
+        <path className="lightning-path branch" d="M105,50 L125,60 L145,80 L160,105"/>
+        <path className="lightning-path branch" d="M80,90 L60,100 L45,120 L30,145"/>
+        <path className="lightning-path branch" d="M100,130 L120,140 L135,160"/>
+        <path className="lightning-path branch" d="M75,175 L55,185 L40,205"/>
+        <path className="lightning-path sub-branch" d="M160,105 L170,95 L175,110"/>
+        <path className="lightning-path sub-branch" d="M30,145 L20,155 L15,170"/>
+        <path className="lightning-path branch" d="M85,310 L105,320 L120,340"/>
+        <path className="lightning-path sub-branch" d="M120,340 L130,345 L135,360"/>
+      </svg>
+
+      <svg className="lightning-svg lightning-svg-3" viewBox="0 0 150 350">
+        <path className="lightning-path main-bolt" d="M75,20 L65,55 L85,95 L70,135 L90,175 L75,215 L95,255 L80,295 L100,330"/>
+        <path className="lightning-path branch" d="M65,55 L45,65 L30,85"/>
+        <path className="lightning-path branch" d="M85,95 L105,105 L120,125"/>
+        <path className="lightning-path branch" d="M70,135 L50,145 L35,165"/>
+        <path className="lightning-path sub-branch" d="M30,85 L20,90 L15,105"/>
+        <path className="lightning-path sub-branch" d="M120,125 L130,130 L135,145"/>
+        <path className="lightning-path branch" d="M95,255 L115,265 L130,285"/>
+      </svg>
       
       {/* Dark fog */}
       <div className="dark-fog dark-fog-1"></div>

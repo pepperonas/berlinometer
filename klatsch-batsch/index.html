@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Klatsch-Batsch - Das ultimative Partyspiel für jeden Anlass">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Klatsch-Batsch - Das Partyspiel">
+    <meta property="og:description" content="Klatsch-Batsch - Das ultimative Partyspiel für jeden Anlass">
+    <meta property="og:image" content="./public/klatsch-batsch.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Klatsch-Batsch - Das Partyspiel">
+    <meta property="twitter:description" content="Klatsch-Batsch - Das ultimative Partyspiel für jeden Anlass">
+    <meta property="twitter:image" content="./public/klatsch-batsch.jpg">
+    
+    <title>Klatsch-Batsch - Trinkspiel</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/lucide@latest/dist/lucide.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Clean Minimal Design System */
+        :root {
+            --primary-black: #1a1a1a;
+            --secondary-black: #2d2d2d;
+            --soft-black: #404040;
+            --pure-white: #ffffff;
+            --off-white: #f8f9fa;
+            --light-gray: #e9ecef;
+            --medium-gray: #6c757d;
+            --dark-gray: #495057;
+            --accent-red: #e74c3c;
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8f9fa;
+            --text-primary: #1a1a1a;
+            --text-secondary: #495057;
+            --text-muted: #6c757d;
+            --text-white: #ffffff;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-weight: 400;
+            min-height: 100vh;
+        }
+        
+        .animate-fadeIn {
+            animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-card-hover);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--medium-gray);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-gray);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        
+        // Lucide Icons als SVG Components
+        const Users = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        );
+        
+        const Dices = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="12" height="12" x="2" y="10" rx="2" ry="2"/><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"/><path d="M6 18h.01"/><path d="M10 14h.01"/><path d="M15 6h.01"/><path d="M18 9h.01"/>
+            </svg>
+        );
+        
+        const ChevronRight = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        );
+        
+        const RotateCcw = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+            </svg>
+        );
+        
+        const Plus = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+        );
+        
+        const X = () => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        );
+
+        const App = () => {
+            const [gameState, setGameState] = useState('setup');
+            const [players, setPlayers] = useState([]);
+            const [newPlayerName, setNewPlayerName] = useState('');
+            const [currentCard, setCurrentCard] = useState(null);
+            const [isRolling, setIsRolling] = useState(false);
+            const [diceValue, setDiceValue] = useState(1);
+            const [usedCards, setUsedCards] = useState([]);
+            const [kingsCupCount, setKingsCupCount] = useState(0);
+
+            const cards = [
+                { id: 1, title: "Wasserfall", description: "Alle fangen gleichzeitig an zu trinken. Man darf erst absetzen, wenn die Person rechts neben einem aufhört oder das Glas leer ist. Der Kartenzieher darf absetzen wann er möchte.", color: "#3B82F6" },
+                { id: 2, title: "Schlücke verteilen", description: "Du darfst 3 Schlücke an andere Spieler verteilen.", color: "#10B981" },
+                { id: 3, title: "Selbst trinken", description: "Du musst 2 Schlücke trinken.", color: "#EF4444" },
+                { id: 4, title: "Alle Frauen trinken", description: "Alle Frauen müssen 2 Schlücke trinken.", color: "#EC4899" },
+                { id: 5, title: "Alle Männer trinken", description: "Alle Männer müssen 2 Schlücke trinken.", color: "#6366F1" },
+                { id: 6, title: "Besitzer-Power", description: "Der Besitzer des Spiels darf 5 Schlücke verteilen.", color: "#F59E0B" },
+                { id: 7, title: "Altersbonus", description: "Die älteste Person darf 3 Schlücke verteilen.", color: "#8B5CF6" },
+                { id: 8, title: "Freeze!", description: "Du darfst jederzeit einfrieren. Alle müssen es nachmachen. Die letzte Person trinkt 3 Schlücke.", color: "#06B6D4" },
+                { id: 9, title: "Finger-Tipp", description: "Du darfst jederzeit einen Finger auf den Tisch legen. Der Letzte trinkt 3 Schlücke.", color: "#84CC16" },
+                { id: 10, title: "Führerschein-Check", description: "Alle zeigen schnell ihren Führerschein. Wer keinen hat trinkt. Der Schnellste verteilt 3 Schlücke.", color: "#F97316" },
+                { id: 11, title: "Aufräum-Dienst", description: "Du musst eine Runde lang die Spielumgebung aufräumen (ohne zu trinken).", color: "#64748B" },
+                { id: 12, title: "Nachricht oder Ex", description: "Schicke eine vorgeschlagene Nachricht an deine letzte Kontaktperson oder exe dein Getränk.", color: "#E11D48" },
+                { id: 13, title: "Foto oder Ex", description: "Zeige dein aktuellstes Galerie-Bild oder exe dein Getränk.", color: "#7C3AED" },
+                { id: 14, title: "Trinkbuddy", description: "Wähle einen Trinkbuddy. Er trinkt immer mit dir mit, bis eine neue Buddy-Karte gezogen wird.", color: "#2563EB" },
+                { id: 15, title: "Questionmaster", description: "Wer deine Fragen beantwortet, muss trinken. Gilt bis zum nächsten Questionmaster.", color: "#DC2626" },
+                { id: 16, title: "Medusa", description: "Niemand darf dir in die Augen schauen. Wer es tut, trinkt einen Schluck.", color: "#059669" },
+                { id: 17, title: "Neue Regel", description: "Erfinde eine Regel (z.B. nur mit links trinken). Bei Verstoß: Strafschluck!", color: "#7C2D12" },
+                { id: 18, title: "King's Cup", description: kingsCupCount < 3 ? "Fülle das Glas in der Mitte mit deinem Getränk." : "Du musst das King's Cup austrinken!", color: "#991B1B" },
+                { id: 19, title: "Reimzeit", description: "Sage ein Wort. Reihum muss gereimt werden. Wer in 5 Sekunden nichts hat, trinkt.", color: "#0891B2" },
+                { id: 20, title: "Anstarr-Duell", description: "Wähle einen Gegner. Starrt euch an. Wer zuerst lacht, trinkt 3 Schlücke.", color: "#65A30D" }
+            ];
+
+            const rollDice = () => {
+                if (isRolling) return;
+                
+                setIsRolling(true);
+                setCurrentCard(null);
+                
+                let rollCount = 0;
+                const rollInterval = setInterval(() => {
+                    setDiceValue(Math.floor(Math.random() * 6) + 1);
+                    rollCount++;
+                    
+                    if (rollCount > 15) {
+                        clearInterval(rollInterval);
+                        
+                        const availableCards = cards.filter(card => !usedCards.includes(card.id));
+                        if (availableCards.length === 0) {
+                            setUsedCards([]);
+                            const randomCard = cards[Math.floor(Math.random() * cards.length)];
+                            setCurrentCard(randomCard);
+                            if (randomCard.id === 18) {
+                                setKingsCupCount(prev => prev + 1);
+                            }
+                        } else {
+                            const randomCard = availableCards[Math.floor(Math.random() * availableCards.length)];
+                            setCurrentCard(randomCard);
+                            setUsedCards([...usedCards, randomCard.id]);
+                            if (randomCard.id === 18) {
+                                setKingsCupCount(prev => prev + 1);
+                            }
+                        }
+                        
+                        setIsRolling(false);
+                    }
+                }, 100);
+            };
+
+            const addPlayer = () => {
+                if (newPlayerName.trim()) {
+                    setPlayers([...players, { id: Date.now(), name: newPlayerName.trim() }]);
+                    setNewPlayerName('');
+                }
+            };
+
+            const removePlayer = (id) => {
+                setPlayers(players.filter(p => p.id !== id));
+            };
+
+            const startGame = () => {
+                if (players.length >= 2) {
+                    setGameState('playing');
+                }
+            };
+
+            const resetGame = () => {
+                setGameState('setup');
+                setCurrentCard(null);
+                setUsedCards([]);
+                setKingsCupCount(0);
+            };
+
+            if (gameState === 'setup') {
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundColor: '#1a1b23', minHeight: '100vh' }}>
+                        <div className="w-full max-w-md">
+                            <div className="rounded-lg shadow-2xl p-8" style={{ backgroundColor: '#2C2E3B', borderRadius: '8px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+                                <h1 className="text-3xl font-bold text-white mb-8 text-center flex items-center justify-center gap-2" style={{ fontSize: '1.875rem', fontWeight: 'bold', color: 'white', marginBottom: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                                    <Dices />
+                                    Klatsch-Batsch
+                                </h1>
+                                
+                                <div className="mb-6" style={{ marginBottom: '2rem' }}>
+                                    <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2" style={{ fontSize: '1.125rem', fontWeight: '600', color: 'white', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <Users />
+                                        Spieler hinzufügen
+                                    </h2>
+                                    
+                                    <div className="flex gap-2 mb-4" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                                        <input
+                                            type="text"
+                                            value={newPlayerName}
+                                            onChange={(e) => setNewPlayerName(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
+                                            placeholder="Spielername"
+                                            style={{ 
+                                                flex: '1', 
+                                                padding: '0.5rem 1rem', 
+                                                borderRadius: '4px', 
+                                                backgroundColor: '#1a1b23', 
+                                                color: 'white',
+                                                border: 'none',
+                                                outline: 'none'
+                                            }}
+                                        />
+                                        <button
+                                            onClick={addPlayer}
+                                            style={{ 
+                                                padding: '0.5rem 1rem', 
+                                                backgroundColor: '#2563EB', 
+                                                color: 'white', 
+                                                borderRadius: '4px',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <Plus />
+                                        </button>
+                                    </div>
+                                    
+                                    <div style={{ maxHeight: '15rem', overflowY: 'auto', marginBottom: '1rem' }}>
+                                        {players.map((player) => (
+                                            <div
+                                                key={player.id}
+                                                style={{ 
+                                                    display: 'flex', 
+                                                    alignItems: 'center', 
+                                                    justifyContent: 'space-between', 
+                                                    padding: '0.75rem 1rem', 
+                                                    borderRadius: '6px',
+                                                    backgroundColor: '#1a1b23',
+                                                    marginBottom: '0.75rem'
+                                                }}
+                                            >
+                                                <span style={{ color: 'white' }}>{player.name}</span>
+                                                <button
+                                                    onClick={() => removePlayer(player.id)}
+                                                    style={{ 
+                                                        color: '#EF4444', 
+                                                        background: 'none', 
+                                                        border: 'none', 
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center'
+                                                    }}
+                                                >
+                                                    <X />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    {players.length < 2 && (
+                                        <p style={{ color: '#9CA3AF', fontSize: '0.875rem', marginTop: '1rem' }}>
+                                            Mindestens 2 Spieler benötigt
+                                        </p>
+                                    )}
+                                </div>
+                                
+                                <button
+                                    onClick={startGame}
+                                    disabled={players.length < 2}
+                                    style={{ 
+                                        width: '100%', 
+                                        padding: '0.75rem', 
+                                        borderRadius: '4px', 
+                                        fontWeight: '600',
+                                        border: 'none',
+                                        cursor: players.length >= 2 ? 'pointer' : 'not-allowed',
+                                        backgroundColor: players.length >= 2 ? '#10B981' : '#4B5563',
+                                        color: players.length >= 2 ? 'white' : '#9CA3AF',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '0.5rem'
+                                    }}
+                                >
+                                    Spiel starten
+                                    <ChevronRight />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-4" style={{ backgroundColor: '#1a1b23', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+                    <div className="w-full max-w-2xl" style={{ width: '100%', maxWidth: '42rem' }}>
+                        <div className="rounded-lg shadow-2xl p-8" style={{ backgroundColor: '#2C2E3B', borderRadius: '8px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', padding: '2rem' }}>
+                            <div className="flex items-center justify-between mb-8" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+                                <h1 className="text-3xl font-bold text-white flex items-center gap-2" style={{ fontSize: '1.875rem', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Dices />
+                                    Klatsch-Batsch
+                                </h1>
+                                <button
+                                    onClick={resetGame}
+                                    style={{ 
+                                        color: '#9CA3AF', 
+                                        background: 'none', 
+                                        border: 'none', 
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                    title="Spiel beenden"
+                                >
+                                    <RotateCcw />
+                                </button>
+                            </div>
+                            
+                            <div className="text-center mb-8" style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                                <div style={{ 
+                                    display: 'inline-flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    width: '6rem', 
+                                    height: '6rem', 
+                                    borderRadius: '8px', 
+                                    color: 'white', 
+                                    fontSize: '2.25rem', 
+                                    fontWeight: 'bold', 
+                                    marginBottom: '1rem',
+                                    backgroundColor: isRolling ? '#4B5563' : '#3B82F6',
+                                    transform: isRolling ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    transition: 'transform 0.3s'
+                                }}>
+                                    {diceValue}
+                                </div>
+                                
+                                <div>
+                                    <button
+                                        onClick={rollDice}
+                                        disabled={isRolling}
+                                        style={{ 
+                                            padding: '0.875rem 2rem', 
+                                            borderRadius: '9999px', 
+                                            fontWeight: '700',
+                                            border: isRolling ? 'none' : '2px solid var(--beer-foam)',
+                                            cursor: isRolling ? 'not-allowed' : 'pointer',
+                                            background: isRolling ? 'linear-gradient(135deg, #6b7280, #4b5563)' : 'linear-gradient(135deg, var(--beer-gold), var(--beer-amber))',
+                                            color: isRolling ? '#9CA3AF' : 'var(--text-dark)',
+                                            transform: isRolling ? 'scale(1)' : 'scale(1)',
+                                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            boxShadow: isRolling ? 'none' : '0 10px 30px rgba(251, 191, 36, 0.4), inset 0 2px 4px rgba(254, 243, 199, 0.3), 0 0 20px rgba(251, 191, 36, 0.2)',
+                                            textShadow: isRolling ? 'none' : '0 1px 2px rgba(0, 0, 0, 0.1)',
+                                            opacity: isRolling ? '0.7' : '1'
+                                        }}
+                                        onMouseEnter={(e) => !isRolling && (e.target.style.transform = 'scale(1.05)')}
+                                        onMouseLeave={(e) => !isRolling && (e.target.style.transform = 'scale(1)')}
+                                    >
+                                        {isRolling ? 'Würfelt...' : 'Würfeln'}
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {currentCard && (
+                                <div
+                                    className="animate-fadeIn"
+                                    style={{ 
+                                        background: 
+                                            `linear-gradient(135deg, ${currentCard.color}15 0%, ${currentCard.color}08 100%), var(--bg-tertiary)`,
+                                        border: `2px solid ${currentCard.color}40`,
+                                        borderRadius: '16px', 
+                                        padding: '1.5rem', 
+                                        color: 'var(--text-primary)',
+                                        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(251, 191, 36, 0.1)',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}
+                                >
+                                    <h2 style={{ 
+                                        fontSize: 'clamp(1.5rem, 3vw, 1.75rem)', 
+                                        fontWeight: '700', 
+                                        marginBottom: '0.75rem',
+                                        color: 'var(--text-primary)',
+                                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+                                    }}>{currentCard.title}</h2>
+                                    <p style={{ 
+                                        fontSize: 'clamp(1rem, 2vw, 1.125rem)', 
+                                        lineHeight: '1.7',
+                                        color: 'var(--text-secondary)',
+                                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+                                    }}>{currentCard.description}</p>
+                                </div>
+                            )}
+                            
+                            <div className="mt-6 flex flex-wrap gap-2" style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                {players.map((player) => (
+                                    <span
+                                        key={player.id}
+                                        style={{ 
+                                            padding: '0.5rem 1rem', 
+                                            borderRadius: '9999px', 
+                                            fontSize: '0.875rem', 
+                                            color: 'var(--text-primary)',
+                                            background: 'rgba(251, 191, 36, 0.12)',
+                                            border: '1px solid rgba(251, 191, 36, 0.3)',
+                                            fontWeight: '600',
+                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                                            textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+                                        }}
+                                    >
+                                        {player.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

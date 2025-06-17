@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinkspiel Kartendeck</title>
+    <style>
+        /* Variablen */
+        :root {
+            --card-width: 12rem;
+            --card-height: calc(var(--card-width) * 1.4);
+            --primary-color: #2C2E3B;
+            --accent-color: #3C3E4B;
+            --text-color: #E0E0E0;
+            --glow-color: rgba(255, 255, 200, 0.8);
+            --table-surface: #1a1a1a;
+        }
+
+        /* Reset und Body */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--table-surface);
+            background-image: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(255,255,255,.03) 10px,
+                    rgba(255,255,255,.03) 20px
+                );
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            height: 50px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            text-align: center;
+            font: 16px/50px 'Helvetica', 'Arial', sans-serif;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .header a {
+            color: #999;
+            text-decoration: none;
+        }
+
+        .header a:hover {
+            color: var(--text-color);
+        }
+
+        /* Gemeinsame Karten-Container Styles */
+        .card-container {
+            position: relative;
+            margin: 5% auto 10%;
+            border: 7px solid #030;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .card-container::before,
+        .card-container::after {
+            content: "";
+            display: table;
+        }
+
+        .card-container::after {
+            clear: both;
+        }
+
+        /* Karten Basis-Styles */
+        .card {
+            position: absolute;
+            top: 0;
+            left: 0;
+            list-style: none;
+            width: var(--card-width);
+            height: var(--card-height);
+            background: var(--primary-color);
+            border-radius: 15px;
+            box-shadow: 
+                inset 0 0 80px rgba(0,0,0,0.5), 
+                0 0 3px rgba(150,100,50,1);
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            perspective: 1000px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Kartenrückseite */
+        .card-back {
+            width: 90%;
+            height: 92%;
+            margin: 5% auto 0;
+            background: var(--accent-color);
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-back::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .card:hover .card-back::before {
+            transform: translateX(100%);
+        }
+
+        .card-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 1;
+            position: relative;
+        }
+
+        /* Hand Layout */
+        #hand {
+            width: 150px;
+            height: 225px;
+        }
+
+        #hand .card {
+            position: absolute;
+            transition: 
+                top 0.5s ease 0.1s, 
+                left 0.5s ease 0.2s, 
+                transform 0.5s ease 0.2s;
+        }
+
+        #hand .card:nth-child(1) { transform: rotate(-9deg); }
+        #hand .card:nth-child(2) { transform: rotate(-3deg); }
+        #hand .card:nth-child(3) { transform: rotate(3deg); }
+        #hand .card:nth-child(4) { transform: rotate(9deg); }
+
+        #hand .card:hover {
+            top: -30px;
+            cursor: pointer;
+            box-shadow: 
+                inset 0 0 80px rgba(150,100,50,0.3), 
+                0 0 30px var(--glow-color);
+        }
+
+        #hand:hover .card:nth-child(1) { transform: rotate(-10deg); left: 0px; }
+        #hand:hover .card:nth-child(2) { transform: rotate(-3.33deg); left: 30px; }
+        #hand:hover .card:nth-child(3) { transform: rotate(3.33deg); left: 60px; }
+        #hand:hover .card:nth-child(4) { transform: rotate(10deg); left: 90px; }
+
+        /* Spread Layout */
+        #spread {
+            width: 650px;
+            height: 300px;
+        }
+
+        #spread .card {
+            position: absolute;
+            transition: top 0.5s ease 0.1s;
+        }
+
+        #spread .card:nth-child(1) { transform: translate(0em, 16px) rotate(-40deg); }
+        #spread .card:nth-child(2) { transform: translate(1.6em, 11px) rotate(-34deg); }
+        #spread .card:nth-child(3) { transform: translate(3.2em, 7px) rotate(-28deg); }
+        #spread .card:nth-child(4) { transform: translate(4.8em, 4px) rotate(-22deg); }
+        #spread .card:nth-child(5) { transform: translate(6.4em, 2px) rotate(-16deg); }
+        #spread .card:nth-child(6) { transform: translate(8em, 1px) rotate(-10deg); }
+        #spread .card:nth-child(7) { transform: translate(9.6em, 1px) rotate(-4deg); }
+        #spread .card:nth-child(8) { transform: translate(11.2em, 2px) rotate(2deg); }
+        #spread .card:nth-child(9) { transform: translate(12.8em, 4px) rotate(8deg); }
+        #spread .card:nth-child(10) { transform: translate(14.4em, 7px) rotate(14deg); }
+        #spread .card:nth-child(11) { transform: translate(16em, 11px) rotate(20deg); }
+        #spread .card:nth-child(12) { transform: translate(17.6em, 16px) rotate(26deg); }
+        #spread .card:nth-child(13) { transform: translate(19.2em, 22px) rotate(32deg); }
+
+        #spread .card:hover {
+            top: -40px;
+            box-shadow: 
+                inset 0 0 80px rgba(150,100,50,0.3), 
+                0 0 30px var(--glow-color);
+        }
+
+        /* Grid Layout */
+        #grid {
+            width: 800px;
+        }
+
+        #grid .card {
+            position: relative;
+            float: left;
+            margin: 5px -46px 5px 0px;
+            transition: 
+                top 0.5s ease 0.1s, 
+                left 0.5s ease 0.1s;
+        }
+
+        #grid .card:hover {
+            left: -40px;
+            top: -10px;
+            box-shadow: 
+                inset 0 0 80px rgba(150,100,50,0.3), 
+                0 0 30px var(--glow-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            :root {
+                --card-width: 8rem;
+            }
+            
+            #spread {
+                width: 450px;
+            }
+            
+            #grid {
+                width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        Trinkspiel Kartendeck - Interaktive Kartensammlung
+    </div>
+
+    <!-- Spread mit 13 Karten -->
+    <ul id="spread" class="card-container">
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+        <li class="card">
+            <div class="card-back">
+                <span class="card-text">Trinkspiel</span>
+            </div>
+        </li>
+    </ul>
+</body>
+</html>
