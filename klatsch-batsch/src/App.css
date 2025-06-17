@@ -250,6 +250,11 @@ button:active::before {
     box-shadow: 
         0 8px 25px rgba(26, 26, 26, 0.2),
         0 4px 8px rgba(26, 26, 26, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .card-display::before {
@@ -390,93 +395,83 @@ button:active::before {
     }
 }
 
-/* Mobile Responsive */
+
+
+/* Mobile Responsive - COMPLETELY REWORKED */
 @media (max-width: 768px) {
     .min-h-screen {
-        padding: var(--space-sm);
+        padding: 0;
         min-height: 100vh;
-        min-height: 100dvh; /* Dynamic viewport height for mobile */
+        min-height: 100dvh;
     }
     
     .game-card {
-        padding: var(--space-md);
-        margin: 0;
-        border-radius: var(--radius-lg);
-        box-shadow: 
-            0 4px 12px rgba(0, 0, 0, 0.08),
-            0 2px 4px rgba(0, 0, 0, 0.04);
+        max-width: 100%;
+        padding: 1.5rem;
+        margin: 1rem;
+        width: calc(100vw - 2rem);
+    }
+    
+    .game-title {
+        font-size: clamp(1.75rem, 5vw, 2.5rem);
+    }
+    
+    .game-title svg {
+        width: clamp(2rem, 5vw, 2.5rem);
+        height: clamp(2rem, 5vw, 2.5rem);
+    }
+    
+    .reset-button {
+        width: clamp(40px, 10vw, 44px);
+        height: clamp(40px, 10vw, 44px);
     }
     
     .game-header {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-lg);
+        padding: 0;
+    }
+    
+    .card-display {
+        margin: 1.5rem 0;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .min-h-screen {
+        padding: 0;
+    }
+    
+    .game-card {
+        max-width: 100%;
+        padding: 1rem;
+        margin: 0.75rem;
+        width: calc(100vw - 1.5rem);
     }
     
     .game-title {
         font-size: clamp(1.5rem, 6vw, 2rem);
     }
     
-    .game-title svg {
-        width: 1.75rem;
-        height: 1.75rem;
+    .game-header {
+        padding: 0;
     }
     
     .card-display {
-        padding: var(--space-md);
-        margin: var(--space-md) 0;
-        border-radius: var(--radius-md);
-    }
-    
-    .card-title {
-        font-size: clamp(1.25rem, 4vw, 1.5rem);
-        margin-bottom: var(--space-sm);
-    }
-    
-    .card-description {
-        font-size: clamp(0.875rem, 3vw, 1rem);
-        line-height: 1.6;
-    }
-    
-    .draw-button {
-        width: 100%;
-        padding: var(--space-md) var(--space-lg);
-        font-size: clamp(1rem, 3vw, 1.125rem);
-        margin-top: var(--space-md);
-    }
-    
-    .players-display {
-        gap: var(--space-xs);
-        margin-top: var(--space-lg);
-    }
-    
-    .player-tag {
-        font-size: clamp(0.75rem, 2.5vw, 0.875rem);
-        padding: var(--space-xs) var(--space-sm);
+        margin: 1rem 0;
+        padding: 1rem;
     }
 }
 
-@media (max-width: 480px) {
-    .min-h-screen {
-        padding: var(--space-xs);
-    }
-    
-    .game-card {
-        padding: var(--space-sm);
-    }
-    
-    .game-header {
-        margin-bottom: var(--space-md);
-    }
-    
-    .game-title {
-        font-size: 1.5rem;
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+    button {
+        min-height: 44px;
+        min-width: 44px;
     }
     
     .reset-button {
-        width: 36px;
-        height: 36px;
+        min-height: 48px;
+        min-width: 48px;
     }
 }
 
@@ -505,56 +500,6 @@ input:focus-visible {
     outline-offset: 2px;
 }
 
-/* Touch-friendly interactions */
-@media (hover: none) and (pointer: coarse) {
-    /* Mobile touch devices */
-    .deck-card:hover:not(.selected):not(.revealing) {
-        transform: none !important;
-        box-shadow: none;
-        border-color: initial;
-    }
-    
-    .deck-card:active:not(.selected):not(.revealing) {
-        transform: var(--base-transform) translateY(-4px) !important;
-        box-shadow: 
-            0 8px 20px rgba(26, 26, 26, 0.2),
-            0 4px 10px rgba(26, 26, 26, 0.15);
-        border-color: var(--soft-black);
-    }
-    
-    .active-card:hover {
-        background: initial;
-        transform: none;
-        box-shadow: initial;
-    }
-    
-    .active-card:active {
-        transform: translateY(-1px);
-        box-shadow: 
-            inset 0 1px 3px rgba(255, 255, 255, 0.9),
-            inset 0 -1px 3px rgba(0, 0, 0, 0.08),
-            0 2px 6px rgba(0, 0, 0, 0.1),
-            0 6px 12px rgba(0, 0, 0, 0.08);
-    }
-    
-    /* Larger touch targets for mobile */
-    button {
-        min-height: 44px;
-        min-width: 44px;
-    }
-    
-    .remove-active-card-button,
-    .remove-button {
-        min-height: 44px;
-        min-width: 44px;
-        padding: var(--space-sm);
-    }
-    
-    .reset-button {
-        min-height: 44px;
-        min-width: 44px;
-    }
-}
 
 /* Loading States */
 @keyframes pulse {

@@ -12,9 +12,13 @@
 
 .deck-spread {
     position: relative;
-    width: clamp(420px, 85vw, 520px);
-    height: clamp(220px, 45vw, 300px);
+    width: clamp(320px, 85vw, 520px);
+    height: clamp(180px, 40vw, 300px);
     margin-bottom: var(--space-lg);
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .deck-card {
@@ -248,79 +252,7 @@
     }
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .card-deck-container {
-        min-height: 280px;
-        margin: var(--space-md) 0;
-    }
-    
-    .deck-spread {
-        width: min(90vw, 380px);
-        height: clamp(160px, 35vw, 200px);
-        margin-bottom: var(--space-md);
-    }
-    
-    .deck-card {
-        width: clamp(60px, 12vw, 80px);
-        height: clamp(84px, 17vw, 112px);
-    }
-    
-    .deck-card-text {
-        font-size: clamp(0.6rem, 2.5vw, 0.8rem);
-        letter-spacing: 0.5px;
-    }
-    
-    /* Mobile positioning - adjust for smaller screens */
-    .deck-card:nth-child(1) { transform: translate(10px, 8px) rotate(-18deg); }
-    .deck-card:nth-child(2) { transform: translate(35px, 4px) rotate(-10deg); }
-    .deck-card:nth-child(3) { transform: translate(60px, 1px) rotate(-3deg); }
-    .deck-card:nth-child(4) { transform: translate(85px, 1px) rotate(3deg); }
-    .deck-card:nth-child(5) { transform: translate(110px, 4px) rotate(10deg); }
-    .deck-card:nth-child(6) { transform: translate(135px, 8px) rotate(18deg); }
-    
-    .deck-card:hover:not(.selected):not(.revealing) {
-        transform: var(--base-transform) translateY(-8px) !important;
-    }
-    
-    .deck-card.selected {
-        transform: var(--base-transform) translateY(-12px) scale(1.03) !important;
-    }
-}
 
-@media (max-width: 480px) {
-    .card-deck-container {
-        min-height: 240px;
-        margin: var(--space-sm) 0;
-    }
-    
-    .deck-spread {
-        width: min(95vw, 320px);
-        height: clamp(140px, 30vw, 180px);
-    }
-    
-    .deck-card {
-        width: clamp(50px, 10vw, 65px);
-        height: clamp(70px, 14vw, 91px);
-    }
-    
-    .deck-card-text {
-        font-size: clamp(0.5rem, 2vw, 0.7rem);
-        line-height: 1.1;
-    }
-    
-    /* Tighter positioning for very small screens */
-    .deck-card:nth-child(1) { transform: translate(5px, 6px) rotate(-15deg); }
-    .deck-card:nth-child(2) { transform: translate(25px, 3px) rotate(-8deg); }
-    .deck-card:nth-child(3) { transform: translate(45px, 1px) rotate(-2deg); }
-    .deck-card:nth-child(4) { transform: translate(65px, 1px) rotate(2deg); }
-    .deck-card:nth-child(5) { transform: translate(85px, 3px) rotate(8deg); }
-    .deck-card:nth-child(6) { transform: translate(105px, 6px) rotate(15deg); }
-    
-    .deck-card:hover:not(.selected):not(.revealing) {
-        transform: var(--base-transform) translateY(-6px) !important;
-    }
-}
 
 /* Card flip animation for reveal */
 .card-reveal {
@@ -552,6 +484,148 @@
     transform: none;
 }
 
+
+/* Mobile Responsive - Completely Reworked */
+@media (max-width: 768px) {
+    .card-deck-container {
+        min-height: 320px;
+        margin: var(--space-md) 0;
+        padding: 0;
+        overflow: visible;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .deck-spread {
+        width: 300px;
+        height: 280px;
+        margin: 0;
+        transform: scale(1.0);
+        position: relative;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .deck-card {
+        width: 110px;
+        height: 154px;
+        border-radius: 10px;
+        position: absolute;
+    }
+    
+    .deck-card-text {
+        font-size: 0.85rem;
+        letter-spacing: 0.7px;
+        line-height: 1.1;
+    }
+    
+    /* Mobile positioning - tighter spread */
+    .deck-card:nth-child(1) {
+        transform: translate(-120px, 12px) rotate(-18deg) !important;
+    }
+    .deck-card:nth-child(2) {
+        transform: translate(-72px, 6px) rotate(-10deg) !important;
+    }
+    .deck-card:nth-child(3) {
+        transform: translate(-24px, 2px) rotate(-3deg) !important;
+    }
+    .deck-card:nth-child(4) {
+        transform: translate(24px, 2px) rotate(3deg) !important;
+    }
+    .deck-card:nth-child(5) {
+        transform: translate(72px, 6px) rotate(10deg) !important;
+    }
+    .deck-card:nth-child(6) {
+        transform: translate(120px, 12px) rotate(18deg) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .deck-spread {
+        transform: scale(0.85);
+        height: 260px;
+    }
+    
+    .deck-card {
+        width: 95px;
+        height: 133px;
+    }
+    
+    .deck-card-text {
+        font-size: 0.75rem;
+    }
+    
+    /* Adjusted positioning for small screens */
+    .deck-card:nth-child(1) {
+        transform: translate(-150px, 10px) rotate(-15deg) !important;
+    }
+    .deck-card:nth-child(2) {
+        transform: translate(-90px, 5px) rotate(-8deg) !important;
+    }
+    .deck-card:nth-child(3) {
+        transform: translate(-30px, 2px) rotate(-2deg) !important;
+    }
+    .deck-card:nth-child(4) {
+        transform: translate(30px, 2px) rotate(2deg) !important;
+    }
+    .deck-card:nth-child(5) {
+        transform: translate(90px, 5px) rotate(8deg) !important;
+    }
+    .deck-card:nth-child(6) {
+        transform: translate(150px, 10px) rotate(15deg) !important;
+    }
+}
+
+/* Desktop-only fixes */
+@media (min-width: 769px) {
+    .card-deck-container {
+        padding: 0 10rem;
+        overflow: visible;
+    }
+    
+    .deck-spread {
+        transform: none;
+        width: 400px;
+        max-width: none;
+    }
+    
+    /* Desktop positioning - completely centered */
+    .deck-card:nth-child(1) {
+        transform: translate(-150px, 12px) rotate(-18deg) !important;
+    }
+    .deck-card:nth-child(2) {
+        transform: translate(-90px, 6px) rotate(-10deg) !important;
+    }
+    .deck-card:nth-child(3) {
+        transform: translate(-30px, 2px) rotate(-3deg) !important;
+    }
+    .deck-card:nth-child(4) {
+        transform: translate(30px, 2px) rotate(3deg) !important;
+    }
+    .deck-card:nth-child(5) {
+        transform: translate(90px, 6px) rotate(10deg) !important;
+    }
+    .deck-card:nth-child(6) {
+        transform: translate(150px, 12px) rotate(18deg) !important;
+    }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+    .deck-card:hover:not(.selected):not(.revealing) {
+        transform: none !important;
+    }
+    
+    .deck-card:active:not(.selected):not(.revealing) {
+        transform: var(--base-transform) translateY(-8px) !important;
+        box-shadow: 
+            0 12px 25px rgba(26, 26, 26, 0.25),
+            0 6px 12px rgba(26, 26, 26, 0.15);
+    }
+}
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {

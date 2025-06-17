@@ -73,13 +73,13 @@ const GameBoard = ({
                                     }`}
                                     onClick={() => handleCardClick(cardIndex)}
                                     style={{
-                                        // Add slight variation to positioning after shuffles (adjusted for 6 cards, shifted right)
-                                        '--base-transform': `translate(${cardIndex * 60 + (deckShuffle * 2) % 10 + 40}px, ${
+                                        // Add slight variation to positioning after shuffles
+                                        '--base-transform': `translate(${cardIndex * 60 + (deckShuffle * 2) % 10}px, ${
                                             Math.abs(cardIndex - 2.5) * 3 + (deckShuffle * 1.5) % 8 - 4
                                         }px) rotate(${
                                             (cardIndex - 2.5) * 8 + (deckShuffle * 3) % 12 - 6
                                         }deg)`,
-                                        transform: `translate(${cardIndex * 60 + (deckShuffle * 2) % 10 + 40}px, ${
+                                        transform: `translate(${cardIndex * 60 + (deckShuffle * 2) % 10}px, ${
                                             Math.abs(cardIndex - 2.5) * 3 + (deckShuffle * 1.5) % 8 - 4
                                         }px) rotate(${
                                             (cardIndex - 2.5) * 8 + (deckShuffle * 3) % 12 - 6

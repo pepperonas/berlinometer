@@ -200,113 +200,68 @@
     font-style: italic;
 }
 
-/* Mobile Responsive */
+/* Mobile Responsive - Based on Desktop Layout */
 @media (max-width: 768px) {
     .player-setup-container {
-        padding: 0;
         max-width: 100%;
+        padding: 0;
     }
     
     .section-title {
-        font-size: clamp(0.875rem, 3vw, 1rem);
-        margin-bottom: var(--space-sm);
-    }
-    
-    .section-title svg {
-        width: 16px;
-        height: 16px;
-    }
-    
-    .input-group {
-        gap: var(--space-sm);
-        margin-bottom: var(--space-md);
+        font-size: clamp(1rem, 2.5vw, 1.125rem);
     }
     
     .player-input {
-        font-size: clamp(0.875rem, 3.5vw, 1rem);
+        font-size: clamp(1rem, 2.5vw, 1.125rem);
         padding: var(--space-sm) var(--space-md);
-        border-radius: var(--radius-sm);
     }
     
     .add-button {
-        padding: var(--space-sm) var(--space-md);
-        font-size: clamp(0.875rem, 3vw, 1rem);
-        border-radius: var(--radius-sm);
-    }
-    
-    .add-button svg {
-        width: 18px;
-        height: 18px;
-    }
-    
-    .player-list {
-        max-height: 200px;
-        margin-bottom: var(--space-md);
-    }
-    
-    .player-item {
-        padding: var(--space-sm) var(--space-md);
-        margin-bottom: var(--space-xs);
-        border-radius: var(--radius-sm);
+        padding: var(--space-sm) var(--space-lg);
+        font-size: clamp(1rem, 2.5vw, 1.125rem);
     }
     
     .player-name {
-        font-size: clamp(0.875rem, 3.5vw, 1rem);
-    }
-    
-    .remove-button {
-        padding: var(--space-xs);
-        border-radius: var(--radius-xs);
-    }
-    
-    .remove-button svg {
-        width: 18px;
-        height: 18px;
+        font-size: clamp(1rem, 2.5vw, 1.125rem);
     }
     
     .start-button {
-        padding: var(--space-md) var(--space-lg);
-        font-size: clamp(1rem, 4vw, 1.125rem);
-        border-radius: var(--radius-sm);
-    }
-    
-    .start-button svg {
-        width: 20px;
-        height: 20px;
-    }
-    
-    .min-players-text {
-        font-size: clamp(0.75rem, 3vw, 0.875rem);
-        margin-top: var(--space-sm);
+        font-size: clamp(1.125rem, 3vw, 1.25rem);
+        padding: var(--space-md) var(--space-xl);
     }
 }
 
 @media (max-width: 480px) {
     .input-group {
         flex-direction: column;
-        gap: var(--space-sm);
+        gap: var(--space-md);
     }
     
     .add-button {
         width: 100%;
         justify-content: center;
-        padding: var(--space-md);
+    }
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+    .player-input {
+        min-height: 44px;
     }
     
-    .player-list {
-        max-height: 180px;
+    .add-button {
+        min-height: 44px;
+        min-width: 44px;
     }
     
-    .player-item {
-        padding: var(--space-sm);
-    }
-    
-    .player-name {
-        font-size: 0.875rem;
+    .remove-button {
+        min-height: 44px;
+        min-width: 44px;
     }
     
     .start-button {
-        padding: var(--space-md);
-        font-size: 1rem;
+        min-height: 48px;
     }
 }
+
+
