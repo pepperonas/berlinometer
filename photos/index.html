@@ -417,7 +417,7 @@
 
         async function loadImages() {
             try {
-                const response = await fetch('/pictures/api/images');
+                const response = await fetch('/api/images');
                 const data = await response.json();
                 
                 if (data.error) {
@@ -487,8 +487,10 @@
                     openModal(index);
                 });
                 
+                // Add to gallery immediately, image will load progressively
+                gallery.appendChild(photoItem);
+                
                 img.onload = () => {
-                    gallery.appendChild(photoItem);
                     resolve();
                 };
                 
