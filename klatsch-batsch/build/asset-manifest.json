@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/klatsch-batsch/static/css/main.52ba4016.css",
+    "main.js": "/klatsch-batsch/static/js/main.479eb911.js",
+    "index.html": "/klatsch-batsch/index.html",
+    "main.52ba4016.css.map": "/klatsch-batsch/static/css/main.52ba4016.css.map",
+    "main.479eb911.js.map": "/klatsch-batsch/static/js/main.479eb911.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.52ba4016.css",
+    "static/js/main.479eb911.js"
+  ]
+}

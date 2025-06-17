@@ -36,7 +36,7 @@ const GameBoard = ({
                     setRevealingCardIndex(null);
                     // Slightly reorganize the deck after each draw
                     setDeckShuffle(prev => prev + 1);
-                }, 1200);
+                }, 1800);
             }, 100);
         }, 300);
     };
@@ -66,18 +66,20 @@ const GameBoard = ({
                             {cardIndices.map((cardIndex) => (
                                 <div 
                                     key={`${cardIndex}-${deckShuffle}`}
-                                    className={`deck-card ${
+                                    className={`deck-card deck-card-${cardIndex} ${
                                         selectedCardIndex === cardIndex ? 'selected' : ''
                                     } ${
                                         revealingCardIndex === cardIndex ? 'revealing' : ''
                                     }`}
                                     onClick={() => handleCardClick(cardIndex)}
                                     style={{
-                                        // Add slight variation to positioning after shuffles (adjusted for 6 cards)
-                                        '--base-x': `${cardIndex * 60 + (deckShuffle * 2) % 10 - 5}px`,
-                                        '--base-y': `${Math.abs(cardIndex - 2.5) * 3 + (deckShuffle * 1.5) % 8 - 4}px`,
-                                        '--base-rotation': `${(cardIndex - 2.5) * 8 + (deckShuffle * 3) % 12 - 6}deg`,
-                                        transform: `translate(${cardIndex * 60 + (deckShuffle * 2) % 10 - 5}px, ${
+                                        // Add slight variation to positioning after shuffles (adjusted for 6 cards, shifted right)
+                                        '--base-transform': `translate(${cardIndex * 60 + (deckShuffle * 2) % 10 + 40}px, ${
+                                            Math.abs(cardIndex - 2.5) * 3 + (deckShuffle * 1.5) % 8 - 4
+                                        }px) rotate(${
+                                            (cardIndex - 2.5) * 8 + (deckShuffle * 3) % 12 - 6
+                                        }deg)`,
+                                        transform: `translate(${cardIndex * 60 + (deckShuffle * 2) % 10 + 40}px, ${
                                             Math.abs(cardIndex - 2.5) * 3 + (deckShuffle * 1.5) % 8 - 4
                                         }px) rotate(${
                                             (cardIndex - 2.5) * 8 + (deckShuffle * 3) % 12 - 6

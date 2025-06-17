@@ -14,13 +14,6 @@
     gap: var(--space-sm);
 }
 
-.active-cards-title::before {
-    content: '';
-    width: 4px;
-    height: 24px;
-    background: var(--primary-black);
-    border-radius: var(--radius-sm);
-}
 
 .active-cards-grid {
     display: grid;
@@ -29,15 +22,23 @@
 }
 
 .active-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--light-gray);
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(245, 245, 245, 0.95) 50%, 
+        rgba(230, 230, 230, 0.9) 100%);
+    border: none;
     border-radius: var(--radius-lg);
     padding: var(--space-lg);
     position: relative;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     animation: slideInUp 0.4s ease-out;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 
+        inset 0 1px 3px rgba(255, 255, 255, 0.8),
+        inset 0 -1px 3px rgba(0, 0, 0, 0.05),
+        0 2px 4px rgba(0, 0, 0, 0.1),
+        0 8px 16px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
 }
 
 @keyframes slideInUp {
@@ -59,9 +60,12 @@
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg, 
-        transparent 40%, 
-        rgba(255, 255, 255, 0.02) 100%);
+        rgba(255, 255, 255, 0.6) 0%, 
+        transparent 30%,
+        transparent 70%,
+        rgba(0, 0, 0, 0.03) 100%);
     pointer-events: none;
+    border-radius: var(--radius-lg);
 }
 
 .active-card::after {
@@ -81,10 +85,16 @@
 }
 
 .active-card:hover {
-    background: var(--bg-card-hover);
-    border-color: var(--medium-gray);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(250, 250, 250, 1) 50%, 
+        rgba(235, 235, 235, 0.95) 100%);
+    transform: translateY(-3px);
+    box-shadow: 
+        inset 0 1px 4px rgba(255, 255, 255, 0.9),
+        inset 0 -1px 4px rgba(0, 0, 0, 0.08),
+        0 4px 8px rgba(0, 0, 0, 0.15),
+        0 12px 24px rgba(0, 0, 0, 0.1);
 }
 
 .active-card:hover::after {
@@ -121,8 +131,10 @@
     width: 32px;
     height: 32px;
     border-radius: var(--radius-md);
-    background: var(--bg-card-hover);
-    border: 1px solid var(--light-gray);
+    background: linear-gradient(145deg, 
+        rgba(255, 255, 255, 0.8) 0%,
+        rgba(240, 240, 240, 0.9) 100%);
+    border: none;
     color: var(--accent-red);
     display: flex;
     align-items: center;
@@ -130,12 +142,22 @@
     cursor: pointer;
     transition: all 0.3s ease;
     flex-shrink: 0;
+    box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.8),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.1),
+        0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .remove-active-card-button:hover {
-    background: rgba(231, 76, 60, 0.1);
-    border-color: var(--accent-red);
+    background: linear-gradient(145deg, 
+        rgba(231, 76, 60, 0.1) 0%,
+        rgba(231, 76, 60, 0.15) 100%);
+    color: var(--accent-red);
     transform: scale(1.05);
+    box-shadow: 
+        inset 0 1px 2px rgba(255, 255, 255, 0.9),
+        inset 0 -1px 2px rgba(231, 76, 60, 0.2),
+        0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 .remove-active-card-button:active {
@@ -147,23 +169,96 @@
     height: 16px;
 }
 
-/* Minimal color accent for active cards */
-.active-card[data-color*="#"] {
-    border-left: 4px solid var(--primary-black);
-}
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+    .active-cards-section {
+        margin-top: var(--space-lg);
+    }
+    
+    .active-cards-title {
+        font-size: clamp(1.125rem, 4vw, 1.25rem);
+        margin-bottom: var(--space-md);
+    }
+    
     .active-cards-grid {
         grid-template-columns: 1fr;
+        gap: var(--space-sm);
     }
     
     .active-card {
         padding: var(--space-md);
+        border-radius: var(--radius-md);
+        box-shadow: 
+            inset 0 1px 2px rgba(255, 255, 255, 0.7),
+            inset 0 -1px 2px rgba(0, 0, 0, 0.04),
+            0 2px 4px rgba(0, 0, 0, 0.08),
+            0 4px 8px rgba(0, 0, 0, 0.04);
+    }
+    
+    .active-card-header {
+        margin-bottom: var(--space-sm);
+    }
+    
+    .active-card-title {
+        font-size: clamp(1rem, 3.5vw, 1.125rem);
+        line-height: 1.2;
+        padding-right: var(--space-xs);
+    }
+    
+    .active-card-description {
+        font-size: clamp(0.8rem, 3vw, 0.875rem);
+        line-height: 1.4;
+    }
+    
+    .remove-active-card-button {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-sm);
+    }
+    
+    .remove-active-card-button svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .active-cards-section {
+        margin-top: var(--space-md);
     }
     
     .active-cards-title {
-        font-size: 1.25rem;
+        font-size: 1.125rem;
+        margin-bottom: var(--space-sm);
+    }
+    
+    .active-card {
+        padding: var(--space-sm);
+    }
+    
+    .active-card-header {
+        margin-bottom: var(--space-xs);
+    }
+    
+    .active-card-title {
+        font-size: 1rem;
+        padding-right: var(--space-xs);
+    }
+    
+    .active-card-description {
+        font-size: 0.8rem;
+        line-height: 1.3;
+    }
+    
+    .remove-active-card-button {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .remove-active-card-button svg {
+        width: 12px;
+        height: 12px;
     }
 }
 

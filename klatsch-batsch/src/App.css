@@ -275,6 +275,7 @@ button:active::before {
     z-index: 1;
     color: var(--text-white);
     font-weight: 700;
+    text-align: center;
 }
 
 .card-description {
@@ -284,6 +285,7 @@ button:active::before {
     z-index: 1;
     line-height: 1.7;
     opacity: 0.9;
+    text-align: center;
 }
 
 /* Active Cards */
@@ -389,33 +391,92 @@ button:active::before {
 }
 
 /* Mobile Responsive */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
+    .min-h-screen {
+        padding: var(--space-sm);
+        min-height: 100vh;
+        min-height: 100dvh; /* Dynamic viewport height for mobile */
+    }
+    
     .game-card {
-        padding: var(--space-lg);
-        margin: var(--space-md);
+        padding: var(--space-md);
+        margin: 0;
+        border-radius: var(--radius-lg);
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.08),
+            0 2px 4px rgba(0, 0, 0, 0.04);
     }
     
     .game-header {
-        flex-direction: column;
-        gap: var(--space-md);
-        text-align: center;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-lg);
     }
     
     .game-title {
-        font-size: 2rem;
+        font-size: clamp(1.5rem, 6vw, 2rem);
+    }
+    
+    .game-title svg {
+        width: 1.75rem;
+        height: 1.75rem;
     }
     
     .card-display {
-        padding: var(--space-lg);
+        padding: var(--space-md);
+        margin: var(--space-md) 0;
+        border-radius: var(--radius-md);
     }
     
-    .active-cards-grid {
-        grid-template-columns: 1fr;
+    .card-title {
+        font-size: clamp(1.25rem, 4vw, 1.5rem);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .card-description {
+        font-size: clamp(0.875rem, 3vw, 1rem);
+        line-height: 1.6;
     }
     
     .draw-button {
         width: 100%;
         padding: var(--space-md) var(--space-lg);
+        font-size: clamp(1rem, 3vw, 1.125rem);
+        margin-top: var(--space-md);
+    }
+    
+    .players-display {
+        gap: var(--space-xs);
+        margin-top: var(--space-lg);
+    }
+    
+    .player-tag {
+        font-size: clamp(0.75rem, 2.5vw, 0.875rem);
+        padding: var(--space-xs) var(--space-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .min-h-screen {
+        padding: var(--space-xs);
+    }
+    
+    .game-card {
+        padding: var(--space-sm);
+    }
+    
+    .game-header {
+        margin-bottom: var(--space-md);
+    }
+    
+    .game-title {
+        font-size: 1.5rem;
+    }
+    
+    .reset-button {
+        width: 36px;
+        height: 36px;
     }
 }
 
@@ -440,8 +501,59 @@ button:active::before {
 /* Focus States */
 button:focus-visible,
 input:focus-visible {
-    outline: 2px solid var(--primary);
+    outline: 2px solid var(--primary-black);
     outline-offset: 2px;
+}
+
+/* Touch-friendly interactions */
+@media (hover: none) and (pointer: coarse) {
+    /* Mobile touch devices */
+    .deck-card:hover:not(.selected):not(.revealing) {
+        transform: none !important;
+        box-shadow: none;
+        border-color: initial;
+    }
+    
+    .deck-card:active:not(.selected):not(.revealing) {
+        transform: var(--base-transform) translateY(-4px) !important;
+        box-shadow: 
+            0 8px 20px rgba(26, 26, 26, 0.2),
+            0 4px 10px rgba(26, 26, 26, 0.15);
+        border-color: var(--soft-black);
+    }
+    
+    .active-card:hover {
+        background: initial;
+        transform: none;
+        box-shadow: initial;
+    }
+    
+    .active-card:active {
+        transform: translateY(-1px);
+        box-shadow: 
+            inset 0 1px 3px rgba(255, 255, 255, 0.9),
+            inset 0 -1px 3px rgba(0, 0, 0, 0.08),
+            0 2px 6px rgba(0, 0, 0, 0.1),
+            0 6px 12px rgba(0, 0, 0, 0.08);
+    }
+    
+    /* Larger touch targets for mobile */
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .remove-active-card-button,
+    .remove-button {
+        min-height: 44px;
+        min-width: 44px;
+        padding: var(--space-sm);
+    }
+    
+    .reset-button {
+        min-height: 44px;
+        min-width: 44px;
+    }
 }
 
 /* Loading States */
