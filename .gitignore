@@ -213,3 +213,4 @@ dist
 
 **/.claude/settings.local.json
 /bartender/.env.production
+!/medical-ai-reports/.claude/
