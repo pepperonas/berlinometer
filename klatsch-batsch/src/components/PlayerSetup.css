@@ -159,12 +159,13 @@
 
 .button-group {
     display: flex;
+    flex-direction: column;
     gap: var(--space-sm);
     width: 100%;
 }
 
 .instructions-button {
-    flex: 1;
+    flex: none;
     background: var(--bg-secondary);
     color: var(--text-primary);
     border: 1px solid var(--light-gray);
@@ -193,7 +194,7 @@
 }
 
 .start-button {
-    flex: 2;
+    flex: none;
     background: var(--primary-black);
     color: var(--text-white);
     padding: var(--space-md) var(--space-xl);
@@ -260,10 +261,6 @@
         font-size: clamp(1rem, 2.5vw, 1.125rem);
     }
     
-    .button-group {
-        flex-direction: column;
-        gap: var(--space-md);
-    }
     
     .instructions-button {
         flex: none;

@@ -288,6 +288,11 @@ export default function BlackStoriesApp() {
           <p>Spielanleitung:</p>
           <p>Stelle Ja/Nein-Fragen, um das Rätsel zu lösen. Die Hinweise helfen dir auf die Sprünge!</p>
         </div>
+
+        {/* Footer */}
+        <footer className="footer">
+          <p>Made with ❤️ by Martin Pfeffer</p>
+        </footer>
       </div>
     </div>
   );
