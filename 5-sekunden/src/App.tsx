@@ -23,15 +23,111 @@ const theme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#1976d2',
+      main: '#2563eb',
+      dark: '#1e40af',
+    },
+    secondary: {
+      main: '#64748b',
+      dark: '#475569',
+    },
+    success: {
+      main: '#10b981',
+      dark: '#059669',
+    },
+    error: {
+      main: '#ef4444',
+      dark: '#dc2626',
+    },
+    warning: {
+      main: '#f59e0b',
+      dark: '#d97706',
     },
     background: {
-      default: '#1a1b26',
-      paper: '#2C2E3B',
+      default: '#0f172a',
+      paper: 'rgba(15, 23, 42, 0.8)',
+    },
+    text: {
+      primary: '#f8fafc',
+      secondary: '#cbd5e1',
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "system-ui", "-apple-system", sans-serif',
+    h1: {
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+    },
+    h2: {
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+    },
+  },
+  shape: {
+    borderRadius: 8,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          borderRadius: 8,
+          padding: '10px 20px',
+          fontSize: '0.9rem',
+          fontWeight: 500,
+          minHeight: 42,
+          boxShadow: 'none',
+          border: '1px solid transparent',
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            boxShadow: 'none',
+            transform: 'none',
+          },
+          '&:active': {
+            transform: 'scale(0.98)',
+          },
+        },
+        sizeLarge: {
+          padding: '12px 24px',
+          fontSize: '1rem',
+          minHeight: 48,
+        },
+        contained: {
+          '&:hover': {
+            opacity: 0.9,
+          },
+        },
+        outlined: {
+          borderColor: 'rgba(148, 163, 184, 0.3)',
+          color: '#f8fafc',
+          '&:hover': {
+            borderColor: 'rgba(148, 163, 184, 0.6)',
+            backgroundColor: 'rgba(148, 163, 184, 0.1)',
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'rgba(15, 23, 42, 0.8)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(148, 163, 184, 0.1)',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        },
+      },
+    },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          paddingLeft: '16px',
+          paddingRight: '16px',
+          '@media (max-width: 600px)': {
+            paddingLeft: '12px',
+            paddingRight: '12px',
+          },
+        },
+      },
+    },
   },
 });
 
@@ -73,19 +169,19 @@ function App() {
     return task;
   };
 
-  const startTimer = () => {
+  const startTimer = React.useCallback(() => {
     setGameState(prev => ({ ...prev, isRunning: true }));
-  };
+  }, []);
 
-  const onTick = () => {
+  const onTick = React.useCallback(() => {
     setGameState(prev => ({ ...prev, timeLeft: prev.timeLeft - 1 }));
-  };
+  }, []);
 
-  const onTimeUp = () => {
+  const onTimeUp = React.useCallback(() => {
     setGameState(prev => ({ ...prev, isRunning: false }));
-  };
+  }, []);
 
-  const handleAnswer = (correct: boolean) => {
+  const handleAnswer = React.useCallback((correct: boolean) => {
     const points = correct ? (gameState.currentTask?.difficulty === 'easy' ? 1 : 
                             gameState.currentTask?.difficulty === 'medium' ? 2 : 3) : 0;
     
@@ -112,21 +208,21 @@ function App() {
         round: nextRound,
       };
     });
-  };
+  }, [gameState.currentTask, maxRounds, getRandomTask, setGamePhase]);
 
-  const skipTask = () => {
+  const skipTask = React.useCallback(() => {
     setGameState(prev => ({
       ...prev,
       currentTask: getRandomTask(),
       timeLeft: 5,
       isRunning: false,
     }));
-  };
+  }, [getRandomTask]);
 
-  const restartGame = () => {
+  const restartGame = React.useCallback(() => {
     setGamePhase('setup');
     setUsedTasks(new Set());
-  };
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -134,42 +230,69 @@ function App() {
       <Box
         sx={{
           minHeight: '100vh',
-          backgroundColor: '#1a1b26',
-          backgroundImage: 'linear-gradient(135deg, #1a1b26 0%, #2C2E3B 100%)',
-          py: 4,
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
+          position: 'relative',
         }}
       >
-        <Container maxWidth="md">
+        <Container 
+          maxWidth="sm" 
+          sx={{ 
+            py: { xs: 1, sm: 2 },
+            position: 'relative',
+            zIndex: 1,
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            paddingTop: { xs: '2rem', sm: '3rem' },
+            paddingBottom: { xs: '2rem', sm: '2rem' },
+          }}
+        >
           <Typography
             variant="h2"
             align="center"
             sx={{
-              color: 'white',
-              mb: 4,
-              fontWeight: 'bold',
-              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+              color: '#f8fafc',
+              mb: { xs: 2, sm: 3 },
+              fontWeight: 700,
+              fontSize: { xs: '1.8rem', sm: '2.2rem' },
+              letterSpacing: '-0.02em',
             }}
           >
             5 Sekunden Battle
           </Typography>
 
           {gamePhase === 'setup' && (
-            <PlayerSetup onStartGame={startGame} />
+            <Box sx={{ width: '100%', maxWidth: '500px' }}>
+              <PlayerSetup onStartGame={startGame} />
+            </Box>
           )}
 
           {gamePhase === 'playing' && (
-            <>
-              <Box sx={{ mb: 2, textAlign: 'right' }}>
-                <Typography variant="subtitle1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                  Runde {gameState.round + 1} von {maxRounds}
+            <Box sx={{ width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {/* Kompakter Header */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>
+                  Runde {gameState.round + 1}/{maxRounds}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>
+                  {gameState.players[gameState.currentPlayer]?.name} ist dran
                 </Typography>
               </Box>
               
-              <ScoreBoard players={gameState.players} currentPlayer={gameState.currentPlayer} />
+              {/* Kompakte ScoreBoard */}
+              <Box sx={{ mb: 1 }}>
+                <ScoreBoard players={gameState.players} currentPlayer={gameState.currentPlayer} />
+              </Box>
               
-              <TaskDisplay task={gameState.currentTask} />
+              {/* Kompakte TaskDisplay */}
+              <Box sx={{ mb: 1, flex: '0 0 auto' }}>
+                <TaskDisplay task={gameState.currentTask} />
+              </Box>
               
-              <Box display="flex" justifyContent="center" mb={3}>
+              {/* Kleinerer Timer */}
+              <Box display="flex" justifyContent="center" mb={1}>
                 <Timer
                   timeLeft={gameState.timeLeft}
                   isRunning={gameState.isRunning}
@@ -178,18 +301,36 @@ function App() {
                 />
               </Box>
 
-              <Box display="flex" justifyContent="center" gap={2}>
+              {/* Kompakte Buttons */}
+              <Box 
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: { xs: 1, sm: 2 },
+                  px: { xs: 1, sm: 0 },
+                  flex: '0 0 auto',
+                }}
+              >
                 {!gameState.isRunning && gameState.timeLeft > 0 && (
                   <Button
                     onClick={startTimer}
                     variant="contained"
                     size="large"
                     sx={{
-                      backgroundColor: '#1976d2',
-                      '&:hover': { backgroundColor: '#1565c0' },
+                      backgroundColor: theme.palette.primary.main,
+                      background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+                      color: 'white',
+                      minWidth: { xs: '100%', sm: '180px' },
+                      fontSize: { xs: '1rem', sm: '1.1rem' },
+                      padding: '10px 20px',
+                      '&:hover': {
+                        background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.secondary.dark} 90%)`,
+                      },
                     }}
                   >
-                    Timer starten
+                    ⏰ Timer starten
                   </Button>
                 )}
                 
@@ -199,23 +340,33 @@ function App() {
                       onClick={() => handleAnswer(true)}
                       variant="contained"
                       startIcon={<CheckIcon />}
+                      size="large"
                       sx={{
-                        backgroundColor: '#4CAF50',
-                        '&:hover': { backgroundColor: '#45a049' },
+                        backgroundColor: theme.palette.success.main,
+                        color: 'white',
+                        minWidth: { xs: '100%', sm: '140px' },
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                        padding: '8px 16px',
+                        '&:hover': { backgroundColor: '#22c55e' },
                       }}
                     >
-                      Geschafft
+                      ✅ Geschafft
                     </Button>
                     <Button
                       onClick={() => handleAnswer(false)}
                       variant="contained"
                       startIcon={<CloseIcon />}
+                      size="large"
                       sx={{
-                        backgroundColor: '#f44336',
-                        '&:hover': { backgroundColor: '#da190b' },
+                        backgroundColor: theme.palette.error.main,
+                        color: 'white',
+                        minWidth: { xs: '100%', sm: '140px' },
+                        fontSize: { xs: '0.9rem', sm: '1rem' },
+                        padding: '8px 16px',
+                        '&:hover': { backgroundColor: '#ef4444' },
                       }}
                     >
-                      Nicht geschafft
+                      ❌ Nicht geschafft
                     </Button>
                   </>
                 )}
@@ -225,24 +376,32 @@ function App() {
                     onClick={skipTask}
                     variant="outlined"
                     startIcon={<SkipNextIcon />}
+                    size="large"
                     sx={{
                       color: 'white',
                       borderColor: 'rgba(255, 255, 255, 0.5)',
+                      minWidth: { xs: '100%', sm: '140px' },
+                      fontSize: { xs: '0.9rem', sm: '1rem' },
+                      padding: '8px 16px',
+                      backdropFilter: 'blur(10px)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
                       '&:hover': {
                         borderColor: 'white',
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
                       },
                     }}
                   >
-                    Überspringen
+                    ⏭️ Überspringen
                   </Button>
                 )}
               </Box>
-            </>
+            </Box>
           )}
 
           {gamePhase === 'gameOver' && (
-            <GameOver players={gameState.players} onRestart={restartGame} />
+            <Box sx={{ width: '100%', maxWidth: '500px' }}>
+              <GameOver players={gameState.players} onRestart={restartGame} />
+            </Box>
           )}
         </Container>
       </Box>
