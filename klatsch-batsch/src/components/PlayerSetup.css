@@ -157,8 +157,43 @@
     height: 20px;
 }
 
-.start-button {
+.button-group {
+    display: flex;
+    gap: var(--space-sm);
     width: 100%;
+}
+
+.instructions-button {
+    flex: 1;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--light-gray);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    font-size: clamp(1rem, 2vw, 1.125rem);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.instructions-button:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--medium-gray);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.instructions-button svg {
+    width: 20px;
+    height: 20px;
+}
+
+.start-button {
+    flex: 2;
     background: var(--primary-black);
     color: var(--text-white);
     padding: var(--space-md) var(--space-xl);
@@ -225,7 +260,18 @@
         font-size: clamp(1rem, 2.5vw, 1.125rem);
     }
     
+    .button-group {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+    
+    .instructions-button {
+        flex: none;
+        font-size: clamp(1rem, 2.5vw, 1.125rem);
+    }
+    
     .start-button {
+        flex: none;
         font-size: clamp(1.125rem, 3vw, 1.25rem);
         padding: var(--space-md) var(--space-xl);
     }

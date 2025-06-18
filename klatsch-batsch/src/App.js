@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PlayerSetup from './components/PlayerSetup';
 import GameBoard from './components/GameBoard';
+import Instructions from './components/Instructions';
 import { cards } from './data/cards';
 import './App.css';
 
@@ -104,6 +105,14 @@ const App = () => {
         setShowCard(false);
     };
 
+    const showInstructions = () => {
+        setGameState('instructions');
+    };
+
+    const backToMenu = () => {
+        setGameState('setup');
+    };
+
     if (gameState === 'setup') {
         return (
             <PlayerSetup
@@ -113,7 +122,14 @@ const App = () => {
                 addPlayer={addPlayer}
                 removePlayer={removePlayer}
                 startGame={startGame}
+                showInstructions={showInstructions}
             />
+        );
+    }
+
+    if (gameState === 'instructions') {
+        return (
+            <Instructions onBack={backToMenu} />
         );
     }
 
