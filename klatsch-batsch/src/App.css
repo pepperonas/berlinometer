@@ -108,7 +108,7 @@ p {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
 }
 
 /* Main Game Card - Clean Card Style */
@@ -139,7 +139,7 @@ p {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-2xl);
+    margin-bottom: var(--space-lg);
 }
 
 .game-title {
@@ -295,7 +295,7 @@ button:active::before {
 
 /* Active Cards */
 .active-cards-section {
-    margin-top: var(--space-xl);
+    margin-top: var(--space-md);
 }
 
 .active-cards-title {
@@ -365,7 +365,7 @@ button:active::before {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
-    margin-top: var(--space-xl);
+    margin-top: var(--space-md);
 }
 
 .player-tag {
@@ -407,13 +407,14 @@ button:active::before {
     
     .game-card {
         max-width: 100%;
-        padding: 1.5rem;
-        margin: 1rem;
-        width: calc(100vw - 2rem);
+        padding: 1rem;
+        margin: 0.5rem;
+        width: calc(100vw - 1rem);
     }
     
     .game-title {
         font-size: clamp(1.75rem, 5vw, 2.5rem);
+        margin: 0 0 var(--space-sm) 0;
     }
     
     .game-title svg {
@@ -428,11 +429,12 @@ button:active::before {
     
     .game-header {
         padding: 0;
+        margin-bottom: var(--space-sm);
     }
     
     .card-display {
-        margin: 1.5rem 0;
-        padding: 1.5rem;
+        margin: var(--space-sm) 0;
+        padding: var(--space-md);
     }
 }
 

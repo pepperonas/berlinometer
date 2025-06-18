@@ -30,7 +30,15 @@ const PlayerSetup = ({
                                 type="text"
                                 value={newPlayerName}
                                 onChange={(e) => setNewPlayerName(e.target.value)}
-                                onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
+                                onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                        if (newPlayerName.trim()) {
+                                            addPlayer();
+                                        } else if (players.length >= 2) {
+                                            startGame();
+                                        }
+                                    }
+                                }}
                                 placeholder="Spielername eingeben..."
                                 className="player-input"
                                 maxLength={20}
@@ -74,6 +82,10 @@ const PlayerSetup = ({
                         Spiel starten
                         <ChevronRight />
                     </button>
+                    
+                    <div className="footer">
+                        Made with ❤️ by Martin Pfeffer
+                    </div>
                 </div>
             </div>
         </div>
