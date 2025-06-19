@@ -368,8 +368,8 @@
             <div class="form-group">
                 <label for="showExpired">Als abgelaufen anzeigen</label>
                 <select id="showExpired">
-                    <option value="yes">Ja (durchgestrichen)</option>
                     <option value="no">Nein (mit QR-Code)</option>
+                    <option value="yes">Ja (durchgestrichen)</option>
                 </select>
             </div>
             <div class="form-group">
@@ -377,8 +377,12 @@
                 <input type="text" id="location" placeholder="z.B. Club Ritter Butzke">
             </div>
             <div class="form-group">
-                <label for="date">Datum</label>
+                <label for="date">Start Datum/Zeit</label>
                 <input type="datetime-local" id="date">
+            </div>
+            <div class="form-group">
+                <label for="endDate">End Datum/Zeit (Optional)</label>
+                <input type="datetime-local" id="endDate">
             </div>
             <div class="form-group">
                 <label for="owner">Eigentümer</label>
@@ -401,6 +405,10 @@
                 <label for="ticketCount">Anzahl Tickets</label>
                 <input type="number" id="ticketCount" placeholder="z.B. 2" value="1" min="1">
             </div>
+            <div class="form-group">
+                <label for="price">Preis</label>
+                <input type="text" id="price" placeholder="z.B. 15,00 €">
+            </div>
         </div>
         <button class="generate-btn" onclick="generatePreview()">Generieren</button>
     </div>
@@ -419,7 +427,7 @@
                     <p>wir haben Ihre Zahlung für <span id="receiptEventText">Veranstaltung</span> erfolgreich erhalten. Vielen Dank!</p>
                     <br>
                     <p>Sie können Ihre Bestellung unter folgender Adresse ändern und einsehen: <br>
-                        <a href="#" style="color: #4CAF50;">https://tickets.ritter-butzke.com/070225-JulianeWolfinvites/order/XXXXX/9r4itkpdg2fmo1yo/open/0b162ece4/</a></p>
+                        <a href="#" id="receiptLink" style="color: #4CAF50; word-break: break-all;">https://tickets.ritter-butzke.com/event-link/order/XXXXX/token/</a></p>
                     <br>
                     <p>Viele Grüße,<br>
                         Das <span id="receiptTeam">Veranstaltung</span> Team</p>
@@ -441,7 +449,11 @@
                         </tr>
                         <tr>
                             <td>Details:</td>
-                            <td>2x Ticket</td>
+                            <td id="receiptTicketDetails">1x Ticket</td>
+                        </tr>
+                        <tr>
+                            <td>Preis:</td>
+                            <td id="receiptPrice">0,00 €</td>
                         </tr>
                         <tr>
                             <td>Kontakt:</td>
@@ -449,7 +461,7 @@
                         </tr>
                         <tr>
                             <td></td>
-                            <td>tickets@ritter-butzke.de</td>
+                            <td id="receiptEmail">tickets@venue.de</td>
                         </tr>
                     </table>
                     <div style="text-align: center; margin-top: 30px;">
@@ -531,11 +543,13 @@
         const event = document.getElementById('event').value || 'Veranstaltung';
         const location = document.getElementById('location').value || 'Location';
         const date = document.getElementById('date').value;
+        const endDate = document.getElementById('endDate').value;
         const owner = document.getElementById('owner').value || 'Eigentümer';
         const ticketType = document.getElementById('ticketType').value || 'Regular ticket';
         const ticketCount = document.getElementById('ticketCount').value || '1';
         const orderNumber = document.getElementById('orderNumber').value || 'XXXXX';
         const showExpired = document.getElementById('showExpired').value;
+        const price = document.getElementById('price').value || '0,00 €';
 
         const dateFormatted = date ? formatDate(date) : {
             full: 'Datum und Uhrzeit',
@@ -544,6 +558,8 @@
             orderDate: '01.01.2025'
         };
 
+        const endDateFormatted = endDate ? formatDate(endDate) : null;
+
         if (currentTab === 'receipt') {
             // Update Receipt
             document.getElementById('receiptEvent').textContent = event;
@@ -551,18 +567,84 @@
             document.getElementById('receiptEventText').textContent = event;
             document.getElementById('receiptTeam').textContent = event;
             document.getElementById('receiptEventDetail').textContent = event;
-            document.getElementById('receiptDateTime').textContent = dateFormatted.full;
+            
+            // Display date and time range in receipt
+            let receiptDateTime;
+            if (endDateFormatted) {
+                receiptDateTime = `${dateFormatted.full} - ${endDateFormatted.time}`;
+            } else {
+                receiptDateTime = dateFormatted.full;
+            }
+            document.getElementById('receiptDateTime').textContent = receiptDateTime;
             document.getElementById('receiptOrderDetail').textContent = `${orderNumber} (${dateFormatted.orderDate})`;
             document.getElementById('receiptLocation').textContent = location;
+            
+            // Generate venue-based email address
+            const emailDomain = location.toLowerCase()
+                .replace(/[äöüß]/g, match => ({'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss'}[match] || match))
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            document.getElementById('receiptEmail').textContent = `tickets@${emailDomain}.de`;
+            
+            // Update ticket count and price with proper formatting
+            const ticketText = ticketCount == 1 ? `${ticketCount}x ${ticketType}` : `${ticketCount}x ${ticketType}s`;
+            document.getElementById('receiptTicketDetails').textContent = ticketText;
+            
+            // Format price properly if it doesn't already have Euro symbol
+            let formattedPrice = price;
+            if (price && !price.includes('€')) {
+                // Try to parse as number and format
+                const numPrice = parseFloat(price.replace(',', '.'));
+                if (!isNaN(numPrice)) {
+                    formattedPrice = numPrice.toFixed(2).replace('.', ',') + ' €';
+                }
+            }
+            document.getElementById('receiptPrice').textContent = formattedPrice;
+            
+            // Generate venue-based domain and realistic link
+            const locationSlug = location.toLowerCase()
+                .replace(/[äöüß]/g, match => ({'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss'}[match] || match))
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            const eventSlug = event.toLowerCase()
+                .replace(/[äöüß]/g, match => ({'ä': 'ae', 'ö': 'oe', 'ü': 'ue', 'ß': 'ss'}[match] || match))
+                .replace(/[^a-z0-9\s]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '')
+                .substring(0, 50); // Limit length for realistic URLs
+            const randomToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 8);
+            const receiptLink = `https://tickets.${locationSlug}.com/${eventSlug}/order/${orderNumber}/token/${randomToken}/`;
+            document.getElementById('receiptLink').textContent = receiptLink;
+            document.getElementById('receiptLink').href = receiptLink;
         } else {
             // Update Ticket
             document.getElementById('ticketEvent').textContent = event;
             document.getElementById('ticketVenue').textContent = `at ${location}`;
             document.getElementById('ticketTypeDisplay').textContent = ticketType;
             document.getElementById('ticketDate').textContent = dateFormatted.short;
-            document.getElementById('ticketTime').textContent = `${dateFormatted.time} - 10:00`;
+            
+            // Display time range
+            let timeDisplay;
+            if (endDateFormatted) {
+                timeDisplay = `${dateFormatted.time} - ${endDateFormatted.time}`;
+            } else {
+                timeDisplay = `${dateFormatted.time} - 10:00`;
+            }
+            document.getElementById('ticketTime').textContent = timeDisplay;
             document.getElementById('ticketOwner').textContent = owner;
-            document.getElementById('ticketNumber').textContent = `1 of ${ticketCount}`;
+            
+            // Generate realistic ticket numbering for multiple tickets
+            const currentTicketNum = Math.floor(Math.random() * parseInt(ticketCount)) + 1;
+            if (ticketCount == 1) {
+                document.getElementById('ticketNumber').textContent = `Ticket #${orderNumber.slice(-4)}`;
+            } else {
+                document.getElementById('ticketNumber').textContent = `${currentTicketNum} of ${ticketCount} • #${orderNumber.slice(-4)}`;
+            }
 
             // Generate QR Code for both expired and active tickets
             const qrText = `${event} - ${location} - ${dateFormatted.full} - ${owner} - ${ticketType} - ${orderNumber}`;
@@ -595,10 +677,28 @@
                     canvasExpired.height = 160;
                     const ctx = canvasExpired.getContext('2d');
                     ctx.fillStyle = '#000';
+                    // Create more realistic QR pattern
+                    const patterns = [
+                        [1,1,1,1,1,1,1,0,0,1,1,1,1,1,1],
+                        [1,0,0,0,0,0,1,0,0,1,0,0,0,0,1],
+                        [1,0,1,1,1,0,1,0,0,1,0,1,1,1,0],
+                        [1,0,1,1,1,0,1,0,0,1,0,1,1,1,0],
+                        [1,0,1,1,1,0,1,0,0,1,0,1,1,1,0],
+                        [1,0,0,0,0,0,1,0,0,1,0,0,0,0,1],
+                        [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1],
+                        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                        [0,0,1,0,1,1,0,1,1,0,1,0,0,1,1],
+                        [1,0,0,1,1,0,1,0,0,1,0,1,1,0,0],
+                        [0,1,1,0,0,1,0,1,1,0,1,0,0,1,1],
+                        [1,0,0,1,1,0,1,0,0,1,0,1,1,0,0],
+                        [0,1,1,0,0,1,0,1,1,0,1,0,0,1,1],
+                        [1,0,0,1,1,0,1,0,0,1,0,1,1,0,0],
+                        [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1]
+                    ];
                     for (let i = 0; i < 15; i++) {
                         for (let j = 0; j < 15; j++) {
-                            if (Math.random() > 0.5) {
-                                ctx.fillRect(i * 10.6, j * 10.6, 10.6, 10.6);
+                            if (patterns[i][j]) {
+                                ctx.fillRect(j * 10.6, i * 10.6, 10.6, 10.6);
                             }
                         }
                     }
@@ -679,8 +779,11 @@
         document.getElementById('owner').value = 'Martin Pfeffer';
         document.getElementById('ticketType').value = 'Final release';
         document.getElementById('ticketCount').value = '1';
-        document.getElementById('orderNumber').value = '21634538';
-        document.getElementById('showExpired').value = 'yes';
+        // Generate more realistic order number
+        const orderNum = 'RB' + (Math.floor(Math.random() * 900000) + 100000).toString();
+        document.getElementById('orderNumber').value = orderNum;
+        document.getElementById('showExpired').value = 'no';
+        document.getElementById('price').value = '15,00 €';
 
         setTimeout(() => {
             generatePreview();
@@ -702,17 +805,20 @@
             if (eventInfo.event) {
                 document.getElementById('event').value = eventInfo.event;
             }
-            if (eventInfo.location) {
+            if (eventInfo.venue) {
+                // Use venue name as location (preferred over address)
+                document.getElementById('location').value = eventInfo.venue;
+            } else if (eventInfo.location) {
                 document.getElementById('location').value = eventInfo.location;
             }
             if (eventInfo.date) {
                 document.getElementById('date').value = eventInfo.date;
             }
-            if (eventInfo.venue) {
-                // If we have a venue but no location, use venue as location
-                if (!eventInfo.location) {
-                    document.getElementById('location').value = eventInfo.venue;
-                }
+            if (eventInfo.endDate) {
+                document.getElementById('endDate').value = eventInfo.endDate;
+            }
+            if (eventInfo.price) {
+                document.getElementById('price').value = eventInfo.price;
             }
 
             // Auto-generate preview after parsing
@@ -750,7 +856,13 @@
             '[data-testid="event-venue"]',
             '.venue-name',
             '.location',
-            '.event-venue'
+            '.event-venue',
+            // RA-specific selectors
+            'a[href*="/clubs/"]',
+            'a[data-pw-test-id="event-venue-link"]',
+            // Rausgegangen-specific selectors
+            'a[href*="/locations/"]',
+            '.color-blue[href*="/locations/"]'
         ];
         
         for (const selector of venueSelectors) {
@@ -761,7 +873,7 @@
             }
         }
 
-        // Extract address
+        // Extract address - try multiple approaches for RA and Rausgegangen
         const addressSelectors = [
             '[data-testid="event-address"]',
             '.venue-address',
@@ -776,23 +888,89 @@
                 break;
             }
         }
+        
+        // Special handling for RA structure - look for address in event details area
+        if (!eventInfo.location) {
+            const eventDetailsGrid = doc.querySelector('.fevhZX, [class*="grid"]');
+            if (eventDetailsGrid) {
+                const addressText = eventDetailsGrid.textContent;
+                // Look for address pattern (Straße + PLZ + Stadt)
+                const addressMatch = addressText.match(/([A-Za-zäöüß\s]+\.?\s*\d+[a-z]?,?\s*\d{5}\s*[A-Za-zäöüß\s]+)/);
+                if (addressMatch) {
+                    eventInfo.location = addressMatch[1].trim();
+                }
+            }
+        }
+        
+        // Special handling for Rausgegangen structure - look for address in location section
+        if (!eventInfo.location) {
+            // Find location section and extract address
+            const locationSection = doc.querySelector('.event-location-image')?.parentElement;
+            if (locationSection) {
+                const addressSpans = locationSection.querySelectorAll('span');
+                for (const span of addressSpans) {
+                    const text = span.textContent.trim();
+                    // Look for address pattern in Rausgegangen format
+                    if (text.match(/\d{5}\s+Berlin/) || text.includes('Berlin-')) {
+                        eventInfo.location = text;
+                        break;
+                    }
+                }
+            }
+        }
 
-        // Extract date and time from script tags (common in RA pages)
+        // Extract date and time from script tags (common in RA and Rausgegangen pages)
         const scriptTags = doc.querySelectorAll('script');
         for (const script of scriptTags) {
             const scriptContent = script.textContent || script.innerHTML;
             
-            // Look for ISO date patterns
+            // Look for ISO date patterns (RA format)
             const isoDateMatch = scriptContent.match(/"startDate":"([^"]+)"/);
             if (isoDateMatch) {
                 try {
                     const date = new Date(isoDateMatch[1]);
                     eventInfo.date = date.toISOString().slice(0, 16);
-                    break;
                 } catch (e) {
                     // Continue to next script
                 }
             }
+            
+            // Look for end date (RA format)
+            const isoEndDateMatch = scriptContent.match(/"endDate":"([^"]+)"/);
+            if (isoEndDateMatch) {
+                try {
+                    const endDate = new Date(isoEndDateMatch[1]);
+                    eventInfo.endDate = endDate.toISOString().slice(0, 16);
+                } catch (e) {
+                    // Continue to next script
+                }
+            }
+            
+            // Look for Rausgegangen JSON-LD structured data
+            if (scriptContent.includes('"@type": "Event"')) {
+                const startDateMatch = scriptContent.match(/"startDate":\s*"([^"]+)"/);
+                const endDateMatch = scriptContent.match(/"endDate":\s*"([^"]+)"/);
+                
+                if (startDateMatch) {
+                    try {
+                        const date = new Date(startDateMatch[1]);
+                        eventInfo.date = date.toISOString().slice(0, 16);
+                    } catch (e) {
+                        // Continue
+                    }
+                }
+                
+                if (endDateMatch) {
+                    try {
+                        const endDate = new Date(endDateMatch[1]);
+                        eventInfo.endDate = endDate.toISOString().slice(0, 16);
+                    } catch (e) {
+                        // Continue
+                    }
+                }
+            }
+            
+            if (eventInfo.date) break;
             
             // Look for other date patterns
             const dateMatch = scriptContent.match(/"date":"([^"]+)"/);
@@ -846,6 +1024,35 @@
                     }
                 }
             }
+            
+            // Special handling for Rausgegangen date format in sidebar
+            if (!eventInfo.date) {
+                const dateTimeElement = doc.querySelector('.w-full.flex.flex-col.ml-4');
+                if (dateTimeElement) {
+                    const dateSpans = dateTimeElement.querySelectorAll('span');
+                    for (const span of dateSpans) {
+                        const text = span.textContent.trim();
+                        // Look for patterns like "Morgen, 20. Jun 2025, 18:00 -"
+                        const dateMatch = text.match(/(\d{1,2})\.\s*(\w{3})\s*(\d{4}),?\s*(\d{1,2}):(\d{2})/);
+                        if (dateMatch) {
+                            const [, day, monthStr, year, hour, minute] = dateMatch;
+                            const monthMap = {
+                                'Jan': 0, 'Feb': 1, 'Mär': 2, 'Apr': 3, 'Mai': 4, 'Jun': 5,
+                                'Jul': 6, 'Aug': 7, 'Sep': 8, 'Okt': 9, 'Nov': 10, 'Dez': 11
+                            };
+                            if (monthMap.hasOwnProperty(monthStr)) {
+                                try {
+                                    const date = new Date(parseInt(year), monthMap[monthStr], parseInt(day), parseInt(hour), parseInt(minute));
+                                    eventInfo.date = date.toISOString().slice(0, 16);
+                                    break;
+                                } catch (e) {
+                                    // Continue
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Extract artist information and append to event name if available
@@ -863,6 +1070,41 @@
                     eventInfo.event += ' - ' + artist;
                 }
                 break;
+            }
+        }
+        
+        // Extract price information
+        const priceSelectors = [
+            '.text-primary:not(.truncate)', // Rausgegangen price display
+            '.price',
+            '.ticket-price',
+            '[data-testid="event-price"]'
+        ];
+        
+        for (const selector of priceSelectors) {
+            const priceElement = doc.querySelector(selector);
+            if (priceElement && priceElement.textContent.trim()) {
+                const priceText = priceElement.textContent.trim();
+                // Check if it contains price pattern
+                if (priceText.match(/\d+[,.]?\d*\s*€/) || priceText.includes('€')) {
+                    eventInfo.price = priceText;
+                    break;
+                }
+            }
+        }
+        
+        // Look for price in structured data
+        if (!eventInfo.price) {
+            const scriptTags = doc.querySelectorAll('script');
+            for (const script of scriptTags) {
+                const scriptContent = script.textContent || script.innerHTML;
+                if (scriptContent.includes('"@type": "Event"') || scriptContent.includes('"@type": "Offer"')) {
+                    const priceMatch = scriptContent.match(/"price":\s*(\d+(?:\.\d+)?)/);
+                    if (priceMatch) {
+                        eventInfo.price = priceMatch[1] + ',00 €';
+                        break;
+                    }
+                }
             }
         }
 
@@ -884,9 +1126,9 @@
             return;
         }
 
-        // Validate RA URL format
-        if (!url.includes('ra.co/events/')) {
-            statusDiv.textContent = 'Bitte gebe eine gültige Resident Advisor Event-URL ein';
+        // Validate URL format
+        if (!url.includes('ra.co/events/') && !url.includes('rausgegangen.de/events/')) {
+            statusDiv.textContent = 'Bitte gebe eine gültige Resident Advisor oder Rausgegangen Event-URL ein';
             statusDiv.style.color = '#ff6b6b';
             return;
         }
@@ -917,16 +1159,24 @@
                 document.getElementById('event').value = eventInfo.event;
                 fieldsUpdated++;
             }
-            if (eventInfo.location) {
-                document.getElementById('location').value = eventInfo.location;
-                fieldsUpdated++;
-            }
-            if (eventInfo.venue && !eventInfo.location) {
+            if (eventInfo.venue) {
+                // Use venue name as location (preferred over address)
                 document.getElementById('location').value = eventInfo.venue;
+                fieldsUpdated++;
+            } else if (eventInfo.location) {
+                document.getElementById('location').value = eventInfo.location;
                 fieldsUpdated++;
             }
             if (eventInfo.date) {
                 document.getElementById('date').value = eventInfo.date;
+                fieldsUpdated++;
+            }
+            if (eventInfo.endDate) {
+                document.getElementById('endDate').value = eventInfo.endDate;
+                fieldsUpdated++;
+            }
+            if (eventInfo.price) {
+                document.getElementById('price').value = eventInfo.price;
                 fieldsUpdated++;
             }
 
@@ -967,16 +1217,24 @@
                     document.getElementById('event').value = eventInfo.event;
                     fieldsUpdated++;
                 }
-                if (eventInfo.location) {
-                    document.getElementById('location').value = eventInfo.location;
-                    fieldsUpdated++;
-                }
-                if (eventInfo.venue && !eventInfo.location) {
+                if (eventInfo.venue) {
+                    // Use venue name as location (preferred over address)
                     document.getElementById('location').value = eventInfo.venue;
+                    fieldsUpdated++;
+                } else if (eventInfo.location) {
+                    document.getElementById('location').value = eventInfo.location;
                     fieldsUpdated++;
                 }
                 if (eventInfo.date) {
                     document.getElementById('date').value = eventInfo.date;
+                    fieldsUpdated++;
+                }
+                if (eventInfo.endDate) {
+                    document.getElementById('endDate').value = eventInfo.endDate;
+                    fieldsUpdated++;
+                }
+                if (eventInfo.price) {
+                    document.getElementById('price').value = eventInfo.price;
                     fieldsUpdated++;
                 }
 
