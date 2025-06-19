@@ -409,6 +409,10 @@
                 <label for="price">Preis</label>
                 <input type="text" id="price" placeholder="z.B. 15,00 €">
             </div>
+            <div class="form-group">
+                <label for="ticketNumber">Ticket Nummer (Optional)</label>
+                <input type="text" id="ticketNumberInput" placeholder="z.B. 1234 oder leer lassen">
+            </div>
         </div>
         <button class="generate-btn" onclick="generatePreview()">Generieren</button>
     </div>
@@ -430,7 +434,7 @@
                         <a href="#" id="receiptLink" style="color: #4CAF50; word-break: break-all;">https://tickets.ritter-butzke.com/event-link/order/XXXXX/token/</a></p>
                     <br>
                     <p>Viele Grüße,<br>
-                        Das <span id="receiptTeam">Veranstaltung</span> Team</p>
+                        Dein <span id="receiptTeam">Club</span> Team</p>
                 </div>
                 <div class="receipt-details">
                     <p style="margin-bottom: 20px;">Sie erhalten diese E-Mail, weil Sie eine Bestellung für die folgende Veranstaltung getätigt haben:</p>
@@ -565,7 +569,7 @@
             document.getElementById('receiptEvent').textContent = event;
             document.getElementById('receiptOrder').textContent = orderNumber;
             document.getElementById('receiptEventText').textContent = event;
-            document.getElementById('receiptTeam').textContent = event;
+            document.getElementById('receiptTeam').textContent = location;
             document.getElementById('receiptEventDetail').textContent = event;
             
             // Display date and time range in receipt
@@ -638,12 +642,25 @@
             document.getElementById('ticketTime').textContent = timeDisplay;
             document.getElementById('ticketOwner').textContent = owner;
             
-            // Generate realistic ticket numbering for multiple tickets
-            const currentTicketNum = Math.floor(Math.random() * parseInt(ticketCount)) + 1;
-            if (ticketCount == 1) {
-                document.getElementById('ticketNumber').textContent = `Ticket #${orderNumber.slice(-4)}`;
+            // Handle ticket numbering based on input
+            const customTicketNumber = document.getElementById('ticketNumberInput').value.trim();
+            
+            if (customTicketNumber) {
+                // Use custom ticket number
+                if (ticketCount == 1) {
+                    document.getElementById('ticketNumber').textContent = `#${customTicketNumber}`;
+                } else {
+                    const currentTicketNum = Math.floor(Math.random() * parseInt(ticketCount)) + 1;
+                    document.getElementById('ticketNumber').textContent = `${currentTicketNum} of ${ticketCount} • #${customTicketNumber}`;
+                }
             } else {
-                document.getElementById('ticketNumber').textContent = `${currentTicketNum} of ${ticketCount} • #${orderNumber.slice(-4)}`;
+                // No ticket number - just show count if multiple tickets
+                if (ticketCount == 1) {
+                    document.getElementById('ticketNumber').textContent = ``;
+                } else {
+                    const currentTicketNum = Math.floor(Math.random() * parseInt(ticketCount)) + 1;
+                    document.getElementById('ticketNumber').textContent = `${currentTicketNum} of ${ticketCount}`;
+                }
             }
 
             // Generate QR Code for both expired and active tickets
@@ -784,6 +801,7 @@
         document.getElementById('orderNumber').value = orderNum;
         document.getElementById('showExpired').value = 'no';
         document.getElementById('price').value = '15,00 €';
+        document.getElementById('ticketNumberInput').value = '';
 
         setTimeout(() => {
             generatePreview();
