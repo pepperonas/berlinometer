@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Color Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1a1b21;
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #2C2E3B;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            color: #b0b0b0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="number"] {
+            background-color: #1a1b21;
+            border: 2px solid #404252;
+            color: #e0e0e0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #5865F2;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #ffffff;
+        }
+
+        .btn-start {
+            background-color: #5865F2;
+        }
+
+        .btn-start:hover:not(:disabled) {
+            background-color: #4752C4;
+            transform: translateY(-1px);
+        }
+
+        .btn-stop {
+            background-color: #ED4245;
+        }
+
+        .btn-stop:hover:not(:disabled) {
+            background-color: #C03537;
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .preview-area {
+            background-color: #1a1b21;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        #preview {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            background: #000;
+        }
+
+        .color-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            background-color: #1a1b21;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .active-areas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            background-color: #1a1b21;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .area-card {
+            background-color: #2C2E3B;
+            border-radius: 8px;
+            padding: 15px;
+            border: 2px solid #404252;
+            transition: border-color 0.3s;
+        }
+
+        .area-card.active {
+            border-color: #F0B232;
+            box-shadow: 0 0 10px rgba(240, 178, 50, 0.3);
+        }
+
+        .area-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .area-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #404252;
+        }
+
+        .area-pos {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #7289DA;
+        }
+
+        .area-change {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #F0B232;
+            margin-top: 5px;
+        }
+
+        select {
+            background-color: #1a1b21;
+            border: 2px solid #404252;
+            color: #e0e0e0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #5865F2;
+        }
+
+        .color-box {
+            display: block;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid #404252;
+            transition: background-color 0.2s ease;
+            background-color: #1a1b21; /* Dunkelgrau als Standard */
+        }
+
+        .color-info {
+            text-align: left;
+        }
+
+        .color-info h3 {
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .color-value {
+            font-family: 'Courier New', monospace;
+            color: #b0b0b0;
+            margin: 4px 0;
+        }
+
+        .log-container {
+            background-color: #1a1b21;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-container h3 {
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background-color: #2C2E3B;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-entry.change {
+            border-left: 3px solid #F0B232;
+        }
+
+        .timestamp {
+            color: #7289DA;
+            font-size: 12px;
+        }
+
+        .message {
+            color: #969696;
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+
+        .crosshair {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #F0B232;
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(240, 178, 50, 0.5);
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background-color: #F0B232;
+        }
+
+        .crosshair::before {
+            width: 1px;
+            height: 10px;
+            left: 50%;
+            top: -5px;
+            transform: translateX(-50%);
+        }
+
+        .crosshair::after {
+            height: 1px;
+            width: 10px;
+            top: 50%;
+            left: -5px;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Pixel Color Monitor</h1>
+        
+        <div class="control-panel">
+            <div class="input-group">
+                <label for="scanMode">Scan-Modus</label>
+                <select id="scanMode">
+                    <option value="auto">Automatisch (ganzer Bildschirm)</option>
+                    <option value="grid">Grid (9x9 Punkte)</option>
+                    <option value="center">Bildschirm-Zentrum</option>
+                    <option value="manual">Manuelle Position</option>
+                </select>
+            </div>
+            <div class="input-group" id="manualControls" style="display: none;">
+                <label for="xPos">X-Position</label>
+                <input type="number" id="xPos" value="500" min="0">
+            </div>
+            <div class="input-group" id="manualControls2" style="display: none;">
+                <label for="yPos">Y-Position</label>
+                <input type="number" id="yPos" value="300" min="0">
+            </div>
+            <div class="input-group">
+                <label for="interval">Intervall (ms)</label>
+                <input type="number" id="interval" value="200" min="50" max="5000" step="50">
+            </div>
+            <div class="input-group">
+                <label for="threshold">Änderungs-Schwellwert</label>
+                <input type="number" id="threshold" value="10" min="0" max="255">
+            </div>
+            <div class="input-group">
+                <label for="sensitivity">Empfindlichkeit</label>
+                <select id="sensitivity">
+                    <option value="low">Niedrig (große Änderungen)</option>
+                    <option value="medium" selected>Mittel</option>
+                    <option value="high">Hoch (kleinste Änderungen)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button id="startBtn" class="btn-start">Monitor starten</button>
+            <button id="stopBtn" class="btn-stop" disabled>Monitor stoppen</button>
+        </div>
+        
+        <div class="button-group" style="margin-top: -15px; margin-bottom: 30px;">
+            <button id="testBtn" style="background-color: #5865F2; opacity: 0.7;" onclick="window.testDraw && window.testDraw()">Test Frame zeichnen</button>
+            <button id="scanBtn" style="background-color: #5865F2; opacity: 0.7;" onclick="window.scanPixels && window.scanPixels()">Pixel-Scan (5x5)</button>
+            <button id="findBtn" style="background-color: #43B581; opacity: 0.7;" onclick="window.findActiveArea && window.findActiveArea()">Aktiven Bereich finden</button>
+        </div>
+
+        <div class="preview-area">
+            <div style="position: absolute; top: 10px; right: 10px; z-index: 10;">
+                <span id="liveIndicator" style="display: none; background: #43B581; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px;">
+                    ● LIVE
+                </span>
+            </div>
+            <canvas id="preview" style="display: none;"></canvas>
+            <div id="placeholder" class="message">
+                Klicke "Monitor starten" um die Bildschirmüberwachung zu beginnen
+            </div>
+        </div>
+
+        <div class="active-areas" style="display: none;" id="activeAreas">
+            <h3 style="grid-column: 1 / -1; color: #ffffff; margin-bottom: 10px;">🎯 Aktive Überwachungsbereiche</h3>
+        </div>
+
+        <div class="log-container">
+            <h3>📊 Änderungs-Log</h3>
+            <p style="color: #7289DA; font-size: 12px; margin-bottom: 10px;">
+                Debug-Infos in der Browser-Konsole (F12)
+            </p>
+            <div id="logEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        class PixelMonitor {
+            constructor() {
+                this.stream = null;
+                this.video = null;
+                this.canvas = document.getElementById('preview');
+                this.ctx = this.canvas.getContext('2d', { 
+                    willReadFrequently: true,
+                    alpha: false
+                });
+                this.monitoring = false;
+                this.intervalId = null;
+                this.monitorAreas = new Map(); // Überwachte Bereiche
+                this.currentScanMode = 'auto';
+                
+                this.initializeElements();
+                this.attachEventListeners();
+            }
+
+            initializeElements() {
+                this.startBtn = document.getElementById('startBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.scanModeSelect = document.getElementById('scanMode');
+                this.xInput = document.getElementById('xPos');
+                this.yInput = document.getElementById('yPos');
+                this.intervalInput = document.getElementById('interval');
+                this.thresholdInput = document.getElementById('threshold');
+                this.sensitivitySelect = document.getElementById('sensitivity');
+                this.logEntries = document.getElementById('logEntries');
+                this.placeholder = document.getElementById('placeholder');
+                this.activeAreas = document.getElementById('activeAreas');
+                this.manualControls = document.getElementById('manualControls');
+                this.manualControls2 = document.getElementById('manualControls2');
+            }
+
+            attachEventListeners() {
+                this.startBtn.addEventListener('click', () => this.startMonitoring());
+                this.stopBtn.addEventListener('click', () => this.stopMonitoring());
+                
+                // Scan-Modus ändern
+                this.scanModeSelect.addEventListener('change', () => {
+                    this.currentScanMode = this.scanModeSelect.value;
+                    this.updateManualControls();
+                    if (this.monitoring) {
+                        this.setupMonitoringAreas();
+                    }
+                });
+
+                // Canvas-Klick für Position (nur im manuellen Modus)
+                this.canvas.addEventListener('click', (e) => {
+                    if (!this.monitoring || this.currentScanMode !== 'manual') return;
+                    const rect = this.canvas.getBoundingClientRect();
+                    const scaleX = this.canvas.width / rect.width;
+                    const scaleY = this.canvas.height / rect.height;
+                    const x = Math.floor((e.clientX - rect.left) * scaleX);
+                    const y = Math.floor((e.clientY - rect.top) * scaleY);
+                    
+                    this.xInput.value = x;
+                    this.yInput.value = y;
+                    this.setupMonitoringAreas();
+                    
+                    this.logEntry(`Position geändert: (${x}, ${y})`, false);
+                });
+            }
+
+            updateManualControls() {
+                const isManual = this.currentScanMode === 'manual';
+                this.manualControls.style.display = isManual ? 'flex' : 'none';
+                this.manualControls2.style.display = isManual ? 'flex' : 'none';
+            }
+
+            async startMonitoring() {
+                try {
+                    console.log('Starte Screen Capture...');
+                    this.stream = await navigator.mediaDevices.getDisplayMedia({
+                        video: {
+                            cursor: "always"
+                        },
+                        audio: false
+                    });
+                    
+                    console.log('Stream erhalten:', this.stream);
+                    console.log('Video Tracks:', this.stream.getVideoTracks());
+                    
+                    // Prüfe Track-Settings
+                    const track = this.stream.getVideoTracks()[0];
+                    if (track) {
+                        const settings = track.getSettings();
+                        console.log('Track Settings:', settings);
+                    }
+
+                    this.video = document.createElement('video');
+                    this.video.style.display = 'none'; // Versteckt, aber im DOM
+                    document.body.appendChild(this.video); // Füge zum DOM hinzu
+                    this.video.srcObject = this.stream;
+                    this.video.muted = true; // Wichtig für Autoplay
+                    this.video.playsInline = true; // Für mobile Browser
+                    
+                    // Warte kurz bevor play() aufgerufen wird
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    this.video.play().then(() => {
+                        console.log('Video läuft!');
+                        console.log('Video muted:', this.video.muted);
+                    }).catch(err => {
+                        console.error('Video-Fehler:', err);
+                        // Versuche es nochmal mit User-Interaction
+                        this.startBtn.click();
+                    });
+
+                    // Canvas Setup - mit Fallback für verschiedene Events
+                    let canvasSetup = false;
+                    const setupCanvas = () => {
+                        if (canvasSetup) return; // Verhindere mehrfache Ausführung
+                        
+                        console.log('Video bereit - Setup Canvas');
+                        console.log(`Video Dimensionen: ${this.video.videoWidth}x${this.video.videoHeight}`);
+                        
+                        if (this.video.videoWidth === 0 || this.video.videoHeight === 0) {
+                            console.error('Video hat keine gültigen Dimensionen!');
+                            setTimeout(setupCanvas, 100); // Retry
+                            return;
+                        }
+                        
+                        // Debug Video-Status
+                        console.log('Video readyState:', this.video.readyState);
+                        console.log('Video paused:', this.video.paused);
+                        console.log('Video currentTime:', this.video.currentTime);
+                        
+                        canvasSetup = true;
+                        this.canvas.width = this.video.videoWidth;
+                        this.canvas.height = this.video.videoHeight;
+                        this.canvas.style.display = 'block';
+                        this.placeholder.style.display = 'none';
+                        this.activeAreas.style.display = 'grid';
+                        document.getElementById('liveIndicator').style.display = 'inline-block';
+                        
+                        // Zeige Canvas-Größe
+                        console.log(`Canvas-Größe: ${this.canvas.width}x${this.canvas.height}`);
+                        this.logEntry(`Bildschirm: ${this.canvas.width}x${this.canvas.height}px`, false);
+                        
+                        // Starte Monitoring
+                        this.monitoring = true;
+                        this.startBtn.disabled = true;
+                        this.stopBtn.disabled = false;
+                        
+                        this.logEntry('Monitoring gestartet', false);
+                        console.log('Monitoring gestartet - Überwache Pixel-Änderungen...');
+                        
+                        // Erstes Frame zeichnen
+                        this.ctx.drawImage(this.video, 0, 0);
+                        
+                        // Kontinuierliches Frame-Update
+                        this.startFrameUpdate();
+                        
+                        // Test: Zeichne sofort einen Frame
+                        setTimeout(() => {
+                            console.log('Test-Draw nach 500ms');
+                            try {
+                                this.ctx.drawImage(this.video, 0, 0);
+                                const testData = this.ctx.getImageData(100, 100, 1, 1).data;
+                                console.log('Test-Pixel:', testData);
+                                console.log('Canvas ist NICHT tainted - Pixel-Lesen funktioniert!');
+                            } catch (err) {
+                                if (err.name === 'SecurityError') {
+                                    console.error('SICHERHEITSFEHLER: Canvas ist "tainted" - kann keine Pixel lesen!');
+                                    console.error('Mögliche Ursache: Cross-Origin Content oder Tab-Sharing statt Screen-Sharing');
+                                } else {
+                                    console.error('Anderer Fehler:', err);
+                                }
+                            }
+                        }, 500);
+                        
+                        // Setup Monitoring-Bereiche basierend auf Scan-Modus
+                        this.setupMonitoringAreas();
+                        
+                        // Pixel-Monitoring in Intervallen
+                        this.intervalId = setInterval(() => this.monitorAllAreas(), 
+                            parseInt(this.intervalInput.value));
+                    };
+                    
+                    this.video.addEventListener('loadedmetadata', setupCanvas);
+                    this.video.addEventListener('loadeddata', setupCanvas);
+                    
+                    // Fallback nach Timeout
+                    setTimeout(() => {
+                        if (!this.monitoring) {
+                            console.log('Fallback: Versuche Canvas-Setup direkt');
+                            setupCanvas();
+                        }
+                    }, 1000);
+
+                    // Stream-Ende erkennen
+                    this.stream.getVideoTracks()[0].addEventListener('ended', () => {
+                        this.stopMonitoring();
+                    });
+
+                } catch (error) {
+                    console.error('Fehler beim Starten:', error);
+                    alert('Bildschirmfreigabe wurde abgelehnt oder ist nicht verfügbar.');
+                }
+            }
+
+            startFrameUpdate() {
+                if (!this.monitoring || !this.video) return;
+                
+                const updateLoop = () => {
+                    if (!this.monitoring || !this.video) return;
+                    
+                    try {
+                        this.ctx.drawImage(this.video, 0, 0);
+                    } catch (err) {
+                        console.error('Frame-Update Fehler:', err);
+                    }
+                    
+                    requestAnimationFrame(updateLoop);
+                };
+                
+                requestAnimationFrame(updateLoop);
+            }
+
+            stopMonitoring() {
+                this.monitoring = false;
+                
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
+
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                    this.stream = null;
+                }
+
+                if (this.video) {
+                    this.video.pause();
+                    if (this.video.parentNode) {
+                        this.video.parentNode.removeChild(this.video);
+                    }
+                    this.video = null;
+                }
+
+                this.canvas.style.display = 'none';
+                this.placeholder.style.display = 'block';
+                this.activeAreas.style.display = 'none';
+                document.getElementById('liveIndicator').style.display = 'none';
+                this.startBtn.disabled = false;
+                this.stopBtn.disabled = true;
+                
+                this.logEntry('Monitoring gestoppt', false);
+            }
+
+            setupMonitoringAreas() {
+                this.monitorAreas.clear();
+                this.activeAreas.innerHTML = '<h3 style="grid-column: 1 / -1; color: #ffffff; margin-bottom: 10px;">🎯 Aktive Überwachungsbereiche</h3>';
+                
+                if (!this.canvas.width || !this.canvas.height) return;
+                
+                let areas = [];
+                
+                switch (this.currentScanMode) {
+                    case 'auto':
+                        // Automatische Bereiche über ganzen Bildschirm verteilt
+                        const gridSize = 12;
+                        for (let i = 1; i < gridSize - 1; i++) {
+                            for (let j = 1; j < gridSize - 1; j++) {
+                                const x = Math.floor((i / (gridSize - 1)) * this.canvas.width);
+                                const y = Math.floor((j / (gridSize - 1)) * this.canvas.height);
+                                areas.push({x, y, id: `auto_${i}_${j}`});
+                            }
+                        }
+                        break;
+                        
+                    case 'grid':
+                        // 9x9 Grid
+                        for (let i = 0; i < 9; i++) {
+                            for (let j = 0; j < 9; j++) {
+                                const x = Math.floor((i / 8) * this.canvas.width);
+                                const y = Math.floor((j / 8) * this.canvas.height);
+                                areas.push({x, y, id: `grid_${i}_${j}`});
+                            }
+                        }
+                        break;
+                        
+                    case 'center':
+                        // Nur Bildschirm-Zentrum
+                        const centerX = Math.floor(this.canvas.width / 2);
+                        const centerY = Math.floor(this.canvas.height / 2);
+                        areas.push({x: centerX, y: centerY, id: 'center'});
+                        break;
+                        
+                    case 'manual':
+                        // Manuelle Position
+                        const x = Math.max(0, Math.min(parseInt(this.xInput.value), this.canvas.width - 1));
+                        const y = Math.max(0, Math.min(parseInt(this.yInput.value), this.canvas.height - 1));
+                        areas.push({x, y, id: 'manual'});
+                        break;
+                }
+                
+                // Erstelle Monitoring-Bereiche
+                areas.forEach(area => {
+                    this.monitorAreas.set(area.id, {
+                        x: area.x,
+                        y: area.y,
+                        lastColor: null,
+                        element: this.createAreaElement(area)
+                    });
+                });
+                
+                console.log(`${areas.length} Bereiche für ${this.currentScanMode}-Modus erstellt`);
+                this.logEntry(`${areas.length} Bereiche werden überwacht (${this.currentScanMode})`, false);
+            }
+            
+            createAreaElement(area) {
+                const card = document.createElement('div');
+                card.className = 'area-card';
+                card.innerHTML = `
+                    <div class="area-info">
+                        <div class="area-color" id="color_${area.id}"></div>
+                        <div class="area-pos">(${area.x}, ${area.y})</div>
+                    </div>
+                    <div class="area-change" id="change_${area.id}">Warte auf Daten...</div>
+                `;
+                this.activeAreas.appendChild(card);
+                return card;
+            }
+
+            monitorAllAreas() {
+                if (!this.monitoring || !this.video || this.monitorAreas.size === 0) return;
+                
+                const threshold = this.getThresholdValue();
+                let activeChanges = 0;
+                
+                this.monitorAreas.forEach((area, id) => {
+                    try {
+                        const imageData = this.ctx.getImageData(area.x, area.y, 1, 1);
+                        const [r, g, b] = imageData.data;
+                        
+                        // Update Farbdisplay
+                        const colorElement = document.getElementById(`color_${id}`);
+                        const changeElement = document.getElementById(`change_${id}`);
+                        
+                        if (colorElement) {
+                            colorElement.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+                        }
+                        
+                        // Prüfe auf Änderung
+                        if (area.lastColor) {
+                            const diffR = Math.abs(r - area.lastColor.r);
+                            const diffG = Math.abs(g - area.lastColor.g);
+                            const diffB = Math.abs(b - area.lastColor.b);
+                            const totalDiff = diffR + diffG + diffB;
+                            
+                            if (totalDiff > threshold) {
+                                activeChanges++;
+                                area.element.classList.add('active');
+                                if (changeElement) {
+                                    changeElement.textContent = `Δ${totalDiff} RGB(${r},${g},${b})`;
+                                }
+                                
+                                this.logEntry(`Bereich (${area.x},${area.y}): RGB(${r},${g},${b}) - Diff: ${totalDiff}`, true);
+                                
+                                // Auto-Remove active class nach 2 Sekunden
+                                setTimeout(() => {
+                                    area.element.classList.remove('active');
+                                }, 2000);
+                            } else if (changeElement) {
+                                changeElement.textContent = `RGB(${r},${g},${b})`;
+                            }
+                        } else if (changeElement) {
+                            changeElement.textContent = `RGB(${r},${g},${b})`;
+                        }
+                        
+                        area.lastColor = { r, g, b };
+                        
+                    } catch (error) {
+                        console.error(`Fehler beim Lesen von Bereich ${id}:`, error);
+                    }
+                });
+                
+                // Zeichne alle aktiven Bereiche
+                this.drawAllCrosshairs();
+            }
+            
+            getThresholdValue() {
+                const sensitivity = this.sensitivitySelect.value;
+                const baseThreshold = parseInt(this.thresholdInput.value);
+                
+                switch (sensitivity) {
+                    case 'low': return baseThreshold * 3;
+                    case 'high': return Math.max(1, Math.floor(baseThreshold / 2));
+                    default: return baseThreshold;
+                }
+            }
+            
+            drawAllCrosshairs() {
+                this.monitorAreas.forEach((area, id) => {
+                    this.drawCrosshair(area.x, area.y, area.element.classList.contains('active'));
+                });
+            }
+
+
+            rgbToHex(r, g, b) {
+                return '#' + [r, g, b].map(x => {
+                    const hex = x.toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('').toUpperCase();
+            }
+
+            drawCrosshair(x, y, isActive = false) {
+                this.ctx.save();
+                
+                // Farbe basierend auf Aktivität
+                this.ctx.strokeStyle = isActive ? '#F0B232' : '#7289DA';
+                this.ctx.fillStyle = isActive ? '#F0B232' : '#7289DA';
+                this.ctx.lineWidth = isActive ? 3 : 1;
+                this.ctx.globalAlpha = isActive ? 1.0 : 0.6;
+                
+                // Kleiner Kreis
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, isActive ? 6 : 3, 0, 2 * Math.PI);
+                this.ctx.stroke();
+                
+                // Ziel-Punkt
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, 1, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                this.ctx.restore();
+            }
+
+            updateCrosshair(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const scaleX = this.canvas.width / rect.width;
+                const scaleY = this.canvas.height / rect.height;
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
+                
+                // Zeige temporäres Crosshair beim Hover
+                this.canvas.style.cursor = 'crosshair';
+            }
+
+            logEntry(message, isChange = false) {
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${isChange ? 'change' : ''}`;
+                
+                const timestamp = new Date().toLocaleTimeString('de-DE');
+                entry.innerHTML = `
+                    <span>${message}</span>
+                    <span class="timestamp">${timestamp}</span>
+                `;
+                
+                this.logEntries.insertBefore(entry, this.logEntries.firstChild);
+                
+                // Halte nur letzte 50 Einträge
+                while (this.logEntries.children.length > 50) {
+                    this.logEntries.removeChild(this.logEntries.lastChild);
+                }
+            }
+        }
+
+        // Initialisiere Monitor
+        const monitor = new PixelMonitor();
+        
+        // Globale Test-Funktion
+        window.testDraw = function() {
+            if (monitor.video && monitor.ctx) {
+                console.log('Manueller Frame-Draw Test...');
+                try {
+                    monitor.ctx.drawImage(monitor.video, 0, 0);
+                    const testPixel = monitor.ctx.getImageData(100, 100, 1, 1).data;
+                    console.log('Test-Pixel nach manuellem Draw:', testPixel);
+                    
+                    // Zeichne auch ein Kontroll-Rechteck
+                    monitor.ctx.fillStyle = 'green';
+                    monitor.ctx.fillRect(100, 100, 20, 20);
+                    console.log('Grünes Rechteck bei (100,100) gezeichnet');
+                } catch (err) {
+                    console.error('Fehler beim Test-Draw:', err);
+                }
+            } else {
+                console.log('Video oder Canvas nicht bereit');
+            }
+        };
+        
+        // Pixel-Scan Funktion
+        window.scanPixels = function() {
+            if (!monitor.monitoring || !monitor.ctx) {
+                console.log('Monitor muss aktiv sein!');
+                return;
+            }
+            
+            const centerX = parseInt(monitor.xInput.value);
+            const centerY = parseInt(monitor.yInput.value);
+            
+            console.log('=== PIXEL SCAN 5x5 um Position (' + centerX + ',' + centerY + ') ===');
+            
+            for (let dy = -2; dy <= 2; dy++) {
+                let row = '';
+                for (let dx = -2; dx <= 2; dx++) {
+                    const x = centerX + dx * 20;
+                    const y = centerY + dy * 20;
+                    
+                    try {
+                        const pixel = monitor.ctx.getImageData(x, y, 1, 1).data;
+                        const color = `${pixel[0]},${pixel[1]},${pixel[2]}`;
+                        row += `(${x},${y}): RGB(${color}) | `;
+                    } catch (e) {
+                        row += `(${x},${y}): ERROR | `;
+                    }
+                }
+                console.log(row);
+            }
+            
+            console.log('=== SCAN ENDE ===');
+            monitor.logEntry('Pixel-Scan durchgeführt (siehe Konsole)', false);
+        };
+        
+        // Finde aktiven Bereich
+        window.findActiveArea = function() {
+            if (!monitor.monitoring || !monitor.ctx || !monitor.video) {
+                console.log('Monitor muss aktiv sein!');
+                return;
+            }
+            
+            console.log('Suche nach aktivem Bereich...');
+            monitor.logEntry('Suche aktiven Bereich...', false);
+            
+            const width = monitor.canvas.width;
+            const height = monitor.canvas.height;
+            const samples = 10; // Anzahl der Testpunkte
+            let maxDiff = 0;
+            let bestX = width / 2;
+            let bestY = height / 2;
+            
+            // Nehme zwei Frames mit Abstand
+            const frame1Data = monitor.ctx.getImageData(0, 0, width, height);
+            
+            setTimeout(() => {
+                monitor.ctx.drawImage(monitor.video, 0, 0);
+                const frame2Data = monitor.ctx.getImageData(0, 0, width, height);
+                
+                // Teste verschiedene Punkte
+                for (let i = 0; i < samples; i++) {
+                    for (let j = 0; j < samples; j++) {
+                        const x = Math.floor((i + 0.5) * width / samples);
+                        const y = Math.floor((j + 0.5) * height / samples);
+                        const idx = (y * width + x) * 4;
+                        
+                        const diff = Math.abs(frame1Data.data[idx] - frame2Data.data[idx]) +
+                                    Math.abs(frame1Data.data[idx+1] - frame2Data.data[idx+1]) +
+                                    Math.abs(frame1Data.data[idx+2] - frame2Data.data[idx+2]);
+                        
+                        if (diff > maxDiff) {
+                            maxDiff = diff;
+                            bestX = x;
+                            bestY = y;
+                        }
+                    }
+                }
+                
+                if (maxDiff > 0) {
+                    console.log(`Aktivster Bereich gefunden bei (${bestX}, ${bestY}) mit Differenz: ${maxDiff}`);
+                    monitor.xInput.value = bestX;
+                    monitor.yInput.value = bestY;
+                    monitor.logEntry(`Aktiver Bereich: (${bestX}, ${bestY})`, true);
+                    
+                    // Sofort Pixel überwachen
+                    monitor.monitorPixel();
+                } else {
+                    console.log('Kein aktiver Bereich gefunden - Bild scheint statisch zu sein');
+                    monitor.logEntry('Kein aktiver Bereich gefunden', false);
+                }
+            }, 500); // Warte 500ms zwischen Frames
+        };
+    </script>
+</body>
+</html>
