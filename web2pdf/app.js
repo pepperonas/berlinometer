@@ -11,9 +11,8 @@ const PORT = process.env.PORT || 5081;
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-// Serve static files (favicon, images)
-app.use('/favicon.ico', express.static(path.join(__dirname, 'favicon.ico')));
-app.use('/web2pdf.jpg', express.static(path.join(__dirname, 'web2pdf.jpg')));
+// Serve static files (favicon, images, apple-touch-icon)
+app.use(express.static(__dirname));
 
 // Ensure downloads directory exists
 const downloadsDir = path.join(__dirname, 'downloads');
@@ -49,9 +48,12 @@ app.get('/', (req, res) => {
     <meta name="description" content="Konvertieren Sie Webseiten in hochwertige PDF-Dateien. Mit erweiterten Optionen für Layout, Ränder und Inhaltsfilterung. Kostenlos und einfach zu bedienen.">
     <meta property="og:title" content="Web2PDF - Website zu PDF Converter">
     <meta property="og:description" content="Konvertieren Sie Webseiten in hochwertige PDF-Dateien mit erweiterten Anpassungsoptionen.">
-    <meta property="og:image" content="/web2pdf.jpg">
+    <meta property="og:image" content="https://mrx3k1.de/web2pdf/web2pdf.jpg">
     <meta property="og:type" content="website">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="https://mrx3k1.de/web2pdf/favicon.ico">
+    <link rel="apple-touch-icon" href="https://mrx3k1.de/web2pdf/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://mrx3k1.de/web2pdf/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://mrx3k1.de/web2pdf/favicon-16x16.png">
     <style>
         :root {
             /* Farben */
@@ -357,6 +359,31 @@ app.get('/', (req, res) => {
         .footer a:hover {
             color: var(--text-primary);
         }
+        
+        .suggestion-chip {
+            background: rgba(104, 141, 177, 0.2);
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: var(--spacing-1) var(--spacing-3);
+            border-radius: var(--radius-xl);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-1);
+        }
+        
+        .suggestion-chip:hover {
+            background: rgba(104, 141, 177, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .suggestion-chip.added {
+            background: rgba(156, 182, 143, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
 
         @media (max-width: 768px) {
             .container {
@@ -498,6 +525,12 @@ app.get('/', (req, res) => {
 
                 <div class="form-group">
                     <label>DOM Elemente ausblenden:</label>
+                    <div id="elementSuggestions" style="display: none; margin-bottom: 1rem;">
+                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            💡 Vorschläge basierend auf der URL:
+                        </p>
+                        <div id="suggestionsList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                    </div>
                     <div id="hideElementsList">
                         <div class="hide-element-item">
                             <input type="text" class="hide-element-selector" placeholder="z.B. .back-to-top, class=&quot;nav-links&quot;, #cookie-banner">
@@ -524,6 +557,109 @@ app.get('/', (req, res) => {
     </footer>
 
     <script>
+        // Common selectors for different types of websites
+        const commonSelectors = {
+            'navigation': ['nav', '.navbar', '.navigation', '#navigation', '.header-nav', '.main-nav'],
+            'footer': ['footer', '.footer', '#footer', '.site-footer'],
+            'cookie': ['.cookie-banner', '#cookie-banner', '.cookie-notice', '.gdpr-notice', '.cookie-consent'],
+            'social': ['.social-links', '.social-media', '.share-buttons', '.social-icons'],
+            'ads': ['.ads', '.advertisement', '.banner-ad', '.google-ads', '[class*="ad-"]'],
+            'popup': ['.popup', '.modal', '.overlay', '[class*="popup"]'],
+            'chat': ['.chat-widget', '.intercom', '.crisp-client', '.tawk-widget', '#tidio-chat'],
+            'floating': ['.back-to-top', '.scroll-to-top', '.fab', '.floating-button', '[class*="float"]'],
+            'sidebar': ['.sidebar', '#sidebar', '.side-panel', '.aside'],
+            'comments': ['.comments', '#comments', '.disqus', '.comment-section']
+        };
+        
+        // URL-specific suggestions
+        function getSuggestionsForURL(url) {
+            const suggestions = [];
+            
+            // Add common elements
+            suggestions.push({ selector: 'nav', description: 'Navigation' });
+            suggestions.push({ selector: 'footer', description: 'Footer' });
+            suggestions.push({ selector: '.back-to-top', description: 'Scroll-Button' });
+            
+            // Check URL patterns
+            if (url.includes('github.com')) {
+                suggestions.push({ selector: '.Header', description: 'GitHub Header' });
+                suggestions.push({ selector: '.footer', description: 'GitHub Footer' });
+                suggestions.push({ selector: '.js-header-wrapper', description: 'Navigation' });
+            } else if (url.includes('wikipedia.org')) {
+                suggestions.push({ selector: '#mw-navigation', description: 'Wiki Navigation' });
+                suggestions.push({ selector: '.mw-footer', description: 'Wiki Footer' });
+                suggestions.push({ selector: '#p-personal', description: 'User Tools' });
+            } else if (url.includes('stackoverflow.com')) {
+                suggestions.push({ selector: '.top-bar', description: 'Top Bar' });
+                suggestions.push({ selector: '#sidebar', description: 'Sidebar' });
+                suggestions.push({ selector: '.js-consent-banner', description: 'Cookie Banner' });
+            }
+            
+            // Add cookie banners (common on most sites)
+            suggestions.push({ selector: '[class*="cookie"]', description: 'Cookie Banner' });
+            suggestions.push({ selector: '[class*="consent"]', description: 'Consent Dialog' });
+            
+            return suggestions;
+        }
+        
+        // Update suggestions when URL changes
+        document.getElementById('url').addEventListener('input', function(e) {
+            const url = e.target.value;
+            if (url.length > 10) {
+                updateSuggestions(url);
+            }
+        });
+        
+        function updateSuggestions(url) {
+            const suggestionsContainer = document.getElementById('elementSuggestions');
+            const suggestionsList = document.getElementById('suggestionsList');
+            
+            // Clear existing suggestions
+            suggestionsList.innerHTML = '';
+            
+            // Get suggestions for URL
+            const suggestions = getSuggestionsForURL(url);
+            
+            if (suggestions.length > 0) {
+                suggestionsContainer.style.display = 'block';
+                
+                suggestions.forEach(suggestion => {
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'suggestion-chip';
+                    chip.innerHTML = \`<span>\${suggestion.selector}</span> <small>(\${suggestion.description})</small>\`;
+                    chip.onclick = function() {
+                        addSelectorFromSuggestion(suggestion.selector);
+                        chip.classList.add('added');
+                    };
+                    suggestionsList.appendChild(chip);
+                });
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
+        }
+        
+        function addSelectorFromSuggestion(selector) {
+            // Check if selector already exists
+            const existingSelectors = Array.from(document.querySelectorAll('.hide-element-selector'))
+                .map(input => input.value.trim())
+                .filter(val => val.length > 0);
+            
+            if (!existingSelectors.includes(selector)) {
+                // Find first empty input or add new one
+                let emptyInput = Array.from(document.querySelectorAll('.hide-element-selector'))
+                    .find(input => input.value.trim() === '');
+                
+                if (!emptyInput) {
+                    addHideElement();
+                    emptyInput = Array.from(document.querySelectorAll('.hide-element-selector')).pop();
+                }
+                
+                emptyInput.value = selector;
+                emptyInput.focus();
+            }
+        }
+        
         // Handle no margins checkbox
         document.getElementById('noMargins').addEventListener('change', function(e) {
             const marginInputs = ['marginTop', 'marginBottom', 'marginLeft', 'marginRight'];
@@ -663,7 +799,7 @@ app.post('/convert', async (req, res) => {
 
         // Launch browser
         const browser = await puppeteer.launch({
-            headless: 'new',
+            headless: true,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -705,7 +841,7 @@ app.post('/convert', async (req, res) => {
 
         // Additional wait time if specified
         if (waitForTimeout > 0) {
-            await page.waitForTimeout(waitForTimeout);
+            await new Promise(resolve => setTimeout(resolve, waitForTimeout));
         }
 
         // Hide specified DOM elements
