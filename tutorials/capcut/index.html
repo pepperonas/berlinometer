@@ -1,0 +1,3408 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CapCut Tutorial - Professionelle Videobearbeitung Masterclass</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2C2E3B;
+            --primary-light: #3A3D4F;
+            --primary-dark: #1F2029;
+            --accent-color: #6366F1;
+            --accent-light: #818CF8;
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --error-color: #EF4444;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B7C3;
+            --text-muted: #8B92A5;
+            --background: #0F1017;
+            --surface: #1A1D26;
+            --surface-hover: #212530;
+            --border: #2D3142;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Glass morphism effect */
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+        }
+
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Header and Navigation */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-primary);
+            background: var(--glass-bg);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--surface);
+            z-index: 999;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 120px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 2rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0 6rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            margin: -2rem -2rem 4rem;
+            border-radius: 0 0 32px 32px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Section Styles */
+        .section {
+            margin-bottom: 4rem;
+            scroll-margin-top: 140px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: var(--surface);
+            border-radius: 16px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .section-icon {
+            font-size: 2rem;
+            color: var(--accent-color);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .section-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-left: auto;
+        }
+
+        /* Subsection Grid */
+        .subsections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .subsection {
+            padding: 1.5rem;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .subsection:hover {
+            transform: translateY(-2px);
+            background: var(--surface-hover);
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow);
+        }
+
+        .subsection-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .subsection-icon {
+            color: var(--accent-color);
+            font-size: 1.25rem;
+        }
+
+        .subsection-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .subsection-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .subsection-content ul {
+            margin: 0.5rem 0;
+            padding-left: 1rem;
+        }
+
+        .subsection-content li {
+            margin: 0.25rem 0;
+        }
+
+        /* Special Cards */
+        .feature-card {
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin: 2rem 0;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .tip-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--success-color);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .tip-card::before {
+            content: "💡";
+            margin-right: 0.5rem;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--primary-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .subsections {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 0 1rem;
+            }
+        }
+
+        /* Keyboard Navigation Highlight */
+        .keyboard-focus {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="#" class="logo">CapCut Masterclass</a>
+            <ul class="nav-menu">
+                <li><a href="#grundlagen" class="nav-link">Grundlagen</a></li>
+                <li><a href="#interface" class="nav-link">Interface</a></li>
+                <li><a href="#schnitt" class="nav-link">Schnitt</a></li>
+                <li><a href="#effekte" class="nav-link">Effekte</a></li>
+                <li><a href="#audio" class="nav-link">Audio</a></li>
+                <li><a href="#color" class="nav-link">Color</a></li>
+                <li><a href="#vfx" class="nav-link">VFX</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>CapCut Masterclass</h1>
+            <p class="hero-subtitle">
+                Das ultimative Tutorial für professionelle Videobearbeitung - 
+                von den Grundlagen bis zu fortgeschrittenen VFX-Techniken
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">150+</div>
+                    <div class="stat-label">Techniken</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Kategorien</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">Kreativität</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Grundlagen Section -->
+        <section id="grundlagen" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">foundation</span>
+                <h2 class="section-title">1. GRUNDLAGEN</h2>
+                <span class="section-subtitle">15+ Fundamentale Konzepte</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">download</span>
+                        <h3 class="subsection-title">Installation & Setup</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Komplette Installationsanleitung für alle Plattformen:</p>
+                        <ul>
+                            <li><strong>Desktop:</strong> Windows 10/11, macOS 10.15+</li>
+                            <li><strong>Mobile:</strong> iOS 11.0+, Android 5.0+</li>
+                            <li><strong>Web:</strong> Chrome, Safari, Firefox Support</li>
+                            <li>Hardware-Beschleunigung aktivieren</li>
+                            <li>Proxy-Server Konfiguration</li>
+                        </ul>
+                        <div class="tip-card">
+                            Mindestens 8GB RAM und dedizierte GPU für 4K-Bearbeitung empfohlen
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">memory</span>
+                        <h3 class="subsection-title">Systemanforderungen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Detaillierte Hardware-Empfehlungen:</p>
+                        <ul>
+                            <li><strong>CPU:</strong> Intel i5/AMD Ryzen 5 (Minimum)</li>
+                            <li><strong>RAM:</strong> 8GB (16GB für 4K)</li>
+                            <li><strong>GPU:</strong> GTX 1060/RX 580 oder besser</li>
+                            <li><strong>Speicher:</strong> 10GB frei + Projektgröße</li>
+                            <li><strong>Codec-Support:</strong> H.264, H.265, ProRes</li>
+                        </ul>
+                        <div class="code-block">
+Benchmark Test:
+1080p: 60fps Echtzeit-Preview
+4K: 30fps mit Proxy-Workflow
+8K: Rendering-basiert
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">account_circle</span>
+                        <h3 class="subsection-title">Account & Cloud-Sync</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Optimale Account-Konfiguration:</p>
+                        <ul>
+                            <li>CapCut Account erstellen und verifizieren</li>
+                            <li>Cloud-Speicher aktivieren (bis 1GB kostenlos)</li>
+                            <li>Projekt-Synchronisation zwischen Geräten</li>
+                            <li>Template und Asset-Bibliothek verwalten</li>
+                            <li>Collaborative Editing Setup</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">dashboard</span>
+                        <h3 class="subsection-title">Interface-Übersicht</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Vollständige UI-Navigation:</p>
+                        <ul>
+                            <li><strong>Timeline:</strong> Multi-Track Editing-Bereich</li>
+                            <li><strong>Preview:</strong> Echtzeit-Wiedergabe-Fenster</li>
+                            <li><strong>Media Bin:</strong> Asset-Verwaltung</li>
+                            <li><strong>Effect Panel:</strong> Filter und Effekte</li>
+                            <li><strong>Inspector:</strong> Eigenschaften-Editor</li>
+                            <li><strong>Tool Panel:</strong> Schnitt und Bearbeitungstools</li>
+                        </ul>
+                        <div class="feature-card">
+                            <h3>🎯 Pro-Tipp</h3>
+                            <p>Nutze Workspace-Templates für verschiedene Editing-Stile: Schnitt, Color, Audio, VFX</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">settings</span>
+                        <h3 class="subsection-title">Projekteinstellungen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Optimale Projekt-Konfiguration:</p>
+                        <ul>
+                            <li><strong>Auflösung:</strong> 1080p, 4K, Custom</li>
+                            <li><strong>Frame Rate:</strong> 24, 30, 60, 120fps</li>
+                            <li><strong>Aspect Ratio:</strong> 16:9, 9:16, 1:1, 4:3</li>
+                            <li><strong>Color Space:</strong> Rec.709, Rec.2020, sRGB</li>
+                            <li><strong>Audio Sample Rate:</strong> 48kHz Standard</li>
+                        </ul>
+                        <div class="code-block">
+Empfohlene Settings:
+• YouTube: 1080p, 30fps, 16:9
+• TikTok: 1080p, 30fps, 9:16  
+• Instagram: 1080p, 30fps, 1:1
+• Cinema: 4K, 24fps, 21:9
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">file_upload</span>
+                        <h3 class="subsection-title">Import-Funktionen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Alle Import-Methoden und -Formate:</p>
+                        <ul>
+                            <li><strong>Video:</strong> MP4, MOV, AVI, MKV, WebM</li>
+                            <li><strong>Audio:</strong> MP3, WAV, AAC, M4A, FLAC</li>
+                            <li><strong>Bilder:</strong> JPG, PNG, GIF, HEIC, RAW</li>
+                            <li><strong>Live Photos:</strong> iPhone Motion Photos</li>
+                            <li><strong>Batch Import:</strong> Mehrere Dateien gleichzeitig</li>
+                            <li><strong>Camera Roll:</strong> Direkter Gerätezugriff</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">verified</span>
+                        <h3 class="subsection-title">Dateiformate & Kompatibilität</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Unterstützte Formate und Codec-Details:</p>
+                        <ul>
+                            <li><strong>H.264:</strong> Standard-Codec, beste Kompatibilität</li>
+                            <li><strong>H.265/HEVC:</strong> Höhere Kompression, moderne Geräte</li>
+                            <li><strong>ProRes:</strong> Professional Workflow (iOS)</li>
+                            <li><strong>VP9:</strong> Web-optimiert, YouTube nativ</li>
+                            <li><strong>AV1:</strong> Zukunftssicher, neue Plattformen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">view_quilt</span>
+                        <h3 class="subsection-title">Workspace-Anpassung</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Interface nach Workflow optimieren:</p>
+                        <ul>
+                            <li>Panel-Layout frei anpassbar</li>
+                            <li>Keyboard Shortcuts personalisieren</li>
+                            <li>Tool-Bars konfigurieren</li>
+                            <li>Multi-Monitor Setup</li>
+                            <li>Template-Workspaces speichern</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">keyboard</span>
+                        <h3 class="subsection-title">Shortcuts-Übersicht</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Wichtigste Tastaturkürzel:</p>
+                        <div class="code-block">
+GRUNDLAGEN:
+• Leertaste: Play/Pause
+• Cmd/Ctrl + Z: Undo
+• Cmd/Ctrl + S: Save
+• Cmd/Ctrl + I: Import
+
+SCHNITT:
+• B: Blade Tool
+• V: Selection Tool  
+• R: Rate & Duration
+• T: Text Tool
+
+TIMELINE:
+• +/-: Zoom In/Out
+• ←/→: Frame-by-Frame
+• ↑/↓: Track Selection
+• Home/End: Timeline Start/End
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">backup</span>
+                        <h3 class="subsection-title">Backup & Versionierung</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Projekt-Sicherheit und Versions-Management:</p>
+                        <ul>
+                            <li>Auto-Save alle 5 Minuten aktivieren</li>
+                            <li>Cloud-Backup für kritische Projekte</li>
+                            <li>Lokale Backup-Kopien erstellen</li>
+                            <li>Projekt-Versionen vor größeren Änderungen</li>
+                            <li>Media-Files extern sichern</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">folder_shared</span>
+                        <h3 class="subsection-title">Medien-Organisation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Effiziente Asset-Verwaltung:</p>
+                        <ul>
+                            <li>Ordner-Struktur in Media Bin</li>
+                            <li>Tags und Labels für Assets</li>
+                            <li>Favoriten-System</li>
+                            <li>Metadaten-Verwaltung</li>
+                            <li>Proxy-Media für Performance</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">speed</span>
+                        <h3 class="subsection-title">Performance-Optimierung</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Maximale Editing-Geschwindigkeit:</p>
+                        <ul>
+                            <li>GPU-Beschleunigung aktivieren</li>
+                            <li>RAM-Allocation optimieren</li>
+                            <li>Cache-Ordner auf SSD</li>
+                            <li>Preview-Qualität anpassen</li>
+                            <li>Background-Rendering nutzen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">screen_share</span>
+                        <h3 class="subsection-title">Export-Grundlagen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Optimale Export-Einstellungen:</p>
+                        <ul>
+                            <li><strong>Qualität:</strong> Auto, High, Custom</li>
+                            <li><strong>Bitrate:</strong> Variable vs. Constant</li>
+                            <li><strong>Kompression:</strong> H.264 vs. H.265</li>
+                            <li><strong>Audio:</strong> 128-320 kbps je nach Zweck</li>
+                            <li><strong>Metadata:</strong> Title, Tags, Description</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">security</span>
+                        <h3 class="subsection-title">Datenschutz & Sicherheit</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Sichere Nutzung von CapCut:</p>
+                        <ul>
+                            <li>Datenschutz-Einstellungen prüfen</li>
+                            <li>Cloud-Upload kontrollieren</li>
+                            <li>Wasserzeichen-Optionen</li>
+                            <li>Lokale vs. Cloud-Verarbeitung</li>
+                            <li>Copyright-sichere Musik nutzen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">update</span>
+                        <h3 class="subsection-title">Updates & Features</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Immer auf dem neuesten Stand:</p>
+                        <ul>
+                            <li>Auto-Update aktivieren</li>
+                            <li>Beta-Features testen</li>
+                            <li>Release Notes verfolgen</li>
+                            <li>Community-Feedback geben</li>
+                            <li>Feature-Requests einreichen</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interface Mastery Section -->
+        <section id="interface" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">web</span>
+                <h2 class="section-title">2. INTERFACE MASTERY</h2>
+                <span class="section-subtitle">20+ Interface-Funktionen</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">timeline</span>
+                        <h3 class="subsection-title">Timeline-Navigation Mastery</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Timeline-Kontrolle:</p>
+                        <ul>
+                            <li><strong>Zoom-Controls:</strong> Mousewheel, Pinch, Shortcuts</li>
+                            <li><strong>Scrubbing:</strong> Präzise Frame-Navigation</li>
+                            <li><strong>Snap-Modi:</strong> Magnetic, Grid, Markers</li>
+                            <li><strong>Loop-Playback:</strong> Bereich-Wiederholen</li>
+                            <li><strong>Shuttle-Controls:</strong> Variable Geschwindigkeit</li>
+                        </ul>
+                        <div class="code-block">
+Timeline Navigation:
+• Cmd/Ctrl + Plus: Zoom In
+• Cmd/Ctrl + Minus: Zoom Out  
+• Shift + Z: Fit to Window
+• Alt + Wheel: Horizontal Scroll
+• Space: Play/Pause
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">library_music</span>
+                        <h3 class="subsection-title">Multi-Track-Editing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Komplexe Track-Verwaltung:</p>
+                        <ul>
+                            <li><strong>Video-Tracks:</strong> Unbegrenzte Anzahl</li>
+                            <li><strong>Audio-Tracks:</strong> Dedicated Audio-Editing</li>
+                            <li><strong>Track-Locks:</strong> Versehentliche Änderungen vermeiden</li>
+                            <li><strong>Track-Muting:</strong> Solo und Mute-Funktionen</li>
+                            <li><strong>Track-Höhe:</strong> Anpassbare Darstellung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">zoom_in</span>
+                        <h3 class="subsection-title">Zoom & Scrubbing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Präzise Timeline-Kontrolle:</p>
+                        <ul>
+                            <li>Frame-by-Frame Scrubbing</li>
+                            <li>Audio-Waveform Zoom</li>
+                            <li>Adaptive Zoom-Level</li>
+                            <li>Mini-Timeline Navigator</li>
+                            <li>Magnetic Playhead</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">bookmark</span>
+                        <h3 class="subsection-title">Marker & Annotations</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Intelligente Projekt-Markierungen:</p>
+                        <ul>
+                            <li><strong>Colored Markers:</strong> Kategorisierte Markierungen</li>
+                            <li><strong>Text Notes:</strong> Detaillierte Anmerkungen</li>
+                            <li><strong>Time Markers:</strong> Sync-Punkte setzen</li>
+                            <li><strong>To-Do Markers:</strong> Bearbeitungs-Reminders</li>
+                            <li><strong>Export Markers:</strong> Kapitel-Punkte</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">folder</span>
+                        <h3 class="subsection-title">Bin-Organisation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Asset-Verwaltung:</p>
+                        <ul>
+                            <li>Hierarchische Ordner-Struktur</li>
+                            <li>Smart Collections und Filter</li>
+                            <li>Metadata-Tags und Keywords</li>
+                            <li>Custom Thumbnails</li>
+                            <li>Asset-Linking und Proxy-Management</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">preview</span>
+                        <h3 class="subsection-title">Preview-Einstellungen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Optimale Wiedergabe-Qualität:</p>
+                        <ul>
+                            <li><strong>Quality Settings:</strong> Full, Half, Quarter</li>
+                            <li><strong>Render Cache:</strong> Smart Preview</li>
+                            <li><strong>Audio Monitoring:</strong> Realtime Levels</li>
+                            <li><strong>Color Calibration:</strong> Monitor-Profile</li>
+                            <li><strong>Fullscreen Mode:</strong> Client Review</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">flash_on</span>
+                        <h3 class="subsection-title">Render-Preview vs. Echtzeit</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Performance-Management:</p>
+                        <ul>
+                            <li>Background Rendering aktivieren</li>
+                            <li>Smart Render-Points setzen</li>
+                            <li>Real-time Effects vs. Render-basiert</li>
+                            <li>GPU-Acceleration nutzen</li>
+                            <li>Cache-Strategien optimieren</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">video_settings</span>
+                        <h3 class="subsection-title">Proxy-Workflow</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Effiziente 4K/8K-Bearbeitung:</p>
+                        <ul>
+                            <li>Auto-Proxy Generation</li>
+                            <li>Custom Proxy-Settings</li>
+                            <li>Offline/Online-Workflow</li>
+                            <li>Proxy-Linking verwalten</li>
+                            <li>Final Export mit Original-Media</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">dashboard_customize</span>
+                        <h3 class="subsection-title">Custom Workspace Layouts</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Personalisierte Arbeitsumgebungen:</p>
+                        <ul>
+                            <li><strong>Editing Layout:</strong> Timeline-fokussiert</li>
+                            <li><strong>Color Layout:</strong> Scopes und Tools</li>
+                            <li><strong>Audio Layout:</strong> Mixer und Levels</li>
+                            <li><strong>Effects Layout:</strong> Browser und Controls</li>
+                            <li><strong>Review Layout:</strong> Fullscreen Preview</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">extension</span>
+                        <h3 class="subsection-title">Tool-Panels Customization</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Interface-Optimierung:</p>
+                        <ul>
+                            <li>Panel-Docking und Floating</li>
+                            <li>Custom Toolbar-Arrangement</li>
+                            <li>Context-sensitive Panels</li>
+                            <li>Shortcut-Button Customization</li>
+                            <li>Workspace-Templates speichern</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">analytics</span>
+                        <h3 class="subsection-title">Monitoring & Scopes</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Technische Video-Analyse:</p>
+                        <ul>
+                            <li><strong>Waveform Monitor:</strong> Helligkeit analysieren</li>
+                            <li><strong>Vectorscope:</strong> Farbsättigung prüfen</li>
+                            <li><strong>Histogram:</strong> Tonwert-Verteilung</li>
+                            <li><strong>Audio Levels:</strong> Peak und RMS</li>
+                            <li><strong>Frame Info:</strong> Technische Details</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">compare_arrows</span>
+                        <h3 class="subsection-title">Split-View & Comparison</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Before/After Vergleiche:</p>
+                        <ul>
+                            <li>Side-by-Side Preview</li>
+                            <li>Wipe-Transition Compare</li>
+                            <li>A/B Testing für Effects</li>
+                            <li>Reference Monitor Setup</li>
+                            <li>Multi-Angle Viewing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">device_hub</span>
+                        <h3 class="subsection-title">Multi-Monitor Setup</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professional Multi-Display Workflow:</p>
+                        <ul>
+                            <li>Primary Timeline Monitor</li>
+                            <li>Dedicated Preview Monitor</li>
+                            <li>Reference/Client Monitor</li>
+                            <li>Scope und Tool Monitor</li>
+                            <li>Touch-Panel Integration</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">gesture</span>
+                        <h3 class="subsection-title">Touch & Gesture Controls</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Intuitive Touch-Navigation:</p>
+                        <ul>
+                            <li>Multi-Touch Timeline-Zoom</li>
+                            <li>Swipe-Gesten für Navigation</li>
+                            <li>Tap-to-Edit Funktionen</li>
+                            <li>Pressure-Sensitive Tools</li>
+                            <li>Palm Rejection Settings</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">search</span>
+                        <h3 class="subsection-title">Media Browser & Search</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Intelligente Asset-Suche:</p>
+                        <ul>
+                            <li>Text-basierte Suche</li>
+                            <li>Visual Similarity Search</li>
+                            <li>Metadata-Filter</li>
+                            <li>Date Range Filtering</li>
+                            <li>AI-Content Detection</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">layers</span>
+                        <h3 class="subsection-title">Layer-Management</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Komplexe Komposition-Kontrolle:</p>
+                        <ul>
+                            <li>Layer-Hierarchie verwalten</li>
+                            <li>Blend-Mode Selection</li>
+                            <li>Opacity und Transform</li>
+                            <li>Parent-Child Relationships</li>
+                            <li>Group-Layer Organization</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">history</span>
+                        <h3 class="subsection-title">Undo/Redo System</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Erweiterte History-Kontrolle:</p>
+                        <ul>
+                            <li>Unlimited Undo-Steps</li>
+                            <li>Selective Undo für Effects</li>
+                            <li>History Browser</li>
+                            <li>Snapshot-System</li>
+                            <li>Auto-Save Checkpoints</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">library_add</span>
+                        <h3 class="subsection-title">Template & Asset Libraries</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Effiziente Template-Nutzung:</p>
+                        <ul>
+                            <li>Built-in Template Collection</li>
+                            <li>Custom Template Creation</li>
+                            <li>Asset Library Management</li>
+                            <li>Shared Team Libraries</li>
+                            <li>Template-Update Workflows</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">tune</span>
+                        <h3 class="subsection-title">Precision Controls</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Frame-genaue Bearbeitung:</p>
+                        <ul>
+                            <li>Subframe-Accuracy für Audio</li>
+                            <li>Numerical Input-Fields</li>
+                            <li>Relative/Absolute Positioning</li>
+                            <li>Grid-Snap und Alignment</li>
+                            <li>Measurement Tools</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">format_paint</span>
+                        <h3 class="subsection-title">UI Themes & Customization</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Personalisierte Interface-Gestaltung:</p>
+                        <ul>
+                            <li>Dark/Light Theme Toggle</li>
+                            <li>Custom Color Schemes</li>
+                            <li>UI Element Sizing</li>
+                            <li>Font Size Adjustment</li>
+                            <li>High Contrast Modes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Schnitt-Techniken Section -->
+        <section id="schnitt" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">content_cut</span>
+                <h2 class="section-title">3. SCHNITT-TECHNIKEN</h2>
+                <span class="section-subtitle">25+ Professionelle Methoden</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">horizontal_split</span>
+                        <h3 class="subsection-title">Blade Tool & Präzisionsschnitt</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Meisterhafte Schnitt-Präzision:</p>
+                        <ul>
+                            <li><strong>Razor Blade:</strong> Frame-genaue Schnitte</li>
+                            <li><strong>Multi-Track Cut:</strong> Alle Tracks gleichzeitig</li>
+                            <li><strong>Audio-Only Cut:</strong> Video unverändert lassen</li>
+                            <li><strong>Snap-to-Beat:</strong> Musik-synchrone Schnitte</li>
+                            <li><strong>Auto-Cut Detection:</strong> Szenenwechsel erkennen</li>
+                        </ul>
+                        <div class="code-block">
+Blade Tool Shortcuts:
+• B: Blade Tool aktivieren
+• Cmd/Ctrl + B: Schnitt an Playhead
+• Shift + B: Multi-Track Schnitt
+• Alt + B: Audio-Only Schnitt
+• Cmd/Ctrl + Shift + B: Beat-Sync Schnitt
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">swap_horiz</span>
+                        <h3 class="subsection-title">Ripple, Roll & Slip Edit</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Erweiterte Editing-Modi:</p>
+                        <ul>
+                            <li><strong>Ripple Edit:</strong> Timeline automatisch anpassen</li>
+                            <li><strong>Roll Edit:</strong> Angrenzende Clips trimmen</li>
+                            <li><strong>Slip Edit:</strong> Clip-Inhalt ohne Längenänderung</li>
+                            <li><strong>Slide Edit:</strong> Clip zwischen anderen verschieben</li>
+                            <li><strong>Extend Edit:</strong> Bis Playhead erweitern</li>
+                        </ul>
+                        <div class="tip-card">
+                            Ripple Edit ist ideal für Interview-Schnitte, Roll Edit für nahtlose Übergänge
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">call_split</span>
+                        <h3 class="subsection-title">L-Cut & J-Cut Mastery</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Dialog-Bearbeitung:</p>
+                        <ul>
+                            <li><strong>L-Cut:</strong> Audio läuft länger als Video</li>
+                            <li><strong>J-Cut:</strong> Audio startet vor Video</li>
+                            <li><strong>Interview-Flow:</strong> Natürliche Gesprächs-Rhythmen</li>
+                            <li><strong>Reaction Shots:</strong> Emotionale Reaktionen zeigen</li>
+                            <li><strong>Overlap Techniques:</strong> Unterbrechungen natürlich gestalten</li>
+                        </ul>
+                        <div class="feature-card">
+                            <h3>🎬 Cinematic Tip</h3>
+                            <p>L-Cuts und J-Cuts machen Dialoge 10x natürlicher. 80% aller Hollywood-Schnitte nutzen diese Technik!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">compare</span>
+                        <h3 class="subsection-title">Match Cut Techniken</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Visuell verbindende Schnitte:</p>
+                        <ul>
+                            <li><strong>Action Match:</strong> Bewegung über Schnitt fortführen</li>
+                            <li><strong>Eye-Line Match:</strong> Blickrichtungen verbinden</li>
+                            <li><strong>Shape Match:</strong> Ähnliche Formen verknüpfen</li>
+                            <li><strong>Color Match:</strong> Farbharmonien schaffen</li>
+                            <li><strong>Graphic Match:</strong> Visuelle Ähnlichkeiten nutzen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">fast_forward</span>
+                        <h3 class="subsection-title">Jump Cut Strategien</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Moderne Schnitt-Ästhetik:</p>
+                        <ul>
+                            <li><strong>Intentional Jump Cuts:</strong> Dynamik und Energie</li>
+                            <li><strong>Time Compression:</strong> Lange Prozesse verkürzen</li>
+                            <li><strong>B-Roll Integration:</strong> Jump Cuts verstecken</li>
+                            <li><strong>Audio Continuity:</strong> Stimme über Schnitte</li>
+                            <li><strong>Zoom-Cut Variations:</strong> Alternative zu harten Schnitten</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">video_library</span>
+                        <h3 class="subsection-title">Cutaway & B-Roll Integration</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle B-Roll-Nutzung:</p>
+                        <ul>
+                            <li><strong>Cutaway Planning:</strong> Ergänzende Aufnahmen</li>
+                            <li><strong>Context B-Roll:</strong> Umgebung und Details</li>
+                            <li><strong>Reaction Shots:</strong> Emotionale Resonanz</li>
+                            <li><strong>Transition B-Roll:</strong> Sanfte Übergänge</li>
+                            <li><strong>Problem Solving:</strong> Audio-Probleme überbrücken</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">movie_filter</span>
+                        <h3 class="subsection-title">Montage-Sequenzen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Emotionale Erzähltechniken:</p>
+                        <ul>
+                            <li><strong>Rhythmic Montage:</strong> Musik-synchrone Schnitte</li>
+                            <li><strong>Thematic Montage:</strong> Inhaltliche Verbindungen</li>
+                            <li><strong>Time-Lapse Montage:</strong> Zeitliche Kompression</li>
+                            <li><strong>Parallel Montage:</strong> Simultane Handlungen</li>
+                            <li><strong>Contrast Montage:</strong> Gegensätze hervorheben</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">view_column</span>
+                        <h3 class="subsection-title">Split Screen Editing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Multi-perspektivische Darstellung:</p>
+                        <ul>
+                            <li><strong>Dual Screen:</strong> Zwei gleichzeitige Handlungen</li>
+                            <li><strong>Multi-Panel:</strong> Mehrere Perspektiven</li>
+                            <li><strong>Phone Conversation:</strong> Beide Gesprächspartner</li>
+                            <li><strong>Before/After:</strong> Vergleichsdarstellungen</li>
+                            <li><strong>Creative Layouts:</strong> Unkonventionelle Anordnungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">picture_in_picture</span>
+                        <h3 class="subsection-title">Picture-in-Picture</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Layered Visual Storytelling:</p>
+                        <ul>
+                            <li><strong>Commentary PiP:</strong> Reaktions-Videos</li>
+                            <li><strong>Tutorial PiP:</strong> Webcam + Screen Recording</li>
+                            <li><strong>News Style:</strong> Reporter + Background</li>
+                            <li><strong>Creative Shapes:</strong> Runde, polygonale Rahmen</li>
+                            <li><strong>Animated PiP:</strong> Ein- und Ausblendungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">videocam</span>
+                        <h3 class="subsection-title">Multi-Cam Editing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Multi-Kamera-Workflows:</p>
+                        <ul>
+                            <li><strong>Sync-Methoden:</strong> Audio, Timecode, Clap-Board</li>
+                            <li><strong>Camera Selection:</strong> Schnelle Kamera-Wechsel</li>
+                            <li><strong>Angle Assembly:</strong> Multi-Cam-Clip erstellen</li>
+                            <li><strong>Color Matching:</strong> Kameras angleichen</li>
+                            <li><strong>Backup Cameras:</strong> Sicherheits-Aufnahmen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">sync</span>
+                        <h3 class="subsection-title">Sync-Probleme lösen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Audio-Video-Synchronisation:</p>
+                        <ul>
+                            <li><strong>Manual Sync:</strong> Waveform-basiert</li>
+                            <li><strong>Auto-Sync:</strong> AI-basierte Erkennung</li>
+                            <li><strong>Drift Correction:</strong> Langzeit-Synchronisation</li>
+                            <li><strong>Audio Replacement:</strong> Bessere Audio-Quellen</li>
+                            <li><strong>Lip-Sync Check:</strong> Genauigkeitsprüfung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">speed</span>
+                        <h3 class="subsection-title">Speed Ramping</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Dynamische Geschwindigkeits-Effekte:</p>
+                        <ul>
+                            <li><strong>Smooth Ramps:</strong> Sanfte Beschleunigung</li>
+                            <li><strong>Impact Moments:</strong> Plötzliche Verlangsamung</li>
+                            <li><strong>Sport Highlights:</strong> Action-Betonung</li>
+                            <li><strong>Music Sync:</strong> Beat-angepasste Rampen</li>
+                            <li><strong>Compound Ramps:</strong> Mehrfache Geschwindigkeitsänderungen</li>
+                        </ul>
+                        <div class="code-block">
+Speed Ramping Workflow:
+1. Clip markieren
+2. Speed/Duration anpassen  
+3. Keyframes für Rampen setzen
+4. Smooth-Interpolation aktivieren
+5. Audio-Pitch entsprechend anpassen
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">pause</span>
+                        <h3 class="subsection-title">Freeze Frames</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Dramatische Stillstände:</p>
+                        <ul>
+                            <li><strong>Action Freeze:</strong> Höhepunkt-Momente</li>
+                            <li><strong>End Frames:</strong> Letzte Einstellung halten</li>
+                            <li><strong>Transition Freeze:</strong> Übergangs-Effekte</li>
+                            <li><strong>Photo Mode:</strong> Standbild-Ästhetik</li>
+                            <li><strong>Selective Freeze:</strong> Teile des Bildes einfrieren</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">access_time</span>
+                        <h3 class="subsection-title">Time Remapping</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Erweiterte Zeit-Manipulation:</p>
+                        <ul>
+                            <li><strong>Variable Speed:</strong> Unterschiedliche Bereiche</li>
+                            <li><strong>Reverse Sections:</strong> Rückwärts-Segmente</li>
+                            <li><strong>Loop Integration:</strong> Wiederholungen einbauen</li>
+                            <li><strong>Time Stretch:</strong> Länge ohne Pitch-Änderung</li>
+                            <li><strong>Optical Flow:</strong> Smooth Slow-Motion</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">replay</span>
+                        <h3 class="subsection-title">Reverse Motion</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Rückwärts-Effekte meistern:</p>
+                        <ul>
+                            <li><strong>Full Reverse:</strong> Komplette Umkehrung</li>
+                            <li><strong>Boomerang Effect:</strong> Hin und zurück</li>
+                            <li><strong>Reverse Reveals:</strong> Rückwärts-Enthüllungen</li>
+                            <li><strong>Audio Handling:</strong> Rückwärts-Audio gestalten</li>
+                            <li><strong>Creative Applications:</strong> Magische Effekte</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">shuffle</span>
+                        <h3 class="subsection-title">Cross-Cutting</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Parallele Handlungsstränge:</p>
+                        <ul>
+                            <li><strong>Parallel Action:</strong> Simultane Ereignisse</li>
+                            <li><strong>Tension Building:</strong> Spannung aufbauen</li>
+                            <li><strong>Time Comparison:</strong> Verschiedene Zeitpunkte</li>
+                            <li><strong>Contrast Cutting:</strong> Gegensätze betonen</li>
+                            <li><strong>Convergence Editing:</strong> Handlungen zusammenführen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">music_note</span>
+                        <h3 class="subsection-title">Music-Video Editing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Rhythmus-basierte Schnitt-Techniken:</p>
+                        <ul>
+                            <li><strong>Beat Sync:</strong> Schnitte auf Musik-Takt</li>
+                            <li><strong>Visual Rhythm:</strong> Bildrhythmus entwickeln</li>
+                            <li><strong>Instrument Isolation:</strong> Einzelne Instrumente betonen</li>
+                            <li><strong>Lyric Visualization:</strong> Textinhalte bildlich umsetzen</li>
+                            <li><strong>Energy Curves:</strong> Musikalische Dynamik visualisieren</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">trending_up</span>
+                        <h3 class="subsection-title">Pacing & Rhythm</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Narrative Geschwindigkeit kontrollieren:</p>
+                        <ul>
+                            <li><strong>Build-Up Pacing:</strong> Spannung steigern</li>
+                            <li><strong>Emotional Beats:</strong> Gefühlsrhythmen</li>
+                            <li><strong>Information Density:</strong> Informations-Geschwindigkeit</li>
+                            <li><strong>Breathing Room:</strong> Ruhepausen einbauen</li>
+                            <li><strong>Climax Timing:</strong> Höhepunkt-Positionierung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">rule</span>
+                        <h3 class="subsection-title">Continuity Editing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Nahtlose Erzähl-Kontinuität:</p>
+                        <ul>
+                            <li><strong>180° Rule:</strong> Achsen-Kontinuität</li>
+                            <li><strong>30° Rule:</strong> Kamera-Winkel Variationen</li>
+                            <li><strong>Screen Direction:</strong> Bewegungsrichtungen</li>
+                            <li><strong>Prop Continuity:</strong> Requisiten-Konsistenz</li>
+                            <li><strong>Lighting Continuity:</strong> Beleuchtungs-Konsistenz</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">auto_awesome</span>
+                        <h3 class="subsection-title">Creative Transitions</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Innovative Übergangs-Techniken:</p>
+                        <ul>
+                            <li><strong>Object Wipes:</strong> Objekte als Übergänge</li>
+                            <li><strong>Light Flares:</strong> Lichtblitze nutzen</li>
+                            <li><strong>Motion Blur:</strong> Bewegungsunschärfe</li>
+                            <li><strong>Zoom Transitions:</strong> Zoom-basierte Übergänge</li>
+                            <li><strong>Invisible Cuts:</strong> Versteckte Schnitte</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">smart_display</span>
+                        <h3 class="subsection-title">Social Media Editing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Plattform-spezifische Techniken:</p>
+                        <ul>
+                            <li><strong>Vertical Editing:</strong> 9:16 Format optimieren</li>
+                            <li><strong>Hook Creation:</strong> Aufmerksamkeit in ersten 3 Sekunden</li>
+                            <li><strong>Loop Design:</strong> Nahtlose Wiederholungen</li>
+                            <li><strong>Text Integration:</strong> Subtitles und Captions</li>
+                            <li><strong>Platform Variants:</strong> Multiple Aspect Ratios</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">psychology</span>
+                        <h3 class="subsection-title">Psychological Editing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Emotionale Wirkung durch Schnitt:</p>
+                        <ul>
+                            <li><strong>Kuleshov Effect:</strong> Kontext schafft Bedeutung</li>
+                            <li><strong>Emotional Arcs:</strong> Gefühlsverläufe gestalten</li>
+                            <li><strong>Subliminal Cuts:</strong> Unterschwellige Einflüsse</li>
+                            <li><strong>Tension Manipulation:</strong> Spannung steuern</li>
+                            <li><strong>Viewer Psychology:</strong> Zuschauerführung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">inventory</span>
+                        <h3 class="subsection-title">Advanced Assembly</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Komplexe Projekt-Organisation:</p>
+                        <ul>
+                            <li><strong>Rough Cut Assembly:</strong> Basis-Struktur</li>
+                            <li><strong>Fine Cut Refinement:</strong> Präzise Verfeinerung</li>
+                            <li><strong>Picture Lock:</strong> Finaler Bildschnitt</li>
+                            <li><strong>Version Management:</strong> Schnitt-Varianten</li>
+                            <li><strong>Collaborative Workflow:</strong> Team-Bearbeitung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">assessment</span>
+                        <h3 class="subsection-title">Performance Analysis</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Schnitt-Qualität bewerten:</p>
+                        <ul>
+                            <li><strong>Cut Analysis:</strong> Schnitt-Frequenz messen</li>
+                            <li><strong>Pacing Metrics:</strong> Rhythmus-Analyse</li>
+                            <li><strong>Audience Engagement:</strong> Aufmerksamkeits-Kurven</li>
+                            <li><strong>Technical Quality:</strong> Technische Bewertung</li>
+                            <li><strong>Narrative Flow:</strong> Story-Struktur prüfen</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Effekte & Motion Graphics Section -->
+        <section id="effekte" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">auto_awesome</span>
+                <h2 class="section-title">4. EFFEKTE & MOTION GRAPHICS</h2>
+                <span class="section-subtitle">30+ Kreative Effekte</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">blur_on</span>
+                        <h3 class="subsection-title">Blur & Distortion Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Unschärfe-Techniken:</p>
+                        <ul>
+                            <li><strong>Gaussian Blur:</strong> Sanfte Gesamtunschärfe</li>
+                            <li><strong>Motion Blur:</strong> Bewegungsunschärfe simulieren</li>
+                            <li><strong>Radial Blur:</strong> Kreisförmige Unschärfe</li>
+                            <li><strong>Depth of Field:</strong> Tiefenschärfe-Effekte</li>
+                            <li><strong>Lens Distortion:</strong> Objektiv-Verzerrungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">animation</span>
+                        <h3 class="subsection-title">Keyframe Animation Mastery</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Erweiterte Animations-Kontrolle:</p>
+                        <ul>
+                            <li><strong>Transform Keyframes:</strong> Position, Scale, Rotation</li>
+                            <li><strong>Opacity Animation:</strong> Ein- und Ausblendungen</li>
+                            <li><strong>Bezier Curves:</strong> Smooth Interpolation</li>
+                            <li><strong>Easing Functions:</strong> Natürliche Bewegungen</li>
+                            <li><strong>Multi-Property Animation:</strong> Komplexe Sequenzen</li>
+                        </ul>
+                        <div class="code-block">
+Easing Types:
+• Linear: Konstante Geschwindigkeit
+• Ease In: Langsamer Start
+• Ease Out: Langsames Ende  
+• Ease In-Out: Smooth Start/End
+• Bounce: Federeffekt
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">view_in_ar</span>
+                        <h3 class="subsection-title">3D Transformationen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Dreidimensionale Effekte:</p>
+                        <ul>
+                            <li><strong>3D Rotation:</strong> X, Y, Z-Achsen</li>
+                            <li><strong>Perspective:</strong> Tiefenwirkung erzeugen</li>
+                            <li><strong>3D Position:</strong> Räumliche Platzierung</li>
+                            <li><strong>Camera Controls:</strong> Virtuelle Kamera</li>
+                            <li><strong>Parallax Effects:</strong> Tiefenschichtung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">scatter_plot</span>
+                        <h3 class="subsection-title">Partikel-Systeme</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Dynamische Partikel-Effekte:</p>
+                        <ul>
+                            <li><strong>Snow/Rain:</strong> Wetter-Simulationen</li>
+                            <li><strong>Fire Particles:</strong> Feuer und Flammen</li>
+                            <li><strong>Sparkle Effects:</strong> Glitzer und Funken</li>
+                            <li><strong>Dust/Smoke:</strong> Atmosphärische Effekte</li>
+                            <li><strong>Magic Particles:</strong> Fantasy-Elemente</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">text_fields</span>
+                        <h3 class="subsection-title">Text Animation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Kreative Text-Effekte:</p>
+                        <ul>
+                            <li><strong>Typewriter Effect:</strong> Buchstabe für Buchstabe</li>
+                            <li><strong>Glitch Text:</strong> Digital-Störungen</li>
+                            <li><strong>3D Text:</strong> Räumliche Schriftzüge</li>
+                            <li><strong>Kinetic Typography:</strong> Bewegte Typografie</li>
+                            <li><strong>Liquid Text:</strong> Fließende Übergänge</li>
+                        </ul>
+                        <div class="feature-card">
+                            <h3>🎨 Creative Tip</h3>
+                            <p>Kombiniere Text-Animationen mit Audio-Synchronisation für maximale Wirkung!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">track_changes</span>
+                        <h3 class="subsection-title">Motion Tracking</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelles Object-Tracking:</p>
+                        <ul>
+                            <li><strong>Face Tracking:</strong> Gesichter verfolgen</li>
+                            <li><strong>Object Tracking:</strong> Beliebige Objekte</li>
+                            <li><strong>Planar Tracking:</strong> Ebenen-Verfolgung</li>
+                            <li><strong>Point Tracking:</strong> Einzelpunkt-Verfolgung</li>
+                            <li><strong>Mask Tracking:</strong> Masken automatisch anpassen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">vibration</span>
+                        <h3 class="subsection-title">Stabilization</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Bildstabilisierung:</p>
+                        <ul>
+                            <li><strong>Warp Stabilizer:</strong> Automatische Stabilisierung</li>
+                            <li><strong>Manual Stabilization:</strong> Präzise Kontrolle</li>
+                            <li><strong>Rolling Shutter:</strong> Jello-Effekt korrigieren</li>
+                            <li><strong>Smooth Motion:</strong> Sanfte Kamerabewegungen</li>
+                            <li><strong>Crop Optimization:</strong> Bildausschnitt optimieren</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">lens</span>
+                        <h3 class="subsection-title">Lens Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Optische Effekte und Korrekturen:</p>
+                        <ul>
+                            <li><strong>Lens Flare:</strong> Natürliche Lichtreflexe</li>
+                            <li><strong>Chromatic Aberration:</strong> Farbsäume hinzufügen/entfernen</li>
+                            <li><strong>Vignette:</strong> Randabdunklung</li>
+                            <li><strong>Barrel Distortion:</strong> Objektivverzerrung</li>
+                            <li><strong>Fisheye Effect:</strong> Ultra-Weitwinkel-Look</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">grain</span>
+                        <h3 class="subsection-title">Film Grain & Noise</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Vintage und Textur-Effekte:</p>
+                        <ul>
+                            <li><strong>Film Grain:</strong> Analoger Film-Look</li>
+                            <li><strong>Digital Noise:</strong> Sensor-Rauschen simulieren</li>
+                            <li><strong>VHS Noise:</strong> Retro Video-Ästhetik</li>
+                            <li><strong>Dust/Scratches:</strong> Alte Film-Schäden</li>
+                            <li><strong>Paper Texture:</strong> Papier-Oberflächenstruktur</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">electrical_services</span>
+                        <h3 class="subsection-title">Glitch Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Digitale Störungseffekte:</p>
+                        <ul>
+                            <li><strong>Digital Glitch:</strong> Pixel-Störungen</li>
+                            <li><strong>TV Static:</strong> Fernseh-Rauschen</li>
+                            <li><strong>Data Corruption:</strong> Daten-Fehler-Look</li>
+                            <li><strong>RGB Split:</strong> Farbkanal-Trennung</li>
+                            <li><strong>Scan Lines:</strong> Bildschirm-Zeilen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">wb_iridescent</span>
+                        <h3 class="subsection-title">Hologram Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Futuristische Projektions-Effekte:</p>
+                        <ul>
+                            <li><strong>Holographic Projection:</strong> Sci-Fi Hologramme</li>
+                            <li><strong>Interference Patterns:</strong> Interferenz-Muster</li>
+                            <li><strong>Energy Fields:</strong> Energie-Felder</li>
+                            <li><strong>Translucent Effects:</strong> Durchscheinende Projektionen</li>
+                            <li><strong>Scan Line Animation:</strong> Abtast-Linien</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">light_mode</span>
+                        <h3 class="subsection-title">Light Leaks</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Atmosphärische Licht-Effekte:</p>
+                        <ul>
+                            <li><strong>Analog Light Leaks:</strong> Film-Lichteinfall</li>
+                            <li><strong>Prism Effects:</strong> Regenbogen-Reflexionen</li>
+                            <li><strong>Sun Flares:</strong> Sonnen-Überstrahlungen</li>
+                            <li><strong>Optical Flares:</strong> Objektiv-Reflexionen</li>
+                            <li><strong>Anamorphic Flares:</strong> Cinematic Lens-Flares</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">movie</span>
+                        <h3 class="subsection-title">Vintage Film Looks</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Historische Film-Ästhetiken:</p>
+                        <ul>
+                            <li><strong>16mm Film:</strong> Dokumentar-Charakter</li>
+                            <li><strong>Super 8:</strong> Retro-Home-Movie-Look</li>
+                            <li><strong>35mm Cinemascope:</strong> Klassischer Kino-Look</li>
+                            <li><strong>Black & White:</strong> Noir-Ästhetik</li>
+                            <li><strong>Sepia Tone:</strong> Vintage-Fotografie</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">invert_colors</span>
+                        <h3 class="subsection-title">Stylize Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Künstlerische Stil-Filter:</p>
+                        <ul>
+                            <li><strong>Posterize:</strong> Reduzierte Farbbereiche</li>
+                            <li><strong>Threshold:</strong> Schwarz-Weiß-Kontrast</li>
+                            <li><strong>Oil Paint:</strong> Ölgemälde-Effekt</li>
+                            <li><strong>Pencil Sketch:</strong> Bleistift-Zeichnung</li>
+                            <li><strong>Mosaic:</strong> Pixel-Kunst-Stil</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">auto_graph</span>
+                        <h3 class="subsection-title">Generate Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Generative und prozedurale Effekte:</p>
+                        <ul>
+                            <li><strong>Fractal Noise:</strong> Prozedurale Texturen</li>
+                            <li><strong>Gradient Generator:</strong> Verlauf-Generierung</li>
+                            <li><strong>Stroke Generator:</strong> Dynamische Striche</li>
+                            <li><strong>Grid Generator:</strong> Geometrische Muster</li>
+                            <li><strong>Audio Spectrum:</strong> Audio-Visualisierung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">crop_free</span>
+                        <h3 class="subsection-title">Shape Layers</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Geometrische Formen und Masken:</p>
+                        <ul>
+                            <li><strong>Rectangle/Circle:</strong> Basis-Geometrien</li>
+                            <li><strong>Custom Shapes:</strong> Benutzerdefinierte Formen</li>
+                            <li><strong>Animated Shapes:</strong> Bewegte Geometrien</li>
+                            <li><strong>Mask Shapes:</strong> Masken-Integration</li>
+                            <li><strong>Vector Graphics:</strong> Skalierbare Vektoren</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">layers</span>
+                        <h3 class="subsection-title">Masking Techniques</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Erweiterte Masken-Techniken:</p>
+                        <ul>
+                            <li><strong>Layer Masks:</strong> Alpha-Kanal-Masken</li>
+                            <li><strong>Gradient Masks:</strong> Verlauf-Masken</li>
+                            <li><strong>Animated Masks:</strong> Bewegte Masken</li>
+                            <li><strong>Feather Masks:</strong> Weiche Maskenkanten</li>
+                            <li><strong>Luma Masks:</strong> Helligkeit-basierte Masken</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">power</span>
+                        <h3 class="subsection-title">Energy & Power Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Kraftvolle Energie-Visualisierungen:</p>
+                        <ul>
+                            <li><strong>Lightning Bolts:</strong> Blitz-Effekte</li>
+                            <li><strong>Energy Beams:</strong> Laser-Strahlen</li>
+                            <li><strong>Force Fields:</strong> Kraftfeld-Barrieren</li>
+                            <li><strong>Plasma Effects:</strong> Plasma-Formationen</li>
+                            <li><strong>Electrical Arcs:</strong> Elektrische Entladungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">waves</span>
+                        <h3 class="subsection-title">Water & Liquid Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Flüssigkeits-Simulationen:</p>
+                        <ul>
+                            <li><strong>Water Ripples:</strong> Wasser-Wellen</li>
+                            <li><strong>Liquid Transitions:</strong> Flüssige Übergänge</li>
+                            <li><strong>Caustics:</strong> Wasser-Lichtbrechung</li>
+                            <li><strong>Bubble Effects:</strong> Blasen-Formationen</li>
+                            <li><strong>Fluid Dynamics:</strong> Strömungs-Simulationen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">whatshot</span>
+                        <h3 class="subsection-title">Fire & Explosion Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Dramatische Feuer-Effekte:</p>
+                        <ul>
+                            <li><strong>Realistic Fire:</strong> Fotorealistische Flammen</li>
+                            <li><strong>Cartoon Fire:</strong> Stilisierte Flammen</li>
+                            <li><strong>Explosions:</strong> Explosions-Effekte</li>
+                            <li><strong>Smoke Trails:</strong> Rauch-Spuren</li>
+                            <li><strong>Ember Particles:</strong> Glut-Partikel</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">ac_unit</span>
+                        <h3 class="subsection-title">Weather Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Realistische Wetter-Simulationen:</p>
+                        <ul>
+                            <li><strong>Rain Systems:</strong> Regen-Systeme</li>
+                            <li><strong>Snow Storms:</strong> Schneestürme</li>
+                            <li><strong>Lightning Strikes:</strong> Blitzschläge</li>
+                            <li><strong>Fog & Mist:</strong> Nebel-Effekte</li>
+                            <li><strong>Wind Effects:</strong> Wind-Bewegungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">architecture</span>
+                        <h3 class="subsection-title">Architectural Elements</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Strukturelle Design-Elemente:</p>
+                        <ul>
+                            <li><strong>Grid Overlays:</strong> Raster-Systeme</li>
+                            <li><strong>Blueprint Style:</strong> Blaupausen-Ästhetik</li>
+                            <li><strong>Technical Diagrams:</strong> Technische Diagramme</li>
+                            <li><strong>UI Elements:</strong> Interface-Komponenten</li>
+                            <li><strong>Data Visualization:</strong> Daten-Darstellung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">show_chart</span>
+                        <h3 class="subsection-title">Motion Graphics Templates</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle MoGraph-Vorlagen:</p>
+                        <ul>
+                            <li><strong>Lower Thirds:</strong> Einblendungs-Grafiken</li>
+                            <li><strong>Title Sequences:</strong> Titel-Animationen</li>
+                            <li><strong>Logo Reveals:</strong> Logo-Enthüllungen</li>
+                            <li><strong>Transition Packs:</strong> Übergangs-Sammlungen</li>
+                            <li><strong>Call-to-Action:</strong> Handlungsaufforderungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">psychology</span>
+                        <h3 class="subsection-title">Mind & Consciousness Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Psychedelische und Bewusstseins-Effekte:</p>
+                        <ul>
+                            <li><strong>Kaleidoscope:</strong> Kaleidoskop-Muster</li>
+                            <li><strong>Fractal Patterns:</strong> Fraktale Strukturen</li>
+                            <li><strong>Mind Melt:</strong> Bewusstseins-Verzerrungen</li>
+                            <li><strong>Dream Sequences:</strong> Traum-Sequenzen</li>
+                            <li><strong>Reality Distortion:</strong> Realitäts-Verzerrungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">space_dashboard</span>
+                        <h3 class="subsection-title">Sci-Fi & Futuristic</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Science-Fiction Ästhetiken:</p>
+                        <ul>
+                            <li><strong>HUD Interfaces:</strong> Futuristische Bedienoberflächen</li>
+                            <li><strong>Cyberpunk Elements:</strong> Cyberpunk-Designs</li>
+                            <li><strong>Matrix Effects:</strong> Digital-Rain-Effekte</li>
+                            <li><strong>Space Distortions:</strong> Raum-Zeit-Verzerrungen</li>
+                            <li><strong>Neon Aesthetics:</strong> Neon-Beleuchtung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">opacity</span>
+                        <h3 class="subsection-title">Transparency & Blend Modes</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Erweiterte Kompositions-Modi:</p>
+                        <ul>
+                            <li><strong>Screen Mode:</strong> Additive Überlagerung</li>
+                            <li><strong>Multiply Mode:</strong> Multiplikative Überlagerung</li>
+                            <li><strong>Overlay Mode:</strong> Kontrast-Überlagerung</li>
+                            <li><strong>Color Dodge:</strong> Farbabwedeln</li>
+                            <li><strong>Linear Light:</strong> Lineares Licht</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">cached</span>
+                        <h3 class="subsection-title">Advanced Transitions</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Hochentwickelte Übergangs-Effekte:</p>
+                        <ul>
+                            <li><strong>Morphing Transitions:</strong> Formwandel-Übergänge</li>
+                            <li><strong>Particle Dissolve:</strong> Partikel-Auflösung</li>
+                            <li><strong>Liquid Transitions:</strong> Flüssige Übergänge</li>
+                            <li><strong>3D Cube Transitions:</strong> Würfel-Übergänge</li>
+                            <li><strong>Light Sweep:</strong> Licht-Durchläufe</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">smart_toy</span>
+                        <h3 class="subsection-title">AI-Enhanced Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>KI-unterstützte Effekt-Generierung:</p>
+                        <ul>
+                            <li><strong>Smart Object Removal:</strong> Intelligente Objekt-Entfernung</li>
+                            <li><strong>Style Transfer:</strong> Stil-Übertragung</li>
+                            <li><strong>Auto Animation:</strong> Automatische Animation</li>
+                            <li><strong>Content-Aware Fill:</strong> Inhalts-bewusste Füllung</li>
+                            <li><strong>Motion Prediction:</strong> Bewegungs-Vorhersage</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">settings</span>
+                        <h3 class="subsection-title">Effect Customization</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Effekt-Anpassung und -Optimierung:</p>
+                        <ul>
+                            <li><strong>Parameter Linking:</strong> Parameter-Verknüpfungen</li>
+                            <li><strong>Expression Control:</strong> Expressions und Formeln</li>
+                            <li><strong>Custom Presets:</strong> Benutzerdefinierte Voreinstellungen</li>
+                            <li><strong>Batch Processing:</strong> Stapel-Verarbeitung</li>
+                            <li><strong>Effect Stacking:</strong> Effekt-Kombinationen</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Audio Production Section -->
+        <section id="audio" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">headphones</span>
+                <h2 class="section-title">5. AUDIO PRODUCTION</h2>
+                <span class="section-subtitle">20+ Audio-Techniken</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">settings_input_component</span>
+                        <h3 class="subsection-title">Audio-Grundlagen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Audio-Basis:</p>
+                        <ul>
+                            <li><strong>Sample Rate:</strong> 44.1kHz, 48kHz, 96kHz</li>
+                            <li><strong>Bit Depth:</strong> 16-bit, 24-bit, 32-bit</li>
+                            <li><strong>Audio Channels:</strong> Mono, Stereo, Surround</li>
+                            <li><strong>Dynamic Range:</strong> Signal-zu-Rausch-Verhältnis</li>
+                            <li><strong>Frequency Response:</strong> 20Hz - 20kHz Spektrum</li>
+                        </ul>
+                        <div class="code-block">
+Audio Standards:
+• Broadcast: 48kHz / 24-bit
+• Music: 44.1kHz / 16-24-bit  
+• Film: 48kHz / 24-bit
+• Podcast: 44.1kHz / 16-bit
+• Hi-Res: 96kHz / 24-bit
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">equalizer</span>
+                        <h3 class="subsection-title">EQ & Frequency Shaping</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Frequenz-Management:</p>
+                        <ul>
+                            <li><strong>High Pass Filter:</strong> Tiefe Frequenzen entfernen</li>
+                            <li><strong>Low Pass Filter:</strong> Hohe Frequenzen dämpfen</li>
+                            <li><strong>Parametric EQ:</strong> Präzise Frequenz-Kontrolle</li>
+                            <li><strong>Notch Filter:</strong> Störfrequenzen eliminieren</li>
+                            <li><strong>Shelving EQ:</strong> Breite Frequenzbereiche anheben</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">volume_down</span>
+                        <h3 class="subsection-title">Compression & Dynamics</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Dynamik-Kontrolle:</p>
+                        <ul>
+                            <li><strong>Threshold:</strong> Kompressions-Einsatzpunkt</li>
+                            <li><strong>Ratio:</strong> Kompressions-Verhältnis</li>
+                            <li><strong>Attack/Release:</strong> Reaktionszeiten</li>
+                            <li><strong>Multiband Compression:</strong> Frequenz-spezifische Kompression</li>
+                            <li><strong>Limiting:</strong> Maximalpegel-Begrenzung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">cleaning_services</span>
+                        <h3 class="subsection-title">Noise Reduction</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Rausch-Unterdrückung:</p>
+                        <ul>
+                            <li><strong>Spectral Noise Reduction:</strong> Frequenz-basierte Rauschentfernung</li>
+                            <li><strong>Gate/Expander:</strong> Leise Signale unterdrücken</li>
+                            <li><strong>De-esser:</strong> Zischlaute reduzieren</li>
+                            <li><strong>Click/Pop Removal:</strong> Knack- und Knallgeräusche</li>
+                            <li><strong>Hum Removal:</strong> Brumm-Eliminierung (50/60Hz)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">spatial_audio</span>
+                        <h3 class="subsection-title">Reverb & Spatial Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Räumliche Audio-Effekte:</p>
+                        <ul>
+                            <li><strong>Room Reverb:</strong> Natürliche Raumakustik</li>
+                            <li><strong>Hall Reverb:</strong> Große Räume simulieren</li>
+                            <li><strong>Plate Reverb:</strong> Vintage Reverb-Sound</li>
+                            <li><strong>Convolution Reverb:</strong> Reale Raum-Impulse</li>
+                            <li><strong>Early Reflections:</strong> Erste Schall-Reflexionen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">sync</span>
+                        <h3 class="subsection-title">Audio Synchronization</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Präzise Audio-Video-Sync:</p>
+                        <ul>
+                            <li><strong>Manual Sync:</strong> Waveform-Alignment</li>
+                            <li><strong>Auto-Sync:</strong> AI-basierte Synchronisation</li>
+                            <li><strong>Timecode Sync:</strong> SMPTE-Timecode</li>
+                            <li><strong>Clap Board Sync:</strong> Klappe-basierte Synchronisation</li>
+                            <li><strong>Lip Sync Correction:</strong> Lippensynchron-Korrektur</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">record_voice_over</span>
+                        <h3 class="subsection-title">Voice-Over Production</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Sprach-Aufnahmen:</p>
+                        <ul>
+                            <li><strong>Recording Setup:</strong> Mikrofon-Konfiguration</li>
+                            <li><strong>Room Treatment:</strong> Akustik-Optimierung</li>
+                            <li><strong>Voice Processing:</strong> Stimm-Bearbeitung</li>
+                            <li><strong>Punch Recording:</strong> Nachträglich aufnehmen</li>
+                            <li><strong>ADR Techniques:</strong> Automatic Dialogue Replacement</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">library_music</span>
+                        <h3 class="subsection-title">Music Scoring</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Film-Musik und Scoring:</p>
+                        <ul>
+                            <li><strong>Leitmotif Development:</strong> Musikalische Themen</li>
+                            <li><strong>Emotional Scoring:</strong> Gefühls-orientierte Musik</li>
+                            <li><strong>Tempo Matching:</strong> Rhythmus an Bildschnitt anpassen</li>
+                            <li><strong>Dynamic Orchestration:</strong> Instrumentierung</li>
+                            <li><strong>Music Editing:</strong> Musik-Schnitt und -Arrangement</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">build</span>
+                        <h3 class="subsection-title">Sound Design</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Kreative Klang-Gestaltung:</p>
+                        <ul>
+                            <li><strong>Ambient Sounds:</strong> Atmosphärische Klänge</li>
+                            <li><strong>Sound Effects:</strong> Spezielle Klang-Effekte</li>
+                            <li><strong>Synthesized Sounds:</strong> Synthetische Klänge</li>
+                            <li><strong>Layered Audio:</strong> Mehrschichtige Klang-Arrangements</li>
+                            <li><strong>Procedural Audio:</strong> Generative Klang-Systeme</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">directions_walk</span>
+                        <h3 class="subsection-title">Foley Creation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Authentische Geräusch-Erzeugung:</p>
+                        <ul>
+                            <li><strong>Footsteps:</strong> Schrittgeräusche verschiedener Oberflächen</li>
+                            <li><strong>Clothing Sounds:</strong> Kleidungs-Geräusche</li>
+                            <li><strong>Object Interaction:</strong> Objekt-Berührungen</li>
+                            <li><strong>Environment Sounds:</strong> Umgebungs-Geräusche</li>
+                            <li><strong>Prop Sounds:</strong> Requisiten-Geräusche</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">healing</span>
+                        <h3 class="subsection-title">Audio Repair</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Audio-Restauration und -Reparatur:</p>
+                        <ul>
+                            <li><strong>Spectral Repair:</strong> Frequenz-spezifische Reparatur</li>
+                            <li><strong>Declipping:</strong> Übersteuerungs-Korrektur</li>
+                            <li><strong>Phase Correction:</strong> Phasen-Probleme beheben</li>
+                            <li><strong>Wow/Flutter Removal:</strong> Tonhöhen-Schwankungen korrigieren</li>
+                            <li><strong>Gap Filling:</strong> Fehlende Audio-Bereiche ergänzen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">surround_sound</span>
+                        <h3 class="subsection-title">Surround Sound</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Mehrkanal-Audio-Produktion:</p>
+                        <ul>
+                            <li><strong>5.1 Surround:</strong> Standard-Surround-Setup</li>
+                            <li><strong>7.1 Surround:</strong> Erweiterte Surround-Konfiguration</li>
+                            <li><strong>Dolby Atmos:</strong> Objekt-basiertes Audio</li>
+                            <li><strong>Binaural Audio:</strong> 3D-Audio für Kopfhörer</li>
+                            <li><strong>Ambisonics:</strong> 360°-Audio-Aufnahmen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">tune</span>
+                        <h3 class="subsection-title">Audio Mastering</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Finale Audio-Optimierung:</p>
+                        <ul>
+                            <li><strong>Level Optimization:</strong> Pegel-Optimierung</li>
+                            <li><strong>Stereo Enhancement:</strong> Stereo-Verbreiterung</li>
+                            <li><strong>Loudness Standards:</strong> LUFS/LKFS-Normalisierung</li>
+                            <li><strong>Master Bus Processing:</strong> Summen-Bearbeitung</li>
+                            <li><strong>Format Conversion:</strong> Export für verschiedene Plattformen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">podcasts</span>
+                        <h3 class="subsection-title">Podcast Production</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Spezialisierte Podcast-Techniken:</p>
+                        <ul>
+                            <li><strong>Multi-Host Recording:</strong> Mehrere Sprecher verwalten</li>
+                            <li><strong>Remote Recording:</strong> Fernaufnahme-Qualität</li>
+                            <li><strong>Chapter Markers:</strong> Kapitel-Punkte setzen</li>
+                            <li><strong>Intro/Outro Integration:</strong> Vor- und Nachspann</li>
+                            <li><strong>Podcast Normalization:</strong> Einheitliche Lautstärke</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">volume_off</span>
+                        <h3 class="subsection-title">Audio Ducking</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Automatische Lautstärke-Anpassung:</p>
+                        <ul>
+                            <li><strong>Music Ducking:</strong> Musik unter Sprache zurücknehmen</li>
+                            <li><strong>Sidechain Compression:</strong> Signal-gesteuerte Kompression</li>
+                            <li><strong>Auto-Ducking:</strong> Automatische Lautstärke-Regelung</li>
+                            <li><strong>Crossfade Ducking:</strong> Sanfte Übergänge</li>
+                            <li><strong>Frequency-Specific Ducking:</strong> Frequenz-selektives Ducking</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">graphic_eq</span>
+                        <h3 class="subsection-title">Advanced Audio Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Audio-Effekte:</p>
+                        <ul>
+                            <li><strong>Pitch Shifting:</strong> Tonhöhen-Verschiebung</li>
+                            <li><strong>Time Stretching:</strong> Zeitdehnung ohne Pitch-Änderung</li>
+                            <li><strong>Formant Shifting:</strong> Stimmcharakter ändern</li>
+                            <li><strong>Harmonic Enhancement:</strong> Harmonische Anreicherung</li>
+                            <li><strong>Stereo Imaging:</strong> Stereo-Bild-Manipulation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">auto_graph</span>
+                        <h3 class="subsection-title">Audio Analysis</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Technische Audio-Analyse:</p>
+                        <ul>
+                            <li><strong>Spectrum Analyzer:</strong> Frequenz-Spektrum-Analyse</li>
+                            <li><strong>Phase Meter:</strong> Stereo-Phasen-Kontrolle</li>
+                            <li><strong>Loudness Meter:</strong> LUFS-Messung</li>
+                            <li><strong>Correlation Meter:</strong> Stereo-Korrelation</li>
+                            <li><strong>THD Analysis:</strong> Klirrfaktor-Messung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">music_video</span>
+                        <h3 class="subsection-title">Music Video Audio</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Musik-Video-spezifische Techniken:</p>
+                        <ul>
+                            <li><strong>Playback Sync:</strong> Lip-Sync zu Playback</li>
+                            <li><strong>Audio Visualization:</strong> Musik-Visualisierung</li>
+                            <li><strong>Beat Detection:</strong> Rhythmus-Erkennung</li>
+                            <li><strong>Dynamic Range:</strong> Musik-Dynamik erhalten</li>
+                            <li><strong>Creative Audio Effects:</strong> Künstlerische Audio-Effekte</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">mic</span>
+                        <h3 class="subsection-title">Live Recording Techniques</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Live-Aufnahme und -Bearbeitung:</p>
+                        <ul>
+                            <li><strong>Multi-Mic Setup:</strong> Mehrere Mikrofone verwalten</li>
+                            <li><strong>Background Noise:</strong> Hintergrund-Geräusche kontrollieren</li>
+                            <li><strong>Wind Protection:</strong> Wind-Geräusche minimieren</li>
+                            <li><strong>Crowd Management:</strong> Publikums-Audio verwalten</li>
+                            <li><strong>Location Sound:</strong> Orts-spezifische Herausforderungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">stream</span>
+                        <h3 class="subsection-title">Streaming Audio Optimization</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Streaming-optimierte Audio-Bearbeitung:</p>
+                        <ul>
+                            <li><strong>Compression for Streaming:</strong> Platform-spezifische Kompression</li>
+                            <li><strong>Bitrate Optimization:</strong> Datenrate-Optimierung</li>
+                            <li><strong>Loudness Normalization:</strong> Platform-Standards einhalten</li>
+                            <li><strong>Dynamic Range Control:</strong> Konsistente Lautstärke</li>
+                            <li><strong>Format Delivery:</strong> Multiple Audio-Formate</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Color Grading Section -->
+        <section id="color" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">palette</span>
+                <h2 class="section-title">6. COLOR GRADING</h2>
+                <span class="section-subtitle">25+ Grading-Techniken</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">science</span>
+                        <h3 class="subsection-title">Color Theory Fundamentals</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Grundlagen der Farbwissenschaft:</p>
+                        <ul>
+                            <li><strong>Color Wheel:</strong> Primär-, Sekundär-, Tertiärfarben</li>
+                            <li><strong>Complementary Colors:</strong> Komplementär-Kontraste</li>
+                            <li><strong>Color Temperature:</strong> Warm vs. Kalt (Kelvin)</li>
+                            <li><strong>Saturation/Chroma:</strong> Farbsättigung verstehen</li>
+                            <li><strong>Luminance:</strong> Helligkeit und Tonwerte</li>
+                        </ul>
+                        <div class="code-block">
+Color Temperature Guide:
+• Daylight: 5600K (neutral)
+• Tungsten: 3200K (warm)
+• Sunset: 2000K (sehr warm)
+• Shade: 7000K (kalt)
+• Overcast: 6500K (leicht kalt)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">assessment</span>
+                        <h3 class="subsection-title">Scopes & Monitoring</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Technische Farbanalyse:</p>
+                        <ul>
+                            <li><strong>Waveform Monitor:</strong> Luminanz-Verteilung analysieren</li>
+                            <li><strong>Vectorscope:</strong> Chrominanz und Sättigung</li>
+                            <li><strong>RGB Parade:</strong> Einzelkanalanalyse</li>
+                            <li><strong>Histogram:</strong> Tonwert-Verteilung</li>
+                            <li><strong>False Color:</strong> Überbelichtungs-Kontrolle</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">tune</span>
+                        <h3 class="subsection-title">Primary Color Correction</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Basis-Farbkorrektur für das gesamte Bild:</p>
+                        <ul>
+                            <li><strong>Exposure:</strong> Gesamthelligkeit anpassen</li>
+                            <li><strong>Highlights/Shadows:</strong> Selektive Helligkeitskorrektur</li>
+                            <li><strong>White Balance:</strong> Farbtemperatur korrigieren</li>
+                            <li><strong>Tint:</strong> Magenta/Grün-Balance</li>
+                            <li><strong>Saturation:</strong> Gesamtfarbsättigung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">colorize</span>
+                        <h3 class="subsection-title">Secondary Color Correction</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Selektive Farbbearbeitung:</p>
+                        <ul>
+                            <li><strong>HSL Qualifiers:</strong> Farbbereich-Auswahl</li>
+                            <li><strong>Skin Tone Isolation:</strong> Hauttöne separat bearbeiten</li>
+                            <li><strong>Sky Enhancement:</strong> Himmel-Optimierung</li>
+                            <li><strong>Vegetation Grading:</strong> Pflanzen-Farbkorrektur</li>
+                            <li><strong>Object Isolation:</strong> Spezifische Objekte hervorheben</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">crop_free</span>
+                        <h3 class="subsection-title">Power Windows & Masking</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Räumlich begrenzte Farbkorrekturen:</p>
+                        <ul>
+                            <li><strong>Circular Windows:</strong> Kreisförmige Bereiche</li>
+                            <li><strong>Polygon Windows:</strong> Frei definierte Formen</li>
+                            <li><strong>Gradient Masks:</strong> Verlaufs-Masken</li>
+                            <li><strong>Tracking Windows:</strong> Bewegte Bereiche verfolgen</li>
+                            <li><strong>Feathering:</strong> Weiche Masken-Übergänge</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">filter</span>
+                        <h3 class="subsection-title">LUT Creation & Application</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Look-Up Tables für konsistente Looks:</p>
+                        <ul>
+                            <li><strong>Technical LUTs:</strong> Log zu Rec709 Konvertierung</li>
+                            <li><strong>Creative LUTs:</strong> Stilistische Looks</li>
+                            <li><strong>Camera LUTs:</strong> Kamera-spezifische Konvertierung</li>
+                            <li><strong>Custom LUT Creation:</strong> Eigene LUTs erstellen</li>
+                            <li><strong>LUT Intensity:</strong> Stärke-Kontrolle</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">movie_creation</span>
+                        <h3 class="subsection-title">Cinematic Looks</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Film-Ästhetiken:</p>
+                        <ul>
+                            <li><strong>Orange & Teal:</strong> Hollywood-Standard-Look</li>
+                            <li><strong>Vintage Film:</strong> Analog-Film-Emulation</li>
+                            <li><strong>Bleach Bypass:</strong> Silber-retention-Effekt</li>
+                            <li><strong>Cross Processing:</strong> Falsche Entwicklung</li>
+                            <li><strong>Film Noir:</strong> Schwarz-Weiß-Kontrast</li>
+                        </ul>
+                        <div class="feature-card">
+                            <h3>🎬 Hollywood Secret</h3>
+                            <p>Der Orange & Teal Look dominiert 90% aller Blockbuster - warme Hauttöne gegen kühle Schatten!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">face</span>
+                        <h3 class="subsection-title">Skin Tone Perfection</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Natürliche Hauttöne erzielen:</p>
+                        <ul>
+                            <li><strong>Skin Tone Line:</strong> Vectorscope-Referenz nutzen</li>
+                            <li><strong>Color Temperature:</strong> Warme vs. kalte Hauttöne</li>
+                            <li><strong>Saturation Control:</strong> Natürliche Sättigung</li>
+                            <li><strong>Ethnicity Considerations:</strong> Verschiedene Hauttypen</li>
+                            <li><strong>Makeup Enhancement:</strong> Beauty-Grading</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">wb_sunny</span>
+                        <h3 class="subsection-title">Sky Replacement</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Himmel-Austausch und -Enhancement:</p>
+                        <ul>
+                            <li><strong>Sky Keying:</strong> Himmel isolieren und ersetzen</li>
+                            <li><strong>Edge Refinement:</strong> Natürliche Übergänge</li>
+                            <li><strong>Lighting Match:</strong> Beleuchtung angleichen</li>
+                            <li><strong>Atmospheric Perspective:</strong> Tiefenwirkung</li>
+                            <li><strong>Cloud Animation:</strong> Bewegte Wolken</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">brightness_2</span>
+                        <h3 class="subsection-title">Day-to-Night Conversion</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Tag zu Nacht Transformation:</p>
+                        <ul>
+                            <li><strong>Overall Darkening:</strong> Gesamtbild abdunkeln</li>
+                            <li><strong>Color Temperature Shift:</strong> Zu bläulichen Tönen</li>
+                            <li><strong>Artificial Lighting:</strong> Lichtquellen verstärken</li>
+                            <li><strong>Shadow Enhancement:</strong> Schatten verstärken</li>
+                            <li><strong>Moon Simulation:</strong> Mondlicht-Effekte</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">compare</span>
+                        <h3 class="subsection-title">Color Matching</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Konsistente Farben zwischen Clips:</p>
+                        <ul>
+                            <li><strong>Reference Shots:</strong> Master-Shot als Referenz</li>
+                            <li><strong>Shot Matching:</strong> Clips aneinander angleichen</li>
+                            <li><strong>Camera Matching:</strong> Verschiedene Kameras abstimmen</li>
+                            <li><strong>Lighting Compensation:</strong> Beleuchtungsunterschiede ausgleichen</li>
+                            <li><strong>Continuity Grading:</strong> Szenen-Konsistenz</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">hdr_strong</span>
+                        <h3 class="subsection-title">HDR Tone Mapping</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>High Dynamic Range Verarbeitung:</p>
+                        <ul>
+                            <li><strong>Rec.2020 Color Space:</strong> Erweiterte Farbräume</li>
+                            <li><strong>PQ/HLG Curves:</strong> HDR-Transfer-Funktionen</li>
+                            <li><strong>Nits Calibration:</strong> Helligkeit in Nits</li>
+                            <li><strong>Wide Gamut:</strong> Erweiterte Farbumfänge</li>
+                            <li><strong>HDR Monitoring:</strong> Korrekte Wiedergabe</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">style</span>
+                        <h3 class="subsection-title">Stylistic Grading</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Künstlerische Farbstile:</p>
+                        <ul>
+                            <li><strong>Cyberpunk:</strong> Neon-dominierte Farbpaletten</li>
+                            <li><strong>Vintage:</strong> Entsättigte, warme Töne</li>
+                            <li><strong>Horror:</strong> Desaturiert mit Grün/Gelb-Stich</li>
+                            <li><strong>Romance:</strong> Warme, weiche Farbtöne</li>
+                            <li><strong>Thriller:</strong> Kalt-bläuliche Atmosphäre</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">gradient</span>
+                        <h3 class="subsection-title">Creative Color Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Experimentelle Farbbearbeitung:</p>
+                        <ul>
+                            <li><strong>Split Toning:</strong> Highlights/Shadows unterschiedlich färben</li>
+                            <li><strong>Color Isolation:</strong> Einzelne Farben hervorheben</li>
+                            <li><strong>False Color:</strong> Unnatürliche Farbzuordnungen</li>
+                            <li><strong>Channel Swapping:</strong> RGB-Kanäle vertauschen</li>
+                            <li><strong>Duo Tone:</strong> Zwei-Farben-Looks</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">monitor</span>
+                        <h3 class="subsection-title">Monitor Calibration</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Präzise Farbwiedergabe sicherstellen:</p>
+                        <ul>
+                            <li><strong>Hardware Calibration:</strong> Monitor-LUTs erstellen</li>
+                            <li><strong>Color Space Setup:</strong> Rec709, P3, Rec2020</li>
+                            <li><strong>Gamma Correction:</strong> 2.4 Gamma-Standard</li>
+                            <li><strong>White Point:</strong> D65 Referenz-Weißpunkt</li>
+                            <li><strong>Ambient Light:</strong> Umgebungslicht berücksichtigen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">movie</span>
+                        <h3 class="subsection-title">Film Emulation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Analog-Film-Looks nachahmen:</p>
+                        <ul>
+                            <li><strong>Kodak Vision3:</strong> Moderne Film-Emulation</li>
+                            <li><strong>Fuji Stocks:</strong> Lebendige Farben, warme Töne</li>
+                            <li><strong>Agfa Film:</strong> Charakteristische Farbwiedergabe</li>
+                            <li><strong>Black & White Film:</strong> Schwarz-Weiß-Emulationen</li>
+                            <li><strong>Instant Film:</strong> Polaroid-Style-Looks</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">timeline</span>
+                        <h3 class="subsection-title">Temporal Color Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Zeit-basierte Farbeffekte:</p>
+                        <ul>
+                            <li><strong>Color Strobing:</strong> Rhythmische Farbwechsel</li>
+                            <li><strong>Gradient Animation:</strong> Animierte Farbverläufe</li>
+                            <li><strong>Pulse Effects:</strong> Pulsende Farbintensität</li>
+                            <li><strong>Color Cycling:</strong> Zyklische Farbrotation</li>
+                            <li><strong>Beat-Sync Grading:</strong> Musik-synchrone Farben</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">auto_fix_high</span>
+                        <h3 class="subsection-title">Automated Color Tools</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>KI-unterstützte Farbkorrektur:</p>
+                        <ul>
+                            <li><strong>Auto White Balance:</strong> Automatische Farbtemperatur</li>
+                            <li><strong>Auto Exposure:</strong> Intelligente Belichtungskorrektur</li>
+                            <li><strong>Scene Detection:</strong> Automatische Szenen-Anpassung</li>
+                            <li><strong>Face-Based Grading:</strong> Gesichts-orientierte Korrektur</li>
+                            <li><strong>Style Transfer:</strong> KI-basierte Look-Übertragung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">speed</span>
+                        <h3 class="subsection-title">Workflow Optimization</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Effizienter Color-Grading-Workflow:</p>
+                        <ul>
+                            <li><strong>Node Structure:</strong> Effiziente Node-Organisation</li>
+                            <li><strong>Parallel Processing:</strong> Multiple Korrekturen gleichzeitig</li>
+                            <li><strong>Copy/Paste Grades:</strong> Einstellungen übertragen</li>
+                            <li><strong>Batch Grading:</strong> Mehrere Clips gleichzeitig</li>
+                            <li><strong>Preset Management:</strong> Wiederverwendbare Looks</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">save</span>
+                        <h3 class="subsection-title">Export & Delivery</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Farbräume für verschiedene Zielplattformen:</p>
+                        <ul>
+                            <li><strong>Rec.709:</strong> Standard HD/4K Broadcast</li>
+                            <li><strong>sRGB:</strong> Web und Computer-Displays</li>
+                            <li><strong>P3:</strong> Digitale Kinos und neue Displays</li>
+                            <li><strong>Rec.2020:</strong> HDR und Future-Proofing</li>
+                            <li><strong>Platform-Specific:</strong> YouTube, Netflix, etc.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compositing & VFX Section -->
+        <section id="vfx" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">auto_awesome_motion</span>
+                <h2 class="section-title">7. COMPOSITING & VFX</h2>
+                <span class="section-subtitle">30+ VFX-Techniken</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">content_cut</span>
+                        <h3 class="subsection-title">Green Screen Mastery</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelles Chroma-Keying:</p>
+                        <ul>
+                            <li><strong>Perfect Lighting:</strong> Gleichmäßige Ausleuchtung</li>
+                            <li><strong>Color Range Selection:</strong> Präzise Farbauswahl</li>
+                            <li><strong>Edge Refinement:</strong> Saubere Kanten</li>
+                            <li><strong>Spill Suppression:</strong> Grünstich-Entfernung</li>
+                            <li><strong>Motion Blur Preservation:</strong> Bewegungsunschärfe erhalten</li>
+                        </ul>
+                        <div class="feature-card">
+                            <h3>🎭 VFX Pro-Tip</h3>
+                            <p>Perfektes Keying: 60% Beleuchtung, 30% Aufnahme, 10% Post-Production!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">palette</span>
+                        <h3 class="subsection-title">Blue Screen Alternative</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Alternativen zu Green Screen:</p>
+                        <ul>
+                            <li><strong>Blue Screen Keying:</strong> Für grüne Objekte</li>
+                            <li><strong>Red Screen:</strong> Spezielle Anwendungen</li>
+                            <li><strong>Luminance Keying:</strong> Helligkeits-basiert</li>
+                            <li><strong>Difference Keying:</strong> Differenz-Technik</li>
+                            <li><strong>Color Difference Key:</strong> Erweiterte Techniken</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">gesture</span>
+                        <h3 class="subsection-title">Rotoscoping</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Frame-by-Frame Maskierung:</p>
+                        <ul>
+                            <li><strong>Bezier Shapes:</strong> Präzise Kurven-Masken</li>
+                            <li><strong>Edge Feathering:</strong> Weiche Maskenkanten</li>
+                            <li><strong>Motion Tracking:</strong> Masken-Verfolgung</li>
+                            <li><strong>Keyframe Interpolation:</strong> Smooth Animation</li>
+                            <li><strong>Garbage Mattes:</strong> Grobe Vor-Maskierung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">blur_on</span>
+                        <h3 class="subsection-title">Motion Blur Addition</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Realistische Bewegungsunschärfe:</p>
+                        <ul>
+                            <li><strong>Velocity-Based Blur:</strong> Geschwindigkeits-abhängig</li>
+                            <li><strong>Directional Blur:</strong> Richtungsabhängige Unschärfe</li>
+                            <li><strong>Pixel Motion Blur:</strong> Optischer Fluss</li>
+                            <li><strong>3D Motion Blur:</strong> Räumliche Bewegung</li>
+                            <li><strong>Shutter Angle Simulation:</strong> Kamera-Simulation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">flare</span>
+                        <h3 class="subsection-title">Lens Flare Creation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Realistische Objektiv-Reflexionen:</p>
+                        <ul>
+                            <li><strong>Anamorphic Flares:</strong> Cinemascope-Style</li>
+                            <li><strong>Vintage Lens Flares:</strong> Retro-Optiken</li>
+                            <li><strong>Modern Lens Flares:</strong> Zeitgemäße Optiken</li>
+                            <li><strong>Color Aberration:</strong> Chromatische Abweichungen</li>
+                            <li><strong>Animated Flares:</strong> Bewegende Lichtreflexe</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">whatshot</span>
+                        <h3 class="subsection-title">Explosion Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Realistische Explosions-Simulationen:</p>
+                        <ul>
+                            <li><strong>Practical Explosions:</strong> Echte Explosionen integrieren</li>
+                            <li><strong>CG Explosions:</strong> Computer-generierte Effekte</li>
+                            <li><strong>Particle Explosions:</strong> Partikel-basierte Systeme</li>
+                            <li><strong>Debris Simulation:</strong> Trümmer-Animation</li>
+                            <li><strong>Shockwave Effects:</strong> Druckwellen-Darstellung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">cloud</span>
+                        <h3 class="subsection-title">Weather Simulation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Realistische Wetter-Effekte:</p>
+                        <ul>
+                            <li><strong>Rain Systems:</strong> Regen mit Kollision</li>
+                            <li><strong>Snow Particles:</strong> Verschiedene Schneeflocken</li>
+                            <li><strong>Lightning Creation:</strong> Realistische Blitze</li>
+                            <li><strong>Fog & Atmosphere:</strong> Volumetrische Effekte</li>
+                            <li><strong>Wind Interaction:</strong> Wind-beeinflusste Partikel</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">local_fire_department</span>
+                        <h3 class="subsection-title">Fire & Smoke Dynamics</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Fluid-Dynamik-Simulationen:</p>
+                        <ul>
+                            <li><strong>Realistic Fire:</strong> Physik-basierte Flammen</li>
+                            <li><strong>Volumetric Smoke:</strong> 3D-Rauch-Simulation</li>
+                            <li><strong>Turbulence Control:</strong> Verwirbelungs-Parameter</li>
+                            <li><strong>Heat Distortion:</strong> Hitze-Verzerrungen</li>
+                            <li><strong>Ember Particles:</strong> Funken-Systeme</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">flash_on</span>
+                        <h3 class="subsection-title">Energy Beams</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Energie-Strahl-Effekte:</p>
+                        <ul>
+                            <li><strong>Laser Beams:</strong> Sci-Fi Laser-Strahlen</li>
+                            <li><strong>Lightning Bolts:</strong> Elektrische Entladungen</li>
+                            <li><strong>Plasma Streams:</strong> Plasma-Strahlen</li>
+                            <li><strong>Force Fields:</strong> Energiefeld-Barrieren</li>
+                            <li><strong>Magic Spells:</strong> Magische Effekte</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">public</span>
+                        <h3 class="subsection-title">Hologram Creation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Futuristische Hologramm-Effekte:</p>
+                        <ul>
+                            <li><strong>Translucent Projection:</strong> Durchscheinende Projektionen</li>
+                            <li><strong>Scan Line Effects:</strong> Abtast-Linien</li>
+                            <li><strong>Interference Patterns:</strong> Interferenz-Störungen</li>
+                            <li><strong>Glitch Integration:</strong> Digitale Störungen</li>
+                            <li><strong>Data Visualization:</strong> Informations-Darstellung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">visibility_off</span>
+                        <h3 class="subsection-title">Invisible VFX</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Unsichtbare Spezialeffekte:</p>
+                        <ul>
+                            <li><strong>Wire Removal:</strong> Draht-Entfernung</li>
+                            <li><strong>Marker Removal:</strong> Tracking-Marker entfernen</li>
+                            <li><strong>Beauty Work:</strong> Kosmetische Korrekturen</li>
+                            <li><strong>Set Extensions:</strong> Kulissen-Erweiterungen</li>
+                            <li><strong>Crowd Multiplication:</strong> Menschenmassen erweitern</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">architecture</span>
+                        <h3 class="subsection-title">Set Extension</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Digitale Kulissen-Erweiterung:</p>
+                        <ul>
+                            <li><strong>Matte Painting:</strong> Digitale Hintergrund-Malerei</li>
+                            <li><strong>3D Environment:</strong> Dreidimensionale Umgebungen</li>
+                            <li><strong>Perspective Matching:</strong> Perspektive anpassen</li>
+                            <li><strong>Lighting Integration:</strong> Beleuchtung abstimmen</li>
+                            <li><strong>Atmospheric Matching:</strong> Atmosphäre angleichen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">groups</span>
+                        <h3 class="subsection-title">Crowd Replication</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Menschenmassen-Vervielfältigung:</p>
+                        <ul>
+                            <li><strong>Clone Stamping:</strong> Personen duplizieren</li>
+                            <li><strong>Crowd Tiling:</strong> Kachelbare Menschengruppen</li>
+                            <li><strong>Variation Systems:</strong> Automatische Variationen</li>
+                            <li><strong>Depth Integration:</strong> Tiefenstaffelung</li>
+                            <li><strong>Motion Randomization:</strong> Zufällige Bewegungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">directions_car</span>
+                        <h3 class="subsection-title">Vehicle Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Fahrzeug-spezielle Effekte:</p>
+                        <ul>
+                            <li><strong>Car Removal:</strong> Fahrzeuge aus Szenen entfernen</li>
+                            <li><strong>CG Vehicles:</strong> Digitale Fahrzeuge einsetzen</li>
+                            <li><strong>License Plate Blur:</strong> Kennzeichen unkenntlich machen</li>
+                            <li><strong>Speed Enhancement:</strong> Geschwindigkeit verstärken</li>
+                            <li><strong>Damage Simulation:</strong> Fahrzeugschäden hinzufügen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">wb_cloudy</span>
+                        <h3 class="subsection-title">Sky Replacement Advanced</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Erweiterte Himmel-Techniken:</p>
+                        <ul>
+                            <li><strong>HDRI Integration:</strong> 360° Himmel-Bilder</li>
+                            <li><strong>Volumetric Clouds:</strong> 3D-Wolken-Systeme</li>
+                            <li><strong>Time-of-Day Matching:</strong> Tageszeit abstimmen</li>
+                            <li><strong>Weather Consistency:</strong> Wetter-Kohärenz</li>
+                            <li><strong>Atmospheric Scattering:</strong> Lichtstreuung simulieren</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">brush</span>
+                        <h3 class="subsection-title">Digital Makeup & Beauty</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Digitale Beauty-Retusche:</p>
+                        <ul>
+                            <li><strong>Skin Smoothing:</strong> Haut-Glättung</li>
+                            <li><strong>Blemish Removal:</strong> Hautunreinheiten entfernen</li>
+                            <li><strong>Eye Enhancement:</strong> Augen-Verbesserung</li>
+                            <li><strong>Teeth Whitening:</strong> Zähne aufhellen</li>
+                            <li><strong>Hair Retouching:</strong> Haar-Korrekturen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">transform</span>
+                        <h3 class="subsection-title">Morphing & Warping</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Form-Transformationen:</p>
+                        <ul>
+                            <li><strong>Face Morphing:</strong> Gesichts-Transformationen</li>
+                            <li><strong>Body Warping:</strong> Körper-Verzerrungen</li>
+                            <li><strong>Object Morphing:</strong> Objekt-Wandlungen</li>
+                            <li><strong>Liquid Effects:</strong> Flüssigkeits-Simulationen</li>
+                            <li><strong>Elastic Deformation:</strong> Elastische Verformungen</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">camera_alt</span>
+                        <h3 class="subsection-title">Camera Projection</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Kamera-Projektions-Techniken:</p>
+                        <ul>
+                            <li><strong>2.5D Projection:</strong> Pseudo-3D aus 2D-Bildern</li>
+                            <li><strong>Parallax Creation:</strong> Tiefeneffekte erzeugen</li>
+                            <li><strong>Virtual Camera Moves:</strong> Virtuelle Kamerafahrten</li>
+                            <li><strong>Depth Map Creation:</strong> Tiefenkarten erstellen</li>
+                            <li><strong>Multi-Plane Compositing:</strong> Mehrschicht-Komposition</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">videogame_asset</span>
+                        <h3 class="subsection-title">Real-time VFX</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Echtzeit-Spezialeffekte:</p>
+                        <ul>
+                            <li><strong>GPU-Accelerated Effects:</strong> Grafikkarten-beschleunigte Effekte</li>
+                            <li><strong>Real-time Compositing:</strong> Live-Komposition</li>
+                            <li><strong>Interactive Particles:</strong> Interaktive Partikel-Systeme</li>
+                            <li><strong>Live Keying:</strong> Echtzeit-Chroma-Key</li>
+                            <li><strong>Performance Optimization:</strong> Leistungs-Optimierung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">360</span>
+                        <h3 class="subsection-title">360° VFX</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>VR/360° Spezialeffekte:</p>
+                        <ul>
+                            <li><strong>Spherical Compositing:</strong> Sphärische Komposition</li>
+                            <li><strong>Stereo VFX:</strong> Stereoskopische Effekte</li>
+                            <li><strong>Spatial Audio Integration:</strong> Räumliches Audio</li>
+                            <li><strong>Interactive Elements:</strong> Interaktive VR-Elemente</li>
+                            <li><strong>Motion Sickness Prevention:</strong> Vermeidung von Übelkeit</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">memory</span>
+                        <h3 class="subsection-title">AI-Powered VFX</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>KI-unterstützte Spezialeffekte:</p>
+                        <ul>
+                            <li><strong>Neural Style Transfer:</strong> KI-Stil-Übertragung</li>
+                            <li><strong>AI Upscaling:</strong> Intelligente Vergrößerung</li>
+                            <li><strong>Deep Learning Keying:</strong> KI-basiertes Keying</li>
+                            <li><strong>Automated Tracking:</strong> Automatisches Tracking</li>
+                            <li><strong>Content-Aware Fill:</strong> Intelligente Füllung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">dynamic_feed</span>
+                        <h3 class="subsection-title">Procedural Effects</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Prozedurale Effekt-Generierung:</p>
+                        <ul>
+                            <li><strong>Algorithm-Based Effects:</strong> Algorithmus-basierte Effekte</li>
+                            <li><strong>Fractal Generators:</strong> Fraktal-Generatoren</li>
+                            <li><strong>Noise Functions:</strong> Rausch-Funktionen</li>
+                            <li><strong>Mathematical Patterns:</strong> Mathematische Muster</li>
+                            <li><strong>Generative Art:</strong> Generative Kunst-Effekte</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">layers</span>
+                        <h3 class="subsection-title">Advanced Compositing</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle Kompositions-Techniken:</p>
+                        <ul>
+                            <li><strong>Multi-Pass Rendering:</strong> Mehrfach-Durchgänge</li>
+                            <li><strong>Z-Depth Compositing:</strong> Tiefenbasierte Komposition</li>
+                            <li><strong>Cryptomatte Integration:</strong> ID-basierte Selektion</li>
+                            <li><strong>AOV Compositing:</strong> Arbitrary Output Variables</li>
+                            <li><strong>Linear Workflow:</strong> Linearer Arbeitsablauf</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">settings</span>
+                        <h3 class="subsection-title">VFX Pipeline</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Professionelle VFX-Arbeitsabläufe:</p>
+                        <ul>
+                            <li><strong>Project Organization:</strong> Projekt-Strukturierung</li>
+                            <li><strong>Asset Management:</strong> Asset-Verwaltung</li>
+                            <li><strong>Version Control:</strong> Versions-Kontrolle</li>
+                            <li><strong>Render Management:</strong> Render-Verwaltung</li>
+                            <li><strong>Quality Control:</strong> Qualitäts-Kontrolle</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">speed</span>
+                        <h3 class="subsection-title">Performance Optimization</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>VFX-Performance maximieren:</p>
+                        <ul>
+                            <li><strong>Proxy Workflows:</strong> Stellvertreter-Arbeitsabläufe</li>
+                            <li><strong>Cache Management:</strong> Cache-Verwaltung</li>
+                            <li><strong>GPU Acceleration:</strong> Grafikkarten-Beschleunigung</li>
+                            <li><strong>Network Rendering:</strong> Netzwerk-Rendering</li>
+                            <li><strong>Memory Optimization:</strong> Speicher-Optimierung</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">bug_report</span>
+                        <h3 class="subsection-title">Troubleshooting VFX</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Häufige VFX-Probleme lösen:</p>
+                        <ul>
+                            <li><strong>Render Issues:</strong> Render-Probleme beheben</li>
+                            <li><strong>Color Space Problems:</strong> Farbraum-Probleme</li>
+                            <li><strong>Tracking Failures:</strong> Tracking-Fehler korrigieren</li>
+                            <li><strong>Edge Artifacts:</strong> Rand-Artefakte vermeiden</li>
+                            <li><strong>Performance Bottlenecks:</strong> Leistungs-Engpässe</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">school</span>
+                        <h3 class="subsection-title">VFX Learning Resources</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Weiterbildung in VFX:</p>
+                        <ul>
+                            <li><strong>Online Tutorials:</strong> Video-Tutorials und Kurse</li>
+                            <li><strong>VFX Breakdowns:</strong> Professionelle Analysen</li>
+                            <li><strong>Industry Blogs:</strong> Branchen-Blogs verfolgen</li>
+                            <li><strong>Software Documentation:</strong> Software-Dokumentation</li>
+                            <li><strong>Community Forums:</strong> Austausch in Foren</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">trending_up</span>
+                        <h3 class="subsection-title">Future VFX Trends</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Zukunft der Spezialeffekte:</p>
+                        <ul>
+                            <li><strong>Virtual Production:</strong> LED-Wand-Technologie</li>
+                            <li><strong>AI Integration:</strong> KI in VFX-Workflows</li>
+                            <li><strong>Cloud Computing:</strong> Cloud-basierte VFX</li>
+                            <li><strong>Real-time Ray Tracing:</strong> Echtzeit-Raytracing</li>
+                            <li><strong>Volumetric Capture:</strong> 3D-Aufnahme-Technologien</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation JavaScript -->
+        <script>
+            // Progress bar functionality
+            function updateProgressBar() {
+                const scrollTop = window.pageYOffset;
+                const documentHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const progress = (scrollTop / documentHeight) * 100;
+                document.getElementById('progressBar').style.width = progress + '%';
+            }
+
+            // Active navigation highlight
+            function updateActiveNavigation() {
+                const sections = document.querySelectorAll('.section');
+                const navLinks = document.querySelectorAll('.nav-link');
+                let current = '';
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 150;
+                    if (window.pageYOffset >= sectionTop) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+
+            // Keyboard navigation
+            function handleKeyNavigation(event) {
+                const sections = Array.from(document.querySelectorAll('.section'));
+                const currentSection = sections.find(section => {
+                    const rect = section.getBoundingClientRect();
+                    return rect.top <= 150 && rect.bottom > 150;
+                });
+
+                if (!currentSection) return;
+
+                const currentIndex = sections.indexOf(currentSection);
+
+                if (event.key === 'ArrowDown' && currentIndex < sections.length - 1) {
+                    event.preventDefault();
+                    sections[currentIndex + 1].scrollIntoView({ behavior: 'smooth' });
+                } else if (event.key === 'ArrowUp' && currentIndex > 0) {
+                    event.preventDefault();
+                    sections[currentIndex - 1].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+
+            // Smooth scroll for navigation links
+            function initSmoothScroll() {
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+            }
+
+            // Animation on scroll
+            function animateOnScroll() {
+                const subsections = document.querySelectorAll('.subsection');
+                
+                subsections.forEach(subsection => {
+                    const rect = subsection.getBoundingClientRect();
+                    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                    
+                    if (isVisible) {
+                        subsection.classList.add('fade-in');
+                    }
+                });
+            }
+
+            // Initialize all functionality
+            document.addEventListener('DOMContentLoaded', function() {
+                initSmoothScroll();
+                updateProgressBar();
+                updateActiveNavigation();
+                animateOnScroll();
+            });
+
+            // Event listeners
+            window.addEventListener('scroll', function() {
+                updateProgressBar();
+                updateActiveNavigation();
+                animateOnScroll();
+            });
+
+            document.addEventListener('keydown', handleKeyNavigation);
+
+            // Intersection Observer for better performance
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('slide-in-left');
+                    }
+                });
+            }, observerOptions);
+
+            document.addEventListener('DOMContentLoaded', function() {
+                document.querySelectorAll('.section-header').forEach(header => {
+                    observer.observe(header);
+                });
+            });
+        </script>
+    </main>
+</body>
+</html>
