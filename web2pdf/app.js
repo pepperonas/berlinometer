@@ -38,8 +38,7 @@ setInterval(() => {
 
 // Main route - serve the HTML
 app.get('/', (req, res) => {
-    res.send(`
-<!DOCTYPE html>
+    const htmlContent = `<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -533,7 +532,7 @@ app.get('/', (req, res) => {
                     </div>
                     <div id="hideElementsList">
                         <div class="hide-element-item">
-                            <input type="text" class="hide-element-selector" placeholder="z.B. .back-to-top, class=&quot;nav-links&quot;, #cookie-banner">
+                            <input type="text" class="hide-element-selector" placeholder="z.B. .back-to-top, class=nav-links, #cookie-banner">
                             <button type="button" class="remove-element-btn" onclick="removeHideElement(this)">✕</button>
                         </div>
                     </div>
@@ -556,220 +555,259 @@ app.get('/', (req, res) => {
         Made with ❤️ by <a href="https://mrx3k1.de" target="_blank">Martin Pfeffer</a>
     </footer>
 
-    <script>
-        // Common selectors for different types of websites
-        const commonSelectors = {
-            'navigation': ['nav', '.navbar', '.navigation', '#navigation', '.header-nav', '.main-nav'],
-            'footer': ['footer', '.footer', '#footer', '.site-footer'],
-            'cookie': ['.cookie-banner', '#cookie-banner', '.cookie-notice', '.gdpr-notice', '.cookie-consent'],
-            'social': ['.social-links', '.social-media', '.share-buttons', '.social-icons'],
-            'ads': ['.ads', '.advertisement', '.banner-ad', '.google-ads', '[class*="ad-"]'],
-            'popup': ['.popup', '.modal', '.overlay', '[class*="popup"]'],
-            'chat': ['.chat-widget', '.intercom', '.crisp-client', '.tawk-widget', '#tidio-chat'],
-            'floating': ['.back-to-top', '.scroll-to-top', '.fab', '.floating-button', '[class*="float"]'],
-            'sidebar': ['.sidebar', '#sidebar', '.side-panel', '.aside'],
-            'comments': ['.comments', '#comments', '.disqus', '.comment-section']
-        };
-        
-        // URL-specific suggestions
-        function getSuggestionsForURL(url) {
-            const suggestions = [];
-            
-            // Add common elements
-            suggestions.push({ selector: 'nav', description: 'Navigation' });
-            suggestions.push({ selector: 'footer', description: 'Footer' });
-            suggestions.push({ selector: '.back-to-top', description: 'Scroll-Button' });
-            
-            // Check URL patterns
-            if (url.includes('github.com')) {
-                suggestions.push({ selector: '.Header', description: 'GitHub Header' });
-                suggestions.push({ selector: '.footer', description: 'GitHub Footer' });
-                suggestions.push({ selector: '.js-header-wrapper', description: 'Navigation' });
-            } else if (url.includes('wikipedia.org')) {
-                suggestions.push({ selector: '#mw-navigation', description: 'Wiki Navigation' });
-                suggestions.push({ selector: '.mw-footer', description: 'Wiki Footer' });
-                suggestions.push({ selector: '#p-personal', description: 'User Tools' });
-            } else if (url.includes('stackoverflow.com')) {
-                suggestions.push({ selector: '.top-bar', description: 'Top Bar' });
-                suggestions.push({ selector: '#sidebar', description: 'Sidebar' });
-                suggestions.push({ selector: '.js-consent-banner', description: 'Cookie Banner' });
-            }
-            
-            // Add cookie banners (common on most sites)
-            suggestions.push({ selector: '[class*="cookie"]', description: 'Cookie Banner' });
-            suggestions.push({ selector: '[class*="consent"]', description: 'Consent Dialog' });
-            
-            return suggestions;
-        }
-        
-        // Update suggestions when URL changes
-        document.getElementById('url').addEventListener('input', function(e) {
-            const url = e.target.value;
-            if (url.length > 10) {
-                updateSuggestions(url);
-            }
-        });
-        
-        function updateSuggestions(url) {
-            const suggestionsContainer = document.getElementById('elementSuggestions');
-            const suggestionsList = document.getElementById('suggestionsList');
-            
-            // Clear existing suggestions
-            suggestionsList.innerHTML = '';
-            
-            // Get suggestions for URL
-            const suggestions = getSuggestionsForURL(url);
-            
-            if (suggestions.length > 0) {
-                suggestionsContainer.style.display = 'block';
-                
-                suggestions.forEach(suggestion => {
-                    const chip = document.createElement('button');
-                    chip.type = 'button';
-                    chip.className = 'suggestion-chip';
-                    chip.innerHTML = \`<span>\${suggestion.selector}</span> <small>(\${suggestion.description})</small>\`;
-                    chip.onclick = function() {
-                        addSelectorFromSuggestion(suggestion.selector);
-                        chip.classList.add('added');
-                    };
-                    suggestionsList.appendChild(chip);
-                });
-            } else {
-                suggestionsContainer.style.display = 'none';
-            }
-        }
-        
-        function addSelectorFromSuggestion(selector) {
-            // Check if selector already exists
-            const existingSelectors = Array.from(document.querySelectorAll('.hide-element-selector'))
-                .map(input => input.value.trim())
-                .filter(val => val.length > 0);
-            
-            if (!existingSelectors.includes(selector)) {
-                // Find first empty input or add new one
-                let emptyInput = Array.from(document.querySelectorAll('.hide-element-selector'))
-                    .find(input => input.value.trim() === '');
-                
-                if (!emptyInput) {
-                    addHideElement();
-                    emptyInput = Array.from(document.querySelectorAll('.hide-element-selector')).pop();
-                }
-                
-                emptyInput.value = selector;
-                emptyInput.focus();
-            }
-        }
-        
-        // Handle no margins checkbox
-        document.getElementById('noMargins').addEventListener('change', function(e) {
-            const marginInputs = ['marginTop', 'marginBottom', 'marginLeft', 'marginRight'];
-            if (e.target.checked) {
-                marginInputs.forEach(id => {
-                    document.getElementById(id).value = 0;
-                    document.getElementById(id).disabled = true;
-                });
-            } else {
-                marginInputs.forEach(id => {
-                    document.getElementById(id).value = 20;
-                    document.getElementById(id).disabled = false;
-                });
-            }
-        });
-        
-        function addHideElement() {
-            const list = document.getElementById('hideElementsList');
-            const newItem = document.createElement('div');
-            newItem.className = 'hide-element-item';
-            newItem.innerHTML = \`
-                <input type="text" class="hide-element-selector" placeholder="z.B. .back-to-top, class=&quot;nav-links&quot;, #cookie-banner">
-                <button type="button" class="remove-element-btn" onclick="removeHideElement(this)">✕</button>
-            \`;
-            list.appendChild(newItem);
-        }
-
-        function removeHideElement(button) {
-            button.closest('.hide-element-item').remove();
-        }
-
-        document.getElementById('pdfForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const convertBtn = document.getElementById('convertBtn');
-            const progress = document.getElementById('progress');
-            const result = document.getElementById('result');
-            
-            // UI Updates
-            convertBtn.disabled = true;
-            progress.style.display = 'block';
-            result.style.display = 'none';
-            
-            // Collect form data
-            const hideElements = Array.from(document.querySelectorAll('.hide-element-selector'))
-                .map(input => input.value.trim())
-                .filter(value => value.length > 0);
-
-            const formData = {
-                url: document.getElementById('url').value,
-                format: document.getElementById('format').value,
-                orientation: document.getElementById('orientation').value,
-                scale: parseFloat(document.getElementById('scale').value),
-                timeout: parseInt(document.getElementById('timeout').value) * 1000,
-                quality: document.getElementById('quality').value,
-                margin: {
-                    top: document.getElementById('marginTop').value + 'mm',
-                    bottom: document.getElementById('marginBottom').value + 'mm',
-                    left: document.getElementById('marginLeft').value + 'mm',
-                    right: document.getElementById('marginRight').value + 'mm'
-                },
-                printBackground: document.getElementById('printBackground').checked,
-                displayHeaderFooter: document.getElementById('displayHeaderFooter').checked,
-                headerTemplate: document.getElementById('headerTemplate').value,
-                footerTemplate: document.getElementById('footerTemplate').value,
-                customCSS: document.getElementById('customCSS').value,
-                waitForSelector: document.getElementById('waitForSelector').value,
-                waitForTimeout: parseInt(document.getElementById('waitForTimeout').value),
-                hideElements: hideElements
-            };
-            
-            try {
-                const response = await fetch('/convert', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    result.className = 'result success';
-                    result.innerHTML = \`
-                        <div>PDF erfolgreich erstellt!</div>
-                        <button class="btn download-btn" onclick="downloadFile('\${data.filename}')">
-                            Download PDF
-                        </button>
-                    \`;
-                } else {
-                    throw new Error(data.error || 'Unbekannter Fehler');
-                }
-            } catch (error) {
-                result.className = 'result error';
-                result.innerHTML = \`<div>Fehler: \${error.message}</div>\`;
-            } finally {
-                convertBtn.disabled = false;
-                progress.style.display = 'none';
-                result.style.display = 'block';
-            }
-        });
-        
-        function downloadFile(filename) {
-            window.open(\`/download/\${filename}\`, '_blank');
-        }
-    </script>
+    <script src="./static/app.js"></script>
 </body>
-</html>
-    `);
+</html>`;
+    res.send(htmlContent);
+});
+
+// Serve JavaScript file separately
+app.get('/static/app.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.send(`
+// Common selectors for different types of websites
+const commonSelectors = {
+    'navigation': ['nav', '.navbar', '.navigation', '#navigation', '.header-nav', '.main-nav'],
+    'footer': ['footer', '.footer', '#footer', '.site-footer'],
+    'cookie': ['.cookie-banner', '#cookie-banner', '.cookie-notice', '.gdpr-notice', '.cookie-consent'],
+    'social': ['.social-links', '.social-media', '.share-buttons', '.social-icons'],
+    'ads': ['.ads', '.advertisement', '.banner-ad', '.google-ads', '[class*=ad-]'],
+    'popup': ['.popup', '.modal', '.overlay', '[class*=popup]'],
+    'chat': ['.chat-widget', '.intercom', '.crisp-client', '.tawk-widget', '#tidio-chat'],
+    'floating': ['.back-to-top', '.scroll-to-top', '.fab', '.floating-button', '[class*=float]'],
+    'sidebar': ['.sidebar', '#sidebar', '.side-panel', '.aside'],
+    'comments': ['.comments', '#comments', '.disqus', '.comment-section']
+};
+
+// URL-specific suggestions
+function getSuggestionsForURL(url) {
+    const suggestions = [];
+    
+    // Add common elements
+    suggestions.push({ selector: 'nav', description: 'Navigation' });
+    suggestions.push({ selector: 'footer', description: 'Footer' });
+    suggestions.push({ selector: '.back-to-top', description: 'Scroll-Button' });
+    
+    // Check URL patterns
+    if (url.includes('github.com')) {
+        suggestions.push({ selector: '.Header', description: 'GitHub Header' });
+        suggestions.push({ selector: '.footer', description: 'GitHub Footer' });
+        suggestions.push({ selector: '.js-header-wrapper', description: 'Navigation' });
+    } else if (url.includes('wikipedia.org')) {
+        suggestions.push({ selector: '#mw-navigation', description: 'Wiki Navigation' });
+        suggestions.push({ selector: '.mw-footer', description: 'Wiki Footer' });
+        suggestions.push({ selector: '#p-personal', description: 'User Tools' });
+    } else if (url.includes('stackoverflow.com')) {
+        suggestions.push({ selector: '.top-bar', description: 'Top Bar' });
+        suggestions.push({ selector: '#sidebar', description: 'Sidebar' });
+        suggestions.push({ selector: '.js-consent-banner', description: 'Cookie Banner' });
+    }
+    
+    // Add cookie banners (common on most sites)
+    suggestions.push({ selector: '[class*=cookie]', description: 'Cookie Banner' });
+    suggestions.push({ selector: '[class*=consent]', description: 'Consent Dialog' });
+    
+    return suggestions;
+}
+
+// Update suggestions when URL changes
+document.getElementById('url').addEventListener('input', function(e) {
+    const url = e.target.value;
+    if (url.length > 10) {
+        updateSuggestions(url);
+    }
+});
+
+function updateSuggestions(url) {
+    const suggestionsContainer = document.getElementById('elementSuggestions');
+    const suggestionsList = document.getElementById('suggestionsList');
+    
+    // Clear existing suggestions
+    suggestionsList.innerHTML = '';
+    
+    // Get suggestions for URL
+    const suggestions = getSuggestionsForURL(url);
+    
+    if (suggestions.length > 0) {
+        suggestionsContainer.style.display = 'block';
+        
+        suggestions.forEach(suggestion => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'suggestion-chip';
+            
+            const span = document.createElement('span');
+            span.textContent = suggestion.selector;
+            chip.appendChild(span);
+            
+            const small = document.createElement('small');
+            small.textContent = ' (' + suggestion.description + ')';
+            chip.appendChild(small);
+            
+            chip.onclick = function() {
+                addSelectorFromSuggestion(suggestion.selector);
+                chip.classList.add('added');
+            };
+            suggestionsList.appendChild(chip);
+        });
+    } else {
+        suggestionsContainer.style.display = 'none';
+    }
+}
+
+function addSelectorFromSuggestion(selector) {
+    // Check if selector already exists
+    const existingSelectors = Array.from(document.querySelectorAll('.hide-element-selector'))
+        .map(input => input.value.trim())
+        .filter(val => val.length > 0);
+    
+    if (!existingSelectors.includes(selector)) {
+        // Find first empty input or add new one
+        let emptyInput = Array.from(document.querySelectorAll('.hide-element-selector'))
+            .find(input => input.value.trim() === '');
+        
+        if (!emptyInput) {
+            addHideElement();
+            emptyInput = Array.from(document.querySelectorAll('.hide-element-selector')).pop();
+        }
+        
+        emptyInput.value = selector;
+        emptyInput.focus();
+    }
+}
+
+// Handle no margins checkbox
+document.getElementById('noMargins').addEventListener('change', function(e) {
+    const marginInputs = ['marginTop', 'marginBottom', 'marginLeft', 'marginRight'];
+    if (e.target.checked) {
+        marginInputs.forEach(id => {
+            document.getElementById(id).value = 0;
+            document.getElementById(id).disabled = true;
+        });
+    } else {
+        marginInputs.forEach(id => {
+            document.getElementById(id).value = 20;
+            document.getElementById(id).disabled = false;
+        });
+    }
+});
+
+function addHideElement() {
+    const list = document.getElementById('hideElementsList');
+    const newItem = document.createElement('div');
+    newItem.className = 'hide-element-item';
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'hide-element-selector';
+    input.placeholder = 'z.B. .back-to-top, class=nav-links, #cookie-banner';
+    
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'remove-element-btn';
+    button.textContent = '✕';
+    button.onclick = function() { removeHideElement(this); };
+    
+    newItem.appendChild(input);
+    newItem.appendChild(button);
+    list.appendChild(newItem);
+}
+
+function removeHideElement(button) {
+    button.closest('.hide-element-item').remove();
+}
+
+document.getElementById('pdfForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const convertBtn = document.getElementById('convertBtn');
+    const progress = document.getElementById('progress');
+    const result = document.getElementById('result');
+    
+    // UI Updates
+    convertBtn.disabled = true;
+    progress.style.display = 'block';
+    result.style.display = 'none';
+    
+    // Collect form data
+    const hideElementInputs = document.querySelectorAll('.hide-element-selector');
+    const hideElements = [];
+    for (let i = 0; i < hideElementInputs.length; i++) {
+        const value = hideElementInputs[i].value.trim();
+        if (value.length > 0) {
+            hideElements.push(value);
+        }
+    }
+
+    const formData = {
+        url: document.getElementById('url').value,
+        format: document.getElementById('format').value,
+        orientation: document.getElementById('orientation').value,
+        scale: parseFloat(document.getElementById('scale').value),
+        timeout: parseInt(document.getElementById('timeout').value) * 1000,
+        quality: document.getElementById('quality').value,
+        margin: {
+            top: document.getElementById('marginTop').value + 'mm',
+            bottom: document.getElementById('marginBottom').value + 'mm',
+            left: document.getElementById('marginLeft').value + 'mm',
+            right: document.getElementById('marginRight').value + 'mm'
+        },
+        printBackground: document.getElementById('printBackground').checked,
+        displayHeaderFooter: document.getElementById('displayHeaderFooter').checked,
+        headerTemplate: document.getElementById('headerTemplate').value,
+        footerTemplate: document.getElementById('footerTemplate').value,
+        customCSS: document.getElementById('customCSS').value,
+        waitForSelector: document.getElementById('waitForSelector').value,
+        waitForTimeout: parseInt(document.getElementById('waitForTimeout').value),
+        hideElements: hideElements
+    };
+    
+    try {
+        const response = await fetch('./convert', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            result.className = 'result success';
+            result.innerHTML = '';
+            
+            const successDiv = document.createElement('div');
+            successDiv.textContent = 'PDF erfolgreich erstellt!';
+            
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'btn download-btn';
+            downloadBtn.textContent = 'Download PDF';
+            downloadBtn.onclick = function() { downloadFile(data.filename); };
+            
+            result.appendChild(successDiv);
+            result.appendChild(downloadBtn);
+        } else {
+            throw new Error(data.error || 'Unbekannter Fehler');
+        }
+    } catch (error) {
+        result.className = 'result error';
+        result.innerHTML = '';
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.textContent = 'Fehler: ' + error.message;
+        result.appendChild(errorDiv);
+    } finally {
+        convertBtn.disabled = false;
+        progress.style.display = 'none';
+        result.style.display = 'block';
+    }
+});
+
+function downloadFile(filename) {
+    window.open('./download/' + filename, '_blank');
+}
+`);
 });
 
 // Convert endpoint
@@ -797,9 +835,12 @@ app.post('/convert', async (req, res) => {
             return res.status(400).json({error: 'URL ist erforderlich'});
         }
 
-        // Launch browser
+        // Launch browser with maximum timeouts and minimal features
         const browser = await puppeteer.launch({
-            headless: true,
+            headless: 'new',
+            protocolTimeout: 300000, // 5 minutes timeout 
+            timeout: 120000, // 2 minutes browser launch timeout
+            slowMo: 100, // Add small delay between operations
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -808,11 +849,28 @@ app.post('/convert', async (req, res) => {
                 '--no-first-run',
                 '--no-zygote',
                 '--single-process',
-                '--disable-gpu'
+                '--disable-gpu',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor',
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                '--disable-features=TranslateUI',
+                '--disable-extensions',
+                '--disable-plugins',
+                '--disable-images',
+                '--memory-pressure-off',
+                '--max_old_space_size=4096',
+                '--disable-logging',
+                '--disable-background-networking'
             ]
         });
 
         const page = await browser.newPage();
+        
+        // Set maximum timeouts for page operations
+        page.setDefaultTimeout(180000); // 3 minutes
+        page.setDefaultNavigationTimeout(180000); // 3 minutes
 
         // Set viewport based on quality
         const viewportConfig = {
@@ -850,12 +908,12 @@ app.post('/convert', async (req, res) => {
                 selectors.forEach(selector => {
                     try {
                         // Check if selector is a class attribute like class="className"
-                        const classMatch = selector.match(/^class\s*=\s*["'](.+?)["']$/);
-                        
+                        const classMatch = selector.match(/^class\\s*=\\s*[\"'](.+?)[\"']$/);
+
                         if (classMatch) {
                             // Extract class name and hide elements with this exact class
                             const className = classMatch[1];
-                            const elements = document.querySelectorAll(`[class="${className}"]`);
+                            const elements = document.querySelectorAll('[class="' + className + '"]');
                             elements.forEach(el => {
                                 el.style.display = 'none';
                             });
@@ -867,7 +925,7 @@ app.post('/convert', async (req, res) => {
                             });
                         }
                     } catch (e) {
-                        console.error(`Failed to hide elements with selector: ${selector}`, e);
+                        console.error('Failed to hide elements with selector: ' + selector, e);
                     }
                 });
             }, hideElements);
@@ -878,14 +936,14 @@ app.post('/convert', async (req, res) => {
         try {
             urlObj = new URL(url);
         } catch (e) {
-            urlObj = { hostname: 'unknown', pathname: '/' };
+            urlObj = {hostname: 'unknown', pathname: '/'};
         }
-        
+
         // Create a clean filename from the URL
-        const domain = urlObj.hostname.replace(/^www\./, '');
+        const domain = urlObj.hostname.replace(/^www\\./, '');
         const pathPart = urlObj.pathname.replace(/\//g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
         const timestamp = new Date().toISOString().replace(/:/g, '-').substring(0, 19);
-        const filename = `${domain}${pathPart}_${timestamp}.pdf`;
+        const filename = domain + pathPart + '_' + timestamp + '.pdf';
         const filepath = path.join(downloadsDir, filename);
 
         // PDF options
@@ -947,7 +1005,7 @@ app.get('/health', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`Server läuft auf http://localhost:${PORT}`);
+    console.log('Server läuft auf http://localhost:' + PORT);
 });
 
 module.exports = app;
