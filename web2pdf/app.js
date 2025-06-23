@@ -627,7 +627,7 @@ app.get('/', (req, res) => {
                     const chip = document.createElement('button');
                     chip.type = 'button';
                     chip.className = 'suggestion-chip';
-                    chip.innerHTML = \`<span>\${suggestion.selector}</span> <small>(\${suggestion.description})</small>\`;
+                    chip.innerHTML = '<span>' + suggestion.selector + '</span> <small>(' + suggestion.description + ')</small>';
                     chip.onclick = function() {
                         addSelectorFromSuggestion(suggestion.selector);
                         chip.classList.add('added');
@@ -680,10 +680,9 @@ app.get('/', (req, res) => {
             const list = document.getElementById('hideElementsList');
             const newItem = document.createElement('div');
             newItem.className = 'hide-element-item';
-            newItem.innerHTML = \`
-                <input type="text" class="hide-element-selector" placeholder="z.B. .back-to-top, class=&quot;nav-links&quot;, #cookie-banner">
-                <button type="button" class="remove-element-btn" onclick="removeHideElement(this)">✕</button>
-            \`;
+            newItem.innerHTML = 
+                '<input type="text" class="hide-element-selector" placeholder="z.B. .back-to-top, class=&quot;nav-links&quot;, #cookie-banner">' +
+                '<button type="button" class="remove-element-btn" onclick="removeHideElement(this)">✕</button>';
             list.appendChild(newItem);
         }
 
@@ -744,18 +743,16 @@ app.get('/', (req, res) => {
                 
                 if (response.ok) {
                     result.className = 'result success';
-                    result.innerHTML = \`
-                        <div>PDF erfolgreich erstellt!</div>
-                        <button class="btn download-btn" onclick="downloadFile('\${data.filename}')">
-                            Download PDF
-                        </button>
-                    \`;
+                    result.innerHTML = '<div>PDF erfolgreich erstellt!</div>' +
+                        '<button class="btn download-btn" onclick="downloadFile(\'' + data.filename + '\')">' +
+                            'Download PDF' +
+                        '</button>';
                 } else {
                     throw new Error(data.error || 'Unbekannter Fehler');
                 }
             } catch (error) {
                 result.className = 'result error';
-                result.innerHTML = \`<div>Fehler: \${error.message}</div>\`;
+                result.innerHTML = '<div>Fehler: ' + error.message + '</div>';
             } finally {
                 convertBtn.disabled = false;
                 progress.style.display = 'none';
@@ -764,7 +761,7 @@ app.get('/', (req, res) => {
         });
         
         function downloadFile(filename) {
-            window.open(\`/download/\${filename}\`, '_blank');
+            window.open('/download/' + filename, '_blank');
         }
     </script>
 </body>
