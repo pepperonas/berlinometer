@@ -1,0 +1,108 @@
+.concept-grid-container {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: var(--bg-color, #f8f9fa);
+  transition: background-color 0.3s ease;
+}
+
+:root {
+  --bg-color: #f8f9fa;
+  --toolbar-bg: white;
+  --toolbar-border: #ddd;
+  --btn-bg: white;
+  --btn-border: #ddd;
+  --btn-color: #333;
+  --btn-hover-bg: #f0f0f0;
+  --btn-hover-border: #007bff;
+}
+
+.dark-mode {
+  --bg-color: #1a1a1a;
+  --toolbar-bg: #2d2d2d;
+  --toolbar-border: #444;
+  --btn-bg: #2d2d2d;
+  --btn-border: #444;
+  --btn-color: #fff;
+  --btn-hover-bg: #3a3a3a;
+  --btn-hover-border: #007bff;
+}
+
+.toolbar {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background: var(--toolbar-bg);
+  border: 1px solid var(--toolbar-border);
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.toolbar-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-color);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toolbar-btn:hover {
+  background: var(--btn-hover-bg);
+  border-color: var(--btn-hover-border);
+}
+
+.toolbar-btn.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-border);
+  color: var(--btn-color);
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+  background: var(--btn-hover-bg);
+  border-color: var(--btn-hover-border);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .concept-grid-container {
+    background: #1a1a1a;
+  }
+  
+  .toolbar {
+    background: #2d2d2d;
+    border: 1px solid #444;
+  }
+  
+  .toolbar-btn {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #fff;
+  }
+  
+  .toolbar-btn:hover {
+    background: #3a3a3a;
+    border-color: #007bff;
+  }
+}

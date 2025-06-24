@@ -1,0 +1,51 @@
+.context-menu {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.context-menu-item:last-child {
+  border-bottom: none;
+}
+
+.context-menu-item:hover {
+  background: #f5f5f5;
+}
+
+.context-menu-item.danger:hover {
+  background: #ffe6e6;
+  color: #d32f2f;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .context-menu {
+    background: #2d2d2d;
+    border-color: #444;
+  }
+  
+  .context-menu-item {
+    color: #fff;
+    border-bottom-color: #444;
+  }
+  
+  .context-menu-item:hover {
+    background: #3a3a3a;
+  }
+  
+  .context-menu-item.danger:hover {
+    background: #4a2828;
+    color: #ff6b6b;
+  }
+}
