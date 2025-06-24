@@ -4,23 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= typeof title !== 'undefined' ? title : 'IT Blog' %></title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/blog/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="/blog/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/blog/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="/blog/apple-touch-icon.png">
+    <link rel="manifest" href="/blog/site.webmanifest">
+    
     <link rel="stylesheet" href="/blog/css/style.css">
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
 
 
-    <meta property="og:title" content="Blog | mrx3k1.de">
-    <meta property="og:description"
-          content="IT-Blog für alle: Tutorials, spannende Einblicke und Lösungen für technische Alltagsprobleme">
-    <meta property="og:image" content="blog.jpg">
-    <meta property="og:type" content="website">
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="IT-Blog für alle: Tutorials, spannende Einblicke und Lösungen für technische Alltagsprobleme. Erfahre mehr über AI, Development und IT-Security.">
+    <meta name="keywords" content="IT, Blog, Tutorials, AI, Development, IT-Security, Programmierung, Technologie">
+    <meta name="author" content="Martin Pfeffer">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://mrx3k1.de/blog/">
 
-    <!-- Twitter Card Tags für Twitter-Vorschau -->
+    <!-- Open Graph Meta Tags für Facebook/LinkedIn -->
+    <meta property="og:title" content="<%= typeof title !== 'undefined' ? title + ' | IT Blog - mrx3k1.de' : 'IT Blog - mrx3k1.de' %>">
+    <meta property="og:description" content="IT-Blog für alle: Tutorials, spannende Einblicke und Lösungen für technische Alltagsprobleme. Erfahre mehr über AI, Development und IT-Security.">
+    <meta property="og:image" content="https://mrx3k1.de/blog/blog.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="IT Blog - mrx3k1.de Thumbnail">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mrx3k1.de/blog/">
+    <meta property="og:site_name" content="mrx3k1.de">
+    <meta property="og:locale" content="de_DE">
+
+    <!-- Twitter Card Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Blog | mrx3k1.de">
-    <meta name="twitter:description"
-          content="IT-Blog für alle: Tutorials, spannende Einblicke und Lösungen für technische Alltagsprobleme">
-    <meta name="twitter:image" content="blog.jpg">
+    <meta name="twitter:site" content="@mrx3k1">
+    <meta name="twitter:creator" content="@mrx3k1">
+    <meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title + ' | IT Blog - mrx3k1.de' : 'IT Blog - mrx3k1.de' %>">
+    <meta name="twitter:description" content="IT-Blog für alle: Tutorials, spannende Einblicke und Lösungen für technische Alltagsprobleme. Erfahre mehr über AI, Development und IT-Security.">
+    <meta name="twitter:image" content="https://mrx3k1.de/blog/blog.jpg">
+    <meta name="twitter:image:alt" content="IT Blog - mrx3k1.de Thumbnail">
 
     <!-- Highlight.js JavaScript hinzugefügt -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
