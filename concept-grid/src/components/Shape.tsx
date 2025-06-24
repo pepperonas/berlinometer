@@ -33,7 +33,9 @@ const Shape: React.FC<ShapeProps> = ({
   onContextMenu
 }) => {
   const handleDragEnd = (e: any) => {
-    onDragEnd(id, e.target.x(), e.target.y());
+    e.cancelBubble = true;
+    const pos = e.target.getAbsolutePosition();
+    onDragEnd(id, pos.x, pos.y);
   };
 
   const handleContextMenu = (e: any) => {
@@ -101,6 +103,12 @@ const Shape: React.FC<ShapeProps> = ({
       y={y}
       draggable
       onDragEnd={handleDragEnd}
+      onDragStart={(e) => {
+        e.cancelBubble = true;
+      }}
+      onDragMove={(e) => {
+        e.cancelBubble = true;
+      }}
       onContextMenu={handleContextMenu}
     >
       {renderShape()}

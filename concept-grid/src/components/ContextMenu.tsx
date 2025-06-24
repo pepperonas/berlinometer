@@ -27,14 +27,38 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, onAction, onClose, targ
 
   const getMenuItems = () => {
     const commonItems = [
-      { label: 'Duplicate', action: 'duplicate' },
-      { label: 'Delete', action: 'delete' },
+      { label: 'Duplizieren', action: 'duplicate', icon: '📄' },
+      { label: 'Löschen', action: 'delete', icon: '🗑️', danger: true },
     ];
 
     if (targetType === 'sticky-note') {
       return [
-        { label: 'Change Color', action: 'change-color' },
-        { label: 'Resize', action: 'resize' },
+        { label: 'Text bearbeiten', action: 'edit-text', icon: '✏️' },
+        { label: 'Farbe ändern', action: 'change-color', icon: '🎨' },
+        { label: 'Kleinere Größe', action: 'resize-small', icon: '⬇️' },
+        { label: 'Größere Größe', action: 'resize-large', icon: '⬆️' },
+        { label: 'In den Vordergrund', action: 'bring-forward', icon: '⬆️' },
+        { label: 'In den Hintergrund', action: 'send-backward', icon: '⬇️' },
+        ...commonItems,
+      ];
+    }
+
+    if (['rectangle', 'circle', 'triangle'].includes(targetType || '')) {
+      return [
+        { label: 'Füllfarbe ändern', action: 'change-fill', icon: '🎨' },
+        { label: 'Rahmenfarbe ändern', action: 'change-stroke', icon: '🖊️' },
+        { label: 'In den Vordergrund', action: 'bring-forward', icon: '⬆️' },
+        { label: 'In den Hintergrund', action: 'send-backward', icon: '⬇️' },
+        ...commonItems,
+      ];
+    }
+
+    if (targetType === 'text') {
+      return [
+        { label: 'Text bearbeiten', action: 'edit-text', icon: '✏️' },
+        { label: 'Schriftgröße +', action: 'font-larger', icon: '🔍' },
+        { label: 'Schriftgröße -', action: 'font-smaller', icon: '🔍' },
+        { label: 'Textfarbe ändern', action: 'change-color', icon: '🎨' },
         ...commonItems,
       ];
     }
@@ -56,9 +80,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, onAction, onClose, targ
       {getMenuItems().map((item, index) => (
         <div
           key={index}
-          className="context-menu-item"
+          className={`context-menu-item ${item.danger ? 'danger' : ''}`}
           onClick={() => onAction(item.action)}
         >
+          <span className="menu-icon">{item.icon}</span>
           {item.label}
         </div>
       ))}

@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Group, Rect, Text } from 'react-konva';
+import React, { useState, useRef, useEffect } from 'react';
+import { Group, Rect, Text, Circle } from 'react-konva';
 
 interface StickyNoteProps {
   id: string;
@@ -9,9 +9,11 @@ interface StickyNoteProps {
   height?: number;
   text: string;
   color?: string;
+  isSelected?: boolean;
   onDragEnd: (id: string, x: number, y: number) => void;
   onTextChange: (id: string, text: string) => void;
   onContextMenu: (id: string, e: any) => void;
+  onResize?: (id: string, width: number, height: number) => void;
 }
 
 const StickyNote: React.FC<StickyNoteProps> = ({
@@ -22,12 +24,16 @@ const StickyNote: React.FC<StickyNoteProps> = ({
   height = 150,
   text,
   color = '#ffeb3b',
+  isSelected = false,
   onDragEnd,
   onTextChange,
-  onContextMenu
+  onContextMenu,
+  onResize
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const textRef = useRef<any>(null);
+  const groupRef = useRef<any>(null);
 
   const handleDblClick = () => {
     setIsEditing(true);
@@ -49,32 +55,45 @@ const StickyNote: React.FC<StickyNoteProps> = ({
 
   return (
     <Group
+      ref={groupRef}
       x={x}
       y={y}
       draggable
       onDragEnd={(e) => {
-        onDragEnd(id, e.target.x(), e.target.y());
+        e.cancelBubble = true;
+        // Get the absolute position
+        const pos = e.target.getAbsolutePosition();
+        onDragEnd(id, pos.x, pos.y);
+      }}
+      onDragStart={(e) => {
+        e.cancelBubble = true;
+      }}
+      onDragMove={(e) => {
+        e.cancelBubble = true;
       }}
       onContextMenu={handleContextMenu}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <Rect
         width={width}
         height={height}
         fill={color}
-        stroke="#ddd"
-        strokeWidth={1}
-        cornerRadius={5}
+        stroke={isSelected ? "#007bff" : (isHovered ? "#999" : "#ddd")}
+        strokeWidth={isSelected ? 3 : (isHovered ? 2 : 1)}
+        cornerRadius={8}
         shadowColor="black"
-        shadowBlur={5}
+        shadowBlur={isHovered || isSelected ? 8 : 5}
         shadowOffset={{ x: 2, y: 2 }}
-        shadowOpacity={0.2}
+        shadowOpacity={isHovered || isSelected ? 0.3 : 0.2}
       />
+      
       <Text
         ref={textRef}
-        x={10}
-        y={10}
-        width={width - 20}
-        height={height - 20}
+        x={12}
+        y={12}
+        width={width - 24}
+        height={height - 24}
         text={text}
         fontSize={14}
         fontFamily="Arial"
@@ -83,7 +102,38 @@ const StickyNote: React.FC<StickyNoteProps> = ({
         editable={isEditing}
         onDblClick={handleDblClick}
         onBlur={handleTextEdit}
+        verticalAlign="top"
       />
+      
+      {/* Resize handle */}
+      {(isSelected || isHovered) && onResize && (
+        <Circle
+          x={width - 8}
+          y={height - 8}
+          radius={6}
+          fill="#007bff"
+          stroke="white"
+          strokeWidth={2}
+          draggable
+          onDragMove={(e) => {
+            const newWidth = Math.max(100, e.target.x() + 8);
+            const newHeight = Math.max(80, e.target.y() + 8);
+            onResize(id, newWidth, newHeight);
+          }}
+          onMouseEnter={(e) => {
+            const container = e.target.getStage()?.container();
+            if (container) {
+              container.style.cursor = 'nw-resize';
+            }
+          }}
+          onMouseLeave={(e) => {
+            const container = e.target.getStage()?.container();
+            if (container) {
+              container.style.cursor = 'default';
+            }
+          }}
+        />
+      )}
     </Group>
   );
 };
