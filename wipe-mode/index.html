@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WipeMode</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="description" content="WipeMode - Sichere Gerätereingung mit Tastatur- und Maussperre. Entsperre mit 'unlock' Sequenz.">
+    <meta name="keywords" content="keyboard lock, mouse lock, device cleaning, screen lock, wipe mode, cleaning mode, tastatur sperren">
+    <meta name="author" content="WipeMode">
+    <meta name="robots" content="noindex, nofollow">
+    <meta property="og:title" content="WipeMode - Gerätereingung">
+    <meta property="og:description" content="Sichere Tastatur- und Maussperre für die Gerätereingung">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="wipe-mode.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="WipeMode - Gerätereingung">
+    <meta name="twitter:description" content="Sichere Tastatur- und Maussperre für die Gerätereingung">
+    <meta name="twitter:image" content="wipe-mode.jpg">
+    <meta name="theme-color" content="#2C2E3B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WipeMode">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #2C2E3B 0%, #1e2029 100%);
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            cursor: none;
+        }
+        
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+        }
+        
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .status {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .unlock-hint {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.9rem;
+        }
+        
+        .sequence {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .progress {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .locked {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .warning {
+            background: rgba(255, 152, 0, 0.1);
+            border: 1px solid rgba(255, 152, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #FFB74D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon locked">🔒</div>
+        <h1>WipeMode aktiv</h1>
+        <div class="status">Tastatur und Maus gesperrt</div>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="unlock-hint">
+            Zum Entsperren drücke:<br>
+            <span class="sequence" id="sequence">UNLOCK</span>
+        </div>
+    </div>
+
+    <script>
+        let unlockSequence = ['u', 'n', 'l', 'o', 'c', 'k'];
+        let currentSequence = [];
+        let isLocked = true;
+        
+        // Fullscreen aktivieren
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            }
+        });
+        
+        // Alle Events blockieren
+        function blockEvent(e) {
+            if (isLocked) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        }
+        
+        // Event-Listener für alle Input-Events
+        const events = ['keydown', 'keyup', 'keypress', 'mousedown', 'mouseup', 'mousemove', 'wheel', 'contextmenu', 'touchstart', 'touchend', 'touchmove'];
+        
+        events.forEach(event => {
+            document.addEventListener(event, blockEvent, { capture: true, passive: false });
+        });
+        
+        // Unlock-Sequenz abfangen
+        document.addEventListener('keydown', (e) => {
+            if (!isLocked) return;
+            
+            const key = e.key.toLowerCase();
+            
+            if (key === unlockSequence[currentSequence.length]) {
+                currentSequence.push(key);
+                updateProgress();
+                
+                if (currentSequence.length === unlockSequence.length) {
+                    unlock();
+                }
+            } else {
+                currentSequence = [];
+                updateProgress();
+            }
+        }, true);
+        
+        function updateProgress() {
+            const progress = (currentSequence.length / unlockSequence.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+        
+        function unlock() {
+            isLocked = false;
+            document.querySelector('.container').innerHTML = `
+                <div class="icon">🔓</div>
+                <h1>Entsperrt!</h1>
+                <div class="status">Du kannst jetzt normal weiterarbeiten</div>
+                <div style="margin-top: 20px;">
+                    <button onclick="location.reload()" style="
+                        background: #4CAF50;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-size: 1rem;
+                        cursor: pointer;
+                        transition: background 0.3s;
+                    " onmouseover="this.style.background='#45a049'" onmouseout="this.style.background='#4CAF50'">
+                        Erneut sperren
+                    </button>
+                </div>
+            `;
+            
+            // Cursor wieder anzeigen
+            document.body.style.cursor = 'default';
+            
+            // Fullscreen verlassen nach 3 Sekunden
+            setTimeout(() => {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }, 3000);
+        }
+        
+        // Fullscreen-Exit abfangen
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && isLocked) {
+                // Warnung anzeigen wenn Fullscreen verlassen wird
+                alert('Vollbild-Modus verlassen! Sperrung möglicherweise nicht mehr aktiv.');
+            }
+        });
+    </script>
+</body>
+</html>
