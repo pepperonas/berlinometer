@@ -12,18 +12,22 @@
             --primary-color: #2C2E3B;
             --primary-light: #3A3D4F;
             --primary-dark: #1F2029;
-            --accent-color: #6366F1;
-            --accent-light: #818CF8;
+            --accent-color: #FF0000;
+            --accent-light: #FF4444;
+            --accent-dark: #CC0000;
+            --youtube-red: #FF0000;
+            --youtube-red-light: #FF3333;
+            --youtube-red-dark: #CC0000;
             --success-color: #10B981;
             --warning-color: #F59E0B;
             --error-color: #EF4444;
             --text-primary: #FFFFFF;
             --text-secondary: #B0B7C3;
             --text-muted: #8B92A5;
-            --background: #0F1017;
-            --surface: #1A1D26;
-            --surface-hover: #212530;
-            --border: #2D3142;
+            --background: #0F0F0F;
+            --surface: #1A1A1A;
+            --surface-hover: #252525;
+            --border: #2D2D2D;
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -101,6 +105,7 @@
             color: var(--text-primary);
             background: var(--surface-hover);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.1);
         }
 
         .logo {
@@ -138,6 +143,7 @@
         .nav-link.active {
             color: var(--text-primary);
             background: var(--glass-bg);
+            border-bottom: 2px solid var(--youtube-red);
         }
 
         /* Progress Bar */
@@ -153,9 +159,10 @@
 
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+            background: linear-gradient(90deg, var(--youtube-red), var(--youtube-red-light));
             width: 0%;
             transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
         }
 
         /* Main Content */
@@ -180,7 +187,7 @@
             font-size: 3.5rem;
             font-weight: 700;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--text-primary), var(--accent-light));
+            background: linear-gradient(135deg, var(--text-primary), var(--youtube-red-light));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -231,7 +238,7 @@
             padding: 1.5rem 2rem;
             background: var(--surface);
             border-radius: 16px;
-            border-left: 4px solid var(--accent-color);
+            border-left: 4px solid var(--youtube-red);
         }
 
         .section-icon {
@@ -270,7 +277,7 @@
         .subsection:hover {
             transform: translateY(-2px);
             background: var(--surface-hover);
-            border-color: var(--accent-color);
+            border-color: var(--youtube-red);
             box-shadow: var(--shadow);
         }
 
@@ -308,11 +315,12 @@
 
         /* Special Cards */
         .feature-card {
-            background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+            background: linear-gradient(135deg, var(--youtube-red), var(--youtube-red-light));
             color: white;
             padding: 2rem;
             border-radius: 16px;
             margin: 2rem 0;
+            box-shadow: 0 8px 32px rgba(255, 0, 0, 0.2);
         }
 
         .feature-card h3 {
@@ -375,7 +383,7 @@
 
         /* Keyboard Navigation Highlight */
         .keyboard-focus {
-            outline: 2px solid var(--accent-color);
+            outline: 2px solid var(--youtube-red);
             outline-offset: 2px;
         }
 
