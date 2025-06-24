@@ -1,0 +1,8 @@
+-- -- Beispiel-Daten einfügen
+-- INSERT INTO benutzer (benutzername, email)
+-- VALUES ('maxmustermann', 'max@example.com'),
+--        ('annasmith', 'anna@example.com');
+--
+-- INSERT INTO aufgaben (titel, beschreibung, benutzer_id)
+-- VALUES ('Spring Boot lernen', 'Grundlagen von Spring Boot verstehen', 1),
+--        ('MySQL einrichten', 'Datenbank-Skripte erstellen', 2);

@@ -1,0 +1,60 @@
+
+```json
+{
+  "title": "Fruchtiger Party-Fizz",
+  "preparationTime": "5 Minuten",
+  "alcoholContent": "Mittel",
+  "servings": 4,
+  "ingredients": [
+    {"name": "Wodka", "quantity": "200", "unit": "ml"},
+    {"name": "Ananassaft", "quantity": "400", "unit": "ml"},
+    {"name": "Ginger Ale", "quantity": "200", "unit": "ml"},
+    {"name": "Limette", "quantity": "1", "unit": ""}
+  ],
+  "instructions": [
+    "Gib den Wodka, den Ananassaft und das Ginger Ale in eine große Karaffe und mische alles gut durch!",
+    "Schneide die Limette in Scheiben und füge sie der Karaffe hinzu, um einen Hauch von Frische zu verleihen!"
+  ],
+  "servingSuggestion": "In Longdrinkgläsern mit Eiswürfeln servieren.",
+  "tips": "Falls du kein Ginger Ale zur Hand hast, kannst du es durch Limonade oder Sprite ersetzen. Probier es aus und finde deinen perfekten Geschmack!"
+}
+```
+
+```json
+{
+  "title": "Mediterraner Quinoa-Salat mit gegrilltem Hähnchen",
+  "preparationTime": "30-60 Min. Minuten",
+  "cost": "15-20 €",
+  "servings": 4,
+  "ingredients": [
+    {"name": "Quinoa", "quantity": "200", "unit": "g"},
+    {"name": "Hähnchenbrustfilets", "quantity": "4", "unit": ""},
+    {"name": "rote Paprika", "quantity": "1", "unit": ""},
+    {"name": "gelbe Paprika", "quantity": "1", "unit": ""},
+    {"name": "Zucchini", "quantity": "1", "unit": ""},
+    {"name": "Kirschtomaten", "quantity": "100", "unit": "g"},
+    {"name": "rote Zwiebel", "quantity": "1", "unit": ""},
+    {"name": "Petersilie", "quantity": "1", "unit": "Bund"},
+    {"name": "Minze", "quantity": "1", "unit": "Bund"},
+    {"name": "Pinienkerne", "quantity": "50", "unit": "g"},
+    {"name": "Feta-Käse", "quantity": "100", "unit": "g"},
+    {"name": "Olivenöl", "quantity": "2", "unit": "EL"},
+    {"name": "Zitrone", "quantity": "1", "unit": ""},
+    {"name": "Salz", "quantity": "", "unit": ""},
+    {"name": "Pfeffer", "quantity": "", "unit": ""}
+  ],
+  "instructions": [
+    "Quinoa nach Packungsanweisung kochen und abkühlen lassen.",
+    "Hähnchenbrustfilets mit Salz und Pfeffer würzen und in einer Pfanne mit etwas Olivenöl anbraten, bis sie durchgegart sind.",
+    "Paprika, Zucchini und rote Zwiebel in mundgerechte Stücke schneiden und in einer separaten Pfanne mit Olivenöl anbraten, bis sie leicht gebräunt sind.",
+    "Kirschtomaten halbieren und mit den gebratenen Gemüsen zum abgekühlten Quinoa geben.",
+    "Petersilie und Minze fein hacken und unter den Salat mischen.",
+    "Pinienkerne in einer Pfanne ohne Öl leicht anrösten und ebenfalls unter den Salat mischen.",
+    "Feta-Käse zerbröseln und über den Salat streuen.",
+    "Zitronensaft und Olivenöl über den Salat geben, mit Salz und Pfeffer abschmecken und gut vermengen.",
+    "Den Salat auf Teller verteilen und das gegrillte Hähnchen darauf anrichten."
+  ],
+  "tips": "Falls du keine Pinienkerne findest, kannst du sie durch geröstete Sonnenblumenkerne ersetzen.",
+  "importantNotes": ""
+}
+```

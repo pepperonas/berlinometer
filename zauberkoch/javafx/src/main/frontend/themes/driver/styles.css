@@ -1,0 +1,183 @@
+@media all and (max-width: 1100px) {
+    .list-view.editing .toolbar,
+    .list-view.editing .contact-grid {
+        display: none;
+    }
+}
+
+vaadin-app-layout::part(navbar) {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+a[highlight] {
+    font-weight: bold;
+}
+
+a {
+    padding-left: 10%;
+}
+
+.content {
+    margin-top: 60px;
+}
+
+.paypal-button-container {
+    background: transparent !important;
+}
+
+.paypal-button-container {
+    background: none !important;
+}
+
+.card-view {
+    background-color: var(--lumo-base-color);
+    color: var(--lumo-body-text-color);
+    border-radius: var(--lumo-border-radius-l);
+    padding: var(--lumo-space-xl);
+    margin: var(--lumo-space-s);
+    box-shadow: var(--lumo-box-shadow-xs);
+}
+
+.card-view-rec {
+    background-color: var(--lumo-base-color);
+    color: var(--lumo-body-text-color);
+    border-radius: var(--lumo-border-radius-l);
+    padding: var(--lumo-space-s);
+    margin: var(--lumo-space-s);
+    box-shadow: var(--lumo-box-shadow-xs);
+}
+
+/* Anpassung des Schattens im Dark Theme */
+[theme~="dark"] .card-view {
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.2);
+}
+
+/* Anpassung des Schattens im Dark Theme */
+[theme~="dark"] .card-view-rec {
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.2);
+}
+
+/*@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');*/
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@200..700&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap');
+/*
+https://fonts.googleapis.com/css?family=Rancho&effect=shadow-multiple|3d-float
+Anaglyphen  anaglyph   font-effect-anaglyph   Chrome, Firefox, Opera, Safari
+*/
+
+html {
+    --lumo-primary-color: #424242; /* Orange für ausgewählt */
+    /*--lumo-contrast-10pct: #F28C38; !* Optional: Rahmenfarbe im ungecheckten Zustand *!*/
+    --primary-color: #F28C38; /* Orange statt Blau für helles Theme */
+    --primary-color-50pct: rgba(242, 140, 56, 0.5);
+    --primary-color-10pct: rgba(242, 140, 56, 0.1);
+    --dark-color: #1A237E;
+    --light-color: #E3F2FD;
+    --success-color: #43A047;
+    --error-color: #E53935;
+    --neutral-color: #616161;
+
+    /* Typografie */
+    --lumo-font-family: 'Roboto', sans-serif;
+
+    /* Abstände */
+    --lumo-space-xl: 2.5rem;
+    --lumo-space-l: 1.75rem;
+    --lumo-space-m: 1.25rem;
+    --lumo-space-s: 0.75rem;
+    --lumo-space-xs: 0.375rem;
+
+    /* Lumo-spezifische Variablen für helles Theme */
+    /*--lumo-primary-color: var(--primary-color);*/
+    --lumo-primary-color-50pct: var(--primary-color-50pct);
+    --lumo-primary-color-10pct: var(--primary-color-10pct);
+    --lumo-base-color: #FFFFFF; /* Standard-Hintergrund hell */
+    --lumo-body-text-color: #333333; /* Standard-Textfarbe hell */
+    --lumo-primary-text-color: #1A1A1A; /* Dunkler Text für Kontrast */
+    --lumo-primary-contrast-color: #FFFFFF;
+
+    /*background: linear-gradient(-45deg, #5064b4, #e65a5a, #ffd778);*/
+}
+
+[theme~="dark"] {
+    --lumo-primary-color: #F50057; /* Orange für ausgewählt */
+    /*--lumo-contrast-10pct: #F28C38; !* Optional: Rahmenfarbe im ungecheckten Zustand *!*/
+    --lumo-base-color: #212121;
+    /*--lumo-primary-color: var(--primary-color); !* Keine eigene Überschreibung, verwendet Standard *!*/
+    --lumo-primary-text-color: var(--light-color);
+    --lumo-error-color: #FF5252;
+    --lumo-success-color: #81C784;
+    /*background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);*/
+}
+
+/* Anpassung der Komponenten */
+vaadin-button {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+vaadin-button:hover {
+    background-color: var(--lumo-primary-color-10pct);
+}
+
+vaadin-text-field {
+    border-radius: 4px;
+}
+
+/* Beispiel für eine benutzerdefinierte Klasse */
+.dashboard-card {
+    background-color: var(--lumo-base-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: var(--lumo-space-m);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .responsive-layout {
+        flex-direction: column;
+    }
+}
+
+.share-button,
+.whatsapp-share-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px; /* Adjust this value to match the other buttons */
+    padding: 0 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    box-sizing: border-box; /* Ensures padding doesn't increase the height */
+}
+
+/* Specific styling for the WhatsApp button */
+.whatsapp-share-button {
+    background-color: #25D366; /* WhatsApp green */
+    color: white;
+    margin-top: 6px;
+}
+
+.whatsapp-icon {
+    color: #212121;
+    font-size: 1.2em;
+}
+
+[theme~="dark"] .whatsapp-icon {
+    color: #E3F2FD;
+    font-size: 1.2em;
+}
+
+vaadin-login-form [part="error-message"]::before {
+    content: none !important;
+}

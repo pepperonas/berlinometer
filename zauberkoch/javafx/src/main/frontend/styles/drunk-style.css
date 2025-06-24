@@ -1,0 +1,183 @@
+/* Grundlegende betrunkene Effekte für die gesamte Seite */
+.drunk-body {
+    overflow-x: hidden;
+    animation: sway 8s infinite ease-in-out;
+}
+
+@keyframes sway {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(0.8deg) scale(1.01); }
+    50% { transform: rotate(-0.8deg) scale(0.99); }
+    75% { transform: rotate(0.4deg) scale(1.005); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Container mit verschwommenen und verschobenen Effekten */
+.drunk-container {
+    position: relative;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Verschwommene und verschobene Elemente */
+.blur-shift {
+    animation: blur-shift-anim 6s infinite alternate;
+    transition: all 0.3s;
+}
+
+@keyframes blur-shift-anim {
+    0% {
+        filter: blur(0px);
+        transform: translateX(0) translateY(0);
+    }
+    25% {
+        filter: blur(1px);
+        transform: translateX(4px) translateY(-2px);
+    }
+    50% {
+        filter: blur(1.5px);
+        transform: translateX(-5px) translateY(2px);
+    }
+    75% {
+        filter: blur(0.8px);
+        transform: translateX(3px) translateY(3px);
+    }
+    100% {
+        filter: blur(2px);
+        transform: translateX(-3px) translateY(-1px);
+    }
+}
+
+/* Verzögerte Version des Blur-Shift-Effekts */
+.blur-shift-delayed {
+    animation: blur-shift-anim 6s infinite alternate;
+    animation-delay: 1.5s;
+}
+
+/* Wackelnde Elemente */
+.wobble-element {
+    animation: wobble 7s infinite ease-in-out;
+}
+
+@keyframes wobble {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(3px) rotate(0.5deg); }
+    50% { transform: translateX(-3px) rotate(-0.5deg); }
+    75% { transform: translateX(2px) rotate(0.3deg); }
+}
+
+/* Schwebende Elemente */
+.floating-element {
+    animation: float-around 10s infinite ease-in-out;
+    position: relative;
+}
+
+@keyframes float-around {
+    0% { transform: translateY(0) translateX(0); }
+    25% { transform: translateY(3px) translateX(-2px); }
+    50% { transform: translateY(-2px) translateX(3px); }
+    75% { transform: translateY(1px) translateX(-4px); }
+    100% { transform: translateY(0) translateX(0); }
+}
+
+/* Verschwommener Text - variiert je nach Theme */
+.blurry-text {
+    animation: text-blur 5s infinite alternate;
+}
+
+/* Doppelsicht-Effekt für Text */
+.double-vision-text {
+    position: relative;
+}
+
+/* Anpassungen für helles Theme */
+:root:not([theme~="dark"]) .double-vision-text {
+    color: rgba(0, 0, 0, 0.85);
+}
+
+:root:not([theme~="dark"]) .double-vision-text::after {
+    content: attr(value);
+    position: absolute;
+    left: 3px;
+    top: 2px;
+    color: rgba(255, 0, 0, 0.3);
+    z-index: -1;
+}
+
+:root:not([theme~="dark"]) .blurry-text {
+    color: rgba(0, 0, 0, 0.85);
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+/* Anpassungen für dunkles Theme */
+:root[theme~="dark"] .double-vision-text {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+:root[theme~="dark"] .double-vision-text::after {
+    content: attr(value);
+    position: absolute;
+    left: 3px;
+    top: 2px;
+    color: rgba(255, 100, 100, 0.4);
+    z-index: -1;
+}
+
+:root[theme~="dark"] .blurry-text {
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes text-blur {
+    0% { filter: blur(0px); }
+    50% { filter: blur(1px); }
+    100% { filter: blur(0.5px); }
+}
+
+/* Doppelsicht-Effekt für Elemente */
+.double-vision {
+    position: relative;
+}
+
+.double-vision::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 3px;
+    top: 2px;
+    z-index: -1;
+}
+
+:root:not([theme~="dark"]) .double-vision::after {
+    color: rgba(255, 0, 0, 0.4);
+}
+
+:root[theme~="dark"] .double-vision::after {
+    color: rgba(255, 100, 100, 0.4);
+}
+
+/* Langsam rotierende Elemente */
+.spinning-slow {
+    animation: spin-slow 15s infinite linear;
+    display: inline-block;
+}
+
+@keyframes spin-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Pulsierender Effekt */
+.pulsating-element {
+    animation: pulse 4s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+/* Interaktive Elemente mit Hover-Effekten */
+button.drunk-effect:hover,
+vaadin-button.drunk-effect:hover {
+    transform: translateY(-2px) rotate(1deg);
+    transition: all 0.2s;
+}
