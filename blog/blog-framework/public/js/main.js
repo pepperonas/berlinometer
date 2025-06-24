@@ -50,8 +50,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const navContainer = document.querySelector('header nav');
     navContainer.parentNode.insertBefore(menuToggle, navContainer);
 
-    menuToggle.addEventListener('click', function () {
+    menuToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
         navContainer.classList.toggle('active');
+    });
+
+    // Schließe Menü bei Klick außerhalb
+    document.addEventListener('click', function (e) {
+        if (!navContainer.contains(e.target) && !menuToggle.contains(e.target)) {
+            navContainer.classList.remove('active');
+        }
+    });
+
+    // Verhindere Schließen bei Klick auf das Menü selbst
+    navContainer.addEventListener('click', function (e) {
+        e.stopPropagation();
     });
 
     // Aktiven Menüpunkt hervorheben
