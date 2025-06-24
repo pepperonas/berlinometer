@@ -34,7 +34,7 @@ export interface TextFieldData {
   color: string;
 }
 
-export interface ImageData {
+export interface ImageElementData {
   id: string;
   type: 'image';
   x: number;
@@ -55,7 +55,7 @@ export interface DrawingData {
   tool: 'pen' | 'marker' | 'eraser';
 }
 
-export type CanvasElement = StickyNoteData | ShapeData | TextFieldData | ImageData | DrawingData;
+export type CanvasElement = StickyNoteData | ShapeData | TextFieldData | ImageElementData | DrawingData;
 
 export interface ContextMenuState {
   visible: boolean;

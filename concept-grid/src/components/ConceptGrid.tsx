@@ -5,7 +5,7 @@ import Shape from './Shape';
 import TextField from './TextField';
 import Drawing from './Drawing';
 import ContextMenu from './ContextMenu';
-import { CanvasElement, StickyNoteData, ShapeData, TextFieldData, DrawingData, ContextMenuState } from '../types/canvas';
+import { CanvasElement, StickyNoteData, ShapeData, TextFieldData, ImageElementData, DrawingData, ContextMenuState } from '../types/canvas';
 import './ConceptGrid.css';
 
 const ConceptGrid: React.FC = () => {
@@ -76,7 +76,7 @@ const ConceptGrid: React.FC = () => {
           const drawingEl = el as DrawingData;
           return { ...drawingEl, x, y };
         } else {
-          const regularEl = el as StickyNoteData | ShapeData | TextFieldData | ImageData;
+          const regularEl = el as StickyNoteData | ShapeData | TextFieldData | ImageElementData;
           return { ...regularEl, x, y };
         }
       }
@@ -130,7 +130,7 @@ const ConceptGrid: React.FC = () => {
               y: drawingEl.y + 20
             };
           } else {
-            const regularEl = elementToDuplicate as StickyNoteData | ShapeData | TextFieldData | ImageData;
+            const regularEl = elementToDuplicate as StickyNoteData | ShapeData | TextFieldData | ImageElementData;
             newElement = { 
               ...regularEl, 
               id: Date.now().toString(),
@@ -217,7 +217,7 @@ const ConceptGrid: React.FC = () => {
               y: drawingEl.y + 20
             };
           } else {
-            const regularEl = el as StickyNoteData | ShapeData | TextFieldData | ImageData;
+            const regularEl = el as StickyNoteData | ShapeData | TextFieldData | ImageElementData;
             return {
               ...regularEl,
               id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
