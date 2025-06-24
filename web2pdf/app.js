@@ -849,8 +849,10 @@ app.post('/convert', async (req, res) => {
                 '--no-first-run',
                 '--no-zygote',
                 '--single-process',
-                '--disable-gpu',
                 '--disable-web-security',
+                '--font-render-hinting=none',
+                '--enable-font-antialiasing',
+                '--force-color-profile=srgb',
                 '--disable-features=VizDisplayCompositor',
                 '--disable-background-timer-throttling',
                 '--disable-backgrounding-occluded-windows',
@@ -858,7 +860,6 @@ app.post('/convert', async (req, res) => {
                 '--disable-features=TranslateUI',
                 '--disable-extensions',
                 '--disable-plugins',
-                '--disable-images',
                 '--memory-pressure-off',
                 '--max_old_space_size=4096',
                 '--disable-logging',
@@ -887,6 +888,123 @@ app.post('/convert', async (req, res) => {
             timeout: timeout
         });
 
+        // Add Twemoji script to convert emojis to SVG images
+        await page.addScriptTag({
+            url: 'https://unpkg.com/twemoji@latest/dist/twemoji.min.js'
+        });
+        
+        // Convert all emojis to SVG images using Twemoji - more aggressive approach
+        await page.evaluate(() => {
+            if (typeof twemoji !== 'undefined') {
+                console.log('Twemoji is available, starting emoji conversion...');
+                
+                // Function to recursively find and convert all emojis
+                function convertEmojisRecursively(element) {
+                    // Convert emojis in the current element
+                    twemoji.parse(element, {
+                        folder: 'svg',
+                        ext: '.svg',
+                        callback: function(icon, options, variant) {
+                            console.log('Converting emoji:', icon);
+                            return 'https://unpkg.com/twemoji@latest/assets/svg/' + icon + '.svg';
+                        }
+                    });
+                    
+                    // Process all child elements
+                    const children = element.children;
+                    for (let i = 0; i < children.length; i++) {
+                        convertEmojisRecursively(children[i]);
+                    }
+                }
+                
+                // Start recursive conversion from body
+                convertEmojisRecursively(document.body);
+                
+                // Also try direct text node processing
+                const walker = document.createTreeWalker(
+                    document.body,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
+                );
+                
+                const textNodes = [];
+                let node;
+                while (node = walker.nextNode()) {
+                    if (node.textContent.trim()) {
+                        textNodes.push(node);
+                    }
+                }
+                
+                textNodes.forEach(textNode => {
+                    if (textNode.parentElement) {
+                        twemoji.parse(textNode.parentElement, {
+                            folder: 'svg',
+                            ext: '.svg',
+                            callback: function(icon, options, variant) {
+                                console.log('Converting emoji from text node:', icon);
+                                return 'https://unpkg.com/twemoji@latest/assets/svg/' + icon + '.svg';
+                            }
+                        });
+                    }
+                });
+                
+                console.log('Emoji conversion completed');
+            } else {
+                console.log('Twemoji not available');
+            }
+        });
+        
+        // Add custom CSS for emoji support and any user CSS
+        const emojiCSS = `
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+            * {
+                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, 'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important;
+            }
+            img.emoji {
+                height: 1.2em !important;
+                width: 1.2em !important;
+                margin: 0 .05em 0 .1em !important;
+                vertical-align: -0.1em !important;
+                display: inline-block !important;
+                min-height: 16px !important;
+                min-width: 16px !important;
+                max-height: 64px !important;
+                max-width: 64px !important;
+                object-fit: contain !important;
+                border: none !important;
+                background: none !important;
+            }
+            
+            .profile-icon img.emoji {
+                height: 2em !important;
+                width: 2em !important;
+                min-height: 32px !important;
+                min-width: 32px !important;
+            }
+        `;
+        await page.addStyleTag({content: emojiCSS});
+        
+        // Wait for fonts and images to load
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        
+        // Force another round of emoji conversion after everything has loaded
+        await page.evaluate(() => {
+            if (typeof twemoji !== 'undefined') {
+                console.log('Final emoji conversion round...');
+                // One more aggressive parse of the entire document
+                twemoji.parse(document.body, {
+                    folder: 'svg',
+                    ext: '.svg',
+                    size: 'svg',
+                    callback: function(icon, options, variant) {
+                        console.log('Final conversion of emoji:', icon);
+                        return 'https://unpkg.com/twemoji@latest/assets/svg/' + icon + '.svg';
+                    }
+                });
+            }
+        });
+        
         // Add custom CSS if provided
         if (customCSS) {
             await page.addStyleTag({content: customCSS});
@@ -901,6 +1019,22 @@ app.post('/convert', async (req, res) => {
         if (waitForTimeout > 0) {
             await new Promise(resolve => setTimeout(resolve, waitForTimeout));
         }
+
+        // Convert emojis BEFORE hiding elements to ensure they are processed first
+        await page.evaluate(() => {
+            if (typeof twemoji !== 'undefined') {
+                console.log('Pre-hide emoji conversion...');
+                // Force conversion before any elements are hidden
+                twemoji.parse(document.body, {
+                    folder: 'svg',
+                    ext: '.svg',
+                    callback: function(icon, options, variant) {
+                        console.log('Pre-hide converting emoji:', icon);
+                        return 'https://unpkg.com/twemoji@latest/assets/svg/' + icon + '.svg';
+                    }
+                });
+            }
+        });
 
         // Hide specified DOM elements
         if (hideElements && hideElements.length > 0) {
@@ -930,6 +1064,22 @@ app.post('/convert', async (req, res) => {
                 });
             }, hideElements);
         }
+        
+        // Convert emojis AFTER hiding elements as well to catch any that were missed
+        await page.evaluate(() => {
+            if (typeof twemoji !== 'undefined') {
+                console.log('Post-hide emoji conversion...');
+                // Convert any remaining emojis after elements are hidden
+                twemoji.parse(document.body, {
+                    folder: 'svg',
+                    ext: '.svg',
+                    callback: function(icon, options, variant) {
+                        console.log('Post-hide converting emoji:', icon);
+                        return 'https://unpkg.com/twemoji@latest/assets/svg/' + icon + '.svg';
+                    }
+                });
+            }
+        });
 
         // Generate filename based on URL
         let urlObj;

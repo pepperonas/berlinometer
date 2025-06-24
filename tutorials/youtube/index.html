@@ -77,23 +77,49 @@
 
         .nav-container {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             max-width: 1200px;
             margin: 0 auto;
+            gap: 1rem;
+        }
+
+        .back-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .back-nav:hover {
+            color: var(--text-primary);
+            background: var(--surface-hover);
+            transform: translateY(-2px);
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--accent-color);
             text-decoration: none;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .nav-menu {
             display: flex;
             list-style: none;
-            gap: 2rem;
+            gap: 1rem;
+            margin-left: auto;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            white-space: nowrap;
         }
 
         .nav-link {
@@ -101,8 +127,11 @@
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.8rem;
             border-radius: 8px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .nav-link:hover,
@@ -412,6 +441,10 @@
 <!-- Header -->
 <header class="header">
     <nav class="nav-container">
+        <a href="../" class="back-nav">
+            <span class="material-icons">arrow_back</span>
+            Tutorials
+        </a>
         <a href="#" class="logo">
             YouTube Masterclass
         </a>
