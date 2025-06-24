@@ -9,6 +9,7 @@ interface TextFieldProps {
   fontSize: number;
   fontFamily: string;
   color: string;
+  shouldEdit?: boolean;
   onDragEnd: (id: string, x: number, y: number) => void;
   onTextChange: (id: string, text: string) => void;
   onContextMenu: (id: string, e: any) => void;
@@ -22,12 +23,20 @@ const TextField: React.FC<TextFieldProps> = ({
   fontSize,
   fontFamily,
   color,
+  shouldEdit = false,
   onDragEnd,
   onTextChange,
   onContextMenu
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const textRef = useRef<any>(null);
+
+  // Watch for shouldEdit prop to trigger editing from context menu
+  useEffect(() => {
+    if (shouldEdit && !isEditing) {
+      handleDblClick();
+    }
+  }, [shouldEdit]);
 
   const handleDblClick = () => {
     setIsEditing(true);

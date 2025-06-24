@@ -13,8 +13,10 @@ interface ShapeProps {
   fill: string;
   stroke: string;
   strokeWidth: number;
+  isSelected?: boolean;
   onDragEnd: (id: string, x: number, y: number) => void;
   onContextMenu: (id: string, e: any) => void;
+  onResize?: (id: string, width?: number, height?: number, radius?: number) => void;
 }
 
 const Shape: React.FC<ShapeProps> = ({
@@ -29,8 +31,10 @@ const Shape: React.FC<ShapeProps> = ({
   fill,
   stroke,
   strokeWidth,
+  isSelected = false,
   onDragEnd,
-  onContextMenu
+  onContextMenu,
+  onResize
 }) => {
   const handleDragEnd = (e: any) => {
     e.cancelBubble = true;

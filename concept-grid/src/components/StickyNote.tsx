@@ -10,6 +10,7 @@ interface StickyNoteProps {
   text: string;
   color?: string;
   isSelected?: boolean;
+  shouldEdit?: boolean;
   onDragEnd: (id: string, x: number, y: number) => void;
   onTextChange: (id: string, text: string) => void;
   onContextMenu: (id: string, e: any) => void;
@@ -25,6 +26,7 @@ const StickyNote: React.FC<StickyNoteProps> = ({
   text,
   color = '#ffeb3b',
   isSelected = false,
+  shouldEdit = false,
   onDragEnd,
   onTextChange,
   onContextMenu,
@@ -35,17 +37,66 @@ const StickyNote: React.FC<StickyNoteProps> = ({
   const textRef = useRef<any>(null);
   const groupRef = useRef<any>(null);
 
+  // Watch for shouldEdit prop to trigger editing from context menu
+  useEffect(() => {
+    if (shouldEdit && !isEditing) {
+      handleDblClick();
+    }
+  }, [shouldEdit]);
+
   const handleDblClick = () => {
     setIsEditing(true);
+    
+    // Create textarea for better text editing
+    const stage = textRef.current?.getStage();
+    if (stage) {
+      const stageContainer = stage.container();
+      const textPosition = textRef.current?.getAbsolutePosition();
+      
+      // Create textarea element
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'absolute';
+      textarea.style.left = `${textPosition.x + 12}px`;
+      textarea.style.top = `${textPosition.y + 12}px`;
+      textarea.style.width = `${width - 24}px`;
+      textarea.style.height = `${height - 24}px`;
+      textarea.style.fontSize = '14px';
+      textarea.style.fontFamily = 'Arial';
+      textarea.style.color = '#333';
+      textarea.style.background = 'rgba(255,255,255,0.9)';
+      textarea.style.border = '2px solid #007bff';
+      textarea.style.outline = 'none';
+      textarea.style.resize = 'none';
+      textarea.style.zIndex = '1000';
+      textarea.style.borderRadius = '4px';
+      textarea.style.padding = '4px';
+      
+      stageContainer.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      
+      textarea.onblur = () => {
+        onTextChange(id, textarea.value);
+        stageContainer.removeChild(textarea);
+        setIsEditing(false);
+      };
+      
+      textarea.onkeydown = (e) => {
+        if (e.key === 'Escape') {
+          stageContainer.removeChild(textarea);
+          setIsEditing(false);
+        }
+        // Allow Ctrl+Enter to save
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          textarea.blur();
+        }
+      };
+    }
   };
 
   const handleTextEdit = () => {
-    const node = textRef.current;
-    if (node) {
-      const newText = node.text();
-      onTextChange(id, newText);
-      setIsEditing(false);
-    }
+    setIsEditing(false);
   };
 
   const handleContextMenu = (e: any) => {
@@ -99,9 +150,8 @@ const StickyNote: React.FC<StickyNoteProps> = ({
         fontFamily="Arial"
         fill="#333"
         wrap="word"
-        editable={isEditing}
+        listening={!isEditing}
         onDblClick={handleDblClick}
-        onBlur={handleTextEdit}
         verticalAlign="top"
       />
       

@@ -23,6 +23,7 @@ const ConceptGrid: React.FC = () => {
   const [selectionStart, setSelectionStart] = useState({ x: 0, y: 0 });
   const [selectionEnd, setSelectionEnd] = useState({ x: 0, y: 0 });
   const [showHelp, setShowHelp] = useState(false);
+  const [editingElementId, setEditingElementId] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     visible: false,
     x: 0,
@@ -98,7 +99,7 @@ const ConceptGrid: React.FC = () => {
 
   const handleTextChange = useCallback((id: string, text: string) => {
     setElements(prev => prev.map(el => 
-      el.id === id && el.type === 'sticky-note' 
+      el.id === id && (el.type === 'sticky-note' || el.type === 'text')
         ? { ...el, text } 
         : el
     ));
@@ -235,6 +236,14 @@ const ConceptGrid: React.FC = () => {
               ? { ...el, fontSize: Math.max(8, el.fontSize - 2) }
               : el
           ));
+        }
+        break;
+      case 'edit-text':
+        // Trigger edit mode for the element
+        if (targetElement.type === 'sticky-note' || targetElement.type === 'text') {
+          setEditingElementId(contextMenu.targetId);
+          // Clear after a brief moment to reset the trigger
+          setTimeout(() => setEditingElementId(null), 100);
         }
         break;
     }
@@ -677,6 +686,7 @@ const ConceptGrid: React.FC = () => {
                   text={element.text}
                   color={element.color}
                   isSelected={selectedElements.includes(element.id)}
+                  shouldEdit={editingElementId === element.id}
                   onDragEnd={handleElementDragEnd}
                   onTextChange={handleTextChange}
                   onContextMenu={handleContextMenu}
@@ -715,6 +725,7 @@ const ConceptGrid: React.FC = () => {
                   fontSize={textElement.fontSize}
                   fontFamily={textElement.fontFamily}
                   color={textElement.color}
+                  shouldEdit={editingElementId === element.id}
                   onDragEnd={handleElementDragEnd}
                   onTextChange={handleTextChange}
                   onContextMenu={handleContextMenu}
