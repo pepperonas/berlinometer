@@ -1,8 +1,8 @@
 ---
 title: "Heartbleed: Die Sicherheitslücke, die das Internet erschütterte"
-date: "2025-06-25"
+date: "2025-06-07"
 excerpt: "Eine tiefgreifende Analyse des Heartbleed-Bugs in OpenSSL - wie er funktionierte, warum er so gefährlich war und welche Lehren wir daraus ziehen können."
-tags: ["OpenSSL", "Cybersecurity", "Vulnerabilities", "TLS", "Bug-Analysis"]
+tags: [ "OpenSSL", "Cybersecurity", "Vulnerabilities", "TLS", "Bug-Analysis" ]
 ---
 
 # Heartbleed: Die Sicherheitslücke, die das Internet erschütterte

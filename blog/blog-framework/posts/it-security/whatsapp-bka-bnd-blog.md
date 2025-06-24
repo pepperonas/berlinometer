@@ -1,6 +1,6 @@
 ---
 title: "Können BKA und BND WhatsApp-Nachrichten mitlesen? Ein technischer Überblick"
-date: "2025-06-24"
+date: "2025-06-21"
 excerpt: "Analyse der technischen und rechtlichen Möglichkeiten deutscher Sicherheitsbehörden zur WhatsApp-Überwachung - von WhatsApp Web bis zu Staatstrojanern."
 tags: ["WhatsApp", "Überwachung", "Verschlüsselung", "BKA", "BND"]
 ---
