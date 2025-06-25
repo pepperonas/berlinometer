@@ -387,6 +387,11 @@ h1 {
     }
 }
 
+/* Endlos-Schleife für kontinuierliche Blasen */
+.bubble {
+    animation-iteration-count: infinite;
+}
+
 /* Verschiedene Blasengrößen und Animationsverzögerungen */
 .bubble:nth-child(1) {
     width: 40px; height: 40px; left: 8%;

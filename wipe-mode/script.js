@@ -220,11 +220,49 @@ function resetBubbles() {
         // Setze Sichtbarkeit und Opacity zurück
         bubble.style.opacity = '';
         bubble.style.visibility = '';
+        bubble.style.display = '';
         
         // Lasse normale Aufwärtsbewegung fortsetzen
         bubble.style.animation = '';
     });
 }
+
+// Prüfe kontinuierlich ob genug Blasen sichtbar sind
+function ensureMinimumBubbles() {
+    const bubbles = document.querySelectorAll('.bubble:not(.popping)');
+    const visibleBubbles = Array.from(bubbles).filter(bubble => {
+        const rect = bubble.getBoundingClientRect();
+        const style = window.getComputedStyle(bubble);
+        return rect.bottom > 0 && rect.top < window.innerHeight && 
+               style.display !== 'none' && style.visibility !== 'hidden';
+    });
+    
+    // Wenn weniger als 5 sichtbare Blasen, reaktiviere versteckte Blasen
+    if (visibleBubbles.length < 5) {
+        const hiddenBubbles = Array.from(bubbles).filter(bubble => {
+            const style = window.getComputedStyle(bubble);
+            return style.display === 'none' || style.visibility === 'hidden';
+        });
+        
+        // Reaktiviere so viele Blasen wie nötig
+        const bubblesNeeded = Math.min(5 - visibleBubbles.length, hiddenBubbles.length);
+        for (let i = 0; i < bubblesNeeded; i++) {
+            const bubble = hiddenBubbles[i];
+            bubble.style.display = '';
+            bubble.style.visibility = '';
+            bubble.style.opacity = '';
+            bubble.classList.remove('popping', 'final-pop');
+            
+            // Starte Animation neu von unten
+            bubble.style.animation = 'none';
+            bubble.offsetHeight; // Force reflow
+            bubble.style.animation = '';
+        }
+    }
+}
+
+// Starte Mindest-Blasen-Checker
+setInterval(ensureMinimumBubbles, 2000);
 
 function unlock() {
     isLocked = false;
