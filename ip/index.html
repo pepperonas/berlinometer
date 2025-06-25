@@ -4,37 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IP Info Display - Deine IP-Adresse und Standort</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    
+
     <!-- Meta Tags -->
-    <meta name="description" content="Zeige deine aktuelle IP-Adresse, Standort, ISP und weitere Netzwerkinformationen an. Kostenloser IP-Info Service.">
-    <meta name="keywords" content="ip adresse, meine ip, standort, isp, internet provider, netzwerk info, geolocation">
+    <meta name="description"
+          content="Zeige deine aktuelle IP-Adresse, Standort, ISP und weitere Netzwerkinformationen an. Kostenloser IP-Info Service.">
+    <meta name="keywords"
+          content="ip adresse, meine ip, standort, isp, internet provider, netzwerk info, geolocation">
     <meta name="author" content="Martin Pfeffer">
     <meta name="robots" content="index, follow">
-    
+
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="IP Info Display - Deine IP-Adresse">
-    <meta property="og:description" content="Zeige deine aktuelle IP-Adresse, Standort und Netzwerkinformationen an.">
+    <meta property="og:title" content="IP Info - Deine IP-Adresse">
+    <meta property="og:description"
+          content="Zeige deine aktuelle IP-Adresse, Standort und Netzwerkinformationen an.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mrx3k1.de/ip/">
     <meta property="og:image" content="ip.jpg">
     <meta property="og:locale" content="de_DE">
-    
+
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="IP Info Display">
     <meta name="twitter:description" content="Zeige deine aktuelle IP-Adresse und Standort an.">
     <meta name="twitter:image" content="ip.jpg">
-    
+
     <!-- Theme -->
     <meta name="theme-color" content="#2C2E3B">
     <style>
+        :root {
+            /* Farben */
+            --background-dark: #2B2E3B;
+            --background-darker: #252830;
+            --card-background: #343845;
+            --accent-blue: #688db1;
+            --accent-green: #9cb68f;
+            --accent-red: #e16162;
+            --text-primary: #d1d5db;
+            --text-secondary: #9ca3af;
+            
+            /* Schatten */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+            
+            /* Abstände */
+            --spacing-1: 0.25rem;
+            --spacing-2: 0.5rem;
+            --spacing-3: 0.75rem;
+            --spacing-4: 1rem;
+            --spacing-5: 1.25rem;
+            --spacing-6: 1.5rem;
+            --spacing-8: 2rem;
+            --spacing-10: 2.5rem;
+            --spacing-12: 3rem;
+            --spacing-16: 4rem;
+            
+            /* Rundungen */
+            --radius-sm: 0.25rem;
+            --radius: 0.5rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -42,11 +80,15 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: #2C2E3B;
-            color: white;
-            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                         sans-serif;
+            background: var(--background-dark);
+            color: var(--text-primary);
+            padding: var(--spacing-6);
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .container {
@@ -56,47 +98,59 @@
 
         .header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: var(--spacing-8);
         }
 
         .header h1 {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 16px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-4);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: var(--spacing-3);
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
         }
 
         .header p {
-            color: #94a3b8;
+            color: var(--text-secondary);
             font-size: 1.125rem;
-            margin-bottom: 16px;
+            margin-bottom: var(--spacing-4);
         }
 
         .refresh-btn {
-            background: #2563eb;
+            background: var(--accent-blue);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
+            padding: var(--spacing-3) var(--spacing-6);
+            border-radius: var(--radius);
+            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--spacing-2);
             margin: 0 auto;
+            box-shadow: var(--shadow-sm);
+            font-family: inherit;
         }
 
         .refresh-btn:hover:not(:disabled) {
-            background: #1d4ed8;
+            background: #5a7d9f;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+        
+        .refresh-btn:active {
+            transform: translateY(0);
+            box-shadow: var(--shadow-sm);
         }
 
         .refresh-btn:disabled {
-            background: #475569;
+            background: var(--background-darker);
             cursor: not-allowed;
+            opacity: 0.6;
         }
 
         .loading {
@@ -109,26 +163,31 @@
         .spinner {
             width: 48px;
             height: 48px;
-            border: 3px solid #475569;
-            border-top: 3px solid #3b82f6;
+            border: 3px solid var(--background-darker);
+            border-top: 3px solid var(--accent-blue);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .error {
-            background: rgba(127, 29, 29, 0.5);
-            border: 1px solid #ef4444;
-            border-radius: 8px;
-            padding: 24px;
-            margin-bottom: 24px;
+            background: var(--card-background);
+            border: 1px solid var(--accent-red);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-6);
+            margin-bottom: var(--spacing-6);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: var(--spacing-3);
+            box-shadow: var(--shadow);
         }
 
         .error h3 {
@@ -141,69 +200,80 @@
         }
 
         .ip-main {
-            background: linear-gradient(135deg, #2563eb, #7c3aed);
-            border-radius: 12px;
-            padding: 24px;
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-8);
             text-align: center;
-            margin-bottom: 24px;
+            margin-bottom: var(--spacing-6);
+            box-shadow: var(--shadow);
         }
 
         .ip-main h2 {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 8px;
+            font-size: 1.125rem;
+            font-weight: 500;
+            margin-bottom: var(--spacing-3);
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .ip-display {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            margin-bottom: 8px;
+            gap: var(--spacing-3);
+            margin-bottom: var(--spacing-2);
         }
 
         .ip-address {
             font-size: 2.5rem;
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--accent-blue);
+            letter-spacing: 0.02em;
         }
 
         .copy-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 8px;
-            border-radius: 8px;
+            background: var(--background-darker);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            padding: var(--spacing-2);
+            border-radius: var(--radius);
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
         }
 
         .copy-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            transform: translateY(-1px);
         }
 
         .copied-msg {
-            color: #86efac;
+            color: var(--accent-green);
             font-size: 0.875rem;
-            margin-top: 8px;
+            margin-top: var(--spacing-2);
+            font-weight: 500;
         }
 
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 24px;
+            gap: var(--spacing-6);
+            margin-bottom: var(--spacing-6);
         }
 
         .info-card {
-            background: #475569;
-            border-radius: 8px;
-            padding: 16px;
-            transition: background-color 0.2s;
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-5);
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
         }
 
         .info-card:hover {
-            background: #52525b;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
         .card-header {
@@ -257,7 +327,7 @@
         }
 
         .section-card {
-            background: #475569;
+            background: rgb(52, 56, 69);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
@@ -349,6 +419,7 @@
             color: #fde68a;
             font-size: 0.875rem;
             line-height: 1.5;
+            margin-left: 12px;
         }
 
         .notes li {
@@ -363,11 +434,11 @@
             .ip-address {
                 font-size: 1.5rem;
             }
-            
+
             .info-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             body {
                 padding: 16px;
             }
@@ -375,185 +446,190 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>🌍 IP Info Display</h1>
-            <p>Deine öffentliche IP-Adresse und Netzwerk-Informationen</p>
-            <button class="refresh-btn" id="refreshBtn" onclick="fetchIPInfo()">
-                <span id="refreshIcon">🔄</span>
-                <span id="refreshText">Aktualisieren</span>
-            </button>
-        </div>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>🌐 IP Info</h1>
+        <p>Deine öffentliche IP-Adresse und Netzwerk-Informationen</p>
+        <button class="refresh-btn" id="refreshBtn" onclick="fetchIPInfo()">
+            <span id="refreshIcon">🔄</span>
+            <span id="refreshText">Aktualisieren</span>
+        </button>
+    </div>
 
-        <!-- Loading -->
-        <div class="loading hidden" id="loading">
-            <div class="spinner"></div>
-        </div>
+    <!-- Loading -->
+    <div class="loading hidden" id="loading">
+        <div class="spinner"></div>
+    </div>
 
-        <!-- Error -->
-        <div class="error hidden" id="error">
-            <span>🛡️</span>
-            <div>
-                <h3>Fehler beim Laden</h3>
-                <p id="errorMessage"></p>
-            </div>
-        </div>
-
-        <!-- IP Information Container -->
-        <div id="ipInfo" class="hidden">
-            <!-- Main IP Display -->
-            <div class="ip-main">
-                <h2>Deine IP-Adresse</h2>
-                <div class="ip-display">
-                    <span class="ip-address" id="ipAddress"></span>
-                    <button class="copy-btn" onclick="copyToClipboard('ip', 'IP-Adresse')">📋</button>
-                </div>
-                <div class="copied-msg hidden" id="copiedIp">✓ IP-Adresse kopiert!</div>
-            </div>
-
-            <!-- Information Grid -->
-            <div class="info-grid" id="infoGrid"></div>
-
-            <!-- Coordinates Section -->
-            <div class="section-card" id="coordSection">
-                <h3 class="section-title">
-                    <span>📍</span>
-                    <span>Geografische Koordinaten</span>
-                </h3>
-                <div class="coord-grid">
-                    <div class="coord-item">
-                        <span class="coord-label">Breitengrad:</span>
-                        <div class="coord-value">
-                            <span class="coord-num" id="latitude"></span>
-                            <button class="coord-copy" onclick="copyToClipboard('lat', 'Breitengrad')">📋</button>
-                        </div>
-                    </div>
-                    <div class="coord-item">
-                        <span class="coord-label">Längengrad:</span>
-                        <div class="coord-value">
-                            <span class="coord-num" id="longitude"></span>
-                            <button class="coord-copy" onclick="copyToClipboard('lon', 'Längengrad')">📋</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="copied-msg hidden" id="copiedCoord"></div>
-            </div>
-
-            <!-- AS Information -->
-            <div class="section-card hidden" id="asSection">
-                <h3 class="section-title">
-                    <span>🖥️</span>
-                    <span>Autonomous System (AS)</span>
-                </h3>
-                <div class="as-info">
-                    <span class="as-text" id="asInfo"></span>
-                    <button class="copy-btn" onclick="copyToClipboard('as', 'AS Information')">📋</button>
-                </div>
-                <div class="copied-msg hidden" id="copiedAs">✓ AS Information kopiert!</div>
-            </div>
-
-            <!-- Notes -->
-            <div class="notes">
-                <h3>📌 Hinweise</h3>
-                <ul>
-                    <li>• Diese Informationen stammen von deiner öffentlichen IP-Adresse</li>
-                    <li>• Die Standortdaten sind ungefähre Werte basierend auf deinem ISP</li>
-                    <li>• Bei VPN/Proxy-Nutzung werden die Server-Daten angezeigt</li>
-                    <li>• Alle Daten werden lokal verarbeitet und nicht gespeichert</li>
-                </ul>
-            </div>
+    <!-- Error -->
+    <div class="error hidden" id="error">
+        <span>🛡️</span>
+        <div>
+            <h3>Fehler beim Laden</h3>
+            <p id="errorMessage"></p>
         </div>
     </div>
 
-    <script>
-        let ipData = null;
+    <!-- IP Information Container -->
+    <div id="ipInfo" class="hidden">
+        <!-- Main IP Display -->
+        <div class="ip-main">
+            <h2>Deine IP-Adresse</h2>
+            <div class="ip-display">
+                <span class="ip-address" id="ipAddress"></span>
+                <button class="copy-btn" onclick="copyToClipboard('ip', 'IP-Adresse')">📋</button>
+            </div>
+            <div class="copied-msg hidden" id="copiedIp">✓ IP-Adresse kopiert!</div>
+        </div>
 
-        // Icons mapping
-        const icons = {
-            location: '📍',
-            country: '🌍',
-            zip: '📮',
-            isp: '📡',
-            org: '🏢',
-            timezone: '🕒'
-        };
+        <!-- Information Grid -->
+        <div class="info-grid" id="infoGrid"></div>
 
-        // Copy to clipboard function
-        async function copyToClipboard(type, label) {
-            let text = '';
-            
-            switch(type) {
-                case 'ip':
-                    text = ipData.query;
-                    break;
-                case 'lat':
-                    text = ipData.lat.toString();
-                    break;
-                case 'lon':
-                    text = ipData.lon.toString();
-                    break;
-                case 'as':
-                    text = ipData.as;
-                    break;
-                default:
-                    text = document.getElementById(type).textContent;
-            }
+        <!-- Coordinates Section -->
+        <div class="section-card" id="coordSection">
+            <h3 class="section-title">
+                <span>📍</span>
+                <span>Geografische Koordinaten</span>
+            </h3>
+            <div class="coord-grid">
+                <div class="coord-item">
+                    <span class="coord-label">Breitengrad:</span>
+                    <div class="coord-value">
+                        <span class="coord-num" id="latitude"></span>
+                        <button class="coord-copy" onclick="copyToClipboard('lat', 'Breitengrad')">
+                            📋
+                        </button>
+                    </div>
+                </div>
+                <div class="coord-item">
+                    <span class="coord-label">Längengrad:</span>
+                    <div class="coord-value">
+                        <span class="coord-num" id="longitude"></span>
+                        <button class="coord-copy" onclick="copyToClipboard('lon', 'Längengrad')">
+                            📋
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="copied-msg hidden" id="copiedCoord"></div>
+        </div>
 
-            try {
-                await navigator.clipboard.writeText(text);
-                showCopiedMessage(type, label);
-            } catch (err) {
-                console.error('Kopieren fehlgeschlagen:', err);
-                // Fallback für ältere Browser
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showCopiedMessage(type, label);
-            }
+        <!-- AS Information -->
+        <div class="section-card hidden" id="asSection">
+            <h3 class="section-title">
+                <span>🖥️</span>
+                <span>Autonomous System (AS)</span>
+            </h3>
+            <div class="as-info">
+                <span class="as-text" id="asInfo"></span>
+                <button class="copy-btn" onclick="copyToClipboard('as', 'AS Information')">📋
+                </button>
+            </div>
+            <div class="copied-msg hidden" id="copiedAs">✓ AS Information kopiert!</div>
+        </div>
+
+        <!-- Notes -->
+        <div class="notes">
+            <h3>📌 Hinweise</h3>
+            <ul>
+                <li>Diese Informationen stammen von deiner öffentlichen IP-Adresse</li>
+                <li>Die Standortdaten sind ungefähre Werte basierend auf deinem ISP</li>
+                <li>Bei VPN/Proxy-Nutzung werden die Server-Daten angezeigt</li>
+                <li>Alle Daten werden lokal verarbeitet und nicht gespeichert</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    let ipData = null;
+
+    // Icons mapping
+    const icons = {
+        location: '📍',
+        country: '🌍',
+        zip: '📮',
+        isp: '📡',
+        org: '🏢',
+        timezone: '🕒'
+    };
+
+    // Copy to clipboard function
+    async function copyToClipboard(type, label) {
+        let text = '';
+
+        switch (type) {
+            case 'ip':
+                text = ipData.query;
+                break;
+            case 'lat':
+                text = ipData.lat.toString();
+                break;
+            case 'lon':
+                text = ipData.lon.toString();
+                break;
+            case 'as':
+                text = ipData.as;
+                break;
+            default:
+                text = document.getElementById(type).textContent;
         }
 
-        function showCopiedMessage(type, label) {
-            // Hide all copied messages
-            document.querySelectorAll('.copied-msg').forEach(el => el.classList.add('hidden'));
-            
-            // Show specific message
-            if (type === 'ip') {
-                document.getElementById('copiedIp').classList.remove('hidden');
-                setTimeout(() => document.getElementById('copiedIp').classList.add('hidden'), 2000);
-            } else if (type === 'lat' || type === 'lon') {
-                const coordMsg = document.getElementById('copiedCoord');
-                coordMsg.textContent = `✓ ${label} kopiert!`;
-                coordMsg.classList.remove('hidden');
-                setTimeout(() => coordMsg.classList.add('hidden'), 2000);
-            } else if (type === 'as') {
-                document.getElementById('copiedAs').classList.remove('hidden');
-                setTimeout(() => document.getElementById('copiedAs').classList.add('hidden'), 2000);
-            } else {
-                // For info cards
-                const card = document.getElementById(type).closest('.info-card');
-                let copiedEl = card.querySelector('.copied-msg');
-                if (!copiedEl) {
-                    copiedEl = document.createElement('div');
-                    copiedEl.className = 'copied-msg';
-                    card.appendChild(copiedEl);
-                }
-                copiedEl.textContent = `✓ ${label} kopiert!`;
-                copiedEl.classList.remove('hidden');
-                setTimeout(() => copiedEl.classList.add('hidden'), 2000);
-            }
+        try {
+            await navigator.clipboard.writeText(text);
+            showCopiedMessage(type, label);
+        } catch (err) {
+            console.error('Kopieren fehlgeschlagen:', err);
+            // Fallback für ältere Browser
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showCopiedMessage(type, label);
         }
+    }
 
-        // Create info card HTML
-        function createInfoCard(id, icon, title, value, copyable = false) {
-            const displayValue = value || 'N/A';
-            const copyButton = copyable && value ? 
-                `<button class="card-copy" onclick="copyToClipboard('${id}', '${title}')">📋</button>` : '';
-            
-            return `
+    function showCopiedMessage(type, label) {
+        // Hide all copied messages
+        document.querySelectorAll('.copied-msg').forEach(el => el.classList.add('hidden'));
+
+        // Show specific message
+        if (type === 'ip') {
+            document.getElementById('copiedIp').classList.remove('hidden');
+            setTimeout(() => document.getElementById('copiedIp').classList.add('hidden'), 2000);
+        } else if (type === 'lat' || type === 'lon') {
+            const coordMsg = document.getElementById('copiedCoord');
+            coordMsg.textContent = `✓ ${label} kopiert!`;
+            coordMsg.classList.remove('hidden');
+            setTimeout(() => coordMsg.classList.add('hidden'), 2000);
+        } else if (type === 'as') {
+            document.getElementById('copiedAs').classList.remove('hidden');
+            setTimeout(() => document.getElementById('copiedAs').classList.add('hidden'), 2000);
+        } else {
+            // For info cards
+            const card = document.getElementById(type).closest('.info-card');
+            let copiedEl = card.querySelector('.copied-msg');
+            if (!copiedEl) {
+                copiedEl = document.createElement('div');
+                copiedEl.className = 'copied-msg';
+                card.appendChild(copiedEl);
+            }
+            copiedEl.textContent = `✓ ${label} kopiert!`;
+            copiedEl.classList.remove('hidden');
+            setTimeout(() => copiedEl.classList.add('hidden'), 2000);
+        }
+    }
+
+    // Create info card HTML
+    function createInfoCard(id, icon, title, value, copyable = false) {
+        const displayValue = value || 'N/A';
+        const copyButton = copyable && value ?
+            `<button class="card-copy" onclick="copyToClipboard('${id}', '${title}')">📋</button>` : '';
+
+        return `
                 <div class="info-card">
                     <div class="card-header">
                         <div class="card-content">
@@ -567,128 +643,128 @@
                     </div>
                 </div>
             `;
-        }
+    }
 
-        // Fetch IP information
-        async function fetchIPInfo() {
-            const loading = document.getElementById('loading');
-            const error = document.getElementById('error');
-            const ipInfo = document.getElementById('ipInfo');
-            const refreshBtn = document.getElementById('refreshBtn');
-            const refreshIcon = document.getElementById('refreshIcon');
-            const refreshText = document.getElementById('refreshText');
+    // Fetch IP information
+    async function fetchIPInfo() {
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const ipInfo = document.getElementById('ipInfo');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const refreshIcon = document.getElementById('refreshIcon');
+        const refreshText = document.getElementById('refreshText');
 
-            // Show loading state
-            loading.classList.remove('hidden');
-            error.classList.add('hidden');
-            ipInfo.classList.add('hidden');
-            refreshBtn.disabled = true;
-            refreshIcon.style.animation = 'spin 1s linear infinite';
-            refreshText.textContent = 'Wird aktualisiert...';
+        // Show loading state
+        loading.classList.remove('hidden');
+        error.classList.add('hidden');
+        ipInfo.classList.add('hidden');
+        refreshBtn.disabled = true;
+        refreshIcon.style.animation = 'spin 1s linear infinite';
+        refreshText.textContent = 'Wird aktualisiert...';
+
+        try {
+            let formattedData;
 
             try {
-                let formattedData;
-                
-                try {
-                    // Versuche zuerst ipinfo.io
-                    const response = await fetch('https://ipinfo.io/json');
-                    
-                    if (!response.ok) {
-                        throw new Error('ipinfo.io nicht verfügbar');
-                    }
-                    
-                    const data = await response.json();
-                    
-                    // Konvertiere ipinfo.io Format
-                    formattedData = {
-                        ip: data.ip,
-                        city: data.city || 'N/A',
-                        region: data.region || 'N/A',
-                        country_name: data.country || 'N/A',
-                        country: data.country || 'N/A',
-                        postal: data.postal || 'N/A',
-                        latitude: data.loc ? data.loc.split(',')[0] : 'N/A',
-                        longitude: data.loc ? data.loc.split(',')[1] : 'N/A',
-                        timezone: data.timezone || 'N/A',
-                        org: data.org || 'N/A',
-                        asn: data.org || 'N/A'
-                    };
-                } catch (err) {
-                    // Fallback zu ip.guide API
-                    const response = await fetch('https://ip.guide');
-                    
-                    if (!response.ok) {
-                        throw new Error('Netzwerkfehler beim Abrufen der IP-Informationen');
-                    }
-                    
-                    const data = await response.json();
-                    
-                    // Konvertiere ip.guide Format
-                    formattedData = {
-                        ip: data.ip,
-                        city: data.location?.city || 'N/A',
-                        region: data.location?.region || 'N/A',
-                        country_name: data.location?.country || 'N/A',
-                        country: data.location?.country_code || 'N/A',
-                        postal: data.location?.postal_code || 'N/A',
-                        latitude: data.location?.latitude || 'N/A',
-                        longitude: data.location?.longitude || 'N/A',
-                        timezone: data.location?.timezone || 'N/A',
-                        org: data.network?.organisation || 'N/A',
-                        asn: data.network?.asn || 'N/A'
-                    };
+                // Versuche zuerst ipinfo.io
+                const response = await fetch('https://ipinfo.io/json');
+
+                if (!response.ok) {
+                    throw new Error('ipinfo.io nicht verfügbar');
                 }
-                
-                ipData = formattedData;
-                displayIPInfo(formattedData);
-                
+
+                const data = await response.json();
+
+                // Konvertiere ipinfo.io Format
+                formattedData = {
+                    ip: data.ip,
+                    city: data.city || 'N/A',
+                    region: data.region || 'N/A',
+                    country_name: data.country || 'N/A',
+                    country: data.country || 'N/A',
+                    postal: data.postal || 'N/A',
+                    latitude: data.loc ? data.loc.split(',')[0] : 'N/A',
+                    longitude: data.loc ? data.loc.split(',')[1] : 'N/A',
+                    timezone: data.timezone || 'N/A',
+                    org: data.org || 'N/A',
+                    asn: data.org || 'N/A'
+                };
             } catch (err) {
-                console.error('Fehler:', err);
-                document.getElementById('errorMessage').textContent = err.message;
-                error.classList.remove('hidden');
-            } finally {
-                loading.classList.add('hidden');
-                refreshBtn.disabled = false;
-                refreshIcon.style.animation = '';
-                refreshText.textContent = 'Aktualisieren';
-            }
-        }
+                // Fallback zu ip.guide API
+                const response = await fetch('https://ip.guide');
 
-        // Display IP information
-        function displayIPInfo(data) {
-            // Main IP display
-            document.getElementById('ipAddress').textContent = data.ip;
+                if (!response.ok) {
+                    throw new Error('Netzwerkfehler beim Abrufen der IP-Informationen');
+                }
 
-            // Info grid
-            const infoGrid = document.getElementById('infoGrid');
-            const location = `${data.city}, ${data.region}, ${data.country_name}`;
-            const country = `${data.country_name} (${data.country})`;
-            
-            infoGrid.innerHTML = [
-                createInfoCard('location', icons.location, 'Standort', location, true),
-                createInfoCard('country', icons.country, 'Land & Code', country, true),
-                createInfoCard('zip', icons.zip, 'Postleitzahl', data.postal || 'N/A', true),
-                createInfoCard('isp', icons.isp, 'Internet Provider', data.org || 'N/A', true),
-                createInfoCard('org', icons.org, 'Organisation', data.org || 'N/A', true),
-                createInfoCard('timezone', icons.timezone, 'Zeitzone', data.timezone, true)
-            ].join('');
+                const data = await response.json();
 
-            // Coordinates
-            document.getElementById('latitude').textContent = `${data.latitude}°`;
-            document.getElementById('longitude').textContent = `${data.longitude}°`;
-
-            // AS Information
-            if (data.asn) {
-                document.getElementById('asInfo').textContent = `${data.asn} - ${data.org || 'N/A'}`;
-                document.getElementById('asSection').classList.remove('hidden');
+                // Konvertiere ip.guide Format
+                formattedData = {
+                    ip: data.ip,
+                    city: data.location?.city || 'N/A',
+                    region: data.location?.region || 'N/A',
+                    country_name: data.location?.country || 'N/A',
+                    country: data.location?.country_code || 'N/A',
+                    postal: data.location?.postal_code || 'N/A',
+                    latitude: data.location?.latitude || 'N/A',
+                    longitude: data.location?.longitude || 'N/A',
+                    timezone: data.location?.timezone || 'N/A',
+                    org: data.network?.organisation || 'N/A',
+                    asn: data.network?.asn || 'N/A'
+                };
             }
 
-            // Show IP info
-            document.getElementById('ipInfo').classList.remove('hidden');
+            ipData = formattedData;
+            displayIPInfo(formattedData);
+
+        } catch (err) {
+            console.error('Fehler:', err);
+            document.getElementById('errorMessage').textContent = err.message;
+            error.classList.remove('hidden');
+        } finally {
+            loading.classList.add('hidden');
+            refreshBtn.disabled = false;
+            refreshIcon.style.animation = '';
+            refreshText.textContent = 'Aktualisieren';
+        }
+    }
+
+    // Display IP information
+    function displayIPInfo(data) {
+        // Main IP display
+        document.getElementById('ipAddress').textContent = data.ip;
+
+        // Info grid
+        const infoGrid = document.getElementById('infoGrid');
+        const location = `${data.city}, ${data.region}, ${data.country_name}`;
+        const country = `${data.country_name} (${data.country})`;
+
+        infoGrid.innerHTML = [
+            createInfoCard('location', icons.location, 'Standort', location, true),
+            createInfoCard('country', icons.country, 'Land & Code', country, true),
+            createInfoCard('zip', icons.zip, 'Postleitzahl', data.postal || 'N/A', true),
+            createInfoCard('isp', icons.isp, 'Internet Provider', data.org || 'N/A', true),
+            createInfoCard('org', icons.org, 'Organisation', data.org || 'N/A', true),
+            createInfoCard('timezone', icons.timezone, 'Zeitzone', data.timezone, true)
+        ].join('');
+
+        // Coordinates
+        document.getElementById('latitude').textContent = `${data.latitude}°`;
+        document.getElementById('longitude').textContent = `${data.longitude}°`;
+
+        // AS Information
+        if (data.asn) {
+            document.getElementById('asInfo').textContent = `${data.asn} - ${data.org || 'N/A'}`;
+            document.getElementById('asSection').classList.remove('hidden');
         }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', fetchIPInfo);
-    </script>
+        // Show IP info
+        document.getElementById('ipInfo').classList.remove('hidden');
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', fetchIPInfo);
+</script>
 </body>
 </html>
