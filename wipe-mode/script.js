@@ -8,19 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.requestFullscreen();
     }
     
-    // TEST: Klick irgendwo zum Testen der Wasserspritzer
-    document.addEventListener('click', (e) => {
-        if (isLocked) {
-            console.log('🧪 TESTING: Clicking triggers water splash test');
-            popBubble(0);
-        }
-    });
-    
-    // TEST: Automatischer Test nach 2 Sekunden
-    setTimeout(() => {
-        console.log('🧪 AUTO-TEST: Testing water splash visibility...');
-        popBubble(0);
-    }, 2000);
+    // Alle Test-Funktionen entfernt - Blasen platzen nur bei richtigen Buchstaben
 });
 
 // Alle Events blockieren
@@ -66,81 +54,140 @@ function updateProgress() {
     document.getElementById('progressBar').style.width = progress + '%';
 }
 
+// SOUND-THROTTLING für Blasen-Platzen
+let lastSoundTime = 0;
+
+// SOUND-ERZEUGUNG für Blasen-Platzen mit drop.mp3
+function createBubblePopSound() {
+    const now = Date.now();
+    
+    // Prüfe ob 100ms seit dem letzten Sound vergangen sind
+    if (now - lastSoundTime < 100) {
+        return; // Sound überspringen
+    }
+    
+    lastSoundTime = now;
+    
+    try {
+        const audio = new Audio('drop.mp3');
+        audio.volume = 0.6;
+        audio.currentTime = 0; // Stelle sicher, dass der Sound von vorne startet
+        audio.play().catch(e => {
+            console.log('Audio konnte nicht abgespielt werden:', e);
+        });
+    } catch (e) {
+        console.log('Audio-Datei konnte nicht geladen werden:', e);
+    }
+}
+
 // REALISTISCHE WASSERTROPFEN-SPRITZER BEIM ZERPLATZEN
 function popBubble(correctLetterIndex) {
     console.log(`💧 Bubble splash for letter ${correctLetterIndex}`);
     
+    // Blubb-Sound abspielen
+    try {
+        createBubblePopSound();
+    } catch (e) {
+        console.log('Audio nicht unterstützt:', e);
+    }
+    
     const bubbles = document.querySelectorAll('.bubble:not(.popping)');
     
-    if (bubbles.length > 0) {
-        const bubble = bubbles[0];
-        const bubbleRect = bubble.getBoundingClientRect();
-        
-        const waterDrops = bubble.querySelectorAll('.water-drop');
-        
-        // REALISTISCHE WASSERTROPFEN AUS BLASE RAUSZIEHEN
-        waterDrops.forEach((drop, index) => {
-            // Klone den Tropfen
-            const flyingDrop = drop.cloneNode(true);
+    // Filtere nur sichtbare Blasen (nicht außerhalb des Bildschirms)
+    const visibleBubbles = Array.from(bubbles).filter(bubble => {
+        const rect = bubble.getBoundingClientRect();
+        return rect.bottom > 0 && rect.top < window.innerHeight; // Blase ist im sichtbaren Bereich
+    });
+    
+    // Sortiere sichtbare Blasen nach Y-Position (höchste zuerst)
+    const sortedBubbles = visibleBubbles.sort((a, b) => {
+        const rectA = a.getBoundingClientRect();
+        const rectB = b.getBoundingClientRect();
+        return rectA.top - rectB.top; // Kleinste Y-Position (oben) zuerst
+    });
+    
+    // Lass 2 Blasen gleichzeitig platzen für mehr Effekt (die obersten)
+    const bubblesToPop = Math.min(2, sortedBubbles.length);
+    
+    for (let b = 0; b < bubblesToPop; b++) {
+        if (sortedBubbles[b]) {
+            const bubble = sortedBubbles[b];
+            const bubbleRect = bubble.getBoundingClientRect();
             
-            // Setze Position relativ zur Blase
-            flyingDrop.style.position = 'fixed';
-            flyingDrop.style.left = (bubbleRect.left + (index * 5)) + 'px';
-            flyingDrop.style.top = bubbleRect.top + 'px';
-            flyingDrop.style.width = '1.5px';
-            flyingDrop.style.height = '1.5px';
-            flyingDrop.style.background = `radial-gradient(circle, 
-                rgba(104, 141, 177, 0.8) 0%,
-                rgba(104, 141, 177, 0.5) 60%,
-                rgba(104, 141, 177, 0.2) 100%)`;
-            flyingDrop.style.borderRadius = '50%';
-            flyingDrop.style.border = 'none';
-            flyingDrop.style.boxShadow = '0 0 1px rgba(104, 141, 177, 0.5)';
-            flyingDrop.style.zIndex = '-10';
-            flyingDrop.style.opacity = '1';
+            // Sound wird bereits einmal pro popBubble-Aufruf abgespielt
+            // Kein zusätzlicher Sound nötig
             
-            // Füge zum body hinzu (nicht zur Blase!)
-            document.body.appendChild(flyingDrop);
+            const waterDrops = bubble.querySelectorAll('.water-drop');
             
-            // WILDE 360° SPRITZER-PHYSIK - chaotisch und dynamisch
-            const directions = [];
-            for (let i = 0; i < 20; i++) {
-                const angle = (i * 18) + Math.random() * 30 - 15; // ±15° wilde Variation
-                const distance = 40 + Math.random() * 80; // Entfernung 40-120px (mehr Variation)
-                const upwardBias = -30 + Math.random() * 20; // Wildere Aufwärtsbewegung
+            // REALISTISCHE WASSERTROPFEN AUS BLASE RAUSZIEHEN
+            waterDrops.forEach((drop, index) => {
+                // Klone den Tropfen
+                const flyingDrop = drop.cloneNode(true);
                 
-                const x = Math.cos(angle * Math.PI / 180) * distance;
-                const y = Math.sin(angle * Math.PI / 180) * distance + upwardBias;
-                const gravity = 60 + Math.random() * 80; // Mehr Gravitations-Variation
+                // Setze Position relativ zur Blase mit zufälliger Streuung
+                flyingDrop.style.position = 'fixed';
+                flyingDrop.style.left = (bubbleRect.left + bubbleRect.width/2 + (Math.random() * 40 - 20)) + 'px';
+                flyingDrop.style.top = (bubbleRect.top + bubbleRect.height/2 + (Math.random() * 40 - 20)) + 'px';
+                flyingDrop.style.width = '2px';
+                flyingDrop.style.height = '2px';
+                flyingDrop.style.background = `radial-gradient(circle, 
+                    rgba(104, 141, 177, 1) 0%,
+                    rgba(104, 141, 177, 0.8) 50%,
+                    rgba(104, 141, 177, 0.4) 100%)`;
+                flyingDrop.style.borderRadius = '50%';
+                flyingDrop.style.border = 'none';
+                flyingDrop.style.boxShadow = '0 0 2px rgba(104, 141, 177, 0.8)';
+                flyingDrop.style.zIndex = '-10';
+                flyingDrop.style.opacity = '1';
                 
-                directions.push({ x, y, gravity });
-            }
-            
-            const motion = directions[index] || directions[0];
-            
-            setTimeout(() => {
-                flyingDrop.style.transition = 'all 2.5s cubic-bezier(0.15, 0.85, 0.35, 1)';
-                flyingDrop.style.transform = `
-                    translate(${motion.x}px, ${motion.y + motion.gravity}px) 
-                    scale(${0.6 + Math.random() * 1.0})
-                    rotate(${Math.random() * 720 - 360}deg)
-                `;
-                flyingDrop.style.opacity = '0.05';
+                // Füge zum body hinzu (nicht zur Blase!)
+                document.body.appendChild(flyingDrop);
                 
-                // Nach Animation entfernen
+                // KOMPLETT CHAOTISCHE SPRITZER-PHYSIK - keine Muster
+                const directions = [];
+                for (let i = 0; i < 20; i++) {
+                    // Völlig zufällige Winkel ohne gleichmäßige Verteilung
+                    const angle = Math.random() * 360;
+                    const distance = 30 + Math.random() * 120; // 30-150px völlig zufällig
+                    
+                    // Zufällige X/Y Komponenten mit mehr Chaos
+                    const baseX = Math.cos(angle * Math.PI / 180) * distance;
+                    const baseY = Math.sin(angle * Math.PI / 180) * distance;
+                    
+                    // Zusätzliche chaotische Abweichungen
+                    const x = baseX + (Math.random() * 60 - 30);
+                    const y = baseY + (Math.random() * 60 - 30) - 20; // Leichte Aufwärtsbewegung
+                    const gravity = 40 + Math.random() * 100; // 40-140 wilde Gravitation
+                    
+                    directions.push({ x, y, gravity });
+                }
+                
+                const motion = directions[index] || directions[0];
+                
                 setTimeout(() => {
-                    flyingDrop.remove();
-                }, 2500);
-            }, index * (15 + Math.random() * 20));
+                    flyingDrop.style.transition = 'all 2.5s cubic-bezier(0.15, 0.85, 0.35, 1)';
+                    flyingDrop.style.transform = `
+                        translate(${motion.x}px, ${motion.y + motion.gravity}px) 
+                        scale(${0.6 + Math.random() * 1.0})
+                        rotate(${Math.random() * 720 - 360}deg)
+                    `;
+                    flyingDrop.style.opacity = '0.15';
+                    
+                    // Nach Animation entfernen
+                    setTimeout(() => {
+                        flyingDrop.remove();
+                    }, 2500);
+                }, Math.random() * 150 + b * 80); // Völlig chaotisches Timing
+                
+                console.log(`💧 Splash drop ${index} from bubble ${b} flying`);
+            });
             
-            console.log(`💧 Splash drop ${index} flying`);
-        });
-        
-        // Blase ausblenden
-        bubble.classList.add('popping');
-        setTimeout(() => {
-            bubble.style.display = 'none';
-        }, 500);
+            // Blase ausblenden
+            bubble.classList.add('popping');
+            setTimeout(() => {
+                bubble.style.display = 'none';
+            }, 500);
+        }
     }
 }
 
