@@ -732,3 +732,46 @@ nav ul li a.active:after {
     width: 100%;
     display: inline-block;
 }
+
+/* Background Typewriter Animation */
+.background-code {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0.25;
+    font-family: 'Fira Code', Consolas, Monaco, monospace;
+    font-size: 1.4rem;
+    line-height: 1.8;
+    color: #606070;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+    padding: 50px;
+    padding-top: 120px;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.background-code.typing {
+    animation: subtle-glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes subtle-glow {
+    0% { opacity: 0.2; }
+    100% { opacity: 0.35; }
+}
+
+.typewriter-cursor {
+    animation: blink 1s infinite;
+    color: var(--accent-color);
+    opacity: 0.6;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 0.6; }
+    51%, 100% { opacity: 0; }
+}

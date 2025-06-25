@@ -44,195 +44,155 @@
     <meta name="application-name" content="WipeMode">
     <meta name="msapplication-TileColor" content="#2B2E3B">
     <meta name="msapplication-TileImage" content="favicon-32x32.png">
-    <style>
-        :root {
-            /* Farben */
-            --background-dark: #2B2E3B;
-            --background-darker: #252830;
-            --card-background: #343845;
-            --accent-blue: #688db1;
-            --accent-green: #9cb68f;
-            --accent-red: #e16162;
-            --text-primary: #d1d5db;
-            --text-secondary: #9ca3af;
-            
-            /* Schatten */
-            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-            --shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
-            
-            /* Abstände */
-            --spacing-1: 0.25rem;
-            --spacing-2: 0.5rem;
-            --spacing-3: 0.75rem;
-            --spacing-4: 1rem;
-            --spacing-5: 1.25rem;
-            --spacing-6: 1.5rem;
-            --spacing-8: 2rem;
-            --spacing-10: 2.5rem;
-            --spacing-12: 3rem;
-            --spacing-16: 4rem;
-            
-            /* Rundungen */
-            --radius-sm: 0.25rem;
-            --radius: 0.5rem;
-            --radius-lg: 1rem;
-            --radius-xl: 1.5rem;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-                         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-                         sans-serif;
-            background: var(--background-dark);
-            color: var(--text-primary);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-            cursor: none;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        .container {
-            text-align: center;
-            background: var(--card-background);
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-10);
-            box-shadow: var(--shadow-lg);
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-        
-        .icon {
-            font-size: var(--spacing-16);
-            margin-bottom: var(--spacing-5);
-            display: inline-block;
-        }
-        
-        h1 {
-            font-size: 2rem;
-            margin-bottom: var(--spacing-5);
-            font-weight: 600;
-            color: var(--text-primary);
-            letter-spacing: -0.02em;
-        }
-        
-        .status {
-            font-size: 1.125rem;
-            margin-bottom: var(--spacing-8);
-            color: var(--text-secondary);
-            font-weight: 400;
-        }
-        
-        .unlock-hint {
-            background: var(--background-darker);
-            border-radius: var(--radius);
-            padding: var(--spacing-5);
-            margin-top: var(--spacing-5);
-            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .sequence {
-            color: var(--accent-green);
-            font-weight: 600;
-            font-size: 1.125rem;
-            letter-spacing: 0.1em;
-            display: inline-block;
-            margin-top: var(--spacing-2);
-        }
-        
-        .progress {
-            height: 6px;
-            background: var(--background-darker);
-            border-radius: var(--radius-sm);
-            margin: var(--spacing-6) 0;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-green), #7ab56e);
-            width: 0%;
-            transition: width 0.3s ease;
-            border-radius: var(--radius-sm);
-            box-shadow: 0 0 8px rgba(156, 182, 143, 0.4);
-        }
-        
-        .locked {
-            animation: pulse 2s infinite;
-            color: var(--accent-blue);
-        }
-        
-        @keyframes pulse {
-            0%, 100% { 
-                opacity: 0.7;
-                transform: scale(1);
-            }
-            50% { 
-                opacity: 1;
-                transform: scale(1.05);
-            }
-        }
-        
-        .btn-primary {
-            background: var(--accent-blue);
-            color: white;
-            border: none;
-            padding: var(--spacing-3) var(--spacing-6);
-            border-radius: var(--radius);
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
-            font-family: inherit;
-            letter-spacing: -0.01em;
-        }
-        
-        .btn-primary:hover {
-            background: #5a7d9f;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow);
-        }
-        
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: var(--shadow-sm);
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                padding: var(--spacing-8);
-                max-width: 90%;
-            }
-            
-            h1 {
-                font-size: 1.75rem;
-            }
-            
-            .icon {
-                font-size: 3rem;
-            }
-        }
-    </style>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Blubberblasen Hintergrund -->
+    <div class="bubbles">
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+        <div class="bubble">
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+            <span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span><span class="water-drop"></span>
+        </div>
+    </div>
+    
     <div class="container">
         <div class="icon locked">🔒</div>
         <h1>WipeMode aktiv</h1>
@@ -248,89 +208,7 @@
         </div>
     </div>
 
-    <script>
-        let unlockSequence = ['u', 'n', 'l', 'o', 'c', 'k'];
-        let currentSequence = [];
-        let isLocked = true;
-        
-        // Fullscreen aktivieren
-        document.addEventListener('DOMContentLoaded', () => {
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            }
-        });
-        
-        // Alle Events blockieren
-        function blockEvent(e) {
-            if (isLocked) {
-                e.preventDefault();
-                e.stopPropagation();
-                return false;
-            }
-        }
-        
-        // Event-Listener für alle Input-Events
-        const events = ['keydown', 'keyup', 'keypress', 'mousedown', 'mouseup', 'mousemove', 'wheel', 'contextmenu', 'touchstart', 'touchend', 'touchmove'];
-        
-        events.forEach(event => {
-            document.addEventListener(event, blockEvent, { capture: true, passive: false });
-        });
-        
-        // Unlock-Sequenz abfangen
-        document.addEventListener('keydown', (e) => {
-            if (!isLocked) return;
-            
-            const key = e.key.toLowerCase();
-            
-            if (key === unlockSequence[currentSequence.length]) {
-                currentSequence.push(key);
-                updateProgress();
-                
-                if (currentSequence.length === unlockSequence.length) {
-                    unlock();
-                }
-            } else {
-                currentSequence = [];
-                updateProgress();
-            }
-        }, true);
-        
-        function updateProgress() {
-            const progress = (currentSequence.length / unlockSequence.length) * 100;
-            document.getElementById('progressBar').style.width = progress + '%';
-        }
-        
-        function unlock() {
-            isLocked = false;
-            document.querySelector('.container').innerHTML = `
-                <div class="icon" style="color: var(--accent-green);">🔓</div>
-                <h1>Entsperrt!</h1>
-                <div class="status">Du kannst jetzt normal weiterarbeiten</div>
-                <div style="margin-top: var(--spacing-5);">
-                    <button onclick="location.reload()" class="btn-primary">
-                        Erneut sperren
-                    </button>
-                </div>
-            `;
-            
-            // Cursor wieder anzeigen
-            document.body.style.cursor = 'default';
-            
-            // Fullscreen verlassen nach 3 Sekunden
-            setTimeout(() => {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }, 3000);
-        }
-        
-        // Fullscreen-Exit abfangen
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement && isLocked) {
-                // Warnung anzeigen wenn Fullscreen verlassen wird
-                alert('Vollbild-Modus verlassen! Sperrung möglicherweise nicht mehr aktiv.');
-            }
-        });
-    </script>
+    <!-- JavaScript -->
+    <script src="script.js"></script>
 </body>
 </html>
