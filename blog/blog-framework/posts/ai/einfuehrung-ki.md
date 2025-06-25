@@ -1,6 +1,6 @@
 ---
 title: "Einführung in Künstliche Intelligenz: Grundlagen und aktuelle Trends"
-date: "2023-05-15"
+date: "2025-04-15"
 excerpt: "Ein Überblick über die Grundlagen der KI, ihre Geschichte und die neuesten Entwicklungen im Bereich der künstlichen Intelligenz."
 tags: [ "KI", "Machine Learning", "Deep Learning", "Neuronale Netze" ]
 ---

@@ -58,6 +58,51 @@ router.get('/test-error', (req, res, next) => {
     next(error);
 });
 
+router.get('/overview', (req, res, next) => {
+    try {
+        const categories = ['ai', 'development', 'it-security'];
+        const allPosts = [];
+
+        // Alle Posts aus allen Kategorien sammeln
+        categories.forEach(category => {
+            const categoryPath = path.join(__dirname, '..', 'posts', category);
+
+            try {
+                if (fs.existsSync(categoryPath)) {
+                    const posts = fs.readdirSync(categoryPath)
+                        .filter(file => file.endsWith('.md'))
+                        .map(file => {
+                            const content = fs.readFileSync(path.join(categoryPath, file), 'utf8');
+                            const {data} = require('../utils/markdownParser').parseFrontMatter(content);
+                            return {
+                                slug: file.replace('.md', ''),
+                                title: data.title,
+                                date: data.date,
+                                category: category,
+                                excerpt: data.excerpt || ''
+                            };
+                        });
+
+                    allPosts.push(...posts);
+                }
+            } catch (err) {
+                console.error(`Error reading category ${category}:`, err);
+            }
+        });
+
+        // Alle Posts nach Datum sortieren (neueste zuerst)
+        allPosts.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.render('overview', {
+            categories,
+            allPosts,
+            title: 'Alle Beiträge - IT Blog'
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
 router.get('/category/:category', (req, res, next) => {
     try {
         const category = req.params.category;

@@ -372,6 +372,7 @@ static inline void raw_spin_rq_lock_nested(struct rq *rq, int subclass)
         // Show only on homepage, blog overview, and category pages (not individual posts)
         return path === '/blog' || 
                path === '/blog/' || 
+               path === '/blog/overview' ||
                path.startsWith('/blog/category/') ||
                (path === '/' && window.location.hostname.includes('blog'));
     }
