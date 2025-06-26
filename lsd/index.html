@@ -34,27 +34,70 @@
             position: relative;
             max-width: 90vw;
             max-height: 90vh;
-            overflow: hidden;
+            overflow: visible;
             border-radius: 8px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-container::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            right: -50px;
+            bottom: -50px;
+            background: radial-gradient(ellipse at center,
+            rgba(44, 46, 59, 0) 60%,
+            rgba(44, 46, 59, 0.8) 80%,
+            rgba(44, 46, 59, 1) 100%);
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .image-container.flowing::before {
+            opacity: 1;
         }
 
         #mainImage {
             width: 100%;
             height: auto;
             display: block;
-            filter: 
-                hue-rotate(0deg) 
-                saturate(1) 
-                brightness(1) 
-                contrast(1) 
-                blur(0px)
-                sepia(0);
-            transform: 
-                scale(1) 
-                rotate(0deg) 
-                skew(0deg, 0deg);
+            filter: hue-rotate(0deg) saturate(1) brightness(1) contrast(1) blur(0px) sepia(0);
+            transform: scale(1) rotate(0deg) skew(0deg, 0deg);
             transition: all 0.1s ease-out;
+        }
+
+        .flow-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: inherit;
+            background-size: cover;
+            background-position: center;
+            filter: blur(15px);
+            opacity: 0;
+            transform: scale(1.2);
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .scream-distortion {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse 200% 100% at 50% 50%, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%),
+            linear-gradient(45deg, transparent 30%, rgba(255, 0, 100, 0.05) 50%, transparent 70%),
+            linear-gradient(-45deg, transparent 30%, rgba(0, 255, 150, 0.05) 50%, transparent 70%);
+            filter: blur(8px);
+            opacity: 0;
+            animation: screamWave 4s ease-in-out infinite;
+            z-index: 1;
         }
 
         .overlay {
@@ -63,10 +106,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(255, 0, 100, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(0, 255, 150, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(100, 0, 255, 0.05) 0%, transparent 70%);
+            background: radial-gradient(circle at 20% 30%, rgba(255, 0, 100, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(0, 255, 150, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(100, 0, 255, 0.05) 0%, transparent 70%);
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.5s ease;
@@ -139,39 +181,136 @@
             background: #9965F4;
         }
 
+        .toggle-button {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            padding: 0;
+        }
+
+        .toggle-button::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: #FFFFFF;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-button.active {
+            background: #BB86FC;
+        }
+
+        .toggle-button.active::before {
+            transform: translateX(30px);
+        }
+
+        .toggle-label {
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
         .kaleidoscope {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                conic-gradient(from 0deg at 50% 50%, 
-                    transparent 0deg, 
-                    rgba(255, 0, 100, 0.1) 60deg, 
-                    transparent 120deg,
-                    rgba(0, 255, 150, 0.1) 180deg,
-                    transparent 240deg,
-                    rgba(100, 0, 255, 0.1) 300deg,
-                    transparent 360deg);
+            background: conic-gradient(from 0deg at 50% 50%,
+            transparent 0deg,
+            rgba(255, 0, 100, 0.1) 60deg,
+            transparent 120deg,
+            rgba(0, 255, 150, 0.1) 180deg,
+            transparent 240deg,
+            rgba(100, 0, 255, 0.1) 300deg,
+            transparent 360deg);
             opacity: 0;
             pointer-events: none;
             animation: rotate 10s linear infinite;
         }
 
         @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.8; }
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 0.8;
+            }
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes screamWave {
+            0%, 100% {
+                transform: scale(1) skew(0deg, 0deg);
+                opacity: 0;
+            }
+            25% {
+                transform: scale(1.05) skew(2deg, 1deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: scale(1.1) skew(-1deg, 2deg);
+                opacity: 0.5;
+            }
+            75% {
+                transform: scale(1.02) skew(1deg, -1deg);
+                opacity: 0.2;
+            }
+        }
+
+        @keyframes melt {
+            0% {
+                transform: scaleY(1) skewX(0deg);
+                filter: blur(0px);
+            }
+            50% {
+                transform: scaleY(1.2) skewX(5deg);
+                filter: blur(2px);
+            }
+            100% {
+                transform: scaleY(1) skewX(0deg);
+                filter: blur(0px);
+            }
+        }
+
+        @keyframes edgeBlur {
+            0%, 100% {
+                filter: blur(0px);
+                opacity: 0;
+            }
+            50% {
+                filter: blur(20px);
+                opacity: 0.8;
+            }
         }
 
         .breathing {
@@ -181,85 +320,116 @@
         .floating {
             animation: float 4s ease-in-out infinite;
         }
+
+        .melting {
+            animation: melt 6s ease-in-out infinite;
+        }
+
+        .flow-layer.active {
+            opacity: 0.6;
+            animation: edgeBlur 8s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="image-container">
-            <img id="mainImage" src="lsd.jpeg" alt="Bild für LSD Effekt">
-            <div class="overlay"></div>
-            <div class="kaleidoscope"></div>
-        </div>
+<div class="container">
+    <div class="image-container">
+        <div class="flow-layer"></div>
+        <img id="mainImage" src="lsd.jpeg" alt="Bild für LSD Effekt">
+        <div class="scream-distortion"></div>
+        <div class="overlay"></div>
+        <div class="kaleidoscope"></div>
     </div>
+</div>
 
-    <div class="controls">
-        <div class="control-group">
-            <label for="intensity">Intensität</label>
-            <input type="range" id="intensity" min="0" max="100" value="0">
-        </div>
-        <div class="control-group">
-            <label for="speed">Geschwindigkeit</label>
-            <input type="range" id="speed" min="1" max="10" value="3">
-        </div>
-        <div class="control-group">
-            <label for="colorShift">Farbverschiebung</label>
-            <input type="range" id="colorShift" min="0" max="360" value="0">
-        </div>
-        <button onclick="toggleTrip()">Trip starten/stoppen</button>
-        <button onclick="resetEffects()">Reset</button>
+<div class="controls">
+    <div class="control-group">
+        <label for="intensity">Intensität</label>
+        <input type="range" id="intensity" min="0" max="100" value="50">
     </div>
+    <div class="control-group">
+        <label for="speed">Geschwindigkeit</label>
+        <input type="range" id="speed" min="1" max="10" value="1">
+    </div>
+    <div class="control-group">
+        <label for="colorShift">Farbverschiebung</label>
+        <input type="range" id="colorShift" min="0" max="360" value="180">
+    </div>
+    <div class="control-group">
+        <div class="toggle-label">Trip</div>
+        <button class="toggle-button" id="tripToggle" onclick="toggleTrip()"></button>
+    </div>
+    <button onclick="resetEffects()">Reset</button>
+</div>
 
-    <script>
-        let isTripping = false;
-        let animationId;
-        let startTime = Date.now();
-        
-        const image = document.getElementById('mainImage');
-        const overlay = document.querySelector('.overlay');
-        const kaleidoscope = document.querySelector('.kaleidoscope');
-        const intensitySlider = document.getElementById('intensity');
-        const speedSlider = document.getElementById('speed');
-        const colorShiftSlider = document.getElementById('colorShift');
+<script>
+    let isTripping = false;
+    let animationId;
+    let startTime = Date.now();
 
-        function getWaveValue(frequency, amplitude, offset = 0) {
-            const time = (Date.now() - startTime) / 1000;
-            const speed = parseFloat(speedSlider.value);
-            return Math.sin(time * frequency * speed + offset) * amplitude;
-        }
+    const image = document.getElementById('mainImage');
+    const overlay = document.querySelector('.overlay');
+    const kaleidoscope = document.querySelector('.kaleidoscope');
+    const flowLayer = document.querySelector('.flow-layer');
+    const screamDistortion = document.querySelector('.scream-distortion');
+    const imageContainer = document.querySelector('.image-container');
+    const intensitySlider = document.getElementById('intensity');
+    const speedSlider = document.getElementById('speed');
+    const colorShiftSlider = document.getElementById('colorShift');
 
-        function applyDistortion() {
-            if (!isTripping) return;
+    // Initialize flow layer background
+    image.onload = function () {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        ctx.drawImage(image, 0, 0);
+        flowLayer.style.backgroundImage = `url(${canvas.toDataURL()})`;
+    };
 
-            const intensity = parseFloat(intensitySlider.value) / 100;
-            const colorShift = parseFloat(colorShiftSlider.value);
-            
-            // Grundlegende Transformationen
-            const scale = 1 + getWaveValue(0.5, 0.3 * intensity);
-            const rotation = getWaveValue(0.3, 45 * intensity);
-            const skewX = getWaveValue(0.7, 15 * intensity);
-            const skewY = getWaveValue(0.4, 10 * intensity, Math.PI / 4);
-            
-            // Filter-Effekte
-            const hueRotate = (getWaveValue(0.8, 180 * intensity) + colorShift) % 360;
-            const saturate = 1 + getWaveValue(0.6, 2 * intensity);
-            const brightness = 1 + getWaveValue(0.9, 0.5 * intensity);
-            const contrast = 1 + getWaveValue(0.4, 1 * intensity);
-            const blur = Math.abs(getWaveValue(1.2, 3 * intensity));
-            const sepia = Math.abs(getWaveValue(0.3, 0.8 * intensity));
-            
-            // Erweiterte Verzerrungen
-            const translateX = getWaveValue(1.1, 20 * intensity);
-            const translateY = getWaveValue(0.8, 15 * intensity, Math.PI / 3);
-            
-            // Anwenden der Effekte
-            image.style.transform = `
+    if (image.complete) {
+        image.onload();
+    }
+
+    function getWaveValue(frequency, amplitude, offset = 0) {
+        const time = (Date.now() - startTime) / 1000;
+        const speed = parseFloat(speedSlider.value);
+        return Math.sin(time * frequency * speed + offset) * amplitude;
+    }
+
+    function applyDistortion() {
+        if (!isTripping) return;
+
+        const intensity = parseFloat(intensitySlider.value) / 100;
+        const colorShift = parseFloat(colorShiftSlider.value);
+
+        // Grundlegende Transformationen
+        const scale = 1 + getWaveValue(0.5, 0.3 * intensity);
+        const rotation = getWaveValue(0.3, 45 * intensity);
+        const skewX = getWaveValue(0.7, 15 * intensity);
+        const skewY = getWaveValue(0.4, 10 * intensity, Math.PI / 4);
+
+        // Filter-Effekte
+        const hueRotate = (getWaveValue(0.8, 180 * intensity) + colorShift) % 360;
+        const saturate = 1 + getWaveValue(0.6, 2 * intensity);
+        const brightness = 1 + getWaveValue(0.9, 0.5 * intensity);
+        const contrast = 1 + getWaveValue(0.4, 1 * intensity);
+        const blur = Math.abs(getWaveValue(1.2, 3 * intensity));
+        const sepia = Math.abs(getWaveValue(0.3, 0.8 * intensity));
+
+        // Erweiterte Verzerrungen
+        const translateX = getWaveValue(1.1, 20 * intensity);
+        const translateY = getWaveValue(0.8, 15 * intensity, Math.PI / 3);
+
+        // Anwenden der Effekte
+        image.style.transform = `
                 translate(${translateX}px, ${translateY}px)
                 scale(${scale})
                 rotate(${rotation}deg)
                 skew(${skewX}deg, ${skewY}deg)
             `;
-            
-            image.style.filter = `
+
+        image.style.filter = `
                 hue-rotate(${hueRotate}deg)
                 saturate(${saturate})
                 brightness(${brightness})
@@ -267,91 +437,118 @@
                 blur(${blur}px)
                 sepia(${sepia})
             `;
-            
-            // Overlay-Effekte
-            overlay.style.opacity = intensity * 0.8;
-            kaleidoscope.style.opacity = intensity * 0.6;
-            
-            // Atmungs- und Schwebeffekte
-            if (intensity > 0.3) {
-                image.classList.add('breathing');
-                document.querySelector('.image-container').classList.add('floating');
-            } else {
-                image.classList.remove('breathing');
-                document.querySelector('.image-container').classList.remove('floating');
-            }
-            
-            animationId = requestAnimationFrame(applyDistortion);
+
+        // Overlay-Effekte
+        overlay.style.opacity = intensity * 0.8;
+        kaleidoscope.style.opacity = intensity * 0.6;
+
+        // Verschwimm- und Zerfließeffekte
+        flowLayer.style.opacity = intensity * 0.7;
+        screamDistortion.style.opacity = intensity * 0.4;
+
+        // Scream-ähnliche Verzerrungen
+        if (intensity > 0.2) {
+            flowLayer.classList.add('active');
+            screamDistortion.style.display = 'block';
+            imageContainer.classList.add('flowing');
+        } else {
+            flowLayer.classList.remove('active');
+            screamDistortion.style.display = 'none';
+            imageContainer.classList.remove('flowing');
         }
 
-        function toggleTrip() {
-            isTripping = !isTripping;
-            if (isTripping) {
-                startTime = Date.now();
-                applyDistortion();
-            } else {
-                cancelAnimationFrame(animationId);
+        // Atmungs- und Schwebeffekte
+        if (intensity > 0.3) {
+            image.classList.add('breathing');
+            imageContainer.classList.add('floating');
+            if (intensity > 0.6) {
+                image.classList.add('melting');
             }
-        }
-
-        function resetEffects() {
-            isTripping = false;
-            cancelAnimationFrame(animationId);
-            
-            intensitySlider.value = 0;
-            speedSlider.value = 3;
-            colorShiftSlider.value = 0;
-            
-            image.style.transform = '';
-            image.style.filter = '';
-            overlay.style.opacity = 0;
-            kaleidoscope.style.opacity = 0;
-            
+        } else {
             image.classList.remove('breathing');
-            document.querySelector('.image-container').classList.remove('floating');
+            imageContainer.classList.remove('floating');
+            image.classList.remove('melting');
         }
 
-        // Event Listeners für Live-Updates
-        intensitySlider.addEventListener('input', () => {
-            if (isTripping) applyDistortion();
-        });
+        animationId = requestAnimationFrame(applyDistortion);
+    }
 
-        speedSlider.addEventListener('input', () => {
-            if (isTripping) applyDistortion();
-        });
-
-        colorShiftSlider.addEventListener('input', () => {
-            if (isTripping) applyDistortion();
-        });
-
-        // Automatische Intensitäts-Animation
-        function autoIntensity() {
-            if (isTripping && intensitySlider.value < 50) {
-                const currentValue = parseFloat(intensitySlider.value);
-                intensitySlider.value = Math.min(100, currentValue + 0.5);
-            }
+    function toggleTrip() {
+        isTripping = !isTripping;
+        const toggleButton = document.getElementById('tripToggle');
+        
+        if (isTripping) {
+            toggleButton.classList.add('active');
+            startTime = Date.now();
+            applyDistortion();
+        } else {
+            toggleButton.classList.remove('active');
+            cancelAnimationFrame(animationId);
         }
+    }
 
-        setInterval(autoIntensity, 100);
+    function resetEffects() {
+        isTripping = false;
+        cancelAnimationFrame(animationId);
 
-        // Tastatur-Steuerung
-        document.addEventListener('keydown', (e) => {
-            switch(e.key) {
-                case ' ':
-                    e.preventDefault();
-                    toggleTrip();
-                    break;
-                case 'r':
-                    resetEffects();
-                    break;
-                case 'ArrowUp':
-                    intensitySlider.value = Math.min(100, parseFloat(intensitySlider.value) + 10);
-                    break;
-                case 'ArrowDown':
-                    intensitySlider.value = Math.max(0, parseFloat(intensitySlider.value) - 10);
-                    break;
-            }
-        });
-    </script>
+        intensitySlider.value = 0;
+        speedSlider.value = 3;
+        colorShiftSlider.value = 0;
+
+        image.style.transform = '';
+        image.style.filter = '';
+        overlay.style.opacity = 0;
+        kaleidoscope.style.opacity = 0;
+        flowLayer.style.opacity = 0;
+        screamDistortion.style.opacity = 0;
+
+        image.classList.remove('breathing', 'melting');
+        imageContainer.classList.remove('floating', 'flowing');
+        flowLayer.classList.remove('active');
+        screamDistortion.style.display = 'none';
+    }
+
+    // Event Listeners für Live-Updates
+    intensitySlider.addEventListener('input', () => {
+        if (isTripping) applyDistortion();
+    });
+
+    speedSlider.addEventListener('input', () => {
+        if (isTripping) applyDistortion();
+    });
+
+    colorShiftSlider.addEventListener('input', () => {
+        if (isTripping) applyDistortion();
+    });
+
+    // Automatische Intensitäts-Animation
+    function autoIntensity() {
+        if (isTripping && intensitySlider.value < 50) {
+            const currentValue = parseFloat(intensitySlider.value);
+            intensitySlider.value = Math.min(100, currentValue + 0.5);
+        }
+    }
+
+    setInterval(autoIntensity, 100);
+
+    // Tastatur-Steuerung
+    document.addEventListener('keydown', (e) => {
+        switch (e.key) {
+            case ' ':
+                e.preventDefault();
+                toggleTrip();
+                break;
+            case 'r':
+                resetEffects();
+                break;
+            case 'ArrowUp':
+                intensitySlider.value = Math.min(100, parseFloat(intensitySlider.value) + 10);
+                break;
+            case 'ArrowDown':
+                intensitySlider.value = Math.max(0, parseFloat(intensitySlider.value) - 10);
+                break;
+        }
+    });
+</script>
 </body>
 </html>
