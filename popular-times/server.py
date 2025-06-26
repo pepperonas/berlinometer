@@ -562,10 +562,19 @@ async def scrape_live_occupancy_single(url, attempt_num):
                                     updated_content = await page.content()
                                     occupancy_match = re.search(r'(\d+)\s*%\s*ausgelastet', updated_content, re.IGNORECASE)
                                     if occupancy_match:
-                                        live_data = f"{occupancy_match.group(1)}% ausgelastet (historisch um {current_hour} Uhr)"
-                                        is_live_data = False
-                                        logger.info(f"📊 Historical data for current hour found: {live_data}")
-                                        break
+                                        # Validiere Prozentwert
+                                        try:
+                                            percentage = int(occupancy_match.group(1))
+                                            if 0 <= percentage <= 100:
+                                                live_data = f"{percentage}% ausgelastet (historisch um {current_hour} Uhr)"
+                                                is_live_data = False
+                                                logger.info(f"📊 Historical data for current hour found: {live_data}")
+                                                break
+                                            else:
+                                                logger.warning(f"⚠️ Invalid percentage in historical data: {percentage}%")
+                                        except ValueError:
+                                            logger.warning(f"⚠️ Non-numeric percentage in historical data: {occupancy_match.group(1)}")
+                                            continue
                                 except:
                                     continue
                                     
@@ -586,9 +595,19 @@ async def scrape_live_occupancy_single(url, attempt_num):
                 current_hour_match = re.search(current_hour_pattern, page_content, re.IGNORECASE)
                 
                 if current_hour_match:
-                    live_data = current_hour_match.group(0)
-                    is_live_data = False
-                    logger.info(f"📊 Current hour data found: {live_data}")
+                    # Validiere Prozentwert
+                    try:
+                        percentage = int(current_hour_match.group(1))
+                        if 0 <= percentage <= 100:
+                            live_data = current_hour_match.group(0)
+                            is_live_data = False
+                            logger.info(f"📊 Current hour data found: {live_data}")
+                        else:
+                            logger.warning(f"⚠️ Invalid percentage in current hour data: {percentage}%")
+                            current_hour_match = None
+                    except ValueError:
+                        logger.warning(f"⚠️ Non-numeric percentage in current hour data: {current_hour_match.group(1)}")
+                        current_hour_match = None
                 else:
                     # Fallback patterns in priority order
                     patterns = [
@@ -603,30 +622,56 @@ async def scrape_live_occupancy_single(url, attempt_num):
                     for pattern, pattern_type in patterns:
                         matches = re.findall(pattern, page_content, re.IGNORECASE)
                         if matches:
-                            if pattern_type == 'current_hour_alt':
-                                live_data = f"{matches[0]}% ausgelastet (um {current_hour} Uhr)"
-                                is_live_data = False
-                            elif pattern_type == 'live_generic':
-                                live_data = f"{matches[0]}% derzeit ausgelastet"
-                                is_live_data = True
-                            elif pattern_type == 'any_hour':
-                                # Get the full match to show the actual hour
-                                full_match = re.search(r'Um\s+(\d+)\s+Uhr\s+zu\s+(\d+)\s*%\s*ausgelastet', page_content, re.IGNORECASE)
-                                if full_match:
-                                    hour = full_match.group(1)
-                                    percentage = full_match.group(2)
-                                    # Only use if no current hour data available
-                                    if int(hour) == current_hour:
-                                        live_data = f"Um {hour} Uhr zu {percentage}% ausgelastet"
-                                        is_live_data = False
+                            # Validiere Prozentwerte - müssen zwischen 0 und 100 sein
+                            valid_matches = []
+                            for match in matches:
+                                try:
+                                    percentage = int(match)
+                                    if 0 <= percentage <= 100:
+                                        valid_matches.append(match)
                                     else:
-                                        # Skip non-current hour data in fallback
+                                        logger.warning(f"⚠️ Invalid percentage value filtered out: {percentage}%")
+                                except ValueError:
+                                    logger.warning(f"⚠️ Non-numeric percentage filtered out: {match}")
+                                    continue
+                            
+                            if valid_matches:
+                                percentage_value = valid_matches[0]  # Nimm den ersten gültigen Wert
+                                
+                                if pattern_type == 'current_hour_alt':
+                                    live_data = f"{percentage_value}% ausgelastet (um {current_hour} Uhr)"
+                                    is_live_data = False
+                                elif pattern_type == 'live_generic':
+                                    live_data = f"{percentage_value}% derzeit ausgelastet"
+                                    is_live_data = True
+                                elif pattern_type == 'any_hour':
+                                    # Get the full match to show the actual hour mit Validierung
+                                    full_match = re.search(r'Um\s+(\d+)\s+Uhr\s+zu\s+(\d+)\s*%\s*ausgelastet', page_content, re.IGNORECASE)
+                                    if full_match:
+                                        hour = full_match.group(1)
+                                        percentage = full_match.group(2)
+                                        # Validiere sowohl Stunde als auch Prozent
+                                        try:
+                                            hour_int = int(hour)
+                                            percentage_int = int(percentage)
+                                            if 0 <= hour_int <= 23 and 0 <= percentage_int <= 100:
+                                                # Only use if no current hour data available
+                                                if hour_int == current_hour:
+                                                    live_data = f"Um {hour} Uhr zu {percentage}% ausgelastet"
+                                                    is_live_data = False
+                                                else:
+                                                    # Skip non-current hour data in fallback
+                                                    continue
+                                            else:
+                                                logger.warning(f"⚠️ Invalid hour/percentage filtered: {hour}h, {percentage}%")
+                                                continue
+                                        except ValueError:
+                                            continue
+                                    else:
                                         continue
                                 else:
-                                    continue
-                            else:
-                                live_data = f"{matches[0]}% ausgelastet"
-                                is_live_data = False
+                                    live_data = f"{percentage_value}% ausgelastet"
+                                    is_live_data = False
                             
                             logger.info(f"📊 Pattern match ({pattern_type}): {live_data}")
                             break
@@ -858,9 +903,105 @@ def scrape_locations():
         logger.error(f"Scrape endpoint error: {e}")
         return jsonify({'error': str(e)}), 500
 
+async def run_gmaps_location_finder_script(address):
+    """
+    Führt das gmaps-location-finder.py Skript aus und parst die Ergebnisse
+    """
+    try:
+        script_path = os.path.join(os.path.dirname(__file__), 'maps-playwrite-scraper', 'gmaps-location-finder.py')
+        
+        # Erstelle temporäre Input-Datei für das Skript
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as temp_input:
+            temp_input.write(address)
+            temp_input_path = temp_input.name
+        
+        try:
+            # Führe das Skript aus
+            logger.info(f"🔧 Running gmaps-location-finder.py with address: {address}")
+            
+            # Setze PYTHONUNBUFFERED für sofortige Ausgabe
+            env = os.environ.copy()
+            env['PYTHONUNBUFFERED'] = '1'
+            
+            result = subprocess.run([
+                'python3', script_path
+            ], 
+            input=address,
+            text=True,
+            capture_output=True,
+            timeout=300,  # 5 Minuten Timeout
+            env=env,
+            cwd=os.path.dirname(script_path)
+            )
+            
+            logger.info(f"📤 Script exit code: {result.returncode}")
+            logger.info(f"📤 Script stdout: {result.stdout[:500]}...")
+            if result.stderr:
+                logger.warning(f"📤 Script stderr: {result.stderr[:500]}...")
+            
+            # Prüfe ob urls_scraped.txt erstellt wurde
+            urls_file = os.path.join(os.path.dirname(script_path), 'urls_scraped.txt')
+            locations = []
+            
+            if os.path.exists(urls_file):
+                logger.info(f"✅ URLs file found: {urls_file}")
+                with open(urls_file, 'r', encoding='utf-8') as f:
+                    urls = [line.strip() for line in f if line.strip()]
+                
+                # Extrahiere Namen aus URLs
+                for url in urls:
+                    name = extract_name_from_url(url)
+                    if name:
+                        locations.append({
+                            'name': name,
+                            'url': url
+                        })
+                
+                logger.info(f"✅ Parsed {len(locations)} locations from script output")
+                
+                # Lösche temporäre Datei
+                try:
+                    os.unlink(urls_file)
+                except:
+                    pass
+            else:
+                logger.warning(f"⚠️ URLs file not found: {urls_file}")
+                
+                # Fallback: Parse stdout for URLs
+                if result.stdout:
+                    import re
+                    url_pattern = r'https://www\.google\.[^/]+/maps/place/[^\s]+'
+                    found_urls = re.findall(url_pattern, result.stdout)
+                    
+                    for url in found_urls:
+                        name = extract_name_from_url(url)
+                        if name:
+                            locations.append({
+                                'name': name,
+                                'url': url
+                            })
+                    
+                    logger.info(f"✅ Fallback: Parsed {len(locations)} locations from stdout")
+            
+            return locations
+            
+        finally:
+            # Cleanup
+            try:
+                os.unlink(temp_input_path)
+            except:
+                pass
+                
+    except subprocess.TimeoutExpired:
+        logger.error("❌ Script timeout after 5 minutes")
+        return []
+    except Exception as e:
+        logger.error(f"❌ Error running gmaps-location-finder script: {e}")
+        return []
+
 @app.route('/find-locations', methods=['POST'])
 def find_locations():
-    """Endpoint to find locations near an address"""
+    """Endpoint to find locations near an address using gmaps-location-finder.py script"""
     try:
         data = request.get_json()
         
@@ -874,18 +1015,25 @@ def find_locations():
         
         logger.info(f"Finding locations near: {address}")
         
-        # Use the real Google Maps location finder
-        logger.info("Using real Google Maps location finder")
+        # Use the external gmaps-location-finder.py script
+        logger.info("Using external gmaps-location-finder.py script")
         
-        # Run the async location finder with enhanced settings
+        # Run the external script
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         
         try:
-            locations = loop.run_until_complete(find_locations_near_address_enhanced(address.strip()))
+            locations = loop.run_until_complete(run_gmaps_location_finder_script(address.strip()))
             urls = [location['url'] for location in locations]
             
-            logger.info(f"Found {len(locations)} real locations from Google Maps")
+            logger.info(f"Found {len(locations)} locations from gmaps-location-finder.py script")
+            
+            if len(locations) == 0:
+                logger.warning("No locations found, falling back to integrated finder")
+                # Fallback zur integrierten Funktion
+                locations = loop.run_until_complete(find_locations_near_address_enhanced(address.strip()))
+                urls = [location['url'] for location in locations]
+                logger.info(f"Fallback found {len(locations)} locations")
             
             return jsonify({
                 'success': True,
@@ -893,21 +1041,12 @@ def find_locations():
                 'count': len(locations),
                 'locations': locations,
                 'urls': urls,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'source': 'gmaps-location-finder.py' if len(locations) > 0 else 'fallback'
             })
             
         finally:
             loop.close()
-        
-        # Original attempt - keep for future debugging (disabled)
-        # try:
-        #     loop = asyncio.new_event_loop()
-        #     asyncio.set_event_loop(loop)
-        #     locations = loop.run_until_complete(find_locations_near_address(address.strip()))
-        #     urls = [location['url'] for location in locations]
-        #     return jsonify({...})
-        # finally:
-        #     loop.close()
         
     except Exception as e:
         logger.error(f"Location finder error: {e}")

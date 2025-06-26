@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSD Verzerrungseffekt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #2C2E3B;
+            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-container {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        #mainImage {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: 
+                hue-rotate(0deg) 
+                saturate(1) 
+                brightness(1) 
+                contrast(1) 
+                blur(0px)
+                sepia(0);
+            transform: 
+                scale(1) 
+                rotate(0deg) 
+                skew(0deg, 0deg);
+            transition: all 0.1s ease-out;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 0, 100, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 255, 150, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(100, 0, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(44, 46, 59, 0.9);
+            padding: 16px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .control-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            color: #FFFFFF;
+            font-size: 12px;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 150px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #BB86FC;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #BB86FC;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        button {
+            background: #BB86FC;
+            color: #2C2E3B;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #9965F4;
+        }
+
+        .kaleidoscope {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                conic-gradient(from 0deg at 50% 50%, 
+                    transparent 0deg, 
+                    rgba(255, 0, 100, 0.1) 60deg, 
+                    transparent 120deg,
+                    rgba(0, 255, 150, 0.1) 180deg,
+                    transparent 240deg,
+                    rgba(100, 0, 255, 0.1) 300deg,
+                    transparent 360deg);
+            opacity: 0;
+            pointer-events: none;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .breathing {
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .floating {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="image-container">
+            <img id="mainImage" src="lsd.jpeg" alt="Bild für LSD Effekt">
+            <div class="overlay"></div>
+            <div class="kaleidoscope"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label for="intensity">Intensität</label>
+            <input type="range" id="intensity" min="0" max="100" value="0">
+        </div>
+        <div class="control-group">
+            <label for="speed">Geschwindigkeit</label>
+            <input type="range" id="speed" min="1" max="10" value="3">
+        </div>
+        <div class="control-group">
+            <label for="colorShift">Farbverschiebung</label>
+            <input type="range" id="colorShift" min="0" max="360" value="0">
+        </div>
+        <button onclick="toggleTrip()">Trip starten/stoppen</button>
+        <button onclick="resetEffects()">Reset</button>
+    </div>
+
+    <script>
+        let isTripping = false;
+        let animationId;
+        let startTime = Date.now();
+        
+        const image = document.getElementById('mainImage');
+        const overlay = document.querySelector('.overlay');
+        const kaleidoscope = document.querySelector('.kaleidoscope');
+        const intensitySlider = document.getElementById('intensity');
+        const speedSlider = document.getElementById('speed');
+        const colorShiftSlider = document.getElementById('colorShift');
+
+        function getWaveValue(frequency, amplitude, offset = 0) {
+            const time = (Date.now() - startTime) / 1000;
+            const speed = parseFloat(speedSlider.value);
+            return Math.sin(time * frequency * speed + offset) * amplitude;
+        }
+
+        function applyDistortion() {
+            if (!isTripping) return;
+
+            const intensity = parseFloat(intensitySlider.value) / 100;
+            const colorShift = parseFloat(colorShiftSlider.value);
+            
+            // Grundlegende Transformationen
+            const scale = 1 + getWaveValue(0.5, 0.3 * intensity);
+            const rotation = getWaveValue(0.3, 45 * intensity);
+            const skewX = getWaveValue(0.7, 15 * intensity);
+            const skewY = getWaveValue(0.4, 10 * intensity, Math.PI / 4);
+            
+            // Filter-Effekte
+            const hueRotate = (getWaveValue(0.8, 180 * intensity) + colorShift) % 360;
+            const saturate = 1 + getWaveValue(0.6, 2 * intensity);
+            const brightness = 1 + getWaveValue(0.9, 0.5 * intensity);
+            const contrast = 1 + getWaveValue(0.4, 1 * intensity);
+            const blur = Math.abs(getWaveValue(1.2, 3 * intensity));
+            const sepia = Math.abs(getWaveValue(0.3, 0.8 * intensity));
+            
+            // Erweiterte Verzerrungen
+            const translateX = getWaveValue(1.1, 20 * intensity);
+            const translateY = getWaveValue(0.8, 15 * intensity, Math.PI / 3);
+            
+            // Anwenden der Effekte
+            image.style.transform = `
+                translate(${translateX}px, ${translateY}px)
+                scale(${scale})
+                rotate(${rotation}deg)
+                skew(${skewX}deg, ${skewY}deg)
+            `;
+            
+            image.style.filter = `
+                hue-rotate(${hueRotate}deg)
+                saturate(${saturate})
+                brightness(${brightness})
+                contrast(${contrast})
+                blur(${blur}px)
+                sepia(${sepia})
+            `;
+            
+            // Overlay-Effekte
+            overlay.style.opacity = intensity * 0.8;
+            kaleidoscope.style.opacity = intensity * 0.6;
+            
+            // Atmungs- und Schwebeffekte
+            if (intensity > 0.3) {
+                image.classList.add('breathing');
+                document.querySelector('.image-container').classList.add('floating');
+            } else {
+                image.classList.remove('breathing');
+                document.querySelector('.image-container').classList.remove('floating');
+            }
+            
+            animationId = requestAnimationFrame(applyDistortion);
+        }
+
+        function toggleTrip() {
+            isTripping = !isTripping;
+            if (isTripping) {
+                startTime = Date.now();
+                applyDistortion();
+            } else {
+                cancelAnimationFrame(animationId);
+            }
+        }
+
+        function resetEffects() {
+            isTripping = false;
+            cancelAnimationFrame(animationId);
+            
+            intensitySlider.value = 0;
+            speedSlider.value = 3;
+            colorShiftSlider.value = 0;
+            
+            image.style.transform = '';
+            image.style.filter = '';
+            overlay.style.opacity = 0;
+            kaleidoscope.style.opacity = 0;
+            
+            image.classList.remove('breathing');
+            document.querySelector('.image-container').classList.remove('floating');
+        }
+
+        // Event Listeners für Live-Updates
+        intensitySlider.addEventListener('input', () => {
+            if (isTripping) applyDistortion();
+        });
+
+        speedSlider.addEventListener('input', () => {
+            if (isTripping) applyDistortion();
+        });
+
+        colorShiftSlider.addEventListener('input', () => {
+            if (isTripping) applyDistortion();
+        });
+
+        // Automatische Intensitäts-Animation
+        function autoIntensity() {
+            if (isTripping && intensitySlider.value < 50) {
+                const currentValue = parseFloat(intensitySlider.value);
+                intensitySlider.value = Math.min(100, currentValue + 0.5);
+            }
+        }
+
+        setInterval(autoIntensity, 100);
+
+        // Tastatur-Steuerung
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    toggleTrip();
+                    break;
+                case 'r':
+                    resetEffects();
+                    break;
+                case 'ArrowUp':
+                    intensitySlider.value = Math.min(100, parseFloat(intensitySlider.value) + 10);
+                    break;
+                case 'ArrowDown':
+                    intensitySlider.value = Math.max(0, parseFloat(intensitySlider.value) - 10);
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

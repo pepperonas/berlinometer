@@ -5,12 +5,9 @@ function URLInput({ onStartScraping, isScrapingActive }) {
   const [inputMode, setInputMode] = useState('textarea') // 'textarea' or 'file'
   const [address, setAddress] = useState('')
   const [isLoadingLocations, setIsLoadingLocations] = useState(false)
-  const [locationStatus, setLocationStatus] = useState('')
+  const [locationStatus, setLocationStatus] = useState('Klicken Sie auf "📍 Mein Standort" um Ihren aktuellen Standort zu ermitteln')
 
-  // Automatische Geolocation beim Laden der Komponente
-  useEffect(() => {
-    getCurrentLocation()
-  }, [])
+  // Entferne automatische Geolocation - nur auf Benutzereingabe
 
   const getCurrentLocation = () => {
     if ('geolocation' in navigator) {
@@ -21,13 +18,71 @@ function URLInput({ onStartScraping, isScrapingActive }) {
           setLocationStatus('Position gefunden, ermittle Adresse...')
           
           try {
-            // Reverse Geocoding um Adresse zu bekommen
-            const response = await fetch(
-              `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=de`
-            )
-            const data = await response.json()
+            // Verwende Google Maps Geocoding API (wie im bewährten Kiez-Finder)
+            // Nutze einen kostenlosen Google Maps Geocoding Service
             
-            const formattedAddress = `${data.locality || data.city}, ${data.countryName || 'Deutschland'}`
+            let formattedAddress = ''
+            
+            // Versuche zuerst Google Maps Geocoding über eine kostenlose API
+            try {
+              const googleResponse = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyC7ks_lygeT7pWKRILFVVGNb-IZxdJyohQ&language=de`
+              )
+              const googleData = await googleResponse.json()
+              console.log('Google Maps API Response:', googleData)
+              
+              if (googleData.status === 'OK' && googleData.results && googleData.results.length > 0) {
+                const result = googleData.results[0]
+                console.log('Google address result:', result)
+                
+                // Verwende die formatted_address von Google (ist sehr genau)
+                formattedAddress = result.formatted_address
+                console.log('✅ Using Google Maps address:', formattedAddress)
+              }
+            } catch (googleError) {
+              console.log('Google Maps failed, trying fallback...', googleError)
+            }
+            
+            // Fallback: Nominatim (OpenStreetMap) falls Google fehlschlägt
+            if (!formattedAddress) {
+              try {
+                const nominatimResponse = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=de`
+                )
+                const nominatimData = await nominatimResponse.json()
+                console.log('Nominatim API Response:', nominatimData)
+                
+                if (nominatimData && nominatimData.address) {
+                  const addr = nominatimData.address
+                  console.log('Nominatim address parts:', addr)
+                  
+                  // Baue Adresse zusammen: Straße + Hausnummer + Stadt
+                  const street = addr.road || addr.street || addr.pedestrian
+                  const houseNumber = addr.house_number
+                  const city = addr.city || addr.town || addr.village || addr.municipality
+                  
+                  if (street) {
+                    formattedAddress = street
+                    if (houseNumber) {
+                      formattedAddress += ` ${houseNumber}`
+                    }
+                    if (city) {
+                      formattedAddress += `, ${city}`
+                    }
+                    console.log('✅ Using Nominatim address:', formattedAddress)
+                  }
+                }
+              } catch (nominatimError) {
+                console.log('Nominatim failed, using coordinates...', nominatimError)
+              }
+            }
+            
+            // Letzter Fallback: Koordinaten anzeigen
+            if (!formattedAddress) {
+              formattedAddress = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
+              console.log('✅ Using coordinates fallback:', formattedAddress)
+            }
+            
             setAddress(formattedAddress)
             setLocationStatus(`Position: ${formattedAddress}`)
           } catch (error) {
@@ -39,7 +94,7 @@ function URLInput({ onStartScraping, isScrapingActive }) {
         (error) => {
           console.error('Geolocation Fehler:', error)
           setLocationStatus('Position konnte nicht ermittelt werden')
-          setAddress('Berlin, Deutschland') // Fallback
+          // Kein automatischer Fallback mehr
         },
         {
           enableHighAccuracy: true,
@@ -49,7 +104,7 @@ function URLInput({ onStartScraping, isScrapingActive }) {
       )
     } else {
       setLocationStatus('Geolocation wird nicht unterstützt')
-      setAddress('Berlin, Deutschland') // Fallback
+      // Kein automatischer Fallback mehr
     }
   }
 
@@ -161,7 +216,7 @@ https://www.google.de/maps/place/Bierbaum+3/@52.4755215,13.4230856,16z/data=!3m1
               className="form-input"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="z.B. Musterstraße 1, Berlin"
+              placeholder="z.B. Musterstraße 1, Berlin oder klicken Sie auf 'Mein Standort'"
               disabled={isLoadingLocations}
               style={{ flex: 1 }}
             />
