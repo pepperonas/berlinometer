@@ -2,12 +2,14 @@ import { useState } from 'react'
 import URLInput from './components/URLInput'
 import ProgressBar from './components/ProgressBar'
 import ResultsDisplay from './components/ResultsDisplay'
+import AboutDialog from './components/AboutDialog'
 
 function App() {
   const [isScrapingActive, setIsScrapingActive] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentLocation, setCurrentLocation] = useState('')
   const [results, setResults] = useState([])
+  const [showAboutDialog, setShowAboutDialog] = useState(false)
 
   const handleStartScraping = async (urls) => {
     setIsScrapingActive(true)
@@ -69,7 +71,17 @@ function App() {
     <div className="min-h-screen">
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
         <div className="text-center mb-8">
-          <h1 className="mb-4">Popular Times</h1>
+          <div className="flex justify-between items-center mb-4">
+            <div></div>
+            <h1>Popular Times</h1>
+            <button 
+              className="btn btn-secondary"
+              onClick={() => setShowAboutDialog(true)}
+              style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
+            >
+              Über die App
+            </button>
+          </div>
           <p className="text-secondary">
             Analysiere die Auslastung von Google Maps Locations in Echtzeit
           </p>
@@ -93,6 +105,11 @@ function App() {
           )}
         </div>
       </div>
+      
+      <AboutDialog 
+        isOpen={showAboutDialog}
+        onClose={() => setShowAboutDialog(false)}
+      />
     </div>
   )
 }
