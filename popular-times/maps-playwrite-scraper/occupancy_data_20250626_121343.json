@@ -1,0 +1,38 @@
+[
+  {
+    "location_name": "Majestic - Café & Cocktailbar",
+    "address": "Karl-Marx-Straße 60, 12043 Berlin",
+    "rating": null,
+    "live_occupancy": "Um 04 Uhr zu 32 % ausgelastet.",
+    "is_live_data": false,
+    "url": "https://www.google.de/maps/place/Majestic+-+Caf%C3%A9+%26+Cocktailbar/@52.4836184,13.426421,16z/data=!4m10!1m2!2m1!1sbar!3m6!1s0x47a84f6e51648823:0x6986bef12d8acdb!8m2!3d52.4827079!4d13.431962!15sCgNiYXJaBSIDYmFykgEDYmFyqgE0EAEqByIDYmFyKAUyHhABIhr1YsOeeuz9pPLCXbmL2X-3_jbHIKEgInT2-zIHEAIiA2JhcuABAA!16s%2Fg%2F11trlr2rt6!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MDYyMy4yIKXMDSoASAFQAw%3D%3D",
+    "timestamp": "2025-06-26T12:13:00.503752"
+  },
+  {
+    "location_name": "Yorcks BAR",
+    "address": "Yorckstraße 81, 10965 Berlin",
+    "rating": null,
+    "live_occupancy": "Derzeit zu 3 % ausgelastet; normal sind 12 %.",
+    "is_live_data": true,
+    "url": "https://www.google.de/maps/place/Yorcks+BAR/@52.49323,13.3746128,16z/data=!3m1!5s0x47a8502f3aac12f1:0x4c9ea32304684d8c!4m13!1m5!2m4!1sbars!5m1!2e1!6e5!3m6!1s0x47a8502f25a9badb:0x5f5e56cc135e0bd8!8m2!3d52.49323!4d13.38414!15sCgRiYXJzWgYiBGJhcnOSAQNiYXKqATYQASoIIgRiYXJzKAUyHhABIhrCnwOeg471m0unc4LJtFstzTvf0V5kZO59mjIIEAIiBGJhcnPgAQA!16s%2Fg%2F1q69jvz2f!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MDYyMy4yIKXMDSoASAFQAw%3D%3D",
+    "timestamp": "2025-06-26T12:13:14.600443"
+  },
+  {
+    "location_name": "Bierbaum 3",
+    "address": "Schillerpromenade 31, 12049 Berlin",
+    "rating": null,
+    "live_occupancy": "Derzeit zu 2 % ausgelastet; normal sind 8 %.",
+    "is_live_data": true,
+    "url": "https://www.google.de/maps/place/Bierbaum+3/@52.4755215,13.4230856,16z/data=!3m1!4b1!4m6!3m5!1s0x47a84f9600b53623:0x10ecc057c123abc2!8m2!3d52.4755215!4d13.4230856!16s%2Fg%2F1232zv_2g!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MDYyMy4yIKXMDSoASAFQAw%3D%3D",
+    "timestamp": "2025-06-26T12:13:28.891323"
+  },
+  {
+    "location_name": "Bierbar Berlin",
+    "address": "Hermannplatz 9, 10967 Berlin",
+    "rating": null,
+    "live_occupancy": "Um 06 Uhr zu 0 % ausgelastet.",
+    "is_live_data": false,
+    "url": "https://www.google.de/maps/place/Bierbar+Berlin/@52.4836182,13.4264209,16z/data=!4m13!1m5!2m4!1sbar!5m1!2e1!6e5!3m6!1s0x47a84fb773f9243f:0x91f1cf28d4ed9663!8m2!3d52.4874219!4d13.4255495!15sCgNiYXJaBSIDYmFykgEDYmFyqgE0EAEqByIDYmFyKAUyHhABIhr1YsOeeuz9pPLCXbmL2X-3_jbHIKEgInT2-zIHEAIiA2JhcuABAA!16s%2Fg%2F11d_txpnts!5m1!1e4?entry=ttu&g_ep=EgoyMDI1MDYyMy4yIKXMDSoASAFQAw%3D%3D",
+    "timestamp": "2025-06-26T12:13:43.455204"
+  }
+]

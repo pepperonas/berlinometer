@@ -1,0 +1,9 @@
+/* App-spezifische Styles */
+.font-weight-500 {
+  font-weight: 500;
+}
+
+/* Zusätzliche Utility-Klassen für die App */
+.mr-2 {
+  margin-right: var(--spacing-2);
+}
