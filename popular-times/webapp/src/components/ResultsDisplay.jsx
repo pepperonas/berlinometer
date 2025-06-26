@@ -44,23 +44,88 @@ function ResultsDisplay({ results }) {
     return null
   }
 
+  const extractPercentageValues = (occupancyText) => {
+    if (!occupancyText) return { current: null, usual: null }
+    
+    // Verschiedene Muster für Prozentangaben
+    const patterns = [
+      // "Derzeit zu 32 % ausgelastet; normal sind 65 %."
+      /derzeit\s+zu\s+(\d+)\s*%.*?normal\s+sind\s+(\d+)\s*%/i,
+      // "Derzeit 50% (gewöhnlich 30%)"
+      /derzeit\s+(\d+)%.*?gewöhnlich\s+(\d+)%/i,
+      // "Currently 50% (usually 30%)"
+      /currently\s+(\d+)%.*?usually\s+(\d+)%/i,
+      // "50% busy (typical: 30%)"
+      /(\d+)%.*?typical:?\s*(\d+)%/i,
+      // "50% (normal: 30%)"
+      /(\d+)%.*?normal:?\s*(\d+)%/i,
+      // Weitere deutsche Muster
+      /aktuell\s+(\d+)%.*?üblich\s+(\d+)%/i,
+      /(\d+)%.*?normalerweise\s+(\d+)%/i,
+      // Zusätzliche Muster
+      /zu\s+(\d+)\s*%\s+ausgelastet.*?normal.*?(\d+)\s*%/i
+    ]
+    
+    for (const pattern of patterns) {
+      const match = occupancyText.match(pattern)
+      if (match) {
+        const current = parseInt(match[1])
+        const usual = parseInt(match[2])
+        console.log('📊 Extracted percentages:', { current, usual, text: occupancyText })
+        return { current, usual }
+      }
+    }
+    
+    return { current: null, usual: null }
+  }
+
   const compareToUsual = (occupancyText) => {
     if (!occupancyText) return 'unknown'
     
     const text = occupancyText.toLowerCase()
+    const { current, usual } = extractPercentageValues(occupancyText)
     
-    // Check for explicit comparison indicators
-    if (text.includes('derzeit mehr') || text.includes('überdurchschnittlich') || 
-        text.includes('höher als gewöhnlich') || text.includes('mehr als üblich')) {
-      return 'higher' // Green
-    } else if (text.includes('derzeit weniger') || text.includes('unterdurchschnittlich') || 
-               text.includes('niedriger als gewöhnlich') || text.includes('weniger als üblich')) {
-      return 'lower' // Red (unchanged, already red)
-    } else if (text.includes('wie gewöhnlich') || text.includes('normal') || 
-               text.includes('durchschnittlich') || text.includes('üblich')) {
-      return 'normal' // Yellow
+    // Wenn wir Prozent-Werte extrahieren können, verwende numerischen Vergleich
+    if (current !== null && usual !== null) {
+      const difference = current - usual
+      
+      if (difference > 5) {
+        console.log('🟢 Numeric analysis:', occupancyText, `→ higher (${current}% vs ${usual}% = +${difference}%)`)
+        return 'higher' // Grün: Aktuelle Auslastung > 5% über gewöhnlich
+      } else if (Math.abs(difference) <= 5) {
+        console.log('🟡 Numeric analysis:', occupancyText, `→ normal (${current}% vs ${usual}% = ${difference >= 0 ? '+' : ''}${difference}%)`)
+        return 'normal' // Gelb: Innerhalb ±5% der gewöhnlichen Auslastung
+      } else {
+        console.log('🔴 Numeric analysis:', occupancyText, `→ lower (${current}% vs ${usual}% = ${difference}%)`)
+        return 'lower' // Rot: Aktuelle Auslastung < 5% unter gewöhnlich
+      }
     }
     
+    // Fallback: Textbasierte Analyse für Fälle ohne klare Prozent-Werte
+    if (text.includes('derzeit mehr') || text.includes('mehr als gewöhnlich') || 
+        text.includes('mehr als üblich') || text.includes('überdurchschnittlich voll') ||
+        text.includes('stärker frequentiert') || text.includes('busier than usual') ||
+        text.includes('mehr besucht') || text.includes('höher als gewöhnlich')) {
+      console.log('🟢 Text analysis:', occupancyText, '→ higher (green)')
+      return 'higher'
+    }
+    
+    if (text.includes('derzeit weniger') || text.includes('weniger als gewöhnlich') || 
+        text.includes('weniger als üblich') || text.includes('unterdurchschnittlich') ||
+        text.includes('weniger besucht') || text.includes('ruhiger als') ||
+        text.includes('less busy than usual') || text.includes('niedriger als gewöhnlich')) {
+      console.log('🔴 Text analysis:', occupancyText, '→ lower (red)')
+      return 'lower'
+    }
+    
+    if (text.includes('wie gewöhnlich') || text.includes('wie üblich') || 
+        text.includes('usual for') || text.includes('normal für') ||
+        text.includes('typisch für') || text.includes('as busy as usual')) {
+      console.log('🟡 Text analysis:', occupancyText, '→ normal (yellow)')
+      return 'normal'
+    }
+    
+    console.log('🔍 Analysis result:', occupancyText, '→ unknown (default red)')
     return 'unknown'
   }
 
