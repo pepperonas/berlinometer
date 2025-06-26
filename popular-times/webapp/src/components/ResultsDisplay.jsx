@@ -20,24 +20,101 @@ function ResultsDisplay({ results }) {
     return <span className="status status-success">📊 Historisch</span>
   }
 
+  const parseOccupancyLevel = (occupancyText) => {
+    if (!occupancyText) return null
+    
+    // Extract percentage or level indicators from text
+    const percentMatch = occupancyText.match(/(\d+)\s*%/)
+    if (percentMatch) {
+      return parseInt(percentMatch[1])
+    }
+    
+    // Check for German keywords indicating occupancy levels
+    const text = occupancyText.toLowerCase()
+    if (text.includes('sehr beliebt') || text.includes('sehr voll') || text.includes('überfüllt')) {
+      return 90 // Very busy
+    } else if (text.includes('beliebt') || text.includes('voll') || text.includes('geschäftig')) {
+      return 70 // Busy
+    } else if (text.includes('mäßig') || text.includes('mittlerweile') || text.includes('normal')) {
+      return 50 // Moderate
+    } else if (text.includes('ruhig') || text.includes('wenig') || text.includes('leer')) {
+      return 20 // Quiet
+    }
+    
+    return null
+  }
+
+  const compareToUsual = (occupancyText) => {
+    if (!occupancyText) return 'unknown'
+    
+    const text = occupancyText.toLowerCase()
+    
+    // Check for explicit comparison indicators
+    if (text.includes('derzeit mehr') || text.includes('überdurchschnittlich') || 
+        text.includes('höher als gewöhnlich') || text.includes('mehr als üblich')) {
+      return 'higher' // Green
+    } else if (text.includes('derzeit weniger') || text.includes('unterdurchschnittlich') || 
+               text.includes('niedriger als gewöhnlich') || text.includes('weniger als üblich')) {
+      return 'lower' // Red (unchanged, already red)
+    } else if (text.includes('wie gewöhnlich') || text.includes('normal') || 
+               text.includes('durchschnittlich') || text.includes('üblich')) {
+      return 'normal' // Yellow
+    }
+    
+    return 'unknown'
+  }
+
   const getOccupancyColor = (occupancy, isLive) => {
     if (!occupancy) return 'rgba(156, 163, 175, 0.1)'
     
     if (isLive) {
-      return 'rgba(225, 97, 98, 0.1)'  // Red for live data
+      const comparison = compareToUsual(occupancy)
+      switch (comparison) {
+        case 'higher':
+          return 'rgba(34, 197, 94, 0.15)' // Green - more than usual
+        case 'normal':
+          return 'rgba(234, 179, 8, 0.15)' // Yellow - same as usual
+        case 'lower':
+        default:
+          return 'rgba(225, 97, 98, 0.15)' // Red - less than usual or unknown
+      }
     }
     
-    return 'rgba(156, 182, 143, 0.1)'  // Green for historical data
+    return 'rgba(156, 182, 143, 0.1)' // Default for historical data
   }
 
   const getOccupancyBorderColor = (occupancy, isLive) => {
     if (!occupancy) return 'rgba(156, 163, 175, 0.2)'
     
     if (isLive) {
-      return 'rgba(225, 97, 98, 0.2)'
+      const comparison = compareToUsual(occupancy)
+      switch (comparison) {
+        case 'higher':
+          return 'rgba(34, 197, 94, 0.3)' // Green border
+        case 'normal':
+          return 'rgba(234, 179, 8, 0.3)' // Yellow border
+        case 'lower':
+        default:
+          return 'rgba(225, 97, 98, 0.3)' // Red border
+      }
     }
     
     return 'rgba(156, 182, 143, 0.2)'
+  }
+
+  const getOccupancyIcon = (occupancy, isLive) => {
+    if (!isLive) return '📊'
+    
+    const comparison = compareToUsual(occupancy)
+    switch (comparison) {
+      case 'higher':
+        return '🟢' // Green circle - more than usual
+      case 'normal':
+        return '🟡' // Yellow circle - same as usual
+      case 'lower':
+      default:
+        return '🔴' // Red circle - less than usual or unknown
+    }
   }
 
   const exportToJson = () => {
@@ -152,7 +229,7 @@ function ResultsDisplay({ results }) {
                 }}
               >
                 <div className="font-weight-500 text-sm mb-1">
-                  {result.is_live_data ? '🔴 Live-Auslastung:' : '📊 Auslastungsdaten:'}
+                  {result.is_live_data ? `${getOccupancyIcon(result.live_occupancy, result.is_live_data)} Live-Auslastung:` : '📊 Auslastungsdaten:'}
                 </div>
                 <div className="text-sm">
                   {result.live_occupancy}
