@@ -1,15 +1,12 @@
 {
-  "name": "mrx3k1",
+  "name": "google-maps-occupancy-scraper",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "homepage": "/weather",
+  "description": "Scraper für Google Maps Auslastungsdaten von Bars",
+  "main": "google_maps_scraper.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node google_maps_scraper.js"
   },
-  "private": true,
   "dependencies": {
-    "lucide-react": "^0.487.0",
-    "recharts": "^2.15.3"
+    "playwright": "^1.40.0"
   }
 }

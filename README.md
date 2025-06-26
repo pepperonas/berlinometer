@@ -1,67 +1,41 @@
-# RA Events Crawler
+# Google Maps Auslastungsdaten-Scraper
 
-Ein moderner Web-Crawler für Resident Advisor Events, entwickelt mit React, Material UI und Node.js/Express.
+Dieses Skript ermöglicht das automatisierte Abrufen und Speichern von Echtzeit-Auslastungsdaten von Bars in einem 5-km-Radius um die Flughafenstraße 24, 12053 Neukölln, Berlin.
 
-## Struktur
+## Installation
 
-Das Projekt besteht aus zwei Hauptteilen:
-
-- **Backend**: Ein Node.js/Express-Server, der als Proxy fungiert und Events von Resident Advisor crawlt.
-- **Frontend**: Eine React-Anwendung mit Material UI für die Benutzeroberfläche.
-
-## Installation und Start
-
-### Voraussetzungen
-
-- Node.js (v14 oder höher)
-- npm (v6 oder höher)
-
-### Backend
+1. Stelle sicher, dass Node.js (Version 14 oder höher) installiert ist
+2. Installiere die Abhängigkeiten:
 
 ```bash
-cd backend
 npm install
+```
+
+3. Installiere die Playwright-Browser:
+
+```bash
+npx playwright install chromium
+```
+
+## Ausführung
+
+```bash
 npm start
 ```
 
-Der Backend-Server läuft dann auf http://localhost:5022
+## Ergebnisse
 
-### Frontend
+Die Ergebnisse werden in zwei JSON-Dateien im `~/Downloads`-Verzeichnis gespeichert:
+- `bars_with_occupancy.json`: Bars mit Auslastungsdaten
+- `bars_without_occupancy.json`: Bars ohne Auslastungsdaten
 
-```bash
-cd frontend
-npm install
-npm start
-```
+## Fehlerbehandlung
 
-Die React-App läuft dann auf http://localhost:3000
-
-## Features
-
-- Crawlt Events von Resident Advisor Berlin und anderen Städten
-- Filtert Events nach Datum, Genre und Venue
-- Unterstützt Pagination und "Alles laden" Funktion
-- Exportiert Daten als JSON oder CSV
-- Reagiert auf Mobilgeräte (Responsive Design)
-- Material Design Oberfläche mit dem Farbschema #2C2E3B
-
-## Beispiel-URLs
-
-Du kannst verschiedene RA-Regionen und Kategorien crawlen:
-
-- Berlin: `https://de.ra.co/events/de/berlin`
-- Hamburg: `https://de.ra.co/events/de/hamburg`
-- München: `https://de.ra.co/events/de/munich`
-- Köln: `https://de.ra.co/events/de/cologne`
-- Bestimmtes Genre: `https://de.ra.co/events/de/berlin?filters=genres.techno`
-- Bestimmter Zeitraum: `https://de.ra.co/events/de/berlin?week=2025-05-01`
+- Screenshots werden im Projektordner gespeichert zur Analyse
+- Das Skript wartet automatisch zwischen den Klicks, um Stabilität zu gewährleisten
+- Edge-Cases wie dauerhaft geschlossene Bars werden entsprechend behandelt
 
 ## Hinweise
 
-- Bitte beachte die Nutzungsbedingungen von Resident Advisor
-- Übermäßige Anfragen können zu IP-Bans führen
-- Das Crawling sollte mit angemessenen Pausen zwischen den Anfragen erfolgen
-
-## Lizenz
-
-MIT
+- VPN kann standortbasierte Ergebnisse beeinflussen
+- Google Maps-Spracheinstellungen können die Ergebnisse beeinflussen (DE bevorzugt)
