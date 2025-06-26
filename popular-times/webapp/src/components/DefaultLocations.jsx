@@ -1,0 +1,205 @@
+import { useState, useEffect } from 'react'
+
+function DefaultLocations({ onStartScraping, isScrapingActive }) {
+  const [locations, setLocations] = useState([])
+  const [selectedLocations, setSelectedLocations] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    fetchDefaultLocations()
+  }, [])
+
+  const fetchDefaultLocations = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5044'}/default-locations`)
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch locations: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      setLocations(data.locations || [])
+      // Select all locations by default
+      setSelectedLocations(data.locations?.map(loc => loc.url) || [])
+    } catch (err) {
+      console.error('Error fetching default locations:', err)
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleToggleLocation = (url) => {
+    setSelectedLocations(prev => {
+      if (prev.includes(url)) {
+        return prev.filter(u => u !== url)
+      } else {
+        return [...prev, url]
+      }
+    })
+  }
+
+  const handleSelectAll = () => {
+    setSelectedLocations(locations.map(loc => loc.url))
+  }
+
+  const handleSelectNone = () => {
+    setSelectedLocations([])
+  }
+
+  const handleStartScraping = () => {
+    if (selectedLocations.length === 0) {
+      alert('Bitte wählen Sie mindestens eine Location aus')
+      return
+    }
+    onStartScraping(selectedLocations)
+  }
+
+  if (isLoading) {
+    return (
+      <div className="card">
+        <div className="text-center p-8">
+          <div className="loading mb-4"></div>
+          <p>Lade Standard-Locations...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="card">
+        <div className="text-center p-8">
+          <p className="text-accent-red mb-4">❌ Fehler beim Laden der Locations</p>
+          <p className="text-secondary">{error}</p>
+          <button 
+            className="btn btn-secondary mt-4"
+            onClick={fetchDefaultLocations}
+          >
+            Erneut versuchen
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <h3 className="card-title">Standard Locations</h3>
+        <p className="card-description">
+          Wählen Sie die Locations aus, deren Auslastung Sie analysieren möchten
+        </p>
+      </div>
+
+      <div className="p-4">
+        <div className="flex gap-2 mb-4">
+          <button 
+            className="btn btn-sm btn-outline"
+            onClick={handleSelectAll}
+          >
+            Alle auswählen
+          </button>
+          <button 
+            className="btn btn-sm btn-outline"
+            onClick={handleSelectNone}
+          >
+            Keine auswählen
+          </button>
+          <div className="ml-auto text-sm text-secondary">
+            {selectedLocations.length} von {locations.length} ausgewählt
+          </div>
+        </div>
+
+        <div style={{ 
+          maxHeight: '400px', 
+          overflowY: 'auto',
+          border: '1px solid var(--gray-3)',
+          borderRadius: 'var(--radius)',
+          backgroundColor: 'var(--background-darker)'
+        }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead style={{ 
+              position: 'sticky', 
+              top: 0, 
+              backgroundColor: 'var(--background)',
+              borderBottom: '2px solid var(--gray-3)'
+            }}>
+              <tr>
+                <th style={{ padding: '12px', textAlign: 'left', width: '40px' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedLocations.length === locations.length && locations.length > 0}
+                    onChange={(e) => e.target.checked ? handleSelectAll() : handleSelectNone()}
+                  />
+                </th>
+                <th style={{ padding: '12px', textAlign: 'left' }}>Location</th>
+                <th style={{ padding: '12px', textAlign: 'left' }}>URL</th>
+              </tr>
+            </thead>
+            <tbody>
+              {locations.map((location, index) => (
+                <tr 
+                  key={location.url}
+                  style={{ 
+                    borderBottom: '1px solid var(--gray-2)',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s',
+                    backgroundColor: selectedLocations.includes(location.url) ? 'rgba(156, 182, 143, 0.1)' : 'transparent'
+                  }}
+                  onClick={() => handleToggleLocation(location.url)}
+                >
+                  <td style={{ padding: '12px' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedLocations.includes(location.url)}
+                      onChange={() => handleToggleLocation(location.url)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </td>
+                  <td style={{ padding: '12px', fontWeight: '500' }}>
+                    {location.name}
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <a 
+                      href={location.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-accent-green hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{ fontSize: '0.875rem' }}
+                    >
+                      Google Maps öffnen →
+                    </a>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex justify-end mt-4">
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleStartScraping}
+            disabled={isScrapingActive || selectedLocations.length === 0}
+          >
+            {isScrapingActive ? (
+              <>
+                <div className="loading mr-2"></div>
+                Scraping läuft...
+              </>
+            ) : (
+              `Scraping starten (${selectedLocations.length} Locations)`
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default DefaultLocations

@@ -127,6 +127,16 @@ header p {
     transform: scale(1.05);
 }
 
+.btn-green {
+    background-color: #4ade80;
+    color: white;
+}
+
+.btn-green:hover {
+    background-color: #22c55e;
+    transform: scale(1.05);
+}
+
 @media (max-width: 768px) {
     body {
         padding: 1rem;

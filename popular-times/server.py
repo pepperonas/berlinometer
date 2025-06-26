@@ -798,12 +798,14 @@ async def process_urls_stream(urls):
     total = len(urls)
     results = []
     
+    # Initial progress
     yield create_progress_response(0, total)
     
     for i, url in enumerate(urls):
         try:
-            # Send progress update
-            yield create_progress_response(i, total, f"Processing location {i+1}/{total}")
+            # Send progress update before processing
+            location_name = extract_name_from_url(url) or f"Location {i+1}"
+            yield create_progress_response(i, total, f"Verarbeite {location_name}")
             
             # Scrape with enhanced retry mechanism
             result = await scrape_live_occupancy_with_retries(url)
@@ -811,9 +813,6 @@ async def process_urls_stream(urls):
             
             # Send the result
             yield create_result_response(result)
-            
-            # Update progress
-            yield create_progress_response(i + 1, total)
             
             # Variable delay between requests
             if i < total - 1:
@@ -835,6 +834,8 @@ async def process_urls_stream(urls):
             results.append(error_result)
             yield create_result_response(error_result)
     
+    # Final progress update
+    yield create_progress_response(total, total, "Alle Locations abgeschlossen")
     yield create_complete_response()
 
 @app.route('/scrape', methods=['POST'])
@@ -878,6 +879,8 @@ def scrape_locations():
                         try:
                             response = loop.run_until_complete(async_gen.__anext__())
                             yield response
+                            # Force flush for immediate transmission
+                            sys.stdout.flush()
                         except StopAsyncIteration:
                             break
                 except Exception as e:
@@ -892,10 +895,11 @@ def scrape_locations():
         
         return Response(
             generate_stream(),
-            mimetype='application/json',
+            mimetype='text/plain',
             headers={
                 'Cache-Control': 'no-cache',
                 'Connection': 'keep-alive',
+                'X-Accel-Buffering': 'no',  # Disable nginx buffering
             }
         )
         
@@ -998,6 +1002,42 @@ async def run_gmaps_location_finder_script(address):
     except Exception as e:
         logger.error(f"❌ Error running gmaps-location-finder script: {e}")
         return []
+
+@app.route('/default-locations', methods=['GET'])
+def get_default_locations():
+    """Endpoint to get default locations from CSV file"""
+    try:
+        csv_path = os.path.join(os.path.dirname(__file__), 'default-locations.csv')
+        locations = []
+        
+        if os.path.exists(csv_path):
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                # Skip header
+                next(f)
+                for line in f:
+                    if line.strip():
+                        parts = line.strip().split(';')
+                        if len(parts) >= 2:
+                            # Remove quotes from name and URL
+                            name = parts[0].strip('"')
+                            url = parts[1].strip('"')
+                            locations.append({
+                                'name': name,
+                                'url': url
+                            })
+        
+        logger.info(f"Loaded {len(locations)} default locations from CSV")
+        
+        return jsonify({
+            'success': True,
+            'locations': locations,
+            'count': len(locations),
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Error loading default locations: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/find-locations', methods=['POST'])
 def find_locations():

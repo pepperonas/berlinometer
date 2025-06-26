@@ -6,35 +6,17 @@ function URLInput({ onStartScraping, isScrapingActive }) {
   const [address, setAddress] = useState('')
   const [isLoadingLocations, setIsLoadingLocations] = useState(false)
   const [locationStatus, setLocationStatus] = useState('Klicken Sie auf "📍 Mein Standort" um Ihren aktuellen Standort zu ermitteln')
-  const [debugLogs, setDebugLogs] = useState([])
-  const [showDebugCard, setShowDebugCard] = useState(false)
-
-  // Debug-Funktion für Logs
-  const addLog = (message, type = 'info') => {
-    const timestamp = new Date().toLocaleTimeString()
-    const newLog = {
-      id: Date.now(),
-      timestamp,
-      message,
-      type // 'info', 'success', 'warning', 'error'
-    }
-    setDebugLogs(prev => [newLog, ...prev.slice(0, 49)]) // Keep only last 50 logs
-  }
-
-  const clearLogs = () => {
-    setDebugLogs([])
-  }
 
   // Entferne automatische Geolocation - nur auf Benutzereingabe
 
   const getCurrentLocation = () => {
-    addLog('🔍 Geolocation wird gestartet...', 'info')
+    // Geolocation wird gestartet...
     if ('geolocation' in navigator) {
       setLocationStatus('Ermittle Position...')
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords
-          addLog(`📍 Position ermittelt: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`, 'success')
+          // Position ermittelt
           setLocationStatus('Position gefunden, ermittle Adresse...')
           
           try {
@@ -45,53 +27,53 @@ function URLInput({ onStartScraping, isScrapingActive }) {
             
             // Versuche zuerst Google Maps Geocoding über eine kostenlose API
             try {
-              addLog('🌐 Rufe Google Maps Geocoding API auf...', 'info')
+              // Rufe Google Maps Geocoding API auf...
               const googleResponse = await fetch(
                 `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=AIzaSyC7ks_lygeT7pWKRILFVVGNb-IZxdJyohQ&language=de`
               )
               const googleData = await googleResponse.json()
               console.log('Google Maps API Response:', googleData)
-              addLog(`📊 Google API Status: ${googleData.status}`, googleData.status === 'OK' ? 'success' : 'warning')
+              // Google API Status
               
               if (googleData.status === 'OK' && googleData.results && googleData.results.length > 0) {
                 const result = googleData.results[0]
                 console.log('Google address result:', result)
-                addLog(`📍 Google API: ${googleData.results.length} Ergebnisse gefunden`, 'success')
+                // Google API: Ergebnisse gefunden
                 
                 // Verwende die formatted_address von Google (ist sehr genau)
                 formattedAddress = result.formatted_address
                 console.log('✅ Using Google Maps address:', formattedAddress)
-                addLog(`✅ Google Adresse: ${formattedAddress}`, 'success')
+                // Google Adresse gefunden
               } else {
-                addLog(`⚠️ Google API Fehler: ${googleData.status} - ${googleData.error_message || 'Keine Ergebnisse'}`, 'warning')
+                // Google API Fehler
               }
             } catch (googleError) {
               console.log('Google Maps failed, trying fallback...', googleError)
-              addLog(`❌ Google API Fehler: ${googleError.message}`, 'error')
+              console.log('Google Maps failed, trying fallback...', googleError)
             }
             
             // Fallback: Nominatim (OpenStreetMap) falls Google fehlschlägt
             if (!formattedAddress) {
               try {
-                addLog('🌐 Rufe Nominatim (OpenStreetMap) API auf...', 'info')
+                // Rufe Nominatim (OpenStreetMap) API auf...
                 const nominatimResponse = await fetch(
                   `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=de`
                 )
                 const nominatimData = await nominatimResponse.json()
                 console.log('Nominatim API Response:', nominatimData)
-                addLog(`📊 Nominatim API Response erhalten`, 'success')
+                // Nominatim API Response erhalten
                 
                 if (nominatimData && nominatimData.address) {
                   const addr = nominatimData.address
                   console.log('Nominatim address parts:', addr)
-                  addLog(`📍 Nominatim Adressteile: ${Object.keys(addr).join(', ')}`, 'info')
+                  // Nominatim Adressteile
                   
                   // Baue Adresse zusammen: Straße + Hausnummer + Stadt
                   const street = addr.road || addr.street || addr.pedestrian
                   const houseNumber = addr.house_number
                   const city = addr.city || addr.town || addr.village || addr.municipality
                   
-                  addLog(`🏠 Straße: ${street || 'keine'}, Hausnummer: ${houseNumber || 'keine'}, Stadt: ${city || 'keine'}`, 'info')
+                  // Adressteile gefunden
                   
                   if (street) {
                     formattedAddress = street
@@ -102,16 +84,16 @@ function URLInput({ onStartScraping, isScrapingActive }) {
                       formattedAddress += `, ${city}`
                     }
                     console.log('✅ Using Nominatim address:', formattedAddress)
-                    addLog(`✅ Nominatim Adresse: ${formattedAddress}`, 'success')
+                    // Nominatim Adresse gefunden
                   } else {
-                    addLog(`⚠️ Nominatim: Keine Straße gefunden`, 'warning')
+                    // Nominatim: Keine Straße gefunden
                   }
                 } else {
-                  addLog(`⚠️ Nominatim: Keine Adressdaten erhalten`, 'warning')
+                  // Nominatim: Keine Adressdaten erhalten
                 }
               } catch (nominatimError) {
                 console.log('Nominatim failed, using coordinates...', nominatimError)
-                addLog(`❌ Nominatim API Fehler: ${nominatimError.message}`, 'error')
+                console.log('Nominatim failed, using coordinates...', nominatimError)
               }
             }
             
@@ -119,22 +101,22 @@ function URLInput({ onStartScraping, isScrapingActive }) {
             if (!formattedAddress) {
               formattedAddress = `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`
               console.log('✅ Using coordinates fallback:', formattedAddress)
-              addLog(`🎯 Fallback: Verwende Koordinaten als Adresse`, 'warning')
+              // Fallback: Verwende Koordinaten als Adresse
             }
             
             setAddress(formattedAddress)
             setLocationStatus(`Position: ${formattedAddress}`)
-            addLog(`✅ Geolocation abgeschlossen: ${formattedAddress}`, 'success')
+            // Geolocation abgeschlossen
           } catch (error) {
             console.error('Fehler beim Ermitteln der Adresse:', error)
-            addLog(`❌ Fehler beim Ermitteln der Adresse: ${error.message}`, 'error')
+            console.error('Fehler beim Ermitteln der Adresse:', error)
             setLocationStatus('Position gefunden, aber Adresse konnte nicht ermittelt werden')
             setAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
           }
         },
         (error) => {
           console.error('Geolocation Fehler:', error)
-          addLog(`❌ Geolocation Fehler: ${error.message}`, 'error')
+          console.error('Geolocation Fehler:', error)
           setLocationStatus('Position konnte nicht ermittelt werden')
           // Kein automatischer Fallback mehr
         },
@@ -153,17 +135,17 @@ function URLInput({ onStartScraping, isScrapingActive }) {
   const findNearbyLocations = async () => {
     if (!address.trim()) {
       alert('Bitte geben Sie eine Adresse ein')
-      addLog('⚠️ Keine Adresse eingegeben', 'warning')
+      alert('Bitte geben Sie eine Adresse ein')
       return
     }
 
-    addLog(`🔍 Starte Location-Suche für: ${address.trim()}`, 'info')
+    // Starte Location-Suche
     setIsLoadingLocations(true)
     setLocationStatus('Suche nach nahegelegenen Locations...')
 
     try {
       const apiUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:5044'}/find-locations`
-      addLog(`🌐 API Aufruf: ${apiUrl}`, 'info')
+      // API Aufruf
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -173,34 +155,34 @@ function URLInput({ onStartScraping, isScrapingActive }) {
         body: JSON.stringify({ address: address.trim() })
       })
 
-      addLog(`📊 API Response Status: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error')
+      // API Response erhalten
 
       if (!response.ok) {
         throw new Error(`API-Aufruf fehlgeschlagen: ${response.status} ${response.statusText}`)
       }
 
       const data = await response.json()
-      addLog(`📍 API Response erhalten: ${JSON.stringify(data, null, 2).substring(0, 200)}...`, 'info')
+      // API Response erhalten
       
       if (data.urls && data.urls.length > 0) {
         setUrls(data.urls.join('\n'))
         setLocationStatus(`${data.urls.length} Locations gefunden!`)
         setInputMode('textarea')
-        addLog(`✅ ${data.urls.length} Locations erfolgreich geladen`, 'success')
-        addLog(`🔗 URLs: ${data.urls.slice(0, 3).join(', ')}${data.urls.length > 3 ? '...' : ''}`, 'info')
+        // Locations erfolgreich geladen
+        // URLs geladen
       } else {
         setLocationStatus('Keine Locations gefunden')
-        addLog(`⚠️ Keine Locations in der Nähe gefunden`, 'warning')
+        // Keine Locations gefunden
         alert('Keine Locations in der Nähe gefunden. Versuchen Sie eine andere Adresse.')
       }
     } catch (error) {
       console.error('Fehler beim Suchen der Locations:', error)
-      addLog(`❌ Location-Finder Fehler: ${error.message}`, 'error')
+      console.error('Fehler beim Suchen der Locations:', error)
       setLocationStatus('Fehler beim Suchen der Locations')
       alert('Fehler beim Suchen der Locations. Bitte versuchen Sie es später erneut.')
     } finally {
       setIsLoadingLocations(false)
-      addLog(`🏁 Location-Suche beendet`, 'info')
+      // Location-Suche beendet
     }
   }
 
@@ -395,89 +377,6 @@ https://www.google.de/maps/place/Bierbaum+3/@52.4755215,13.4230856,16z/data=!3m1
           </div>
         </div>
       </form>
-
-      {/* Debug-Card */}
-      <div className="card" style={{ marginTop: 'var(--spacing-6)' }}>
-        <div className="card-header" style={{ paddingBottom: '0.5rem' }}>
-          <div className="flex justify-between items-center">
-            <div>
-              <h4 style={{ fontSize: '1rem', margin: 0 }}>🔧 Debug-Protokoll</h4>
-              <p style={{ fontSize: '0.875rem', margin: '0.25rem 0 0 0', color: 'var(--text-secondary)' }}>
-                Live-Debugging der Geolocation und Location-Finder APIs
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="btn btn-sm btn-outline"
-                onClick={() => setShowDebugCard(!showDebugCard)}
-              >
-                {showDebugCard ? '🔽 Ausblenden' : '🔼 Einblenden'}
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm btn-secondary"
-                onClick={clearLogs}
-              >
-                🗑️ Leeren
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        {showDebugCard && (
-          <div style={{ maxHeight: '300px', overflowY: 'auto', padding: 'var(--spacing-4)' }}>
-            {debugLogs.length === 0 ? (
-              <div className="text-center text-secondary">
-                <p>Keine Debug-Logs vorhanden</p>
-                <p className="text-xs mt-2">Klicken Sie auf "📍 Mein Standort" oder "🔍 Locations finden" um Debug-Informationen zu sehen</p>
-              </div>
-            ) : (
-              <div className="debug-logs">
-                {debugLogs.map((log) => (
-                  <div 
-                    key={log.id} 
-                    className={`debug-log debug-log-${log.type}`}
-                    style={{
-                      padding: '0.5rem',
-                      marginBottom: '0.5rem',
-                      borderRadius: 'var(--radius)',
-                      border: '1px solid',
-                      borderColor: log.type === 'error' ? 'var(--accent-red)' : 
-                                 log.type === 'warning' ? '#ff9800' :
-                                 log.type === 'success' ? 'var(--accent-green)' : 'rgba(255, 255, 255, 0.2)',
-                      backgroundColor: log.type === 'error' ? 'rgba(225, 97, 98, 0.1)' : 
-                                     log.type === 'warning' ? 'rgba(255, 152, 0, 0.1)' :
-                                     log.type === 'success' ? 'rgba(156, 182, 143, 0.1)' : 'rgba(255, 255, 255, 0.05)'
-                    }}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div style={{ flex: 1, wordBreak: 'break-word' }}>
-                        <span style={{ 
-                          color: log.type === 'error' ? 'var(--accent-red)' : 
-                               log.type === 'warning' ? '#ff9800' :
-                               log.type === 'success' ? 'var(--accent-green)' : 'var(--text-primary)',
-                          fontWeight: '500'
-                        }}>
-                          {log.message}
-                        </span>
-                      </div>
-                      <span style={{ 
-                        color: 'var(--text-secondary)', 
-                        fontSize: '0.75rem',
-                        marginLeft: '0.5rem',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        {log.timestamp}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   )
 }
