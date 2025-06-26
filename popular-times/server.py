@@ -38,9 +38,188 @@ def extract_name_from_url(url):
         pass
     return None
 
+async def find_locations_near_address_enhanced(address):
+    """
+    Enhanced version with better bot detection avoidance
+    """
+    locations = []
+    
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(
+            headless=True,
+            args=[
+                '--no-sandbox', 
+                '--disable-dev-shm-usage', 
+                '--disable-gpu', 
+                '--disable-extensions',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor',
+                '--disable-blink-features=AutomationControlled',
+                '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            ]
+        )
+        context = await browser.new_context(
+            viewport={'width': 1366, 'height': 768},
+            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            locale='de-DE',
+            timezone_id='Europe/Berlin'
+        )
+        
+        # Add extra headers to appear more human
+        await context.set_extra_http_headers({
+            'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Upgrade-Insecure-Requests': '1'
+        })
+        
+        page = await context.new_page()
+        
+        # Spoof navigator properties
+        await page.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined,
+            });
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['de-DE', 'de', 'en'],
+            });
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5],
+            });
+        """)
+        
+        try:
+            # Alternative search strategies
+            search_strategies = [
+                f"bars near {address}",
+                f"clubs near {address}",
+                f"kneipen {address}",
+                f"cocktailbar {address}"
+            ]
+            
+            for strategy in search_strategies:
+                logger.info(f"🔍 Trying search strategy: {strategy}")
+                
+                maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(strategy)}?hl=de"
+                logger.info(f"🌐 URL: {maps_url}")
+                
+                await page.goto(maps_url, wait_until='networkidle', timeout=30000)
+                
+                # Random human-like delay
+                await page.wait_for_timeout(random.randint(3000, 6000))
+                
+                # Handle cookies more aggressively
+                cookie_handled = False
+                for i in range(3):
+                    try:
+                        cookie_button = await page.query_selector('button:has-text("Accept"), button:has-text("Alle akzeptieren"), [aria-label*="Accept"]')
+                        if cookie_button and await cookie_button.is_visible():
+                            await cookie_button.click()
+                            cookie_handled = True
+                            logger.info("✅ Cookie banner handled")
+                            break
+                    except:
+                        pass
+                    await page.wait_for_timeout(1000)
+                
+                # Wait for results to load
+                await page.wait_for_timeout(8000)
+                
+                # Try multiple result extraction methods
+                result_selectors = [
+                    'a[href*="/maps/place/"]',
+                    '[data-result-index]',
+                    '.hfpxzc',
+                    'div[role="article"]'
+                ]
+                
+                found_any = False
+                for selector in result_selectors:
+                    try:
+                        elements = await page.query_selector_all(selector)
+                        logger.info(f"   Selector '{selector}': {len(elements)} elements")
+                        
+                        for element in elements[:10]:
+                            try:
+                                # Get URL
+                                href = None
+                                if 'href' in selector:
+                                    href = await element.get_attribute('href')
+                                else:
+                                    link = await element.query_selector('a[href*="/maps/place/"]')
+                                    if link:
+                                        href = await link.get_attribute('href')
+                                
+                                if href and '/maps/place/' in href:
+                                    # Get name
+                                    name = None
+                                    try:
+                                        name_elem = await element.query_selector('.DUwDvf, .qBF1Pd, .fontHeadlineSmall, h3')
+                                        if name_elem:
+                                            name = await name_elem.text_content()
+                                    except:
+                                        pass
+                                    
+                                    if not name:
+                                        name = extract_name_from_url(href)
+                                    
+                                    if name and name.strip():
+                                        # Filter for bars/clubs
+                                        name_lower = name.lower()
+                                        bar_keywords = ['bar', 'pub', 'kneipe', 'cocktail', 'club', 'lounge', 'brewery', 'biergarten']
+                                        exclude_keywords = ['hotel', 'restaurant', 'shop', 'store']
+                                        
+                                        has_bar = any(k in name_lower for k in bar_keywords)
+                                        has_exclude = any(k in name_lower for k in exclude_keywords)
+                                        
+                                        if has_bar and not has_exclude:
+                                            location = {
+                                                'name': name.strip(),
+                                                'url': href
+                                            }
+                                            
+                                            # Avoid duplicates
+                                            if not any(loc['url'] == href for loc in locations):
+                                                locations.append(location)
+                                                found_any = True
+                                                logger.info(f"   ✅ Found: {name.strip()}")
+                                        
+                            except Exception as e:
+                                logger.debug(f"   Error processing element: {e}")
+                                continue
+                                
+                    except Exception as e:
+                        logger.debug(f"   Selector {selector} failed: {e}")
+                        continue
+                
+                if found_any:
+                    logger.info(f"✅ Strategy '{strategy}' found {len([l for l in locations])} locations total")
+                
+                # If we found some results, don't try more strategies
+                if len(locations) >= 3:
+                    break
+                    
+                # Random delay before next strategy
+                await page.wait_for_timeout(random.randint(2000, 4000))
+            
+            logger.info(f"✅ Total locations found: {len(locations)}")
+            return locations
+            
+        except Exception as e:
+            logger.error(f"❌ Enhanced location finder error: {e}")
+            return []
+        finally:
+            await browser.close()
+
 async def find_locations_near_address(address):
     """
     Vereinfachte Version des Location-Finders für die Integration in die API
+    Sucht im Umkreis von 8km nach Bars, Clubs und Kneipen
     """
     locations = []
     
@@ -56,16 +235,17 @@ async def find_locations_near_address(address):
         )
         page = await context.new_page()
         
-        # Performance: Blockiere unnötige Ressourcen
-        await page.route("**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2}", lambda route: route.abort())
-        await page.route("**/ads/**", lambda route: route.abort())
+        # Performance: Blockiere unnötige Ressourcen - DEAKTIVIERT für bessere Ergebnisse
+        # await page.route("**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2}", lambda route: route.abort())
+        # await page.route("**/ads/**", lambda route: route.abort())
         
         try:
-            # Erstelle Google Maps Suchanfrage
-            search_query = f"bars clubs kneipen cocktailbar near {address}"
-            maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(search_query)}?authuser=0&hl=de"
+            # Erste Suchanfrage - am spezifischsten
+            search_query = f"bars clubs kneipen cocktailbar biergarten near {address}"
+            maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(search_query)}?authuser=0&hl=de&entry=ttu"
             
             logger.info(f"🔍 Suche nach Locations in der Nähe von: {address}")
+            logger.info(f"🌐 URL: {maps_url}")
             
             await page.goto(maps_url, wait_until='domcontentloaded', timeout=30000)
             
@@ -89,25 +269,49 @@ async def find_locations_near_address(address):
                     continue
             
             # Warte auf Suchergebnisse
-            await page.wait_for_timeout(5000)
+            await page.wait_for_timeout(8000)  # Längere Wartezeit
+            
+            # Debug-Screenshot für Problemanalyse
+            await page.screenshot(path='/tmp/location_search_debug.png', full_page=True)
+            logger.info("📸 Debug-Screenshot erstellt: /tmp/location_search_debug.png")
+            
+            # Warte explizit auf Ergebnisse-Container
+            try:
+                await page.wait_for_selector('[role="main"]', timeout=15000)
+                logger.info("✅ Main container gefunden")
+            except:
+                logger.warning("⚠️ Konnte main container nicht finden")
+                # Versuche alternative Selektoren
+                try:
+                    await page.wait_for_selector('.m6QErb', timeout=5000)
+                    logger.info("✅ Alternative container gefunden")
+                except:
+                    logger.warning("⚠️ Auch keine alternativen Container gefunden")
             
             # Scroll um mehr Ergebnisse zu laden
-            for i in range(3):
+            logger.info("📜 Starte Scrolling für mehr Ergebnisse...")
+            for i in range(5):  # Mehr Scrolls für mehr Ergebnisse
                 await page.evaluate('window.scrollTo(0, document.body.scrollHeight)')
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(3000)  # Längere Pause zwischen Scrolls
+                logger.info(f"   Scroll {i+1}/5 abgeschlossen")
             
-            # Extrahiere Location-URLs
+            # Erweiterte Selektoren für bessere Ergebnisse
             result_selectors = [
                 'a[href*="/maps/place/"]',
                 '[data-result-index] a',
-                '.hfpxzc'
+                '.hfpxzc',
+                '.Nv2PK a',
+                '[jsaction*="pane.resultSection"] a',
+                'div[role="article"] a',
+                'a[data-value="Website"]'
             ]
             
             found_links = set()
             for selector in result_selectors:
                 try:
                     elements = await page.query_selector_all(selector)
-                    for element in elements[:15]:  # Limit to first 15 results
+                    logger.info(f"Gefunden mit Selector '{selector}': {len(elements)} Elemente")
+                    for element in elements[:25]:  # Erhöhe Limit auf 25 Ergebnisse
                         try:
                             href = await element.get_attribute('href')
                             if href and '/maps/place/' in href and href not in found_links:
@@ -124,9 +328,14 @@ async def find_locations_near_address(address):
                                     name = extract_name_from_url(href)
                                 
                                 if name and name.strip():
-                                    # Einfache Bar/Club-Filterung
+                                    # Erweiterte Bar/Club-Filterung für bessere Ergebnisse
                                     name_lower = name.lower()
-                                    bar_keywords = ['bar', 'pub', 'kneipe', 'cocktail', 'club', 'lounge', 'tavern', 'biergarten']
+                                    bar_keywords = [
+                                        'bar', 'pub', 'kneipe', 'cocktail', 'club', 'lounge', 'tavern', 'biergarten',
+                                        'brewery', 'brauerei', 'drinks', 'beer', 'bier', 'wine', 'wein',
+                                        'whisky', 'gin', 'rum', 'vodka', 'spirits', 'nightclub', 'nachtclub',
+                                        'disco', 'diskothek', 'dance', 'music', 'jazz', 'piano bar'
+                                    ]
                                     exclude_keywords = ['hotel', 'restaurant', 'pizza', 'döner', 'imbiss', 'shop', 'store']
                                     
                                     has_bar_keyword = any(keyword in name_lower for keyword in bar_keywords)
@@ -665,15 +874,18 @@ def find_locations():
         
         logger.info(f"Finding locations near: {address}")
         
-        # Run the async location finder
+        # Use the real Google Maps location finder
+        logger.info("Using real Google Maps location finder")
+        
+        # Run the async location finder with enhanced settings
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         
         try:
-            locations = loop.run_until_complete(find_locations_near_address(address.strip()))
-            
-            # Extract URLs
+            locations = loop.run_until_complete(find_locations_near_address_enhanced(address.strip()))
             urls = [location['url'] for location in locations]
+            
+            logger.info(f"Found {len(locations)} real locations from Google Maps")
             
             return jsonify({
                 'success': True,
@@ -686,6 +898,16 @@ def find_locations():
             
         finally:
             loop.close()
+        
+        # Original attempt - keep for future debugging (disabled)
+        # try:
+        #     loop = asyncio.new_event_loop()
+        #     asyncio.set_event_loop(loop)
+        #     locations = loop.run_until_complete(find_locations_near_address(address.strip()))
+        #     urls = [location['url'] for location in locations]
+        #     return jsonify({...})
+        # finally:
+        #     loop.close()
         
     except Exception as e:
         logger.error(f"Location finder error: {e}")
@@ -708,6 +930,7 @@ def root():
         'version': '1.5.0 - Final Enhanced Edition',
         'endpoints': {
             '/scrape': 'POST - Scrape Google Maps locations',
+            '/find-locations': 'POST - Find locations near address',
             '/health': 'GET - Health check'
         },
         'timestamp': datetime.now().isoformat()
@@ -718,6 +941,7 @@ if __name__ == '__main__':
     logger.info("📡 Features: Multi-retry, Random delays, Adaptive timeouts, URL fallbacks")
     logger.info("📡 API Endpoints:")
     logger.info("   POST /scrape - Scrape Google Maps locations")
+    logger.info("   POST /find-locations - Find locations near address")
     logger.info("   GET /health - Health check")
     logger.info("   GET / - Service info")
     logger.info("=" * 50)
