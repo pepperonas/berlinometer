@@ -17,7 +17,27 @@ function ResultsDisplay({ results }) {
       return <span className="status status-live">🔴 LIVE</span>
     }
     
-    return <span className="status status-success">✅ Daten</span>
+    return <span className="status status-success">📊 Historisch</span>
+  }
+
+  const getOccupancyColor = (occupancy, isLive) => {
+    if (!occupancy) return 'rgba(156, 163, 175, 0.1)'
+    
+    if (isLive) {
+      return 'rgba(225, 97, 98, 0.1)'  // Red for live data
+    }
+    
+    return 'rgba(156, 182, 143, 0.1)'  // Green for historical data
+  }
+
+  const getOccupancyBorderColor = (occupancy, isLive) => {
+    if (!occupancy) return 'rgba(156, 163, 175, 0.2)'
+    
+    if (isLive) {
+      return 'rgba(225, 97, 98, 0.2)'
+    }
+    
+    return 'rgba(156, 182, 143, 0.2)'
   }
 
   const exportToJson = () => {
@@ -126,21 +146,22 @@ function ResultsDisplay({ results }) {
               <div 
                 className="p-3 mb-3"
                 style={{ 
-                  backgroundColor: result.is_live_data 
-                    ? 'rgba(225, 97, 98, 0.1)' 
-                    : 'rgba(156, 182, 143, 0.1)',
+                  backgroundColor: getOccupancyColor(result.live_occupancy, result.is_live_data),
                   borderRadius: 'var(--radius)',
-                  border: `1px solid ${result.is_live_data 
-                    ? 'rgba(225, 97, 98, 0.2)' 
-                    : 'rgba(156, 182, 143, 0.2)'}`
+                  border: `1px solid ${getOccupancyBorderColor(result.live_occupancy, result.is_live_data)}`
                 }}
               >
                 <div className="font-weight-500 text-sm mb-1">
-                  Auslastungsdaten:
+                  {result.is_live_data ? '🔴 Live-Auslastung:' : '📊 Auslastungsdaten:'}
                 </div>
                 <div className="text-sm">
                   {result.live_occupancy}
                 </div>
+                {result.is_live_data && (
+                  <div className="text-xs text-secondary mt-1">
+                    Echtzeitdaten von Google Maps
+                  </div>
+                )}
               </div>
             ) : (
               <div 
