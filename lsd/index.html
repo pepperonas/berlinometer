@@ -77,8 +77,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            max-width: 90vw;
-            max-height: 90vh;
+            max-width: 100vw;
+            max-height: 100vh;
             width: auto;
             height: auto;
             display: block;
@@ -160,10 +160,12 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 100;
             transition: opacity 0.5s ease;
+            cursor: move;
+            user-select: none;
         }
 
         .controls.auto-fade {
-            opacity: 0.1;
+            opacity: 0.05;
         }
 
         .controls:hover {
@@ -558,6 +560,10 @@
         <input type="range" id="colorShift" min="0" max="360" value="180">
     </div>
     <div class="control-group">
+        <label for="imageSize">Bildgröße</label>
+        <input type="range" id="imageSize" min="70" max="120" value="100">
+    </div>
+    <div class="control-group">
         <div class="toggle-label">Trip</div>
         <button class="toggle-button active" id="tripToggle" onclick="toggleTrip()"></button>
     </div>
@@ -626,6 +632,7 @@
     const intensitySlider = document.getElementById('intensity');
     const speedSlider = document.getElementById('speed');
     const colorShiftSlider = document.getElementById('colorShift');
+    const imageSizeSlider = document.getElementById('imageSize');
 
     // Initialize flow layer background
     image.onload = function () {
@@ -671,6 +678,44 @@
     setTimeout(() => {
         controls.classList.add('auto-fade');
     }, 5000);
+    
+    // Drag & Drop für Controls
+    let isDragging = false;
+    let dragOffset = { x: 0, y: 0 };
+    
+    controls.addEventListener('mousedown', (e) => {
+        // Nur bei Klick auf das Overlay selbst, nicht auf Buttons/Inputs
+        if (e.target === controls || e.target.classList.contains('toggle-label') || e.target.tagName === 'LABEL') {
+            isDragging = true;
+            const rect = controls.getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left;
+            dragOffset.y = e.clientY - rect.top;
+            e.preventDefault();
+        }
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            let newX = e.clientX - dragOffset.x;
+            let newY = e.clientY - dragOffset.y;
+            
+            // Erlaubt Verschiebung über den Rand hinaus (50px)
+            const maxX = window.innerWidth - 50;
+            const maxY = window.innerHeight - 50;
+            const minX = -controls.offsetWidth + 50;
+            const minY = -controls.offsetHeight + 50;
+            
+            newX = Math.max(minX, Math.min(maxX, newX));
+            newY = Math.max(minY, Math.min(maxY, newY));
+            
+            controls.style.left = newX + 'px';
+            controls.style.top = newY + 'px';
+        }
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
 
     function nextImage() {
         currentImageIndex = (currentImageIndex + 1) % imageList.length;
@@ -730,11 +775,14 @@
         const translateX = getWaveValue(1.1, 20 * intensity);
         const translateY = getWaveValue(0.8, 15 * intensity, Math.PI / 3);
 
-        // Anwenden der Effekte (mit initialer Zentrierung)
+        // Bildgröße aus Slider
+        const imageSize = parseFloat(imageSizeSlider.value) / 100;
+        
+        // Anwenden der Effekte (mit initialer Zentrierung und Bildgröße)
         image.style.transform = `
                 translate(-50%, -50%)
                 translate(${translateX}px, ${translateY}px)
-                scale(${scale})
+                scale(${scale * imageSize})
                 rotate(${rotation}deg)
                 skew(${skewX}deg, ${skewY}deg)
             `;
@@ -877,6 +925,7 @@
         intensitySlider.value = 0;
         speedSlider.value = 3;
         colorShiftSlider.value = 0;
+        imageSizeSlider.value = 100;
 
         // Alle Effekte wieder aktivieren
         effectStates = {
@@ -920,6 +969,10 @@
     });
 
     colorShiftSlider.addEventListener('input', () => {
+        if (isTripping) applyDistortion();
+    });
+
+    imageSizeSlider.addEventListener('input', () => {
         if (isTripping) applyDistortion();
     });
 
