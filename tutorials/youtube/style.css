@@ -40,6 +40,9 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
+    min-width: 320px;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
 }
 
 /* Glass morphism effect */
@@ -67,6 +70,9 @@ body {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
+    min-height: 80px;
+    display: flex;
+    align-items: center;
 }
 
 .nav-container {
@@ -344,32 +350,20 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-    .header {
-        padding: 1rem;
-    }
-
-    .nav-menu {
-        display: none;
-    }
-
-    .hero h1 {
-        font-size: 2.5rem;
-    }
-
-    .hero-stats {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
+@media (min-width: 769px) and (max-width: 1024px) {
     .subsections {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
     }
-
-    .main-content {
-        padding: 0 1rem;
+    
+    .nav-menu {
+        gap: 1.5rem;
     }
 }
+
+
+
+
 
 /* Keyboard Navigation Highlight */
 .keyboard-focus {
@@ -405,6 +399,14 @@ body {
     to {
         opacity: 1;
         transform: translateX(0);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+    .back-nav:hover,
+    .nav-link:hover {
+        transform: none;
     }
 }
 

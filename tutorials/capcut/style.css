@@ -36,6 +36,9 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
+    min-width: 320px;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
 }
 
 /* Glass morphism effect */
@@ -63,6 +66,8 @@ body {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
+    min-height: 80px;
+    box-sizing: border-box;
 }
 
 .nav-container {
@@ -71,6 +76,9 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     gap: 1rem;
+    min-height: 48px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 }
 
 .back-nav {
@@ -107,7 +115,9 @@ body {
     list-style: none;
     gap: 1.5rem;
     margin-left: auto;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 .nav-link {
@@ -117,6 +127,8 @@ body {
     transition: all 0.3s ease;
     padding: 0.5rem 1rem;
     border-radius: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .nav-link:hover,
@@ -331,32 +343,19 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-    .header {
-        padding: 1rem;
-    }
-
-    .nav-menu {
-        display: none;
-    }
-
-    .hero h1 {
-        font-size: 2.5rem;
-    }
-
-    .hero-stats {
-        flex-direction: column;
-        gap: 1rem;
-    }
-
+@media (min-width: 769px) and (max-width: 1024px) {
     .subsections {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
     }
-
-    .main-content {
-        padding: 0 1rem;
+    
+    .nav-menu {
+        gap: 1.5rem;
     }
 }
+
+
+
 
 /* Keyboard Navigation Highlight */
 .keyboard-focus {
@@ -392,6 +391,14 @@ body {
     to {
         opacity: 1;
         transform: translateX(0);
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) {
+    .back-nav:hover,
+    .nav-link:hover {
+        transform: none;
     }
 }
 

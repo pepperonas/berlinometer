@@ -150,3 +150,16 @@ header p {
         grid-template-columns: 1fr;
     }
 }
+
+/* Touch device optimizations */
+@media (hover: none) {
+    .btn-blue:hover,
+    .btn-orange:hover,
+    .btn-green:hover {
+        transform: none;
+    }
+    
+    .tutorial-card:hover {
+        transform: none;
+    }
+}

@@ -307,7 +307,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>🔐 Keyboard Logger Demo</h1>
+        <h1>⌨️ Keyboard Logger Demo</h1>
         <p>Verstehe die Funktionsweise und schütze dich vor Angriffen</p>
     </div>
 
@@ -365,11 +365,11 @@
             <p>Teste den Keylogger in einer kontrollierten Umgebung:</p>
             <input type="text" class="demo-input"
                    placeholder="Tippe hier um den Logger zu testen..." id="demoInput">
-            <button class="btn" onclick="toggleLogger()">Logger aktivieren</button>
+            <button class="btn danger" onclick="toggleLogger()">Logger deaktivieren</button>
             <button class="btn danger" onclick="clearLog()">Log löschen</button>
 
             <div class="alert info">
-                <strong>Status:</strong> <span id="loggerStatus">Inaktiv</span><br>
+                <strong>Status:</strong> <span id="loggerStatus" style="color: var(--accent-red);">Aktiv - Eingaben werden geloggt</span><br>
                 <strong>Geloggte Tasten:</strong> <span id="keyCount">0</span>
             </div>
 
@@ -454,7 +454,7 @@
 </footer>
 
 <script>
-    let loggerActive = false;
+    let loggerActive = true;
     let keyCount = 0;
     let logOutput = [];
 
