@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import asyncio
+import gc
 import json
 import logging
 import os
@@ -752,7 +753,7 @@ async def extract_location_data_parallel(page):
 
 async def create_browser_context():
     """
-    Erstellt optimierten Browser-Context für Wiederverwendung
+    Erstellt optimierten Browser-Context wie in gmaps-scraper-fast-robust.py für maximale Performance
     """
     playwright = await async_playwright().start()
     browser = await playwright.chromium.launch(
@@ -779,11 +780,11 @@ async def create_browser_context():
 
 async def setup_page_with_blocking(context):
     """
-    Erstellt optimierte Page mit erweiterten Resource-Blocking
+    Erstellt optimierte Page mit aggressivem Resource-Blocking wie in gmaps-scraper-fast-robust.py
     """
     page = await context.new_page()
 
-    # Erweiterte Resource-Blockierung
+    # Aggressive Resource-Blockierung für maximale Performance (wie standalone script)
     blocked_resources = [
         "**/*.{png,jpg,jpeg,gif,svg,webp,ico}",  # Bilder
         "**/*.{css,scss,sass,less}",  # Stylesheets
@@ -795,7 +796,7 @@ async def setup_page_with_blocking(context):
         "**/googletagmanager/**",  # GTM
         "**/facebook.com/**",  # Facebook
         "**/twitter.com/**",  # Twitter
-        "**/*.js"  # JavaScript (aggressive)
+        "**/*.js"  # JavaScript (aggressive wie standalone für maximale Performance)
     ]
 
     for resource_pattern in blocked_resources:
@@ -837,17 +838,19 @@ async def _scrape_with_retry_page(page, url, location_name_from_csv, start_time,
             last_error = e
             retries += 1
             if retries <= max_retries:
-                # Exponential backoff mit Jitter
-                backoff_time = (2 ** retries) + random.uniform(0, 1)
-                logger.info(f"⚠️  Retry {retries}/{max_retries} nach {backoff_time:.1f}s für {url}")
-                await asyncio.sleep(backoff_time)
+                # Intelligentere Retry-Mechanik mit zufälligen Wartezeiten (wie gmaps-scraper-fast-robust.py)
+                wait_time = random.uniform(3, 8) + (retries * random.uniform(1, 3))  # Escalating random waits
+                logger.info(f"⚠️  Retry {retries}/{max_retries} nach {wait_time:.1f}s für {url}")
+                await asyncio.sleep(wait_time)
             else:
                 logger.error(f"❌ Alle Retries fehlgeschlagen für {url}: {last_error}")
 
-    # Alle Retries fehlgeschlagen
+    # Alle Retries fehlgeschlagen - versuche URL-Fallback-Extraktion
     processing_time = time.time() - start_time
+    fallback_name = extract_name_from_url(url) if location_name_from_csv is None else location_name_from_csv
+    
     return {
-        'location_name': location_name_from_csv,
+        'location_name': fallback_name,
         'address': None,
         'rating': None,
         'live_occupancy': None,
@@ -868,12 +871,12 @@ async def _perform_scraping_with_page(page, url, location_name_from_csv, start_t
     Führt das eigentliche Scraping mit wiederverwendbarer Page durch
     """
     logger.info(f"📍 Lade Google Maps: {url}")
-    await page.goto(url, wait_until='domcontentloaded', timeout=30000)
+    await page.goto(url, wait_until='domcontentloaded', timeout=15000)  # Reduziert für VPS
 
     logger.info("🍪 Prüfe Cookie-Banner...")
-    # Optimierte Cookie-Behandlung mit Timeout
+    # Optimierte Cookie-Behandlung mit zufälligem Human-like Timing
     try:
-        await page.wait_for_timeout(800)  # Reduziert
+        await page.wait_for_timeout(800)  # Wie standalone script
         # Robustere Cookie-Selektoren
         cookie_selectors = [
             'button:has-text("Accept")',
@@ -890,7 +893,7 @@ async def _perform_scraping_with_page(page, url, location_name_from_csv, start_t
                 if button and await button.is_visible():
                     await button.click()
                     logger.info("✅ Cookie-Banner akzeptiert")
-                    await page.wait_for_timeout(1500)
+                    await page.wait_for_timeout(1500)  # Wie standalone script
                     break
             except:
                 continue
@@ -898,12 +901,12 @@ async def _perform_scraping_with_page(page, url, location_name_from_csv, start_t
         pass
 
     logger.info("⏳ Warte auf Maps-Inhalte...")
-    # Intelligentes Warten auf Content
+    # VPS-optimiertes Warten auf Content 
     try:
         await page.wait_for_selector(
-            '[data-value="Bewertungen"], h1[data-attrid="title"], h1.DUwDvf', timeout=8000)
+            '[data-value="Bewertungen"], h1[data-attrid="title"], h1.DUwDvf', timeout=8000)  # Wie standalone script
     except:
-        await page.wait_for_timeout(3000)  # Fallback
+        await page.wait_for_timeout(3000)  # Wie standalone script
 
     logger.info("🔍 Suche Live-Auslastung...")
     live_data = None
@@ -1004,20 +1007,20 @@ async def _perform_scraping_with_page(page, url, location_name_from_csv, start_t
     return result
 
 
-async def process_batch_with_streaming(locations_batch, context, semaphore, batch_id, start_processed_count, total, total_batches):
+async def process_batch_concurrent(locations_batch, context, semaphore, batch_id):
     """
-    Verarbeitet einen Batch von Locations mit Streaming-Updates
+    Verarbeitet einen Batch von Locations concurrent wie in gmaps-scraper-fast-robust.py für maximale Performance
     """
     logger.info(f"🔄 Batch {batch_id}: Starte {len(locations_batch)} Locations...")
 
-    # Erstelle Pages für den Batch
+    # Erstelle Pages für den Batch (Page-Wiederverwendung wie im standalone script)
     pages = []
     for _ in range(len(locations_batch)):
         page = await setup_page_with_blocking(context)
         pages.append(page)
 
     try:
-        # Concurrent processing mit semaphore
+        # Concurrent processing mit semaphore (wie standalone)
         tasks = [
             scrape_live_occupancy_with_page(
                 pages[i],
@@ -1063,12 +1066,61 @@ async def process_batch_with_streaming(locations_batch, context, semaphore, batc
                 pass
 
 
-# Keep the original function for compatibility
-async def process_batch_concurrent(locations_batch, context, semaphore, batch_id):
+async def scrape_single_location_stable(page, url, location_name_from_csv=None):
     """
-    Verarbeitet einen Batch von Locations concurrent (Legacy function)
+    Stabilisierte Einzellocation-Scraping-Funktion für VPS
     """
-    return await process_batch_with_streaming(locations_batch, context, semaphore, batch_id, 0, len(locations_batch), 1)
+    start_time = time.time()
+    max_retries = 2  # Reduziert für VPS
+    
+    for attempt in range(max_retries + 1):
+        try:
+            result = await _perform_scraping_with_page(page, url, location_name_from_csv, start_time, attempt)
+            # Erfolg wenn mindestens Name oder Occupancy-Daten vorhanden
+            if result.get('location_name') or result.get('live_occupancy'):
+                return result
+            
+            if attempt < max_retries:
+                await asyncio.sleep(2)  # Kurze Pause zwischen Retries
+                
+        except Exception as e:
+            if attempt < max_retries:
+                logger.warning(f"Retry {attempt + 1}/{max_retries} für {url}: {e}")
+                await asyncio.sleep(2)
+            else:
+                # Finaler Fallback
+                processing_time = time.time() - start_time
+                return {
+                    'location_name': extract_name_from_url(url) or location_name_from_csv,
+                    'address': None,
+                    'rating': None,
+                    'live_occupancy': None,
+                    'is_live_data': False,
+                    'url': url,
+                    'timestamp': datetime.now().isoformat(),
+                    'error': str(e),
+                    'statistics': {
+                        'processing_time_seconds': round(processing_time, 2),
+                        'retries_needed': attempt + 1,
+                        'success': False
+                    }
+                }
+    
+    # Sollte nie erreicht werden, aber Sicherheit
+    processing_time = time.time() - start_time
+    return {
+        'location_name': extract_name_from_url(url) or location_name_from_csv,
+        'error': 'Max retries exceeded',
+        'statistics': {'success': False, 'processing_time_seconds': round(processing_time, 2), 'retries_needed': max_retries},
+        'url': url,
+        'timestamp': datetime.now().isoformat(),
+        'live_occupancy': None,
+        'is_live_data': False,
+        'address': None,
+        'rating': None
+    }
+
+
 
 
 async def scrape_live_occupancy_single(url, attempt_num, location_name_from_csv=None):
@@ -1134,7 +1186,7 @@ async def scrape_live_occupancy_single(url, attempt_num, location_name_from_csv=
 
         try:
             logger.info(f"📍 Lade Google Maps: {url}")
-            await page.goto(url, wait_until='domcontentloaded', timeout=30000)
+            await page.goto(url, wait_until='domcontentloaded', timeout=30000)  # Wie standalone script
 
             logger.info("🍪 Prüfe Cookie-Banner...")
             # Optimierte Cookie-Behandlung mit Timeout
@@ -1535,9 +1587,9 @@ async def process_urls_stream(urls):
     # Initial progress
     yield create_progress_response(0, total)
 
-    # Konfiguration für Batch-Processing
+    # Konfiguration für Batch-Processing (wie standalone script)
     batch_size = 5  # Locations pro Batch (balance zwischen Speed und Stabilität)
-    max_concurrent = 10  # Maximale concurrent Locations gleichzeitig
+    max_concurrent = 10  # Maximale concurrent Batches
 
     logger.info(f"🚀 Starte optimiertes Scraping von {total} URLs mit Streaming Progress...")
     logger.info(f"📦 Batch-Size: {batch_size}, Max Concurrent: {max_concurrent}")
@@ -1564,9 +1616,13 @@ async def process_urls_stream(urls):
         # Track processed count for progress
         processed_count = 0
         all_results = []
+        batch_tasks = []
 
-        # Process batches with streaming updates
+        # Process batches concurrently (wie standalone script)
         for batch_id, batch in enumerate(batches, 1):
+            task = process_batch_concurrent(batch, context, semaphore, batch_id)
+            batch_tasks.append(task)
+
             # Progress vor Batch-Start
             batch_info = {
                 'currentBatch': batch_id,
@@ -1578,36 +1634,35 @@ async def process_urls_stream(urls):
                                            f"🔄 Starte Batch {batch_id}/{len(batches)}",
                                            batch_info)
 
-            # Process each location in batch individually with streaming updates
-            batch_results = await process_batch_with_streaming(
-                batch, context, semaphore, batch_id, processed_count, total, len(batches)
-            )
+            # Starte nicht zu viele Batches gleichzeitig (wie standalone)
+            if len(batch_tasks) >= max_concurrent or batch_id == len(batches):
+                batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
 
-            # Yield each result as it becomes available
-            for i, result in enumerate(batch_results):
-                all_results.append(result)
-                yield create_result_response(result)
-                processed_count += 1
+                for batch_result in batch_results:
+                    if isinstance(batch_result, Exception):
+                        logger.error(f"❌ Batch-Fehler: {batch_result}")
+                    elif isinstance(batch_result, list):
+                        for result in batch_result:
+                            all_results.append(result)
+                            yield create_result_response(result)
+                            processed_count += 1
+                            
+                            # Update progress
+                            yield create_progress_response(processed_count, total,
+                                                           f"✅ {result.get('location_name', 'Unknown')}")
 
-                # Update progress with current batch info
-                batch_progress_percent = ((i + 1) / len(batch)) * 100
-                batch_info = {
-                    'currentBatch': batch_id,
-                    'totalBatches': len(batches),
-                    'locationsInBatch': len(batch),
-                    'batchProgress': int(batch_progress_percent)
-                }
-                
-                yield create_progress_response(processed_count, total,
-                                               f"✅ {result.get('location_name', 'Unknown')}",
-                                               batch_info)
+                batch_tasks = []
 
-            # Kurze Pause zwischen Batches
-            if batch_id < len(batches):
-                logger.info("⏳ Pause zwischen Batches...")
-                await asyncio.sleep(1)
+                # Kurze Pause zwischen Batch-Gruppen (wie standalone)
+                if batch_id < len(batches):
+                    logger.info("⏳ Pause zwischen Batch-Gruppen...")
+                    await asyncio.sleep(2)
 
         results = all_results
+        
+        # Force Garbage Collection for VPS stability
+        import gc
+        gc.collect()
 
     except Exception as e:
         logger.error(f"❌ Kritischer Fehler in process_urls_stream: {e}")
@@ -1630,11 +1685,14 @@ async def process_urls_stream(urls):
     finally:
         # Cleanup
         try:
+            # Explizites Cleanup für VPS-Stabilität
             await context.close()
             await browser.close()
             await playwright.stop()
-        except:
-            pass
+            import gc
+            gc.collect()  # Forciere Garbage Collection
+        except Exception as cleanup_error:
+            logger.warning(f"Cleanup failed: {cleanup_error}")
 
     # Gesamtstatistiken berechnen
     total_execution_time = time.time() - total_start_time

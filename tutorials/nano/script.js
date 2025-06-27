@@ -1,4 +1,36 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Mobile Menu Toggle
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    if (mobileMenuToggle && navMenu) {
+        mobileMenuToggle.addEventListener('click', function() {
+            // Toggle active class on button for animation
+            mobileMenuToggle.classList.toggle('active');
+            
+            // Toggle active class on menu for slide-in
+            navMenu.classList.toggle('active');
+        });
+        
+        // Close menu when clicking on overlay
+        navMenu.addEventListener('click', function(e) {
+            if (e.target === navMenu) {
+                mobileMenuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+        });
+        
+        // Close menu when clicking on a nav link
+        const navLinksForMobile = navMenu.querySelectorAll('.nav-link');
+        navLinksForMobile.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+    }
+    
+    // Original functionality
     // Progress bar functionality
     const progressBar = document.querySelector('.progress-bar');
     const sections = document.querySelectorAll('.content-section');

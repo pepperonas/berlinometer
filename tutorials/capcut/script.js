@@ -78,9 +78,43 @@ function animateOnScroll() {
     });
 }
 
+// Mobile Menu Toggle
+function initMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const navMenu = document.getElementById('navMenu');
+    
+    if (mobileMenuToggle && navMenu) {
+        mobileMenuToggle.addEventListener('click', function() {
+            // Toggle active class on button for animation
+            mobileMenuToggle.classList.toggle('active');
+            
+            // Toggle active class on menu for slide-in
+            navMenu.classList.toggle('active');
+        });
+        
+        // Close menu when clicking on overlay
+        navMenu.addEventListener('click', function(e) {
+            if (e.target === navMenu) {
+                mobileMenuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+            }
+        });
+        
+        // Close menu when clicking on a nav link
+        const navLinks = navMenu.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                mobileMenuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+    }
+}
+
 // Initialize all functionality
 document.addEventListener('DOMContentLoaded', function() {
     initSmoothScroll();
+    initMobileMenu();
     updateProgressBar();
     updateActiveNavigation();
     animateOnScroll();
