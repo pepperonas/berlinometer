@@ -508,12 +508,27 @@ def load_locations_from_csv():
             next(csv_reader, None)
 
             for line_num, row in enumerate(csv_reader, 2):  # Start bei 2 wegen Header
-                if len(row) >= 2:
+                if len(row) >= 3:
+                    aktiv = row[0].strip().strip('"')
+                    name = row[1].strip().strip('"')
+                    url = row[2].strip().strip('"')
+
+                    if name and url and url.startswith('https://'):
+                        locations.append({
+                            'aktiv': int(aktiv) if aktiv.isdigit() else 0,
+                            'name': name,
+                            'url': url
+                        })
+                    else:
+                        print(f"⚠️  Zeile {line_num}: Ungültige Daten ignoriert: {row}")
+                elif len(row) >= 2:
+                    # Fallback für alte CSV-Struktur ohne Aktiv-Spalte
                     name = row[0].strip().strip('"')
                     url = row[1].strip().strip('"')
 
                     if name and url and url.startswith('https://'):
                         locations.append({
+                            'aktiv': 1,  # Default aktiv für alte Einträge
                             'name': name,
                             'url': url
                         })

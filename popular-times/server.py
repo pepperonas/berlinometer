@@ -1942,11 +1942,13 @@ def get_default_locations():
                 for line in f:
                     if line.strip():
                         parts = line.strip().split(';')
-                        if len(parts) >= 2:
-                            # Remove quotes from name and URL
-                            name = parts[0].strip('"')
-                            url = parts[1].strip('"')
+                        if len(parts) >= 3:
+                            # Remove quotes from aktiv, name and URL
+                            aktiv = parts[0].strip('"')
+                            name = parts[1].strip('"')
+                            url = parts[2].strip('"')
                             locations.append({
+                                'aktiv': int(aktiv) if aktiv.isdigit() else 0,
                                 'name': name,
                                 'url': url
                             })

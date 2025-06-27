@@ -13,7 +13,7 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
   const fetchDefaultLocations = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5044'}/default-locations`)
+      const response = await fetch(`https://mrx3k1.de/api/popular-times/default-locations`)
       
       if (!response.ok) {
         throw new Error(`Failed to fetch locations: ${response.status}`)
@@ -21,8 +21,8 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
       
       const data = await response.json()
       setLocations(data.locations || [])
-      // Select all locations by default
-      setSelectedLocations(data.locations?.map(loc => loc.url) || [])
+      // Select only active locations by default (aktiv = 1)
+      setSelectedLocations(data.locations?.filter(loc => loc.aktiv === 1).map(loc => loc.url) || [])
     } catch (err) {
       console.error('Error fetching default locations:', err)
       setError(err.message)
@@ -212,8 +212,23 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
                       onClick={(e) => e.stopPropagation()}
                     />
                   </td>
-                  <td style={{ padding: '12px', fontWeight: '500' }}>
+                  <td style={{ 
+                    padding: '12px', 
+                    fontWeight: '500',
+                    opacity: location.aktiv === 0 ? '0.5' : '1',
+                    color: location.aktiv === 0 ? 'var(--text-secondary)' : 'var(--text-primary)'
+                  }}>
                     {location.name}
+                    {location.aktiv === 0 && (
+                      <span style={{ 
+                        marginLeft: '8px', 
+                        fontSize: '0.75rem', 
+                        color: 'var(--text-secondary)',
+                        opacity: '0.7'
+                      }}>
+                        (inaktiv)
+                      </span>
+                    )}
                   </td>
                   <td style={{ padding: '12px' }}>
                     <a 
