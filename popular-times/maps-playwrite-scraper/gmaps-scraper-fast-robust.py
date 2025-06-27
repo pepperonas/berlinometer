@@ -5,14 +5,19 @@ from playwright.async_api import async_playwright
 import re
 import json
 import os
+import csv
 from datetime import datetime
 import time
 
 
-async def scrape_live_occupancy(url):
+async def scrape_live_occupancy(url, location_name_from_csv=None):
 	"""
 	Scrapt Live-Auslastungsdaten von Google Maps
 	"""
+	start_time = time.time()
+	retries = 0
+	max_retries = 3
+	
 	async with async_playwright() as p:
 		browser = await p.chromium.launch(
 			headless=True,
@@ -84,8 +89,52 @@ async def scrape_live_occupancy(url):
 							break
 					except:
 						pass
+				
+				# Suche auch nach historischen Daten
+				if not live_data:
+					historical_elements = await page.query_selector_all('[aria-label*="Um "], [aria-label*="um "]')
+					for element in historical_elements[:5]:
+						try:
+							aria_label = await element.get_attribute('aria-label')
+							if aria_label and 'ausgelastet' in aria_label.lower():
+								# Extrahiere nur Auslastungsprozent, ersetze historische Zeit
+								percent_match = re.search(r'(\d+)\s*%\s*ausgelastet', aria_label, re.IGNORECASE)
+								if percent_match:
+									current_time = datetime.now().strftime('%H:%M')
+									live_data = f"Um {current_time} Uhr zu {percent_match.group(1)} % ausgelastet"
+									is_live_data = False
+									print(f"📊 Historische Daten mit aktueller Zeit: {live_data}")
+									break
+						except:
+							pass
 
-			# 3. Regex-basierte Suche (sehr schnell)
+			# 3. Suche nach aktueller Auslastung im Chart/Diagramm
+			if not live_data:
+				try:
+					# Suche nach dem aktuellen Zeitpunkt im Stoßzeiten-Chart
+					print("🔍 Suche aktuelle Auslastung im Diagramm...")
+					chart_elements = await page.query_selector_all('[aria-label*="Uhr"]')
+					current_hour = datetime.now().hour
+					
+					for element in chart_elements:
+						try:
+							aria_label = await element.get_attribute('aria-label')
+							if aria_label and f"{current_hour:02d} Uhr" in aria_label:
+								# Extrahiere Auslastung für aktuelle Stunde
+								percent_match = re.search(r'(\d+)\s*%', aria_label)
+								if percent_match:
+									current_time = datetime.now().strftime('%H:%M')
+									percentage = percent_match.group(1)
+									live_data = f"Um {current_time} Uhr zu {percentage} % ausgelastet"
+									is_live_data = False
+									print(f"📊 Aktuelle Auslastung aus Diagramm: {live_data}")
+									break
+						except:
+							continue
+				except:
+					pass
+
+			# 4. Regex-basierte Suche (sehr schnell)
 			if not live_data:
 				# Live-Status Pattern
 				live_match = re.search(r'>Live</[^>]*>\s*<[^>]*>([^<]+)', page_content, re.IGNORECASE)
@@ -99,10 +148,11 @@ async def scrape_live_occupancy(url):
 					percent_match = re.search(r'(\d+)%[^<]*ausgelastet', page_content, re.IGNORECASE)
 					if percent_match:
 						percentage = percent_match.group(1)
-						live_data = f"{percentage}% ausgelastet"
+						current_time = datetime.now().strftime('%H:%M')
+						live_data = f"Um {current_time} Uhr zu {percentage} % ausgelastet"
 						print(f"📊 Auslastung: {live_data}")
 
-			# 4. Fallback nur wenn nötig
+			# 5. Fallback nur wenn nötig
 			if not live_data:
 				print("🔄 Fallback-Suche...")
 				ausgelastet_elements = await page.query_selector_all('[aria-label*="ausgelastet"]')
@@ -110,9 +160,22 @@ async def scrape_live_occupancy(url):
 					try:
 						aria_label = await element.get_attribute('aria-label')
 						if aria_label and ('derzeit' in aria_label.lower() or 'um ' in aria_label.lower()):
-							live_data = aria_label.replace('&nbsp;', ' ')
-							if 'derzeit' in aria_label.lower():
-								is_live_data = True
+							# Für historische Daten: Uhrzeit durch aktuelle Zeit ersetzen
+							if 'um ' in aria_label.lower() and 'derzeit' not in aria_label.lower():
+								# Extrahiere nur den Auslastungsprozent, ersetze historische Zeit
+								percent_match = re.search(r'(\d+)\s*%\s*ausgelastet', aria_label, re.IGNORECASE)
+								if percent_match:
+									current_time = datetime.now().strftime('%H:%M')
+									live_data = f"Um {current_time} Uhr zu {percent_match.group(1)} % ausgelastet"
+								else:
+									current_time = datetime.now().strftime('%H:%M')
+									live_data = f"Um {current_time} Uhr - Historische Daten verfügbar"
+								is_live_data = False
+								print(f"📊 Fallback: Historische Daten mit aktueller Zeit: {live_data}")
+							else:
+								live_data = aria_label.replace('&nbsp;', ' ')
+								if 'derzeit' in aria_label.lower():
+									is_live_data = True
 							break
 					except:
 						pass
@@ -167,117 +230,156 @@ async def scrape_live_occupancy(url):
 				except:
 					pass
 
-			print(f"✅ Scraping abgeschlossen für: {location_name or 'Unbekannte Location'}")
+			processing_time = time.time() - start_time
+			print(f"✅ Scraping abgeschlossen für: {location_name or location_name_from_csv or 'Unbekannte Location'} ({processing_time:.2f}s)")
+			
 			result = {
-				'location_name': location_name,
+				'location_name': location_name or location_name_from_csv,
 				'address': address,
 				'rating': rating,
 				'live_occupancy': live_data,
 				'is_live_data': is_live_data,
 				'url': url,
-				'timestamp': datetime.now().isoformat()
+				'timestamp': datetime.now().isoformat(),
+				'statistics': {
+					'processing_time_seconds': round(processing_time, 2),
+					'retries_needed': retries,
+					'success': True
+				}
 			}
 
 			return result
 
 		except Exception as e:
-			print(f"❌ Fehler bei {url}: {e}")
+			processing_time = time.time() - start_time
+			print(f"❌ Fehler bei {url}: {e} ({processing_time:.2f}s)")
 			return {
-				'location_name': None,
+				'location_name': location_name_from_csv,
 				'address': None,
 				'rating': None,
 				'live_occupancy': None,
 				'is_live_data': False,
 				'url': url,
 				'timestamp': datetime.now().isoformat(),
-				'error': str(e)
+				'error': str(e),
+				'statistics': {
+					'processing_time_seconds': round(processing_time, 2),
+					'retries_needed': retries,
+					'success': False
+				}
 			}
 
 		finally:
 			await browser.close()
 
 
-def load_urls_from_file():
+def load_locations_from_csv():
 	"""
-	Lädt URLs aus urls.txt Datei
+	Lädt Location-Daten aus default-locations.csv
 	"""
-	if not os.path.exists('urls.txt'):
+	if not os.path.exists('default-locations.csv'):
+		print("❌ default-locations.csv nicht gefunden")
 		return None
 
 	try:
-		with open('urls.txt', 'r', encoding='utf-8') as f:
-			urls = []
-			for line_num, line in enumerate(f, 1):
-				line = line.strip()
-				if line and not line.startswith('#'):  # Ignoriere leere Zeilen und Kommentare
-					if line.startswith('https://'):
-						urls.append(line)
+		locations = []
+		with open('default-locations.csv', 'r', encoding='utf-8') as f:
+			csv_reader = csv.reader(f, delimiter=';')
+			
+			# Header überspringen
+			next(csv_reader, None)
+			
+			for line_num, row in enumerate(csv_reader, 2):  # Start bei 2 wegen Header
+				if len(row) >= 2:
+					name = row[0].strip().strip('"')
+					url = row[1].strip().strip('"')
+					
+					if name and url and url.startswith('https://'):
+						locations.append({
+							'name': name,
+							'url': url
+						})
 					else:
-						print(f"⚠️  Zeile {line_num}: Ungültige URL ignoriert: {line}")
+						print(f"⚠️  Zeile {line_num}: Ungültige Daten ignoriert: {row}")
 
-			if urls:
-				print(f"📄 {len(urls)} URLs aus urls.txt geladen")
-				return urls
-			else:
-				print("❌ Keine gültigen URLs in urls.txt gefunden")
-				return None
+		if locations:
+			print(f"📄 {len(locations)} Locations aus default-locations.csv geladen")
+			return locations
+		else:
+			print("❌ Keine gültigen Locations in default-locations.csv gefunden")
+			return None
 
 	except Exception as e:
-		print(f"❌ Fehler beim Lesen von urls.txt: {e}")
+		print(f"❌ Fehler beim Lesen von default-locations.csv: {e}")
 		return None
 
 
-def collect_urls():
+def extract_occupancy_numbers(live_occupancy_text):
 	"""
-	Sammelt URLs - erst aus Datei, dann manuell
+	Extrahiert aktuelle und normale Auslastungswerte aus dem Text
 	"""
-	# Erst versuchen URLs aus Datei zu laden
-	urls = load_urls_from_file()
-	if urls:
-		return urls
+	if not live_occupancy_text:
+		return None, None
+	
+	# Pattern für "Derzeit zu X % ausgelastet; normal sind Y %."
+	current_match = re.search(r'derzeit\s+zu\s+(\d+)\s*%\s*ausgelastet', live_occupancy_text, re.IGNORECASE)
+	normal_match = re.search(r'normal\s+sind\s+(\d+)\s*%', live_occupancy_text, re.IGNORECASE)
+	
+	current_percent = int(current_match.group(1)) if current_match else None
+	normal_percent = int(normal_match.group(1)) if normal_match else None
+	
+	# Fallback: Einzelner Prozent-Wert
+	if current_percent is None:
+		single_match = re.search(r'(\d+)\s*%\s*ausgelastet', live_occupancy_text, re.IGNORECASE)
+		if single_match:
+			current_percent = int(single_match.group(1))
+	
+	return current_percent, normal_percent
 
-	# Fallback: Manuelle Eingabe
-	print("📄 urls.txt nicht gefunden - manuelle Eingabe:")
-	urls = []
-	print("🔗 Gib die Google Maps URLs ein (eine pro Zeile):")
-	print("   Zum Starten 'go' oder 'start' eingeben")
-	print("   Zum Beenden 'quit' oder 'exit' eingeben")
-	print("-" * 50)
-
-	while True:
-		user_input = input("URL: ").strip()
-
-		if user_input.lower() in ['go', 'start']:
-			if urls:
-				return urls
-			else:
-				print("❌ Keine URLs eingegeben!")
-				continue
-
-		if user_input.lower() in ['quit', 'exit']:
-			print("👋 Programm beendet")
-			return None
-
-		if user_input.startswith('https://'):
-			urls.append(user_input)
-			print(f"✅ URL hinzugefügt ({len(urls)} gesamt)")
-		elif user_input:
-			print("❌ Ungültige URL (muss mit https:// beginnen)")
-
-
-async def process_locations(urls):
+def get_occupancy_color(current_percent, normal_percent):
 	"""
-	Verarbeitet alle URLs und speichert Ergebnisse
+	Bestimmt die Farbe basierend auf der Auslastung
+	"""
+	if current_percent is None:
+		return "gray", "Keine Daten"
+	
+	if normal_percent is None:
+		# Keine normale Auslastung verfügbar - einfache Klassifizierung
+		if current_percent > 70:
+			return "orange", "Hoch"
+		elif current_percent > 30:
+			return "yellow", "Mittel"
+		else:
+			return "lightblue", "Niedrig"
+	
+	# Vergleich mit normalem Wert
+	difference = current_percent - normal_percent
+	
+	if difference > 5:
+		return "green", f"+{difference}% über normal"
+	elif difference < -5:
+		return "red", f"{difference}% unter normal"
+	else:
+		return "yellow", f"±{abs(difference)}% normal"
+
+
+async def process_locations(locations):
+	"""
+	Verarbeitet alle Locations und speichert Ergebnisse
 	"""
 	results = []
-	total = len(urls)
+	total = len(locations)
+	total_start_time = time.time()
 
 	print(f"\n🚀 Starte Scraping von {total} Locations...")
 	print("=" * 60)
 
-	for i, url in enumerate(urls, 1):
-		print(f"\n[{i}/{total}] Processing Location {i}...")
-		result = await scrape_live_occupancy(url)
+	for i, location in enumerate(locations, 1):
+		name = location['name']
+		url = location['url']
+		print(f"\n[{i}/{total}] Processing: {name}...")
+		result = await scrape_live_occupancy(url, name)
+		
 		results.append(result)
 
 		# Kurze Pause zwischen Requests
@@ -285,39 +387,94 @@ async def process_locations(urls):
 			print("⏳ Pause zwischen Requests...")
 			await asyncio.sleep(5)  # Längere Pause
 
+	# Gesamtstatistiken berechnen
+	total_execution_time = time.time() - total_start_time
+	successful_requests = [r for r in results if r.get('statistics', {}).get('success', False)]
+	failed_requests = [r for r in results if not r.get('statistics', {}).get('success', False)]
+	
+	processing_times = [r.get('statistics', {}).get('processing_time_seconds', 0) for r in results]
+	avg_processing_time = sum(processing_times) / len(processing_times) if processing_times else 0
+	total_retries = sum(r.get('statistics', {}).get('retries_needed', 0) for r in results)
+	
+	# Erstelle finales JSON mit Gesamtstatistiken
+	final_data = {
+		'metadata': {
+			'total_locations': total,
+			'successful_requests': len(successful_requests),
+			'failed_requests': len(failed_requests),
+			'success_rate_percent': round((len(successful_requests) / total) * 100, 1) if total > 0 else 0,
+			'total_execution_time_seconds': round(total_execution_time, 2),
+			'average_processing_time_seconds': round(avg_processing_time, 2),
+			'total_retries_needed': total_retries,
+			'scraping_timestamp': datetime.now().isoformat(),
+			'locations_per_minute': round((total / (total_execution_time / 60)), 1) if total_execution_time > 0 else 0
+		},
+		'locations': results
+	}
+
 	# Ergebnisse in JSON speichern
-	filename = f"occupancy_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+	json_filename = f"occupancy_data_{timestamp}.json"
 
-	with open(filename, 'w', encoding='utf-8') as f:
-		json.dump(results, f, indent=2, ensure_ascii=False)
+	with open(json_filename, 'w', encoding='utf-8') as f:
+		json.dump(final_data, f, indent=2, ensure_ascii=False)
 
-	print(f"\n💾 Ergebnisse gespeichert in: {filename}")
+	print(f"\n💾 Ergebnisse gespeichert in: {json_filename}")
+
+	# Info über HTML Template
+	print(f"📊 Für HTML-Report öffne: report-template.html")
+	print(f"   Oder direkt mit JSON: report-template.html?json={json_filename}")
+	
+	# Erweiterte Zusammenfassung
+	print(f"\n📈 PERFORMANCE-STATISTIKEN:")
+	print("=" * 50)
+	print(f"⏱️  Gesamtausführung: {total_execution_time:.1f}s")
+	print(f"📊 Erfolgsrate: {len(successful_requests)}/{total} ({(len(successful_requests)/total)*100:.1f}%)")
+	print(f"⚡ Durchschnittliche Verarbeitungszeit: {avg_processing_time:.2f}s")
+	print(f"🔄 Wiederholungen insgesamt: {total_retries}")
+	print(f"🚀 Locations pro Minute: {(total / (total_execution_time / 60)):.1f}")
+	if failed_requests:
+		print(f"❌ Fehlgeschlagene Locations: {len(failed_requests)}")
 
 	# Zusammenfassung anzeigen
-	print("\n📊 ZUSAMMENFASSUNG:")
+	print("\n📊 LOCATION-ZUSAMMENFASSUNG:")
 	print("=" * 40)
 	for result in results:
 		name = result.get('location_name') or 'Unbekannt'
 		occupancy = result.get('live_occupancy') or 'Nicht verfügbar'
 		is_live = result.get('is_live_data', False)
+		processing_time = result.get('statistics', {}).get('processing_time_seconds', 0)
 		live_indicator = " 🔴 LIVE" if is_live else " ⚫ Nicht Live"
 
 		if result.get('error'):
-			print(f"❌ {name}: Fehler")
+			print(f"❌ {name}: Fehler ({processing_time:.1f}s)")
 		else:
-			print(f"✅ {name}: {occupancy}{live_indicator}")
+			print(f"✅ {name}: {occupancy}{live_indicator} ({processing_time:.1f}s)")
+
 
 
 async def main():
+	import sys
+	
+	# Check if URL is provided as command line argument (for server usage)
+	if len(sys.argv) > 1:
+		url = sys.argv[1]
+		# Single URL mode - return JSON for server integration
+		result = await scrape_live_occupancy(url)
+		# Output JSON to stdout for server to parse
+		print(json.dumps(result))
+		return
+	
+	# Default CSV mode
 	print("🗺️  Google Maps Live-Auslastung Scraper")
 	print("=" * 50)
 
-	urls = collect_urls()
+	locations = load_locations_from_csv()
 
-	if urls:
-		await process_locations(urls)
+	if locations:
+		await process_locations(locations)
 	else:
-		print("Keine URLs zu verarbeiten.")
+		print("Keine Locations zu verarbeiten.")
 
 
 if __name__ == "__main__":

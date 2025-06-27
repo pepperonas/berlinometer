@@ -23,6 +23,7 @@ import re
 from datetime import datetime
 import subprocess
 import tempfile
+import time
 
 def extract_name_from_url(url):
     """Extrahiert den Namen aus der Google Maps URL als Fallback"""
@@ -37,6 +38,54 @@ def extract_name_from_url(url):
     except:
         pass
     return None
+
+def extract_occupancy_numbers(live_occupancy_text):
+    """
+    Extrahiert aktuelle und normale Auslastungswerte aus dem Text
+    """
+    if not live_occupancy_text:
+        return None, None
+    
+    # Pattern für "Derzeit zu X % ausgelastet; normal sind Y %."
+    current_match = re.search(r'derzeit\s+zu\s+(\d+)\s*%\s*ausgelastet', live_occupancy_text, re.IGNORECASE)
+    normal_match = re.search(r'normal\s+sind\s+(\d+)\s*%', live_occupancy_text, re.IGNORECASE)
+    
+    current_percent = int(current_match.group(1)) if current_match else None
+    normal_percent = int(normal_match.group(1)) if normal_match else None
+    
+    # Fallback: Einzelner Prozent-Wert
+    if current_percent is None:
+        single_match = re.search(r'(\d+)\s*%\s*ausgelastet', live_occupancy_text, re.IGNORECASE)
+        if single_match:
+            current_percent = int(single_match.group(1))
+    
+    return current_percent, normal_percent
+
+def get_occupancy_color(current_percent, normal_percent):
+    """
+    Bestimmt die Farbe basierend auf der Auslastung
+    """
+    if current_percent is None:
+        return "gray", "Keine Daten"
+    
+    if normal_percent is None:
+        # Keine normale Auslastung verfügbar - einfache Klassifizierung
+        if current_percent > 70:
+            return "orange", "Hoch"
+        elif current_percent > 30:
+            return "yellow", "Mittel"
+        else:
+            return "lightblue", "Niedrig"
+    
+    # Vergleich mit normalem Wert
+    difference = current_percent - normal_percent
+    
+    if difference > 5:
+        return "green", f"+{difference}% über normal"
+    elif difference < -5:
+        return "red", f"{difference}% unter normal"
+    else:
+        return "yellow", f"±{abs(difference)}% normal"
 
 async def find_locations_near_address_enhanced(address):
     """
@@ -368,7 +417,7 @@ async def scrape_live_occupancy_with_retries(url, max_retries=3):
     """
     for attempt in range(max_retries):
         try:
-            result = await scrape_live_occupancy_single(url, attempt)
+            result = await scrape_live_occupancy_single(url, attempt, None)
             
             # If we got at least a name or occupancy data, return it
             if result.get('location_name') or result.get('live_occupancy'):
@@ -401,135 +450,139 @@ async def scrape_live_occupancy_with_retries(url, max_retries=3):
         'note': 'Extracted from URL - scraping failed'
     }
 
-async def scrape_live_occupancy_single(url, attempt_num):
+async def scrape_live_occupancy_single(url, attempt_num, location_name_from_csv=None):
     """
-    Single scraping attempt with attempt-specific optimizations
+    Enhanced single scraping attempt with optimizations from gmaps-scraper-fast-robust.py
     """
+    start_time = time.time()
+    
     async with async_playwright() as p:
-        # Vary browser config per attempt
-        args = ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--disable-extensions']
-        
-        if attempt_num > 0:
-            # More aggressive args for retries
-            args.extend([
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor',
-                '--disable-blink-features=AutomationControlled'
-            ])
+        # Enhanced browser args for better bot detection avoidance
+        args = [
+            '--no-sandbox', 
+            '--disable-dev-shm-usage', 
+            '--disable-gpu', 
+            '--disable-extensions',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor',
+            '--disable-blink-features=AutomationControlled',
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        ]
         
         browser = await p.chromium.launch(headless=True, args=args)
         
-        # Vary viewport and user agent slightly per attempt
-        viewports = [
-            {'width': 1280, 'height': 720},
-            {'width': 1366, 'height': 768},
-            {'width': 1920, 'height': 1080}
-        ]
-        
-        user_agents = [
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        ]
-        
         context = await browser.new_context(
-            viewport=viewports[attempt_num % len(viewports)],
-            user_agent=user_agents[attempt_num % len(user_agents)],
-            locale='de-DE'
+            viewport={'width': 1280, 'height': 720},
+            user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+            locale='de-DE',
+            timezone_id='Europe/Berlin'
         )
+        
+        # Add extra headers to appear more human
+        await context.set_extra_http_headers({
+            'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Upgrade-Insecure-Requests': '1'
+        })
+        
         page = await context.new_page()
+        
+        # Spoof navigator properties
+        await page.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {
+                get: () => undefined,
+            });
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['de-DE', 'de', 'en'],
+            });
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5],
+            });
+        """)
 
         # Performance: Blockiere unnötige Ressourcen
         await page.route("**/*.{png,jpg,jpeg,gif,svg,css,woff,woff2}", lambda route: route.abort())
         await page.route("**/ads/**", lambda route: route.abort())
 
         try:
-            logger.info(f"📍 Attempt {attempt_num + 1}: Loading {url}")
-            
-            # Vary timeout per attempt
-            timeout = 30000 + (attempt_num * 10000)  # 30s, 40s, 50s
-            await page.goto(url, wait_until='domcontentloaded', timeout=timeout)
+            logger.info(f"📍 Loading Google Maps: {url}")
+            await page.goto(url, wait_until='domcontentloaded', timeout=30000)  # Schneller laden
 
-            # Extended cookie handling with more time for retries
-            logger.info("🍪 Cookie handling...")
-            cookie_wait = 1000 + (attempt_num * 1000)  # 1s, 2s, 3s
-            await page.wait_for_timeout(cookie_wait)
-            
-            cookie_strategies = [
-                'button:has-text("Accept")',
-                'button:has-text("Alle akzeptieren")',
-                'button:has-text("Akzeptieren")',
-                '[aria-label*="Accept"]',
-                '[aria-label*="akzeptieren"]'
-            ]
-            
-            for strategy in cookie_strategies:
-                try:
-                    buttons = await page.query_selector_all(strategy)
-                    for button in buttons[:2]:
+            logger.info("🍪 Prüfe Cookie-Banner...")
+            # Performance: Schnelle Cookie-Behandlung
+            cookie_handled = False
+            try:
+                # Versuche alle Cookie-Selektoren parallel
+                await page.wait_for_timeout(1000)  # Kurz warten
+                cookie_buttons = await page.query_selector_all(
+                    'button:has-text("Accept"), button:has-text("Alle akzeptieren"), [aria-label*="Accept"], [aria-label*="akzeptieren"]')
+
+                for button in cookie_buttons:
+                    try:
                         if await button.is_visible():
                             await button.click()
-                            logger.info(f"✅ Cookie clicked: {strategy}")
-                            await page.wait_for_timeout(2000)
-                            break
-                except:
-                    continue
-
-            # Longer wait for content, especially for retries
-            content_wait = 5000 + (attempt_num * 2000)  # 5s, 7s, 9s
-            logger.info(f"⏳ Waiting {content_wait/1000}s for content...")
-            await page.wait_for_timeout(content_wait)
-
-            # Try to wait for specific elements
-            try:
-                await page.wait_for_selector('[role="main"]', timeout=5000)
-            except:
-                # If main not found, wait a bit more
-                await page.wait_for_timeout(3000)
-
-            logger.info("🔍 Extracting data...")
-            live_data = None
-            is_live_data = False
-            page_content = await page.content()
-
-            # Live indicator search
-            if '>Live<' in page_content or 'Live</span>' in page_content:
-                is_live_data = True
-                logger.info("✅ Live indicator found")
-
-            # Occupancy data search - Enhanced for historical + current time
-            current_hour = datetime.now().hour
-            
-            if not live_data:
-                # Priority 1: Live/Current occupancy selectors
-                live_selectors = [
-                    '[aria-label*="Derzeit"]',
-                    '[aria-label*="derzeit"]',
-                    '[aria-label*="Live"]',
-                    '[aria-label*="live"]'
-                ]
-                
-                for selector in live_selectors:
-                    try:
-                        elements = await page.query_selector_all(selector)
-                        for element in elements[:5]:
-                            aria_label = await element.get_attribute('aria-label')
-                            if aria_label:
-                                # Skip historical time patterns that contain "Um X Uhr"
-                                if re.search(r'Um\s+\d+\s+Uhr', aria_label, re.IGNORECASE):
-                                    continue
-                                    
-                                live_data = aria_label.replace('&nbsp;', ' ')
-                                if 'derzeit' in aria_label.lower() or 'live' in aria_label.lower():
-                                    is_live_data = True
-                                else:
-                                    is_live_data = False
-                                logger.info(f"✅ Live occupancy found: {live_data}")
-                                break
-                        if live_data:
+                            logger.info("✅ Cookie-Banner akzeptiert")
+                            cookie_handled = True
                             break
                     except:
                         continue
+
+                if cookie_handled:
+                    await page.wait_for_timeout(2000)  # Reduziert von 5000ms
+            except:
+                pass
+
+            logger.info("⏳ Warte auf Maps-Inhalte...")
+            await page.wait_for_timeout(5000)  # Reduziert von 10000ms
+
+            logger.info("🔍 Suche Live-Auslastung...")
+            live_data = None
+            is_live_data = False
+
+            # Performance: Hole Content nur einmal
+            page_content = await page.content()
+
+            # 1. Schnelle Text-Suche nach Live-Indikator
+            if '>Live<' in page_content:
+                is_live_data = True
+                logger.info("✅ Live-Indikator gefunden")
+            # 2. Aria-label Suche optimiert - nur relevante Elemente
+            if not live_data:
+                derzeit_elements = await page.query_selector_all('[aria-label*="Derzeit"], [aria-label*="derzeit"]')
+                for element in derzeit_elements[:5]:  # Limitiere auf erste 5
+                    try:
+                        aria_label = await element.get_attribute('aria-label')
+                        if aria_label:
+                            live_data = aria_label.replace('&nbsp;', ' ')
+                            is_live_data = True
+                            logger.info(f"✅ Live-Daten gefunden: {live_data}")
+                            break
+                    except:
+                        pass
+                
+                # Suche auch nach historischen Daten
+                if not live_data:
+                    historical_elements = await page.query_selector_all('[aria-label*="Um "], [aria-label*="um "]')
+                    for element in historical_elements[:5]:
+                        try:
+                            aria_label = await element.get_attribute('aria-label')
+                            if aria_label and 'ausgelastet' in aria_label.lower():
+                                # Extrahiere nur Auslastungsprozent, ersetze historische Zeit
+                                percent_match = re.search(r'(\d+)\s*%\s*ausgelastet', aria_label, re.IGNORECASE)
+                                if percent_match:
+                                    current_time = datetime.now().strftime('%H:%M')
+                                    live_data = f"Um {current_time} Uhr zu {percent_match.group(1)} % ausgelastet"
+                                    is_live_data = False
+                                    logger.info(f"📄 Historische Daten mit aktueller Zeit: {live_data}")
+                                    break
+                        except:
+                            pass
 
             # Priority 2: Historical data for current hour
             if not live_data:
