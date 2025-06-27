@@ -665,54 +665,107 @@
         try {
             let formattedData;
 
-            try {
-                // Versuche zuerst ipinfo.io
-                const response = await fetch('https://ipinfo.io/json');
-
-                if (!response.ok) {
-                    throw new Error('ipinfo.io nicht verfügbar');
+            // Liste der APIs mit Proxy-Support
+            const apis = [
+                {
+                    name: 'httpbin',
+                    url: 'https://httpbin.org/ip',
+                    format: (data) => ({
+                        ip: data.origin.split(',')[0].trim(),
+                        city: 'N/A',
+                        region: 'N/A', 
+                        country_name: 'N/A',
+                        country: 'N/A',
+                        postal: 'N/A',
+                        latitude: 'N/A',
+                        longitude: 'N/A',
+                        timezone: 'N/A',
+                        org: 'N/A',
+                        asn: 'N/A'
+                    })
+                },
+                {
+                    name: 'ipify',
+                    url: 'https://api.ipify.org?format=json',
+                    format: (data) => ({
+                        ip: data.ip,
+                        city: 'N/A',
+                        region: 'N/A',
+                        country_name: 'N/A', 
+                        country: 'N/A',
+                        postal: 'N/A',
+                        latitude: 'N/A',
+                        longitude: 'N/A',
+                        timezone: 'N/A',
+                        org: 'N/A',
+                        asn: 'N/A'
+                    })
+                },
+                {
+                    name: 'ipinfo',
+                    url: 'https://ipinfo.io/json',
+                    format: (data) => ({
+                        ip: data.ip,
+                        city: data.city || 'N/A',
+                        region: data.region || 'N/A',
+                        country_name: data.country || 'N/A',
+                        country: data.country || 'N/A',
+                        postal: data.postal || 'N/A',
+                        latitude: data.loc ? data.loc.split(',')[0] : 'N/A',
+                        longitude: data.loc ? data.loc.split(',')[1] : 'N/A',
+                        timezone: data.timezone || 'N/A',
+                        org: data.org || 'N/A',
+                        asn: data.org || 'N/A'
+                    })
+                },
+                {
+                    name: 'ip-guide',
+                    url: 'https://ip.guide',
+                    format: (data) => ({
+                        ip: data.ip,
+                        city: data.location?.city || 'N/A',
+                        region: data.location?.region || 'N/A',
+                        country_name: data.location?.country || 'N/A',
+                        country: data.location?.country_code || 'N/A',
+                        postal: data.location?.postal_code || 'N/A',
+                        latitude: data.location?.latitude || 'N/A',
+                        longitude: data.location?.longitude || 'N/A',
+                        timezone: data.location?.timezone || 'N/A',
+                        org: data.network?.organisation || 'N/A',
+                        asn: data.network?.asn || 'N/A'
+                    })
                 }
+            ];
 
-                const data = await response.json();
+            let lastError = null;
+            
+            for (const api of apis) {
+                try {
+                    const response = await fetch(api.url, {
+                        method: 'GET',
+                        cache: 'no-cache'
+                    });
 
-                // Konvertiere ipinfo.io Format
-                formattedData = {
-                    ip: data.ip,
-                    city: data.city || 'N/A',
-                    region: data.region || 'N/A',
-                    country_name: data.country || 'N/A',
-                    country: data.country || 'N/A',
-                    postal: data.postal || 'N/A',
-                    latitude: data.loc ? data.loc.split(',')[0] : 'N/A',
-                    longitude: data.loc ? data.loc.split(',')[1] : 'N/A',
-                    timezone: data.timezone || 'N/A',
-                    org: data.org || 'N/A',
-                    asn: data.org || 'N/A'
-                };
-            } catch (err) {
-                // Fallback zu ip.guide API
-                const response = await fetch('https://ip.guide');
+                    if (!response.ok) {
+                        throw new Error(`${api.name} API Fehler: ${response.status}`);
+                    }
 
-                if (!response.ok) {
-                    throw new Error('Netzwerkfehler beim Abrufen der IP-Informationen');
+                    const data = await response.json();
+                    formattedData = api.format(data);
+                    
+                    // Erfolgreiche API gefunden
+                    console.log(`IP-Daten erfolgreich von ${api.name} abgerufen`);
+                    break;
+                    
+                } catch (err) {
+                    console.warn(`${api.name} API fehlgeschlagen:`, err.message);
+                    lastError = err;
+                    continue;
                 }
+            }
 
-                const data = await response.json();
-
-                // Konvertiere ip.guide Format
-                formattedData = {
-                    ip: data.ip,
-                    city: data.location?.city || 'N/A',
-                    region: data.location?.region || 'N/A',
-                    country_name: data.location?.country || 'N/A',
-                    country: data.location?.country_code || 'N/A',
-                    postal: data.location?.postal_code || 'N/A',
-                    latitude: data.location?.latitude || 'N/A',
-                    longitude: data.location?.longitude || 'N/A',
-                    timezone: data.location?.timezone || 'N/A',
-                    org: data.network?.organisation || 'N/A',
-                    asn: data.network?.asn || 'N/A'
-                };
+            if (!formattedData) {
+                throw new Error(`Alle IP-APIs fehlgeschlagen. Letzter Fehler: ${lastError?.message || 'Unbekannt'}`);
             }
 
             ipData = formattedData;
