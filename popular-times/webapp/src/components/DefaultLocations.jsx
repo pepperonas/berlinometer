@@ -98,10 +98,10 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
           <button 
             onClick={onShowAbout}
             style={{
-              padding: '8px',
+              padding: '10px',
               backgroundColor: 'transparent',
               border: '1px solid var(--gray-3)',
-              borderRadius: '6px',
+              borderRadius: '8px',
               cursor: 'pointer',
               color: 'var(--text-secondary)',
               display: 'flex',
@@ -110,8 +110,8 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
               transition: 'all 0.2s ease',
               flexShrink: 0,
               marginLeft: '16px',
-              width: '32px',
-              height: '32px'
+              width: '40px',
+              height: '40px'
             }}
             onMouseEnter={(e) => {
               e.target.style.backgroundColor = 'var(--gray-2)'
@@ -126,12 +126,12 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
             title="Über die App"
           >
             <svg 
-              width="24" 
-              height="24" 
+              width="20" 
+              height="20" 
               viewBox="0 0 24 24" 
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
               style={{ 
