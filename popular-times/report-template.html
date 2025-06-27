@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps Auslastungsreport</title>
+    <style>
+        :root {
+            /* Color Palette */
+            --background-dark: #2B2E3B;
+            --background-darker: #252830;
+            --card-background: #343845;
+            --accent-blue: #688db1;
+            --accent-green: #9cb68f;
+            --accent-red: #e16162;
+            --text-primary: #d1d5db;
+            --text-secondary: #9ca3af;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            
+            /* Spacing */
+            --spacing-1: 0.25rem;
+            --spacing-2: 0.5rem;
+            --spacing-3: 0.75rem;
+            --spacing-4: 1rem;
+            --spacing-5: 1.25rem;
+            --spacing-6: 1.5rem;
+            --spacing-8: 2rem;
+            --spacing-10: 2.5rem;
+            --spacing-12: 3rem;
+            --spacing-16: 4rem;
+            
+            /* Border Radius */
+            --radius-sm: 0.5rem;
+            --radius: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                        sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: var(--spacing-5);
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--background-darker);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #5a7ea0 100%);
+            color: white;
+            padding: var(--spacing-12);
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            margin: var(--spacing-3) 0 0 0;
+            opacity: 0.9;
+            font-size: 1.125rem;
+            font-weight: 400;
+        }
+
+        .file-selector {
+            padding: var(--spacing-8);
+            background: var(--card-background);
+            border-bottom: 1px solid rgba(156, 163, 175, 0.2);
+        }
+
+        .file-input {
+            display: block;
+            width: 100%;
+            padding: var(--spacing-8);
+            border: 2px dashed var(--text-secondary);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(52, 56, 69, 0.5);
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            font-weight: 500;
+        }
+
+        .file-input:hover {
+            border-color: var(--accent-blue);
+            background: rgba(104, 141, 177, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .file-input.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(104, 141, 177, 0.2);
+            transform: scale(1.02);
+            box-shadow: var(--shadow);
+        }
+
+        .file-input small {
+            display: block;
+            margin-top: var(--spacing-2);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-6);
+            padding: var(--spacing-8);
+            background: var(--card-background);
+        }
+
+        .stat-card {
+            background: var(--background-darker);
+            padding: var(--spacing-6);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(156, 163, 175, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .locations {
+            padding: var(--spacing-8);
+            background: var(--background-dark);
+        }
+
+        .location-card {
+            border: 1px solid rgba(156, 163, 175, 0.2);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-6);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: var(--card-background);
+            box-shadow: var(--shadow);
+        }
+
+        .location-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .location-header {
+            padding: var(--spacing-6);
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .location-body {
+            padding: var(--spacing-6);
+            background: var(--background-darker);
+        }
+
+        .occupancy-bar {
+            height: 12px;
+            border-radius: var(--radius);
+            margin: var(--spacing-4) 0;
+            position: relative;
+            overflow: hidden;
+            background: rgba(156, 163, 175, 0.2);
+        }
+
+        .occupancy-fill {
+            height: 100%;
+            border-radius: var(--radius);
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(90deg, currentColor 0%, rgba(255, 255, 255, 0.8) 100%);
+        }
+
+        .occupancy-text {
+            font-weight: 600;
+            margin: var(--spacing-4) 0;
+            color: var(--text-primary);
+            font-size: 1.125rem;
+        }
+
+        .meta-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--spacing-4);
+            margin-top: var(--spacing-5);
+            padding-top: var(--spacing-5);
+            border-top: 1px solid rgba(156, 163, 175, 0.2);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .meta-label {
+            font-weight: 600;
+            margin-right: var(--spacing-2);
+            color: var(--text-secondary);
+            min-width: fit-content;
+        }
+
+        .meta-item a {
+            color: var(--accent-blue);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .meta-item a:hover {
+            color: #7ea4c7;
+            text-decoration: underline;
+        }
+
+        .live-badge {
+            display: inline-block;
+            padding: var(--spacing-2) var(--spacing-3);
+            border-radius: var(--radius);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .live {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .historical {
+            background: var(--text-secondary);
+            color: var(--background-dark);
+        }
+
+        .legend {
+            background: var(--card-background);
+            padding: var(--spacing-6);
+            margin: var(--spacing-6) var(--spacing-8);
+            border-radius: var(--radius-lg);
+            border-left: 4px solid var(--accent-blue);
+            box-shadow: var(--shadow);
+        }
+
+        .legend h3 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-4);
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-3);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-sm);
+            margin-right: var(--spacing-3);
+            flex-shrink: 0;
+        }
+
+        .error-message {
+            color: var(--accent-red);
+            padding: var(--spacing-6);
+            text-align: center;
+            display: none;
+            background: rgba(225, 97, 98, 0.1);
+            border: 1px solid rgba(225, 97, 98, 0.3);
+            border-radius: var(--radius);
+            margin: var(--spacing-4);
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: var(--spacing-16);
+            display: none;
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+
+        .export-section {
+            padding: var(--spacing-6);
+            background: var(--card-background);
+            border-top: 1px solid rgba(156, 163, 175, 0.2);
+            text-align: center;
+            display: none;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #5a7ea0 100%);
+            color: white;
+            border: none;
+            padding: var(--spacing-4) var(--spacing-6);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-2);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, #5a7ea0 0%, var(--accent-blue) 100%);
+        }
+
+        .export-btn:active {
+            transform: translateY(0);
+        }
+
+        .mood-barometer {
+            background: var(--card-background);
+            padding: var(--spacing-8);
+            margin: var(--spacing-6) var(--spacing-8);
+            border-radius: var(--radius-lg);
+            border-left: 4px solid var(--accent-blue);
+            box-shadow: var(--shadow);
+        }
+
+        .mood-barometer h3 {
+            margin-top: 0;
+            margin-bottom: var(--spacing-6);
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .mood-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-4);
+            margin-bottom: var(--spacing-6);
+        }
+
+        .mood-stat {
+            background: var(--background-darker);
+            padding: var(--spacing-4);
+            border-radius: var(--radius);
+            text-align: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .mood-stat:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .mood-stat.high {
+            border-color: rgba(34, 197, 94, 0.5);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .mood-stat.medium {
+            border-color: rgba(234, 179, 8, 0.5);
+            background: rgba(234, 179, 8, 0.1);
+        }
+
+        .mood-stat.low {
+            border-color: rgba(225, 97, 98, 0.5);
+            background: rgba(225, 97, 98, 0.1);
+        }
+
+        .mood-percentage {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-2);
+        }
+
+        .mood-stat.high .mood-percentage {
+            color: rgba(34, 197, 94, 1);
+        }
+
+        .mood-stat.medium .mood-percentage {
+            color: rgba(234, 179, 8, 1);
+        }
+
+        .mood-stat.low .mood-percentage {
+            color: rgba(225, 97, 98, 1);
+        }
+
+        .mood-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .mood-conclusion {
+            background: var(--background-darker);
+            padding: var(--spacing-6);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-4);
+        }
+
+        .mood-icon {
+            font-size: 3rem;
+            flex-shrink: 0;
+        }
+
+        .mood-text {
+            flex: 1;
+        }
+
+        .mood-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-2);
+            color: var(--text-primary);
+        }
+
+        .mood-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .loading::before {
+            content: '';
+            display: inline-block;
+            width: 2rem;
+            height: 2rem;
+            border: 3px solid rgba(104, 141, 177, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-blue);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: var(--spacing-3);
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #content {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-3);
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: var(--spacing-4);
+            }
+            
+            .meta-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .legend {
+                margin: var(--spacing-4) var(--spacing-4);
+            }
+            
+            .legend-items {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Google Maps Auslastungsreport</h1>
+            <p id="report-timestamp">JSON-Datei laden um Report anzuzeigen</p>
+        </div>
+
+        <div class="file-selector">
+            <div id="dropZone" class="file-input">
+                📁 JSON-Datei hier hineinziehen oder klicken zum Auswählen
+                <br><small>(occupancy_data_*.json)</small>
+                <input type="file" id="jsonFile" accept=".json" style="display: none;">
+            </div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="loading" id="loading">🔄 Lade Daten...</div>
+
+        <div id="content">
+            <div class="stats" id="stats"></div>
+
+            <div class="mood-barometer" id="moodBarometer" style="display: none;">
+                <h3>🌡️ Stimmungsbarometer</h3>
+                <div class="mood-stats">
+                    <div class="mood-stat high">
+                        <div class="mood-percentage" id="highPercent">0%</div>
+                        <div class="mood-label">Stark besucht</div>
+                    </div>
+                    <div class="mood-stat medium">
+                        <div class="mood-percentage" id="mediumPercent">0%</div>
+                        <div class="mood-label">Durchschnittlich</div>
+                    </div>
+                    <div class="mood-stat low">
+                        <div class="mood-percentage" id="lowPercent">0%</div>
+                        <div class="mood-label">Wenig besucht</div>
+                    </div>
+                </div>
+                <div class="mood-conclusion" id="moodConclusion">
+                    <div class="mood-icon" id="moodIcon">🟡</div>
+                    <div class="mood-text">
+                        <div class="mood-title" id="moodTitle">Ausgeglichene Stimmung</div>
+                        <div class="mood-description" id="moodDescription">
+                            Die Auslastung ist weitestgehend ausgewogen.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <h3>📊 Farbkodierung der Auslastung</h3>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(34, 197, 94, 0.8);"></div>
+                        <span>🟢 Über +5% zur gewöhnlichen Auslastung</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(234, 179, 8, 0.8);"></div>
+                        <span>🟡 Innerhalb ±5% der gewöhnlichen Auslastung</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(225, 97, 98, 0.8);"></div>
+                        <span>🔴 Unter -5% zur gewöhnlichen Auslastung</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: rgba(156, 163, 175, 0.5);"></div>
+                        <span>⚫ Keine Auslastungsdaten verfügbar</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="locations" id="locations"></div>
+
+            <div class="export-section" id="exportSection">
+                <button class="export-btn" id="exportBtn">
+                    📥 Export Standalone Report
+                </button>
+                <p style="margin-top: var(--spacing-3); color: var(--text-secondary); font-size: 0.875rem;">
+                    Erstellt eine eigenständige HTML-Datei mit eingebetteten Daten
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Utility functions
+        function extractOccupancyNumbers(liveOccupancyText) {
+            if (!liveOccupancyText) return [null, null];
+            
+            const currentMatch = liveOccupancyText.match(/derzeit\s+zu\s+(\d+)\s*%\s*ausgelastet/i);
+            const normalMatch = liveOccupancyText.match(/normal\s+sind\s+(\d+)\s*%/i);
+            
+            let currentPercent = currentMatch ? parseInt(currentMatch[1]) : null;
+            const normalPercent = normalMatch ? parseInt(normalMatch[1]) : null;
+            
+            // Fallback: Einzelner Prozent-Wert
+            if (currentPercent === null) {
+                const singleMatch = liveOccupancyText.match(/(\d+)\s*%\s*ausgelastet/i);
+                if (singleMatch) {
+                    currentPercent = parseInt(singleMatch[1]);
+                }
+            }
+            
+            return [currentPercent, normalPercent];
+        }
+
+        function getOccupancyColor(currentPercent, normalPercent) {
+            if (currentPercent === null) {
+                return ["rgba(156, 163, 175, 0.5)", "Keine Daten"];
+            }
+            
+            if (normalPercent === null) {
+                // Keine normale Auslastung verfügbar - einfache Klassifizierung
+                if (currentPercent > 70) {
+                    return ["rgba(234, 179, 8, 0.8)", "Hoch"];
+                } else if (currentPercent > 30) {
+                    return ["rgba(234, 179, 8, 0.5)", "Mittel"];
+                } else {
+                    return ["rgba(104, 141, 177, 0.6)", "Niedrig"];
+                }
+            }
+            
+            // Vergleich mit normalem Wert
+            const difference = currentPercent - normalPercent;
+            
+            if (difference > 5) {
+                return ["rgba(34, 197, 94, 0.8)", `+${difference}% über normal`];
+            } else if (difference < -5) {
+                return ["rgba(225, 97, 98, 0.8)", `${difference}% unter normal`];
+            } else {
+                return ["rgba(234, 179, 8, 0.8)", `±${Math.abs(difference)}% normal`];
+            }
+        }
+
+        function formatDateTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleString('de-DE', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'none';
+        }
+
+        function showLoading() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('content').style.display = 'none';
+        }
+
+        function showContent() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+            document.getElementById('exportSection').style.display = 'block';
+        }
+
+        function generateStats(results, metadata) {
+            const totalLocations = results.length;
+            const liveCount = results.filter(r => r.is_live_data).length;
+            const historicalCount = totalLocations - liveCount;
+            const errorCount = results.filter(r => r.error).length;
+
+            let statsHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${totalLocations}</div>
+                    <div class="stat-label">Locations gesamt</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${liveCount}</div>
+                    <div class="stat-label">Live-Daten</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${historicalCount}</div>
+                    <div class="stat-label">Historische Daten</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${errorCount}</div>
+                    <div class="stat-label">Fehler</div>
+                </div>
+            `;
+
+            // Add performance statistics if metadata is available
+            if (metadata) {
+                statsHTML += `
+                    <div class="stat-card">
+                        <div class="stat-number">${metadata.success_rate_percent}%</div>
+                        <div class="stat-label">Erfolgsrate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${metadata.total_execution_time_seconds}s</div>
+                        <div class="stat-label">Gesamtzeit</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${metadata.average_processing_time_seconds}s</div>
+                        <div class="stat-label">Ø Verarbeitungszeit</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${metadata.locations_per_minute}</div>
+                        <div class="stat-label">Locations/Min</div>
+                    </div>
+                `;
+                
+                if (metadata.total_retries_needed > 0) {
+                    statsHTML += `
+                        <div class="stat-card">
+                            <div class="stat-number">${metadata.total_retries_needed}</div>
+                            <div class="stat-label">Wiederholungen</div>
+                        </div>
+                    `;
+                }
+            }
+
+            return statsHTML;
+        }
+
+        function generateMoodBarometer(results) {
+            // Analysiere Auslastung aller Locations
+            const validLocations = results.filter(r => r.live_occupancy && !r.error);
+            
+            if (validLocations.length === 0) {
+                return; // Keine gültigen Daten für Analyse
+            }
+
+            let high = 0, medium = 0, low = 0;
+            const occupancyData = [];
+
+            validLocations.forEach(location => {
+                const [currentPercent, normalPercent] = extractOccupancyNumbers(location.live_occupancy);
+                if (currentPercent !== null) {
+                    occupancyData.push({ current: currentPercent, normal: normalPercent });
+                    
+                    // Klassifizierung basierend auf absoluter Auslastung und Vergleich mit normal
+                    if (normalPercent !== null) {
+                        const difference = currentPercent - normalPercent;
+                        if (difference > 5) {
+                            high++;
+                        } else if (difference < -5) {
+                            low++;
+                        } else {
+                            medium++;
+                        }
+                    } else {
+                        // Fallback: Klassifizierung nur basierend auf absoluter Auslastung
+                        if (currentPercent > 70) {
+                            high++;
+                        } else if (currentPercent > 30) {
+                            medium++;
+                        } else {
+                            low++;
+                        }
+                    }
+                }
+            });
+
+            const total = high + medium + low;
+            if (total === 0) return;
+
+            const highPercent = Math.round((high / total) * 100);
+            const mediumPercent = Math.round((medium / total) * 100);
+            const lowPercent = Math.round((low / total) * 100);
+
+            // Update UI
+            document.getElementById('highPercent').textContent = highPercent + '%';
+            document.getElementById('mediumPercent').textContent = mediumPercent + '%';
+            document.getElementById('lowPercent').textContent = lowPercent + '%';
+
+            // Bestimme Gesamtstimmung und Fazit
+            let moodIcon, moodTitle, moodDescription, dominantCategory;
+
+            if (highPercent >= 50) {
+                dominantCategory = 'high';
+                moodIcon = '🟢';
+                moodTitle = 'Lebendige Atmosphäre';
+                moodDescription = `${highPercent}% der Locations sind überdurchschnittlich gut besucht. Die Bars und Lokale erleben einen regen Zulauf - perfekte Zeit für einen Besuch!`;
+            } else if (lowPercent >= 50) {
+                dominantCategory = 'low';
+                moodIcon = '🔴';
+                moodTitle = 'Entspannte Stimmung';
+                moodDescription = `${lowPercent}% der Locations sind unterdurchschnittlich besucht. Ideal für einen ruhigen Abend ohne Gedränge und mit entspannter Atmosphäre.`;
+            } else if (mediumPercent >= 40) {
+                dominantCategory = 'medium';
+                moodIcon = '🟡';
+                moodTitle = 'Ausgeglichene Stimmung';
+                moodDescription = `${mediumPercent}% der Locations haben normale Auslastung. Eine ausgewogene Mischung aus lebendiger und entspannter Atmosphäre erwartet Sie.`;
+            } else {
+                // Gemischte Verteilung
+                dominantCategory = 'mixed';
+                moodIcon = '🟠';
+                moodTitle = 'Vielfältige Stimmung';
+                moodDescription = `Die Auslastung variiert stark (${highPercent}% hoch, ${mediumPercent}% normal, ${lowPercent}% niedrig). Je nach Vorliebe finden Sie sowohl lebendige als auch entspannte Locations.`;
+            }
+
+            // Zusätzliche Statistiken
+            const avgOccupancy = occupancyData.reduce((sum, data) => sum + data.current, 0) / occupancyData.length;
+            const locations_analyzed = validLocations.length;
+            
+            if (avgOccupancy > 60) {
+                moodDescription += ` Durchschnittliche Auslastung: ${Math.round(avgOccupancy)}% (${locations_analyzed} Locations analysiert).`;
+            } else if (avgOccupancy < 40) {
+                moodDescription += ` Durchschnittliche Auslastung: ${Math.round(avgOccupancy)}% (${locations_analyzed} Locations analysiert).`;
+            } else {
+                moodDescription += ` Durchschnittliche Auslastung: ${Math.round(avgOccupancy)}% (${locations_analyzed} Locations analysiert).`;
+            }
+
+            document.getElementById('moodIcon').textContent = moodIcon;
+            document.getElementById('moodTitle').textContent = moodTitle;
+            document.getElementById('moodDescription').textContent = moodDescription;
+
+            // Zeige Stimmungsbarometer an
+            document.getElementById('moodBarometer').style.display = 'block';
+        }
+
+        function generateLocationCard(result) {
+            const name = result.location_name || 'Unbekannte Location';
+            const occupancy = result.live_occupancy || '';
+            const isLive = result.is_live_data || false;
+            const address = result.address || 'Adresse nicht verfügbar';
+            const rating = result.rating || 'Keine Bewertung';
+            const url = result.url || '';
+            const error = result.error;
+            
+            const [currentPercent, normalPercent] = extractOccupancyNumbers(occupancy);
+            const [color, description] = getOccupancyColor(currentPercent, normalPercent);
+            
+            const liveBadge = isLive 
+                ? '<span class="live-badge live">🔴 LIVE</span>' 
+                : '<span class="live-badge historical">⚫ Historisch</span>';
+            
+            const barWidth = currentPercent || 0;
+            
+            if (error) {
+                return `
+                    <div class="location-card">
+                        <div class="location-header" style="background-color: #666;">
+                            <span>${name}</span>
+                        </div>
+                        <div class="location-body">
+                            <p style="color: red;">❌ Fehler beim Scraping: ${error}</p>
+                            <div class="meta-info">
+                                <div class="meta-item">
+                                    <span class="meta-label">🔗 URL:</span>
+                                    <a href="${url}" target="_blank">Google Maps öffnen</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="location-card">
+                        <div class="location-header" style="background-color: ${color};">
+                            <span>${name}</span>
+                            ${liveBadge}
+                        </div>
+                        <div class="location-body">
+                            <div class="occupancy-text">
+                                ${occupancy || 'Keine Auslastungsdaten verfügbar'}
+                            </div>
+                            <div class="occupancy-bar">
+                                <div class="occupancy-fill" style="background-color: ${color}; width: ${barWidth}%;"></div>
+                            </div>
+                            <p><strong>Analyse:</strong> ${description}</p>
+                            <div class="meta-info">
+                                <div class="meta-item">
+                                    <span class="meta-label">📍 Adresse:</span>
+                                    <span>${address}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">⭐ Bewertung:</span>
+                                    <span>${rating}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span class="meta-label">🔗 URL:</span>
+                                    <a href="${url}" target="_blank">Google Maps öffnen</a>
+                                </div>
+                                ${result.statistics ? `
+                                    <div class="meta-item">
+                                        <span class="meta-label">⏱️ Verarbeitungszeit:</span>
+                                        <span>${result.statistics.processing_time_seconds}s</span>
+                                    </div>
+                                    ${result.statistics.retries_needed > 0 ? `
+                                        <div class="meta-item">
+                                            <span class="meta-label">🔄 Wiederholungen:</span>
+                                            <span>${result.statistics.retries_needed}</span>
+                                        </div>
+                                    ` : ''}
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Global variable to store current data for export
+        let currentReportData = null;
+
+        function renderReport(data) {
+            // Store data for export functionality
+            currentReportData = data;
+
+            // Handle new JSON structure with metadata
+            let locations, metadata;
+            if (data.metadata && data.locations) {
+                // New format with metadata
+                metadata = data.metadata;
+                locations = data.locations;
+            } else {
+                // Old format - array of locations
+                locations = data;
+                metadata = null;
+            }
+
+            // Update timestamp
+            if (metadata && metadata.scraping_timestamp) {
+                document.getElementById('report-timestamp').textContent = 
+                    `Erstellt am ${formatDateTime(metadata.scraping_timestamp)}`;
+            } else if (locations.length > 0 && locations[0].timestamp) {
+                document.getElementById('report-timestamp').textContent = 
+                    `Erstellt am ${formatDateTime(locations[0].timestamp)}`;
+            }
+
+            // Generate stats
+            document.getElementById('stats').innerHTML = generateStats(locations, metadata);
+
+            // Generate mood barometer
+            generateMoodBarometer(locations);
+
+            // Generate location cards
+            const locationsHTML = locations.map(generateLocationCard).join('');
+            document.getElementById('locations').innerHTML = locationsHTML;
+
+            showContent();
+        }
+
+        // File processing function
+        function processFile(file) {
+            if (!file) return;
+            
+            if (!file.name.endsWith('.json')) {
+                showError('Bitte wählen Sie eine JSON-Datei aus.');
+                return;
+            }
+
+            showLoading();
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (Array.isArray(data)) {
+                        // Old format - array of locations
+                        renderReport(data);
+                    } else if (data.metadata && data.locations && Array.isArray(data.locations)) {
+                        // New format with metadata
+                        renderReport(data);
+                    } else {
+                        showError('Ungültiges JSON-Format. Erwartet wird entweder ein Array von Location-Objekten oder ein Objekt mit "metadata" und "locations" Eigenschaften.');
+                    }
+                } catch (error) {
+                    showError('Fehler beim Lesen der JSON-Datei: ' + error.message);
+                }
+            };
+            reader.onerror = function() {
+                showError('Fehler beim Laden der Datei.');
+            };
+            reader.readAsText(file);
+        }
+
+        // File input handler
+        document.getElementById('jsonFile').addEventListener('change', function(event) {
+            processFile(event.target.files[0]);
+        });
+
+        // Drag and drop handlers
+        const dropZone = document.getElementById('dropZone');
+        
+        // Click handler for drop zone
+        dropZone.addEventListener('click', function() {
+            document.getElementById('jsonFile').click();
+        });
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        // Export functionality
+        function exportStandaloneReport() {
+            if (!currentReportData) {
+                alert('Keine Daten zum Exportieren verfügbar.');
+                return;
+            }
+
+            var timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            var filename = 'report_' + timestamp + '.html';
+
+            // Get current template HTML
+            var templateHTML = document.documentElement.outerHTML;
+
+            // Simple string replacements to clean up template
+            var cleanHTML = templateHTML;
+            
+            // Remove file selector
+            var fileSelectorStart = cleanHTML.indexOf('<div class="file-selector">');
+            if (fileSelectorStart !== -1) {
+                var fileSelectorEnd = cleanHTML.indexOf('</div>', fileSelectorStart) + 6;
+                cleanHTML = cleanHTML.substring(0, fileSelectorStart) + cleanHTML.substring(fileSelectorEnd);
+            }
+            
+            // Remove export section
+            var exportStart = cleanHTML.indexOf('<div class="export-section"');
+            if (exportStart !== -1) {
+                var exportEnd = cleanHTML.indexOf('</div>', exportStart) + 6;
+                cleanHTML = cleanHTML.substring(0, exportStart) + cleanHTML.substring(exportEnd);
+            }
+            
+            // Remove error and loading sections
+            var errorStart = cleanHTML.indexOf('<div class="error-message"');
+            if (errorStart !== -1) {
+                var errorEnd = cleanHTML.indexOf('</div>', errorStart) + 6;
+                cleanHTML = cleanHTML.substring(0, errorStart) + cleanHTML.substring(errorEnd);
+            }
+            
+            var loadingStart = cleanHTML.indexOf('<div class="loading"');
+            if (loadingStart !== -1) {
+                var loadingEnd = cleanHTML.indexOf('</div>', loadingStart) + 6;
+                cleanHTML = cleanHTML.substring(0, loadingStart) + cleanHTML.substring(loadingEnd);
+            }
+
+            // Show content by default and update header
+            cleanHTML = cleanHTML.replace('id="content"', 'id="content" style="display: block;"');
+            cleanHTML = cleanHTML.replace('JSON-Datei laden um Report anzuzeigen', 'Erstellt am ' + formatDateTime(new Date().toISOString()));
+            
+            // Show mood barometer by default in standalone
+            cleanHTML = cleanHTML.replace('id="moodBarometer" style="display: none;"', 'id="moodBarometer" style="display: block;"');
+            
+            // Replace all CSS variables with their actual values for standalone version
+            // Color variables
+            cleanHTML = cleanHTML.replace(/var\(--background-dark\)/g, '#2B2E3B');
+            cleanHTML = cleanHTML.replace(/var\(--background-darker\)/g, '#252830');
+            cleanHTML = cleanHTML.replace(/var\(--card-background\)/g, '#343845');
+            cleanHTML = cleanHTML.replace(/var\(--accent-blue\)/g, '#688db1');
+            cleanHTML = cleanHTML.replace(/var\(--accent-green\)/g, '#9cb68f');
+            cleanHTML = cleanHTML.replace(/var\(--accent-red\)/g, '#e16162');
+            cleanHTML = cleanHTML.replace(/var\(--text-primary\)/g, '#d1d5db');
+            cleanHTML = cleanHTML.replace(/var\(--text-secondary\)/g, '#9ca3af');
+            
+            // Shadow variables
+            cleanHTML = cleanHTML.replace(/var\(--shadow-sm\)/g, '0 1px 2px 0 rgba(0, 0, 0, 0.5)');
+            cleanHTML = cleanHTML.replace(/var\(--shadow\)/g, '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.06)');
+            cleanHTML = cleanHTML.replace(/var\(--shadow-lg\)/g, '0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.05)');
+            
+            // Spacing variables (complete set)
+            cleanHTML = cleanHTML.replace(/var\(--spacing-1\)/g, '0.25rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-2\)/g, '0.5rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-3\)/g, '0.75rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-4\)/g, '1rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-5\)/g, '1.25rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-6\)/g, '1.5rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-8\)/g, '2rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-10\)/g, '2.5rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-12\)/g, '3rem');
+            cleanHTML = cleanHTML.replace(/var\(--spacing-16\)/g, '4rem');
+            
+            // Border radius variables
+            cleanHTML = cleanHTML.replace(/var\(--radius-sm\)/g, '0.5rem');
+            cleanHTML = cleanHTML.replace(/var\(--radius\)/g, '0.75rem');
+            cleanHTML = cleanHTML.replace(/var\(--radius-lg\)/g, '1rem');
+            cleanHTML = cleanHTML.replace(/var\(--radius-xl\)/g, '1.5rem');
+            
+            // Critical fix: Add inline styles to ensure proper container width constraint
+            cleanHTML = cleanHTML.replace(
+                'class="container"',
+                'class="container" style="max-width: 1200px; margin: 0 auto; background: #252830; border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.05); overflow: hidden;"'
+            );
+            
+            // Ensure stats grid has proper constraints
+            cleanHTML = cleanHTML.replace(
+                'class="stats"',
+                'class="stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; padding: 2rem; background: #343845;"'
+            );
+            
+            // Ensure location cards have proper spacing
+            cleanHTML = cleanHTML.replace(
+                'class="locations"',
+                'class="locations" style="padding: 2rem; background: #2B2E3B;"'
+            );
+
+            // Add embedded data script before closing body tag
+            var scriptTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
+            var scriptClose = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
+            var bodyClose = String.fromCharCode(60) + '/body' + String.fromCharCode(62);
+            
+            var scriptContent = 'var embeddedReportData = ' + JSON.stringify(currentReportData, null, 2) + ';';
+            scriptContent += 'document.addEventListener("DOMContentLoaded", function() { renderReport(embeddedReportData); });';
+            
+            var fullScript = scriptTag + scriptContent + scriptClose + bodyClose;
+            cleanHTML = cleanHTML.replace(bodyClose, fullScript);
+
+            // Create and download file
+            var blob = new Blob([cleanHTML], { type: 'text/html' });
+            var url = URL.createObjectURL(blob);
+            
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Show success message
+            var exportBtn = document.getElementById('exportBtn');
+            var originalText = exportBtn.innerHTML;
+            exportBtn.innerHTML = '✅ Report exportiert!';
+            exportBtn.disabled = true;
+            
+            setTimeout(function() {
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            }, 3000);
+        }
+
+        // Add event listener for export button
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('exportBtn').addEventListener('click', exportStandaloneReport);
+        });
+
+        // Auto-load if JSON file is provided via URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const jsonFile = urlParams.get('json');
+        if (jsonFile) {
+            showLoading();
+            fetch(jsonFile)
+                .then(response => {
+                    if (!response.ok) throw new Error('Datei nicht gefunden');
+                    return response.json();
+                })
+                .then(data => renderReport(data))
+                .catch(error => showError('Fehler beim Laden der JSON-Datei: ' + error.message));
+        }
+    </script>
+</body>
+</html>
