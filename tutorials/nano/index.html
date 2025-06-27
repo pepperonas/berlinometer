@@ -78,22 +78,41 @@
                         <h3 class="subsection-title">Was ist Nano?</h3>
                     </div>
                     <div class="subsection-content">
-                        <p>Nano ist ein benutzerfreundlicher Terminal-Texteditor, verfügbar auf fast allen Unix-ähnlichen Systemen.</p>
+                        <p>Nano ist ein benutzerfreundlicher Terminal-Texteditor, der von Chris Allegretta entwickelt wurde. Er ist eine freie Alternative zu Pico und auf fast allen Unix-ähnlichen Systemen verfügbar.</p>
+                        
+                        <p><strong>Geschichte & Entwicklung:</strong></p>
+                        <ul>
+                            <li><strong>1999:</strong> Erste Version als "TIP" (This Isn't Pico)</li>
+                            <li><strong>2000:</strong> Umbenennung zu "nano"</li>
+                            <li><strong>Heute:</strong> Aktiv entwickelt, über 200 Releases</li>
+                            <li><strong>Lizenz:</strong> GNU GPL v3</li>
+                        </ul>
+                        
                         <p><strong>Im Gegensatz zu Vi/Vim:</strong></p>
                         <ul>
-                            <li>Intuitiv</li>
-                            <li>Zeigt Shortcuts direkt am Bildschirmrand an</li>
+                            <li><strong>Keine Modi:</strong> Direkte Texteingabe ohne Moduswechsel</li>
+                            <li><strong>Intuitive Bedienung:</strong> Shortcuts sind selbsterklärend</li>
+                            <li><strong>Sichtbare Hilfe:</strong> Shortcuts direkt am Bildschirmrand</li>
+                            <li><strong>Sofortiger Start:</strong> Keine Einarbeitung erforderlich</li>
                         </ul>
-                        <p><strong>Warum Nano?</strong></p>
+                        
+                        <p><strong>Warum Nano wählen?</strong></p>
                         <ul>
-                            <li><strong>Einfach zu lernen:</strong> Keine steile Lernkurve</li>
-                            <li><strong>Shortcuts sichtbar:</strong> Immer am Bildschirmrand</li>
-                            <li><strong>Vorinstalliert:</strong> Auf fast jedem System</li>
-                            <li><strong>Schnelle Änderungen:</strong> Perfekt dafür geeignet</li>
-                            <li><strong>Keine Modi:</strong> Im Gegensatz zu Vi/Vim</li>
+                            <li><strong>Einfach zu lernen:</strong> Keine steile Lernkurve wie bei Vi/Vim</li>
+                            <li><strong>Shortcuts sichtbar:</strong> Immer am Bildschirmrand verfügbar</li>
+                            <li><strong>Universell verfügbar:</strong> Auf Linux, macOS, BSD vorinstalliert</li>
+                            <li><strong>Schnelle Änderungen:</strong> Perfekt für Config-Files und Scripts</li>
+                            <li><strong>Ressourcenschonend:</strong> Geringer Speicherverbrauch</li>
+                            <li><strong>SSH-freundlich:</strong> Funktioniert perfekt über Remote-Verbindungen</li>
                         </ul>
+                        
+                        <div class="feature-card">
+                            <h3>🎯 Perfekt für Anfänger</h3>
+                            <p>Nano ist der ideale Einstieg in Terminal-basierte Editoren. Während Vi/Vim eine steile Lernkurve haben, kannst du mit Nano sofort produktiv arbeiten!</p>
+                        </div>
+                        
                         <div class="tip-card">
-                            ^ steht für die Ctrl/Strg-Taste
+                            <strong>Symbol-Erklärung:</strong> ^ steht für die Ctrl/Strg-Taste, M- für Alt/Meta-Taste
                         </div>
                     </div>
                 </div>
@@ -101,21 +120,71 @@
                 <div class="subsection">
                     <div class="subsection-header">
                         <span class="material-icons subsection-icon">memory</span>
-                        <h3 class="subsection-title">Nano starten</h3>
+                        <h3 class="subsection-title">Nano starten & Optionen</h3>
                     </div>
                     <div class="subsection-content">
+                        <p><strong>Grundlegende Verwendung:</strong></p>
                         <div class="code-block">
 # Neue Datei erstellen/öffnen
 nano dateiname.txt
 
+# Mehrere Dateien öffnen (Multi-Buffer)
+nano file1.txt file2.txt file3.txt
+
 # Mit Zeilennummer öffnen
 nano +42 dateiname.txt
 
-# Im Read-Only Modus öffnen
+# Zu bestimmter Spalte springen
+nano +42,15 dateiname.txt
+                        </div>
+                        
+                        <p><strong>Wichtige Startoptionen:</strong></p>
+                        <div class="code-block">
+# Read-Only Modus (nur lesen)
 nano -v dateiname.txt
 
-# Mit Backup erstellen
+# Mit automatischem Backup
 nano -B dateiname.txt
+
+# Zeilennummern anzeigen
+nano -l dateiname.txt
+
+# Maus-Support aktivieren
+nano -m dateiname.txt
+
+# Weiches Wrapping (kein Zeilenumbruch)
+nano -S dateiname.txt
+
+# Auto-Einrückung aktivieren
+nano -i dateiname.txt
+
+# Tab-Größe festlegen
+nano -T 4 dateiname.txt
+
+# Kombinierte Optionen
+nano -liST4 script.py
+                        </div>
+                        
+                        <p><strong>Spezielle Modi:</strong></p>
+                        <div class="code-block">
+# Restricted Mode (sicherer Modus)
+nano -R dateiname.txt
+
+# Keine Konfigurationsdatei laden
+nano -I dateiname.txt
+
+# Temporäre Datei (wird nicht gespeichert)
+nano -T dateiname.txt
+
+# Mit Syntax-Highlighting für bestimmte Sprache
+nano -Y python script.py
+nano -Y html index.html
+nano -Y css styles.css
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Profi-Tipp:</strong> Erstelle einen Alias für deine bevorzugten Optionen:<br>
+                            <code>alias nano='nano -liST4'</code> in deiner ~/.bashrc
                         </div>
                     </div>
                 </div>
@@ -126,15 +195,69 @@ nano -B dateiname.txt
                         <h3 class="subsection-title">Interface verstehen</h3>
                     </div>
                     <div class="subsection-content">
+                        <p><strong>Aufbau des Nano-Fensters:</strong></p>
+                        
+                        <div class="code-block">
+┌─ Titelzeile ─────────────────────────────────────┐
+│ GNU nano 6.2    /path/to/file.txt    Modified    │
+├─ Bearbeitungsbereich ───────────────────────────────┤
+│ 1  #!/bin/bash                                    │
+│ 2  # Mein Script                                  │
+│ 3  echo "Hello World"                            │
+│ 4  [Cursor hier]                                  │
+│                                                   │
+├─ Statuszeile ────────────────────────────────────────┤
+│ [ line 4/10, col 1/80, char 45/120 ]             │
+├─ Shortcut-Hilfe ────────────────────────────────────┤
+│ ^G Help    ^O Write   ^W Where Is ^K Cut Text    │
+│ ^X Exit    ^R Read    ^\ Replace  ^U Paste      │
+└─────────────────────────────────────────────────────┘
+                        </div>
+                        
+                        <p><strong>Detaillierte Bereiche:</strong></p>
                         <ul>
-                            <li><strong>Titelzeile:</strong> Zeigt Version und aktuellen Dateinamen</li>
-                            <li><strong>Bearbeitungsbereich:</strong> Für den Text</li>
-                            <li><strong>Statuszeile:</strong> Zeigt wichtige Meldungen</li>
-                            <li><strong>Shortcut-Liste:</strong> Letzte zwei Zeilen zeigen verfügbare Befehle</li>
+                            <li><strong>Titelzeile (Top):</strong> 
+                                <ul>
+                                    <li>Nano-Version und Dateiname</li>
+                                    <li>Status: "Modified", "New Buffer", "Read-Only"</li>
+                                    <li>Bei mehreren Dateien: Buffer-Nummer</li>
+                                </ul>
+                            </li>
+                            <li><strong>Bearbeitungsbereich (Mitte):</strong>
+                                <ul>
+                                    <li>Hauptbereich für Texteingabe</li>
+                                    <li>Zeilennummern (optional mit -l)</li>
+                                    <li>Syntax-Highlighting (je nach Dateityp)</li>
+                                    <li>Cursor-Position sichtbar</li>
+                                </ul>
+                            </li>
+                            <li><strong>Statuszeile (Vorletzter):</strong>
+                                <ul>
+                                    <li>Aktuelle Zeile/Spalte/Zeichen-Position</li>
+                                    <li>Wichtige Meldungen und Bestätigungen</li>
+                                    <li>Such- und Ersetzungsmodus-Anzeigen</li>
+                                </ul>
+                            </li>
+                            <li><strong>Shortcut-Hilfe (Unten):</strong>
+                                <ul>
+                                    <li>Zwei Zeilen mit den wichtigsten Befehlen</li>
+                                    <li>Kontextuell: Ändert sich je nach Modus</li>
+                                    <li>Immer sichtbar - kein Nachschlagen nötig!</li>
+                                </ul>
+                            </li>
                         </ul>
+                        
                         <div class="feature-card">
-                            <h3>Tipp</h3>
-                            <p>^ steht für die Ctrl/Strg-Taste</p>
+                            <h3>🎨 Visueller Komfort</h3>
+                            <p>Nano zeigt dir immer alle wichtigen Informationen auf einen Blick - ohne Menüs oder versteckte Modi. Das macht es besonders anfängerfreundlich!</p>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Symbol-Legende:</strong><br>
+                            ^ = Ctrl/Strg-Taste<br>
+                            M- = Alt/Meta-Taste<br>
+                            F1-F12 = Funktionstasten<br>
+                            Sh- = Shift-Taste
                         </div>
                     </div>
                 </div>
@@ -156,6 +279,7 @@ nano -B dateiname.txt
                         <h3 class="subsection-title">Basis-Navigation</h3>
                     </div>
                     <div class="subsection-content">
+                        <p>Nano bietet intuitive Navigation mit Pfeiltasten und praktischen Shortcuts für schnelle Bewegungen im Text.</p>
                         <div class="shortcut-table">
                             <div class="shortcut-row">
                                 <div class="shortcut-action">Cursor bewegen</div>
@@ -192,6 +316,20 @@ nano -B dateiname.txt
                                 <div class="shortcut-key">Strg + _</div>
                                 <div class="shortcut-key">⌃ + _</div>
                             </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Bildschirm neu zeichnen</div>
+                                <div class="shortcut-key">Strg + L</div>
+                                <div class="shortcut-key">⌃ + L</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Hilfe anzeigen</div>
+                                <div class="shortcut-key">Strg + G</div>
+                                <div class="shortcut-key">⌃ + G</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Navigation-Profi-Tipp:</strong> Nutze Strg+G für die integrierte Hilfe mit allen Shortcuts!
                         </div>
                     </div>
                 </div>
@@ -199,9 +337,10 @@ nano -B dateiname.txt
                 <div class="subsection">
                     <div class="subsection-header">
                         <span class="material-icons subsection-icon">tune</span>
-                        <h3 class="subsection-title">Schnelle Navigation</h3>
+                        <h3 class="subsection-title">Erweiterte Navigation</h3>
                     </div>
                     <div class="subsection-content">
+                        <p>Für Power-User: Springe schnell durch große Dateien mit diesen fortgeschrittenen Navigationsbefehlen.</p>
                         <div class="shortcut-table">
                             <div class="shortcut-row">
                                 <div class="shortcut-action">Dateianfang</div>
@@ -233,6 +372,25 @@ nano -B dateiname.txt
                                 <div class="shortcut-key">Strg + →</div>
                                 <div class="shortcut-key">⌥ + →</div>
                             </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zu schließender Klammer</div>
+                                <div class="shortcut-key">Alt + ]</div>
+                                <div class="shortcut-key">⌥ + ]</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zu öffnender Klammer</div>
+                                <div class="shortcut-key">Alt + [</div>
+                                <div class="shortcut-key">⌥ + [</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Aktuelle Zeile zentrieren</div>
+                                <div class="shortcut-key">Alt + -</div>
+                                <div class="shortcut-key">⌥ + -</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Klammer-Navigation:</strong> Alt+[ und Alt+] sind super nützlich beim Programmieren für das Springen zwischen zusammengehörigen Klammern!
                         </div>
                     </div>
                 </div>
@@ -254,6 +412,7 @@ nano -B dateiname.txt
                         <h3 class="subsection-title">Ausschneiden und Einfügen</h3>
                     </div>
                     <div class="subsection-content">
+                        <p>Nano verwendet ein einfaches Cut & Paste System. Anders als andere Editoren gibt es keine separaten Copy-Befehle - geschnittener Text wird automatisch in der Zwischenablage gespeichert.</p>
                         <div class="shortcut-table">
                             <div class="shortcut-row">
                                 <div class="shortcut-action">Zeile ausschneiden</div>
@@ -296,6 +455,92 @@ nano -B dateiname.txt
                         </div>
                     </div>
                 </div>
+                
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">undo</span>
+                        <h3 class="subsection-title">Rückgängig & Wiederholen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Nano bietet unbegrenzte Undo/Redo-Funktionalität für alle Änderungen.</p>
+                        
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Rückgängig machen</div>
+                                <div class="shortcut-key">Alt + U</div>
+                                <div class="shortcut-key">⌥ + U</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Wiederholen</div>
+                                <div class="shortcut-key">Alt + E</div>
+                                <div class="shortcut-key">⌥ + E</div>
+                            </div>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Wichtig:</strong> Undo/Redo ist standardmäßig aktiviert. Nutze es häufig beim Experimentieren!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">format_align_left</span>
+                        <h3 class="subsection-title">Text-Formatierung</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Nano bietet nützliche Formatierungsoptionen für sauberen Code und Text.</p>
+                        
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Absatz ausrichten</div>
+                                <div class="shortcut-key">Strg + J</div>
+                                <div class="shortcut-key">⌃ + J</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Gesamte Datei ausrichten</div>
+                                <div class="shortcut-key">Alt + J</div>
+                                <div class="shortcut-key">⌥ + J</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zeilen-Wrapping umschalten</div>
+                                <div class="shortcut-key">Alt + 3</div>
+                                <div class="shortcut-key">⌥ + 3</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Einrücken</div>
+                                <div class="shortcut-key">Strg + ]</div>
+                                <div class="shortcut-key">⌃ + ]</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Ausrücken</div>
+                                <div class="shortcut-key">Strg + [</div>
+                                <div class="shortcut-key">⌃ + [</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Tab zu Spaces</div>
+                                <div class="shortcut-key">Alt + 4</div>
+                                <div class="shortcut-key">⌥ + 4</div>
+                            </div>
+                        </div>
+                        
+                        <div class="code-block">
+# Beispiel: Text ausrichten
+Vorher:
+Das    ist     ein
+   unordentlicher      Text
+      mit   unterschiedlichen   Abständen
+
+Nachher (Strg+J):
+Das ist ein unordentlicher Text mit unterschiedlichen
+Abständen
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Programmier-Tipp:</strong> Nutze Strg+] und Strg+[ zum schnellen Ein-/Ausrücken von Code-Blöcken!
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -314,6 +559,7 @@ nano -B dateiname.txt
                         <h3 class="subsection-title">Suchen</h3>
                     </div>
                     <div class="subsection-content">
+                        <p>Nano bietet mächtige Suchfunktionen mit Regex-Unterstützung und verschiedenen Suchoptionen.</p>
                         <div class="shortcut-table">
                             <div class="shortcut-row">
                                 <div class="shortcut-action">Suchen</div>
@@ -340,7 +586,80 @@ nano -B dateiname.txt
                             <strong>Such-Optionen</strong> (nach Strg/⌃ + W):<br>
                             Strg/⌃ + R: Groß-/Kleinschreibung beachten<br>
                             Strg/⌃ + X: Reguläre Ausdrücke<br>
-                            Strg/⌃ + B: Rückwärts suchen
+                            Strg/⌃ + B: Rückwärts suchen<br>
+                            Strg/⌃ + C: Ganze Wörter<br>
+                            Alt + B: Bookmark setzen
+                        </div>
+                        
+                        <div class="code-block">
+# Beispiele für Regex-Suche (Strg+W, dann Strg+X):
+^[0-9]+        # Zeilen die mit Zahlen beginnen
+\b\w+@\w+\.\w+  # E-Mail-Adressen finden
+[A-Z]{2,}      # Großbuchstaben-Sequenzen
+.*TODO.*       # Zeilen mit "TODO"
+\s+$           # Leerzeichen am Zeilenende
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">find_replace</span>
+                        <h3 class="subsection-title">Suchen und Ersetzen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Machtvolle Ersetzungsfunktionen für effiziente Textbearbeitung.</p>
+                        
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Suchen und Ersetzen</div>
+                                <div class="shortcut-key">Strg + \</div>
+                                <div class="shortcut-key">⌃ + \</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Alle ersetzen</div>
+                                <div class="shortcut-key">A</div>
+                                <div class="shortcut-key">A</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Ja (einzeln ersetzen)</div>
+                                <div class="shortcut-key">Y</div>
+                                <div class="shortcut-key">Y</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Nein (überspringen)</div>
+                                <div class="shortcut-key">N</div>
+                                <div class="shortcut-key">N</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Abbrechen</div>
+                                <div class="shortcut-key">Strg + C</div>
+                                <div class="shortcut-key">⌃ + C</div>
+                            </div>
+                        </div>
+                        
+                        <div class="code-block">
+# Praktische Ersetzungsbeispiele:
+
+# HTML-Tags entfernen
+Suchen: <[^>]*>
+Ersetzen: [leer lassen]
+
+# Mehrfache Leerzeichen zu einem
+Suchen: \s+
+Ersetzen: [ein Leerzeichen]
+
+# Zeilennummern hinzufügen
+Suchen: ^(.*)$
+Ersetzen: \1. \1
+
+# Trailing Whitespace entfernen
+Suchen: \s+$
+Ersetzen: [leer lassen]
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Profi-Tipp:</strong> Nutze Regex-Gruppen mit \1, \2 etc. für komplexe Ersetzungen!
                         </div>
                     </div>
                 </div>
@@ -362,6 +681,7 @@ nano -B dateiname.txt
                         <h3 class="subsection-title">Datei-Operationen</h3>
                     </div>
                     <div class="subsection-content">
+                        <p>Nano bietet umfassende Datei-Management-Funktionen für effizientes Arbeiten mit mehreren Dateien.</p>
                         <div class="shortcut-table">
                             <div class="shortcut-row">
                                 <div class="shortcut-action">Speichern</div>
@@ -397,6 +717,117 @@ nano -B dateiname.txt
                         <div class="tip-card">
                             <strong>Hinweis:</strong> Buffer ermöglichen gleichzeitiges Bearbeiten mehrerer Dateien.
                         </div>
+                        
+                        <div class="code-block">
+# Beispiel: Mehrere Dateien bearbeiten
+nano config.txt script.py readme.md
+
+# Im Editor:
+Alt + > : Nächste Datei (script.py)
+Alt + < : Vorherige Datei (config.txt)
+Strg + O: Aktuelle Datei speichern
+Strg + R: Andere Datei einfügen
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">code</span>
+                        <h3 class="subsection-title">Programmier-Features</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Nano bietet spezielle Funktionen für Programmierer und Code-Entwicklung.</p>
+                        
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Auto-Einrückung umschalten</div>
+                                <div class="shortcut-key">Alt + I</div>
+                                <div class="shortcut-key">⌥ + I</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zu schließender Klammer</div>
+                                <div class="shortcut-key">Alt + ]</div>
+                                <div class="shortcut-key">⌥ + ]</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zu öffnender Klammer</div>
+                                <div class="shortcut-key">Alt + [</div>
+                                <div class="shortcut-key">⌥ + [</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zeilennummern umschalten</div>
+                                <div class="shortcut-key">Alt + N</div>
+                                <div class="shortcut-key">⌥ + N</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Whitespace anzeigen</div>
+                                <div class="shortcut-key">Alt + P</div>
+                                <div class="shortcut-key">⌥ + P</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Kommentieren/Entkommentieren</div>
+                                <div class="shortcut-key">Alt + 3</div>
+                                <div class="shortcut-key">⌥ + 3</div>
+                            </div>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>💻 Syntax Highlighting</h3>
+                            <p>Nano erkennt automatisch über 30 Programmiersprachen und färbt Code entsprechend ein: Python, JavaScript, HTML, CSS, C/C++, Java, Ruby, PHP, Bash, Go, Rust, etc.</p>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Entwickler-Tipp:</strong> Nutze Alt+P um unsichtbare Zeichen wie Tabs und Spaces zu sehen - hilft beim Debugging von Whitespace-Problemen!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">terminal</span>
+                        <h3 class="subsection-title">Shell-Integration</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Nano kann nahtlos mit der Shell interagieren und externe Befehle ausführen.</p>
+                        
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Rechtschreibprüfung</div>
+                                <div class="shortcut-key">Strg + T</div>
+                                <div class="shortcut-key">⌃ + T</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Nano suspendieren</div>
+                                <div class="shortcut-key">Strg + Z</div>
+                                <div class="shortcut-key">⌃ + Z</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Befehl ausführen</div>
+                                <div class="shortcut-key">Alt + X</div>
+                                <div class="shortcut-key">⌥ + X</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Bildschirm neu zeichnen</div>
+                                <div class="shortcut-key">Strg + L</div>
+                                <div class="shortcut-key">⌃ + L</div>
+                            </div>
+                        </div>
+                        
+                        <div class="code-block">
+# Beispiele für Befehl ausführen (Alt + X):
+date          # Fügt aktuelles Datum ein
+pwd           # Fügt aktuellen Pfad ein
+ls -la        # Fügt Dateiliste ein
+whoami        # Fügt Benutzername ein
+uptime        # Zeigt System-Uptime
+git status    # Git-Status einfügen
+echo "# TODO" # Kommentar einfügen
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Praktisch:</strong> Mit Strg+Z kannst du Nano pausieren, Shell-Befehle ausführen und mit 'fg' zurückkehren!
+                        </div>
                     </div>
                 </div>
             </div>
@@ -414,24 +845,174 @@ nano -B dateiname.txt
                 <div class="subsection">
                     <div class="subsection-header">
                         <span class="material-icons subsection-icon">colorize</span>
-                        <h3 class="subsection-title">Konfigurationsdatei</h3>
+                        <h3 class="subsection-title">Konfigurationsdatei (.nanorc)</h3>
                     </div>
                     <div class="subsection-content">
-                        <p>Nano wird über ~/.nanorc konfiguriert:</p>
+                        <p>Nano wird über die Datei ~/.nanorc konfiguriert. Hier kannst du alle Einstellungen dauerhaft festlegen.</p>
+                        
+                        <p><strong>Vollständige Beispiel-Konfiguration:</strong></p>
                         <div class="code-block">
-# Beispiel .nanorc
-set linenumbers          # Zeilennummern anzeigen
-set mouse                # Maus-Support aktivieren
-set autoindent           # Automatisches Einrücken
-set tabsize 4            # Tab-Größe auf 4
-set tabstospaces         # Tabs zu Spaces
-set backup               # Backup beim Speichern
-set backupdir "~/.nano-backups"  # Backup-Verzeichnis
-set smooth               # Smooth scrolling
-include "/usr/share/nano/*.nanorc"  # Syntax Highlighting
+# ~/.nanorc - Vollständige Konfiguration
+
+## Allgemeine Einstellungen
+set titlecolor brightwhite,blue    # Titelzeile Farbe
+set statuscolor brightwhite,green  # Statuszeile Farbe
+set selectedcolor brightwhite,magenta # Auswahlfarbe
+set numbercolor cyan               # Zeilennummern-Farbe
+set keycolor cyan                  # Shortcut-Farbe
+set functioncolor green            # Funktionstasten-Farbe
+
+## Editor-Verhalten
+set linenumbers                    # Zeilennummern anzeigen
+set mouse                          # Maus-Support
+set autoindent                     # Auto-Einrückung
+set tabsize 4                      # Tab-Größe
+set tabstospaces                   # Tabs zu Spaces
+set smooth                         # Sanftes Scrollen
+set softwrap                       # Weiches Zeilenumbruch
+set wordbounds                     # Wort-Grenzen beachten
+set zap                            # Ctrl+U löscht bis Zeilenanfang
+
+## Sicherheit
+set backup                         # Backup erstellen
+set backupdir "~/nano-backups"     # Backup-Verzeichnis
+unset allow_insecure_backup        # Sichere Backups
+set tempfile                       # Temporäre Dateien
+
+## Suche und Ersetzen
+set casesensitive                  # Groß-/Kleinschreibung
+set regexp                         # Regex standardmäßig an
+unset backwards                    # Vorwärts suchen
+
+## Darstellung
+set fill 80                        # Zeilen bei 80 Zeichen umbrechen
+set guidestripe 80                 # Hilfslinie bei Spalte 80
+set brackets "')>]}"               # Klammer-Matching
+set whitespace "»·"                 # Whitespace-Zeichen
+set punct "!.?"                    # Satzzeichen
+set quotestr "^([     ]*[#:>\|}])+"
+
+## Erweiterte Features
+set multibuffer                    # Mehrere Dateien
+set nonewlines                     # Keine Leerzeilen am Ende
+set nowrap                         # Kein automatischer Umbruch
+set quickblank                     # Statuszeile schnell ausblenden
+set rebinddelete                   # Delete-Taste funktional
+set smarthome                      # Intelligente Home-Taste
+set suspend                        # Ctrl+Z erlauben
+
+## Undo/Redo
+set undo                           # Undo aktivieren
+set undodir "~/nano-undo"          # Undo-Verzeichnis
+
+## Syntax Highlighting einbinden
+include "/usr/share/nano/*.nanorc"
+include "~/.nano/*.nanorc"         # Eigene Syntax-Dateien
                         </div>
+                        
                         <div class="tip-card">
-                            <strong>Syntax Highlighting:</strong> Unterstützt Sprachen wie Python, JavaScript, HTML/CSS, C/C++, Java, Ruby, PHP, Bash, Markdown, XML, JSON, SQL.
+                            <strong>Installation:</strong> Speichere diese Konfiguration als ~/.nanorc und starte nano neu für sofortige Verbesserungen!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">palette</span>
+                        <h3 class="subsection-title">Eigene Syntax-Regeln</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Erstelle eigene Syntax-Highlighting-Regeln für spezielle Dateiformate.</p>
+                        
+                        <div class="code-block">
+# ~/.nano/myconfig.nanorc - Eigene Syntax für Config-Dateien
+
+syntax "myconfig" "\.(conf|config|cfg)$"
+color brightred "#.*$"              # Kommentare rot
+color brightblue "^[a-zA-Z_]+"      # Schlüssel blau  
+color brightgreen "=.*$"            # Werte grün
+color brightyellow ""[^"]*""        # Strings gelb
+color brightmagenta "[0-9]+"        # Zahlen magenta
+color brightcyan "(true|false)"     # Booleans cyan
+
+# Log-Dateien Syntax
+syntax "logfiles" "\.(log|LOG)$"
+color brightred "ERROR.*$"
+color brightyellow "WARN.*$"
+color brightgreen "INFO.*$"
+color brightblue "DEBUG.*$"
+color brightmagenta "[0-9]{4}-[0-9]{2}-[0-9]{2}" # Datum
+color brightcyan "[0-9]{2}:[0-9]{2}:[0-9]{2}"    # Zeit
+
+# Markdown erweitert
+syntax "markdown" "\.md$"
+color brightred "^#{1,6} .*$"       # Überschriften
+color brightblue "\*\*[^*]+\*\*"    # Fett
+color brightgreen "\*[^*]+\*"       # Kursiv
+color brightyellow "`[^`]+`"        # Code inline
+color brightmagenta "^```.*$"       # Code-Blöcke
+color brightcyan "\[.*\]\(.*\)"     # Links
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>🎨 Farbpalette</h3>
+                            <p>Verfügbare Farben: black, red, green, yellow, blue, magenta, cyan, white sowie bright-Varianten davon.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">keyboard</span>
+                        <h3 class="subsection-title">Eigene Tastenkombinationen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Passe Shortcuts an deine Bedürfnisse an und erstelle neue Funktionen.</p>
+                        
+                        <div class="code-block">
+# Eigene Keybindings in ~/.nanorc
+
+# Speichern wie gewohnt
+bind ^S savefile main              # Strg+S zum Speichern
+bind F2 savefile main              # F2 als Alternative
+
+# Navigation verbessern
+bind ^F whereis main               # Strg+F zum Suchen
+bind F3 findnext main              # F3 für nächstes Ergebnis
+bind F5 refresh all                # F5 zum Aktualisieren
+bind Sh-F5 refresh all             # Shift+F5 Alternative
+
+# Goto-Funktionen
+bind M-G gotoline main             # Alt+G für Goto Line
+bind ^G gotoline main              # Strg+G Alternative
+bind F4 gotoline main              # F4 für Goto
+
+# Buffer-Management
+bind F6 prevbuf main               # F6 vorheriger Buffer
+bind F7 nextbuf main               # F7 nächster Buffer
+bind ^N newbuffer main             # Strg+N neuer Buffer
+
+# Erweiterte Funktionen  
+bind ^Q exit main                  # Strg+Q zum Beenden
+bind ^Y redo main                  # Strg+Y für Redo
+bind ^Z undo main                  # Strg+Z für Undo
+bind ^D duplicate main             # Strg+D Zeile duplizieren
+
+# Makro-ähnliche Funktionen
+bind M-D cutwordleft main          # Alt+D Wort löschen
+bind M-Bsp cutwordleft main        # Alt+Backspace
+bind ^Del cutwordright main        # Strg+Del
+
+# Spezial-Modi
+bind ^R insertfile main            # Strg+R Datei einfügen
+bind ^I indent main                # Strg+I Einrücken
+bind ^U unindent main              # Strg+U Ausrücken
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Keybinding-Syntax:</strong><br>
+                            ^ = Ctrl, M- = Alt, Sh- = Shift, F1-F12 = Funktionstasten<br>
+                            Kontexte: main, search, replace, gotoline, help
                         </div>
                     </div>
                 </div>
@@ -455,17 +1036,79 @@ include "/usr/share/nano/*.nanorc"  # Syntax Highlighting
                     <div class="subsection-content">
                         <p><strong>Multi-Buffer Workflow:</strong></p>
                         <div class="code-block">
-nano file1.txt file2.txt file3.txt
+# Mehrere Dateien gleichzeitig bearbeiten
+nano config.py main.py test.py
+
+# Im Editor navigieren:
+Alt + <     # Vorherige Datei (config.py)
+Alt + >     # Nächste Datei (test.py)
+Strg + R    # Weitere Datei einfügen
+Strg + O    # Aktuelle Datei speichern
+Alt + F     # Neue leere Datei erstellen
                         </div>
-                        <p>Wechsle mit Alt + < und Alt + >.</p>
+                        
+                        <p><strong>Fortgeschrittene Workflow-Tipps:</strong></p>
                         <ul>
-                            <li><strong>Makros aufzeichnen:</strong> Alt + :: Aufnahme starten/stoppen, Alt + ;: Makro abspielen</li>
-                            <li><strong>Rechtschreibprüfung:</strong> Strg + T (benötigt aspell/hunspell)</li>
-                            <li><strong>Schnelles Speichern:</strong> alias n='nano -w -i -S'</li>
+                            <li><strong>Makros aufzeichnen:</strong> Alt + : (Aufnahme starten/stoppen), Alt + ; (Makro abspielen)</li>
+                            <li><strong>Rechtschreibprüfung:</strong> Strg + T (benötigt aspell/hunspell installation)</li>
+                            <li><strong>Wort-Vervollständigung:</strong> Strg + ] vervollständigt Wörter automatisch</li>
+                            <li><strong>DOS/Unix Konvertierung:</strong> Alt + D wechselt Zeilenenden (\r\n ↔ \n)</li>
+                            <li><strong>Schnelle Kommentare:</strong> Alt + 3 kommentiert/entkommentiert Zeilen</li>
                         </ul>
+                        
+                        <p><strong>Nützliche Shell-Aliases:</strong></p>
+                        <div class="code-block">
+# Füge diese zu deiner ~/.bashrc oder ~/.zshrc hinzu:
+alias n='nano -liST4'              # Nano mit optimalen Einstellungen
+alias nw='nano -w'                 # Nano ohne Wrapping
+alias nr='nano -v'                 # Nano Read-Only
+alias nc='nano -B'                 # Nano mit Backup
+alias nm='nano -m'                 # Nano mit Maus-Support
+
+# Spezielle Editoren für bestimmte Dateitypen
+alias editconfig='nano ~/.config/' # Config-Dateien
+alias editbash='nano ~/.bashrc'    # Bash-Konfiguration
+alias editnano='nano ~/.nanorc'    # Nano-Konfiguration
+                        </div>
+                        
+                        <p><strong>Fehlerbehebung & Troubleshooting:</strong></p>
+                        <div class="code-block">
+# Keine Farben sichtbar?
+include "/usr/share/nano/*.nanorc" # In ~/.nanorc
+
+# Seltsame Zeichen im Terminal?
+export LANG=de_DE.UTF-8
+export LC_ALL=de_DE.UTF-8
+
+# Shortcuts funktionieren nicht?
+# Überprüfe Terminal-Einstellungen oder nutze alternative Shortcuts
+
+# Keine Maus-Unterstützung?
+set mouse                          # In ~/.nanorc
+# oder starte mit: nano -m datei.txt
+
+# Backup-Dateien stören?
+unset backup                       # In ~/.nanorc deaktivieren
+# oder mit: nano -B datei.txt (nur für diese Session)
+                        </div>
+                        
+                        <div class="feature-card">
+                            <h3>🎆 Mastery Achievement Unlocked!</h3>
+                            <p>Du hast jetzt das komplette Nano Arsenal gemeistert! Von Basic Navigation bis hin zu komplexen Makros und Custom Syntax - du bist bereit für produktives Terminal-Editing!</p>
+                        </div>
+                        
+                        <div class="tip-card">
+                            <strong>Nächste Schritte:</strong><br>
+                            1. Erstelle deine eigene optimierte ~/.nanorc<br>
+                            2. Übe täglich die wichtigsten Shortcuts<br>
+                            3. Experimentiere mit Makros für wiederkehrende Aufgaben<br>
+                            4. Passe Syntax-Highlighting für deine Projekte an<br>
+                            5. Teile dein Wissen mit anderen Entwicklern!
+                        </div>
+                        
                         <div class="feature-card">
                             <h3>🎉 Herzlichen Glückwunsch!</h3>
-                            <p>Du kennst jetzt alle wichtigen Nano-Features und bist bereit, effizient im Terminal zu arbeiten. Happy Editing! 🖊️✨</p>
+                            <p>Du bist jetzt ein wahrer Nano-Ninja! Mit über 50 Shortcuts, fortgeschrittenen Features und individueller Konfiguration kannst du jede Textbearbeitung im Terminal meistern. Happy Editing! 🖊️✨</p>
                         </div>
                     </div>
                 </div>
