@@ -20,9 +20,14 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
       }
       
       const data = await response.json()
-      setLocations(data.locations || [])
+      // Sort locations: active (aktiv=1) first, then inactive (aktiv=0)
+      const sortedLocations = (data.locations || []).sort((a, b) => {
+        if (a.aktiv === b.aktiv) return 0
+        return b.aktiv - a.aktiv // 1 before 0
+      })
+      setLocations(sortedLocations)
       // Select only active locations by default (aktiv = 1)
-      setSelectedLocations(data.locations?.filter(loc => loc.aktiv === 1).map(loc => loc.url) || [])
+      setSelectedLocations(sortedLocations.filter(loc => loc.aktiv === 1).map(loc => loc.url) || [])
     } catch (err) {
       console.error('Error fetching default locations:', err)
       setError(err.message)

@@ -21,7 +21,7 @@ function App() {
     setBatchInfo(null)
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5044'}/scrape`, {
+      const response = await fetch(`https://mrx3k1.de/api/popular-times/scrape`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
