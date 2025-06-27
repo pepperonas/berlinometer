@@ -62,6 +62,7 @@ function App() {
                 setProgress(100)
                 setCurrentLocation('')
                 setBatchInfo(null)
+              }
             } catch (e) {
               console.warn('Failed to parse JSON:', line)
             }
