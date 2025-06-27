@@ -71,8 +71,7 @@ body {
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
     min-height: 80px;
-    display: flex;
-    align-items: center;
+    box-sizing: border-box;
 }
 
 .nav-container {

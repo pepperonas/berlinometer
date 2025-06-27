@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-function DefaultLocations({ onStartScraping, isScrapingActive }) {
+function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
   const [locations, setLocations] = useState([])
   const [selectedLocations, setSelectedLocations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -88,10 +88,43 @@ function DefaultLocations({ onStartScraping, isScrapingActive }) {
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">Standard Locations</h3>
-        <p className="card-description">
-          Wählen Sie die Locations aus, deren Auslastung Sie analysieren möchten
-        </p>
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="card-title">Standard Locations</h3>
+            <p className="card-description">
+              Wählen Sie die Locations aus, deren Auslastung Sie analysieren möchten
+            </p>
+          </div>
+          <button 
+            onClick={onShowAbout}
+            style={{
+              padding: '8px',
+              backgroundColor: 'transparent',
+              border: '1px solid var(--gray-3)',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              color: 'var(--text-secondary)',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              flexShrink: 0,
+              marginLeft: '16px'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = 'var(--gray-2)'
+              e.target.style.color = 'var(--text-primary)'
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = 'transparent'
+              e.target.style.color = 'var(--text-secondary)'
+            }}
+            title="Über die App"
+          >
+            ℹ️
+          </button>
+        </div>
       </div>
 
       <div className="p-4">
@@ -124,8 +157,9 @@ function DefaultLocations({ onStartScraping, isScrapingActive }) {
             <thead style={{ 
               position: 'sticky', 
               top: 0, 
-              backgroundColor: 'var(--background)',
-              borderBottom: '2px solid var(--gray-3)'
+              backgroundColor: 'var(--background-darker)',
+              borderBottom: '2px solid var(--gray-3)',
+              zIndex: 10
             }}>
               <tr>
                 <th style={{ padding: '12px', textAlign: 'left', width: '40px' }}>

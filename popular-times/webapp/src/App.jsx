@@ -1,12 +1,10 @@
 import { useState } from 'react'
-import URLInput from './components/URLInput'
 import DefaultLocations from './components/DefaultLocations'
 import ProgressBar from './components/ProgressBar'
 import ResultsDisplay from './components/ResultsDisplay'
 import AboutDialog from './components/AboutDialog'
 
 function App() {
-  const [activeTab, setActiveTab] = useState('default') // 'default' or 'manual'
   const [isScrapingActive, setIsScrapingActive] = useState(false)
   const [progress, setProgress] = useState(0)
   const [currentLocation, setCurrentLocation] = useState('')
@@ -81,102 +79,18 @@ function App() {
     <div className="min-h-screen">
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
         <div className="text-center mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <div></div>
-            <h1>Popular Times</h1>
-            <button 
-              className="btn btn-secondary"
-              onClick={() => setShowAboutDialog(true)}
-              style={{ fontSize: '0.9rem', padding: '0.5rem 1rem' }}
-            >
-              Über die App
-            </button>
-          </div>
+          <h1>Popular Times</h1>
           <p className="text-secondary">
             Analysiere die Auslastung von Google Maps Locations in Echtzeit
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6" style={{ maxWidth: '800px', margin: '0 auto' }}>
-          {/* Tab Navigation */}
-          <div style={{ 
-            backgroundColor: 'var(--background-darker)', 
-            borderRadius: 'var(--radius-lg)',
-            padding: '4px',
-            marginBottom: '1rem'
-          }}>
-            <div className="flex" style={{ gap: '4px' }}>
-              <button
-                style={{ 
-                  flex: 1,
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: activeTab === 'default' ? 'var(--background)' : 'transparent',
-                  color: activeTab === 'default' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  border: 'none',
-                  borderRadius: 'var(--radius)',
-                  cursor: 'pointer',
-                  fontWeight: '500',
-                  fontSize: '0.875rem',
-                  transition: 'all 0.2s ease',
-                  boxShadow: activeTab === 'default' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                }}
-                onClick={() => setActiveTab('default')}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'default') {
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== 'default') {
-                    e.target.style.backgroundColor = 'transparent'
-                  }
-                }}
-              >
-                Default
-              </button>
-              <button
-                style={{ 
-                  flex: 1,
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: activeTab === 'manual' ? 'var(--background)' : 'transparent',
-                  color: activeTab === 'manual' ? 'var(--text-primary)' : 'var(--text-secondary)',
-                  border: 'none',
-                  borderRadius: 'var(--radius)',
-                  cursor: 'pointer',
-                  fontWeight: '500',
-                  fontSize: '0.875rem',
-                  transition: 'all 0.2s ease',
-                  boxShadow: activeTab === 'manual' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                }}
-                onClick={() => setActiveTab('manual')}
-                onMouseEnter={(e) => {
-                  if (activeTab !== 'manual') {
-                    e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== 'manual') {
-                    e.target.style.backgroundColor = 'transparent'
-                  }
-                }}
-              >
-                Manuell
-              </button>
-            </div>
-          </div>
-
-          {/* Tab Content */}
-          {activeTab === 'default' ? (
-            <DefaultLocations 
-              onStartScraping={handleStartScraping}
-              isScrapingActive={isScrapingActive}
-            />
-          ) : (
-            <URLInput 
-              onStartScraping={handleStartScraping}
-              isScrapingActive={isScrapingActive}
-            />
-          )}
+          <DefaultLocations 
+            onStartScraping={handleStartScraping}
+            isScrapingActive={isScrapingActive}
+            onShowAbout={() => setShowAboutDialog(true)}
+          />
           
           {isScrapingActive && (
             <ProgressBar 
@@ -192,6 +106,17 @@ function App() {
         </div>
 
       </div>
+      
+      {/* Footer */}
+      <footer style={{
+        textAlign: 'center',
+        padding: '2rem 1rem 1rem 1rem',
+        color: 'var(--text-secondary)',
+        fontSize: '0.875rem',
+        opacity: 0.7
+      }}>
+        Made with ❤️ by Martin Pfeffer
+      </footer>
       
       <AboutDialog 
         isOpen={showAboutDialog}

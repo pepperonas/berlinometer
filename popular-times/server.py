@@ -1587,8 +1587,8 @@ async def process_urls_stream(urls):
     # Initial progress
     yield create_progress_response(0, total)
 
-    # Konfiguration für Batch-Processing (wie standalone script)
-    batch_size = 5  # Locations pro Batch (balance zwischen Speed und Stabilität)
+    # Konfiguration für Batch-Processing mit Progress-Optimierung
+    batch_size = 3  # Kleinere Batches für bessere Progress-Updates
     max_concurrent = 10  # Maximale concurrent Batches
 
     logger.info(f"🚀 Starte optimiertes Scraping von {total} URLs mit Streaming Progress...")
@@ -1618,45 +1618,91 @@ async def process_urls_stream(urls):
         all_results = []
         batch_tasks = []
 
-        # Process batches concurrently (wie standalone script)
-        for batch_id, batch in enumerate(batches, 1):
-            task = process_batch_concurrent(batch, context, semaphore, batch_id)
-            batch_tasks.append(task)
-
-            # Progress vor Batch-Start
-            batch_info = {
-                'currentBatch': batch_id,
-                'totalBatches': len(batches),
-                'locationsInBatch': len(batch),
-                'batchProgress': 0
-            }
-            yield create_progress_response(processed_count, total,
-                                           f"🔄 Starte Batch {batch_id}/{len(batches)}",
-                                           batch_info)
-
-            # Starte nicht zu viele Batches gleichzeitig (wie standalone)
-            if len(batch_tasks) >= max_concurrent or batch_id == len(batches):
-                batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
-
-                for batch_result in batch_results:
-                    if isinstance(batch_result, Exception):
-                        logger.error(f"❌ Batch-Fehler: {batch_result}")
-                    elif isinstance(batch_result, list):
-                        for result in batch_result:
-                            all_results.append(result)
-                            yield create_result_response(result)
-                            processed_count += 1
-                            
-                            # Update progress
-                            yield create_progress_response(processed_count, total,
-                                                           f"✅ {result.get('location_name', 'Unknown')}")
-
-                batch_tasks = []
-
-                # Kurze Pause zwischen Batch-Gruppen (wie standalone)
-                if batch_id < len(batches):
-                    logger.info("⏳ Pause zwischen Batch-Gruppen...")
-                    await asyncio.sleep(2)
+        # Process batches with better progress streaming
+        batch_group_size = 3  # Kleinere Gruppen für bessere Progress-Updates
+        
+        for batch_start in range(0, len(batches), batch_group_size):
+            batch_group = batches[batch_start:batch_start + batch_group_size]
+            batch_tasks = []
+            
+            # Starte Batch-Gruppe
+            for local_idx, batch in enumerate(batch_group):
+                batch_id = batch_start + local_idx + 1
+                task = process_batch_concurrent(batch, context, semaphore, batch_id)
+                batch_tasks.append(task)
+                
+                # Progress vor Batch-Start
+                batch_info = {
+                    'currentBatch': batch_id,
+                    'totalBatches': len(batches),
+                    'locationsInBatch': len(batch),
+                    'batchProgress': 0
+                }
+                yield create_progress_response(processed_count, total,
+                                               f"🔄 Starte Batch {batch_id}/{len(batches)}",
+                                               batch_info)
+            
+            # Warte auf Batch-Gruppe
+            batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
+            
+            # Verarbeite Ergebnisse sofort für bessere Progress-Updates
+            for batch_idx, batch_result in enumerate(batch_results):
+                batch_id = batch_start + batch_idx + 1
+                batch = batch_group[batch_idx]
+                
+                if isinstance(batch_result, Exception):
+                    logger.error(f"❌ Batch-Fehler {batch_id}: {batch_result}")
+                    # Füge Fehler-Ergebnisse hinzu
+                    for location in batch:
+                        error_result = {
+                            'location_name': location.get('name', 'Unknown'),
+                            'error': str(batch_result),
+                            'statistics': {'success': False, 'processing_time_seconds': 0, 'retries_needed': 0},
+                            'url': location['url'],
+                            'timestamp': datetime.now().isoformat(),
+                            'live_occupancy': None,
+                            'is_live_data': False,
+                            'address': None,
+                            'rating': None
+                        }
+                        all_results.append(error_result)
+                        yield create_result_response(error_result)
+                        processed_count += 1
+                        
+                        # Progress update
+                        batch_info = {
+                            'currentBatch': batch_id,
+                            'totalBatches': len(batches),
+                            'locationsInBatch': len(batch),
+                            'batchProgress': int((processed_count % len(batch) + 1) / len(batch) * 100)
+                        }
+                        yield create_progress_response(processed_count, total,
+                                                       f"❌ {error_result['location_name']}",
+                                                       batch_info)
+                        
+                elif isinstance(batch_result, list):
+                    # Normale Ergebnisse verarbeiten
+                    for result_idx, result in enumerate(batch_result):
+                        all_results.append(result)
+                        yield create_result_response(result)
+                        processed_count += 1
+                        
+                        # Progress update mit Batch-Info
+                        batch_progress = int((result_idx + 1) / len(batch_result) * 100)
+                        batch_info = {
+                            'currentBatch': batch_id,
+                            'totalBatches': len(batches),
+                            'locationsInBatch': len(batch_result),
+                            'batchProgress': batch_progress
+                        }
+                        yield create_progress_response(processed_count, total,
+                                                       f"✅ {result.get('location_name', 'Unknown')}",
+                                                       batch_info)
+            
+            # Kurze Pause zwischen Batch-Gruppen
+            if batch_start + batch_group_size < len(batches):
+                logger.info("⏳ Pause zwischen Batch-Gruppen...")
+                await asyncio.sleep(1)
 
         results = all_results
         
