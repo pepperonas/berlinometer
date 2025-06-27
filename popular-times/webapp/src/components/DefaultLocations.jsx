@@ -104,25 +104,44 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
               borderRadius: '6px',
               cursor: 'pointer',
               color: 'var(--text-secondary)',
-              fontSize: '16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               transition: 'all 0.2s ease',
               flexShrink: 0,
-              marginLeft: '16px'
+              marginLeft: '16px',
+              width: '32px',
+              height: '32px'
             }}
             onMouseEnter={(e) => {
               e.target.style.backgroundColor = 'var(--gray-2)'
-              e.target.style.color = 'var(--text-primary)'
+              e.target.style.borderColor = 'var(--gray-4)'
+              e.target.querySelector('svg').style.stroke = 'var(--text-primary)'
             }}
             onMouseLeave={(e) => {
               e.target.style.backgroundColor = 'transparent'
-              e.target.style.color = 'var(--text-secondary)'
+              e.target.style.borderColor = 'var(--gray-3)'
+              e.target.querySelector('svg').style.stroke = 'var(--text-secondary)'
             }}
             title="Über die App"
           >
-            ℹ️
+            <svg 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ 
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <circle cx="12" cy="17" r="1" fill="currentColor"/>
+            </svg>
           </button>
         </div>
       </div>
@@ -181,7 +200,7 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
                     borderBottom: '1px solid var(--gray-2)',
                     cursor: 'pointer',
                     transition: 'background-color 0.2s',
-                    backgroundColor: selectedLocations.includes(location.url) ? 'rgba(156, 182, 143, 0.1)' : 'transparent'
+                    backgroundColor: 'transparent'
                   }}
                   onClick={() => handleToggleLocation(location.url)}
                 >

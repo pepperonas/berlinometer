@@ -79,7 +79,7 @@ function App() {
     <div className="min-h-screen">
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
         <div className="text-center mb-8">
-          <h1>Popular Times</h1>
+          <h1>🍷 Popular Times</h1>
           <p className="text-secondary">
             Analysiere die Auslastung von Google Maps Locations in Echtzeit
           </p>

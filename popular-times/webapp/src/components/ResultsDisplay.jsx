@@ -256,20 +256,20 @@ function ResultsDisplay({ results }) {
               border: '1px solid rgba(209, 213, 219, 0.1)'
             }}
           >
-            <div className="flex justify-between items-start mb-3">
+            <div className="flex justify-between items-start mb-4">
               <div className="flex-1">
-                <h4 className="mb-2">
+                <h4 className="mb-3">
                   {result.location_name || 'Unbekannte Location'}
                 </h4>
                 
                 {result.address && (
-                  <p className="text-sm text-secondary mb-2">
+                  <p className="text-sm text-secondary mb-3">
                     📍 {result.address}
                   </p>
                 )}
                 
                 {result.rating && (
-                  <p className="text-sm text-secondary mb-2">
+                  <p className="text-sm text-secondary mb-3">
                     ⭐ {result.rating} Sterne
                   </p>
                 )}
@@ -286,28 +286,28 @@ function ResultsDisplay({ results }) {
 
             {result.live_occupancy ? (
               <div 
-                className="p-3 mb-3"
+                className="p-4 mb-4"
                 style={{ 
                   backgroundColor: getOccupancyColor(result.live_occupancy, result.is_live_data),
                   borderRadius: 'var(--radius)',
                   border: `1px solid ${getOccupancyBorderColor(result.live_occupancy, result.is_live_data)}`
                 }}
               >
-                <div className="font-weight-500 text-sm mb-1">
+                <div className="font-weight-500 text-sm mb-2">
                   {result.is_live_data ? `${getOccupancyIcon(result.live_occupancy, result.is_live_data)} Live-Auslastung:` : '📊 Auslastungsdaten:'}
                 </div>
-                <div className="text-sm">
+                <div className="text-sm mb-2">
                   {result.live_occupancy}
                 </div>
                 {result.is_live_data && (
-                  <div className="text-xs text-secondary mt-1">
+                  <div className="text-xs text-secondary">
                     Echtzeitdaten von Google Maps
                   </div>
                 )}
               </div>
             ) : (
               <div 
-                className="p-3 mb-3"
+                className="p-4 mb-4"
                 style={{ 
                   backgroundColor: 'rgba(156, 163, 175, 0.1)',
                   borderRadius: 'var(--radius)',
