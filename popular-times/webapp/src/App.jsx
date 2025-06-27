@@ -2,6 +2,7 @@ import { useState } from 'react'
 import DefaultLocations from './components/DefaultLocations'
 import ProgressBar from './components/ProgressBar'
 import ResultsDisplay from './components/ResultsDisplay'
+import MoodBarometer from './components/MoodBarometer'
 import AboutDialog from './components/AboutDialog'
 
 function App() {
@@ -101,7 +102,10 @@ function App() {
           )}
           
           {results.length > 0 && (
-            <ResultsDisplay results={results} />
+            <>
+              <MoodBarometer results={results} />
+              <ResultsDisplay results={results} />
+            </>
           )}
         </div>
 

@@ -3,97 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nano Editor Mastery Guide | Text-Editing wie ein Profi</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-          rel="stylesheet">
+    <title>🖊️ Nano Editor Mastery Guide - Dein Weg zum Terminal-Text-Editor-Profi!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="header">
-    <nav class="nav-container">
-        <a href="../" class="back-nav">
-            <span class="material-icons">arrow_back</span>
-            Tutorials
-        </a>
-        <a href="#" class="logo">🖊️ Nano Editor Mastery</a>
-        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
-        <ul class="nav-menu" id="navMenu">
-            <li><a href="#grundlagen" class="nav-link">Grundlagen</a></li>
-            <li><a href="#navigation" class="nav-link">Navigation</a></li>
-            <li><a href="#editing" class="nav-link">Bearbeitung</a></li>
-            <li><a href="#search" class="nav-link">Suchen</a></li>
-            <li><a href="#advanced" class="nav-link">Fortgeschritten</a></li>
-            <li><a href="#customization" class="nav-link">Anpassung</a></li>
-            <li><a href="#tips" class="nav-link">Profi-Tipps</a></li>
-        </ul>
-    </nav>
-</header>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav-container">
+            <a href="../" class="back-nav">
+                <span class="material-icons">arrow_back</span>
+                Tutorials
+            </a>
+            <a href="#" class="logo">Nano Editor</a>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#section1" class="nav-link">Grundlagen</a></li>
+                <li><a href="#section2" class="nav-link">Navigation</a></li>
+                <li><a href="#section3" class="nav-link">Bearbeitung</a></li>
+                <li><a href="#section4" class="nav-link">Suchen & Ersetzen</a></li>
+                <li><a href="#section5" class="nav-link">Fortgeschritten</a></li>
+                <li><a href="#section6" class="nav-link">Anpassung</a></li>
+                <li><a href="#section7" class="nav-link">Profi-Tipps</a></li>
+            </ul>
+        </nav>
+    </header>
 
-<!-- Progress Bar -->
-<div class="progress-container">
-    <div class="progress-bar" id="progressBar"></div>
-</div>
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
 
-<!-- Main Content -->
-<main class="main-content">
-    <!-- Hero Section -->
-    <section class="hero">
-        <h1>🖊️ Nano Editor Mastery Guide</h1>
-        <p class="hero-subtitle">Dein Weg zum Terminal-Text-Editor-Profi!</p>
-        <div class="hero-stats">
-            <div class="stat">
-                <div class="stat-number">50+</div>
-                <div class="stat-label">Shortcuts</div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>🖊️ Nano Editor Mastery Guide</h1>
+            <p class="hero-subtitle">
+                Dein Weg zum Terminal-Text-Editor-Profi!
+            </p>
+            <div class="hero-stats">
+                <div class="stat">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Shortcuts</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Kapitel</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">∞</div>
+                    <div class="stat-label">Möglichkeiten</div>
+                </div>
             </div>
-            <div class="stat">
-                <div class="stat-number">7</div>
-                <div class="stat-label">Kapitel</div>
-            </div>
-            <div class="stat">
-                <div class="stat-number">∞</div>
-                <div class="stat-label">Möglichkeiten</div>
-            </div>
-        </div>
-    </section>
-    <section id="grundlagen" class="content-section">
-        <div class="section-header">
-            <span class="material-icons">school</span>
-            <h2>Grundlagen</h2>
-            <p>Alles was du für den Start wissen musst</p>
-        </div>
+        </section>
 
-        <div class="subsection">
-            <h3><span class="material-icons">terminal</span> Was ist Nano?</h3>
-            <p>Nano ist ein benutzerfreundlicher Terminal-Texteditor, der auf fast allen
-                Unix-ähnlichen Systemen verfügbar ist. Im Gegensatz zu Vi/Vim ist Nano intuitiv und
-                zeigt alle wichtigen Shortcuts direkt am Bildschirmrand an.</p>
-
-            <div class="feature-card">
-                <h4>Warum Nano?</h4>
-                <ul>
-                    <li><span class="material-icons">check</span> Einfach zu lernen - keine steile
-                        Lernkurve
-                    </li>
-                    <li><span class="material-icons">check</span> Shortcuts sind immer sichtbar</li>
-                    <li><span class="material-icons">check</span> Auf fast jedem System
-                        vorinstalliert
-                    </li>
-                    <li><span class="material-icons">check</span> Perfekt für schnelle Änderungen
-                    </li>
-                    <li><span class="material-icons">check</span> Keine Modi wie bei Vi/Vim</li>
-                </ul>
+        <!-- Section 1 -->
+        <section id="section1" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">foundation</span>
+                <h2 class="section-title">1. Grundlagen</h2>
+                <span class="section-subtitle">Alles, was du für den Start wissen musst.</span>
             </div>
-        </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">download</span>
+                        <h3 class="subsection-title">Was ist Nano?</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Nano ist ein benutzerfreundlicher Terminal-Texteditor, verfügbar auf fast allen Unix-ähnlichen Systemen.</p>
+                        <p><strong>Im Gegensatz zu Vi/Vim:</strong></p>
+                        <ul>
+                            <li>Intuitiv</li>
+                            <li>Zeigt Shortcuts direkt am Bildschirmrand an</li>
+                        </ul>
+                        <p><strong>Warum Nano?</strong></p>
+                        <ul>
+                            <li><strong>Einfach zu lernen:</strong> Keine steile Lernkurve</li>
+                            <li><strong>Shortcuts sichtbar:</strong> Immer am Bildschirmrand</li>
+                            <li><strong>Vorinstalliert:</strong> Auf fast jedem System</li>
+                            <li><strong>Schnelle Änderungen:</strong> Perfekt dafür geeignet</li>
+                            <li><strong>Keine Modi:</strong> Im Gegensatz zu Vi/Vim</li>
+                        </ul>
+                        <div class="tip-card">
+                            ^ steht für die Ctrl/Strg-Taste
+                        </div>
+                    </div>
+                </div>
 
-        <div class="subsection">
-            <h3><span class="material-icons">rocket_launch</span> Nano starten</h3>
-            <div class="code-block">
-                    <pre><code># Neue Datei erstellen/öffnen
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">memory</span>
+                        <h3 class="subsection-title">Nano starten</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <div class="code-block">
+# Neue Datei erstellen/öffnen
 nano dateiname.txt
 
 # Mit Zeilennummer öffnen
@@ -103,633 +115,364 @@ nano +42 dateiname.txt
 nano -v dateiname.txt
 
 # Mit Backup erstellen
-nano -B dateiname.txt</code></pre>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">info</span> Interface verstehen</h3>
-            <p>Das Nano-Interface besteht aus mehreren Bereichen:</p>
-            <ul>
-                <li><strong>Titelzeile:</strong> Zeigt Version und aktuellen Dateinamen</li>
-                <li><strong>Bearbeitungsbereich:</strong> Hier schreibst du deinen Text</li>
-                <li><strong>Statuszeile:</strong> Zeigt wichtige Meldungen</li>
-                <li><strong>Shortcut-Liste:</strong> Die letzten zwei Zeilen zeigen verfügbare
-                    Befehle
-                </li>
-            </ul>
-
-            <div class="tip-card">
-                <span class="material-icons">lightbulb</span>
-                <p><strong>Tipp:</strong> Das ^ Symbol bedeutet die Ctrl/Strg-Taste!</p>
-            </div>
-        </div>
-    </section>
-
-    <section id="navigation" class="content-section">
-        <div class="section-header">
-            <span class="material-icons">navigation</span>
-            <h2>Navigation</h2>
-            <p>Bewege dich wie ein Profi durch deine Dateien</p>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">keyboard</span> Basis-Navigation</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux (Deutsche Tastatur)</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>↑ ↓ ← →</kbd> Cursor bewegen</li>
-                        <li><kbd>Strg + A</kbd> Zeilenanfang</li>
-                        <li><kbd>Strg + E</kbd> Zeilenende</li>
-                        <li><kbd>Strg + Y</kbd> Seite hoch</li>
-                        <li><kbd>Strg + V</kbd> Seite runter</li>
-                        <li><kbd>Strg + W</kbd> Suchen</li>
-                        <li><kbd>Strg + _</kbd> Zu Zeile springen</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS (Deutsche Tastatur)</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>↑ ↓ ← →</kbd> Cursor bewegen</li>
-                        <li><kbd>⌃ + A</kbd> Zeilenanfang</li>
-                        <li><kbd>⌃ + E</kbd> Zeilenende</li>
-                        <li><kbd>⌃ + Y</kbd> Seite hoch</li>
-                        <li><kbd>⌃ + V</kbd> Seite runter</li>
-                        <li><kbd>⌃ + W</kbd> Suchen</li>
-                        <li><kbd>⌃ + _</kbd> Zu Zeile springen</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">speed</span> Schnelle Navigation</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Alt + \</kbd> Dateianfang</li>
-                        <li><kbd>Alt + /</kbd> Dateiende</li>
-                        <li><kbd>Alt + (</kbd> Absatzanfang</li>
-                        <li><kbd>Alt + )</kbd> Absatzende</li>
-                        <li><kbd>Strg + ←</kbd> Wort zurück</li>
-                        <li><kbd>Strg + →</kbd> Wort vor</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌥ + \</kbd> Dateianfang</li>
-                        <li><kbd>⌥ + /</kbd> Dateiende</li>
-                        <li><kbd>⌥ + (</kbd> Absatzanfang</li>
-                        <li><kbd>⌥ + )</kbd> Absatzende</li>
-                        <li><kbd>⌥ + ←</kbd> Wort zurück</li>
-                        <li><kbd>⌥ + →</kbd> Wort vor</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="editing" class="content-section">
-        <div class="section-header">
-            <span class="material-icons">edit</span>
-            <h2>Bearbeitung</h2>
-            <p>Text bearbeiten wie ein Profi</p>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">content_cut</span> Ausschneiden und Einfügen</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Strg + K</kbd> Zeile ausschneiden</li>
-                        <li><kbd>Strg + U</kbd> Einfügen</li>
-                        <li><kbd>Alt + 6</kbd> Zeile kopieren</li>
-                        <li><kbd>Strg + 6</kbd> Markierung beginnen</li>
-                        <li><kbd>Alt + A</kbd> Markierung aufheben</li>
-                        <li><kbd>Strg + D</kbd> Zeichen löschen</li>
-                        <li><kbd>Alt + D</kbd> Wort löschen</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌃ + K</kbd> Zeile ausschneiden</li>
-                        <li><kbd>⌃ + U</kbd> Einfügen</li>
-                        <li><kbd>⌥ + 6</kbd> Zeile kopieren</li>
-                        <li><kbd>⌃ + 6</kbd> Markierung beginnen</li>
-                        <li><kbd>⌥ + A</kbd> Markierung aufheben</li>
-                        <li><kbd>⌃ + D</kbd> Zeichen löschen</li>
-                        <li><kbd>⌥ + D</kbd> Wort löschen</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="tip-card">
-                <span class="material-icons">tips_and_updates</span>
-                <p><strong>Profi-Tipp:</strong> Mit <kbd>Strg/⌃ + K</kbd> mehrmals hintereinander
-                    kannst du mehrere Zeilen ausschneiden und dann alle zusammen mit <kbd>Strg/⌃ +
-                        U</kbd> einfügen!</p>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">undo</span> Rückgängig und Wiederholen</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Alt + U</kbd> Rückgängig</li>
-                        <li><kbd>Alt + E</kbd> Wiederholen</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌥ + U</kbd> Rückgängig</li>
-                        <li><kbd>⌥ + E</kbd> Wiederholen</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">text_format</span> Text-Formatierung</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Strg + J</kbd> Absatz ausrichten</li>
-                        <li><kbd>Alt + J</kbd> Gesamte Datei ausrichten</li>
-                        <li><kbd>Alt + 3</kbd> Zeilen-Wrapping umschalten</li>
-                        <li><kbd>Tab</kbd> Einrücken</li>
-                        <li><kbd>Shift + Tab</kbd> Ausrücken</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌃ + J</kbd> Absatz ausrichten</li>
-                        <li><kbd>⌥ + J</kbd> Gesamte Datei ausrichten</li>
-                        <li><kbd>⌥ + 3</kbd> Zeilen-Wrapping umschalten</li>
-                        <li><kbd>Tab</kbd> Einrücken</li>
-                        <li><kbd>⇧ + Tab</kbd> Ausrücken</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="search" class="content-section">
-        <div class="section-header">
-            <span class="material-icons">search</span>
-            <h2>Suchen und Ersetzen</h2>
-            <p>Finde und ändere Text effizient</p>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">find_in_page</span> Suchen</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Strg + W</kbd> Suchen</li>
-                        <li><kbd>Alt + W</kbd> Nächstes Vorkommen</li>
-                        <li><kbd>Alt + Q</kbd> Rückwärts suchen</li>
-                        <li><kbd>Strg + T</kbd> Zu Zeile/Spalte springen</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌃ + W</kbd> Suchen</li>
-                        <li><kbd>⌥ + W</kbd> Nächstes Vorkommen</li>
-                        <li><kbd>⌥ + Q</kbd> Rückwärts suchen</li>
-                        <li><kbd>⌃ + T</kbd> Zu Zeile/Spalte springen</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="feature-card">
-                <h4>Such-Optionen</h4>
-                <p>Nach dem Drücken von <kbd>Strg/⌃ + W</kbd> kannst du folgende Optionen nutzen:
-                </p>
-                <ul>
-                    <li><kbd>Strg/⌃ + R</kbd> Groß-/Kleinschreibung beachten</li>
-                    <li><kbd>Strg/⌃ + X</kbd> Reguläre Ausdrücke verwenden</li>
-                    <li><kbd>Strg/⌃ + B</kbd> Rückwärts suchen</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">find_replace</span> Ersetzen</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Strg + \</kbd> Suchen und Ersetzen</li>
-                        <li><kbd>A</kbd> Alle ersetzen</li>
-                        <li><kbd>Y</kbd> Ja (einzeln ersetzen)</li>
-                        <li><kbd>N</kbd> Nein (überspringen)</li>
-                        <li><kbd>Strg + C</kbd> Abbrechen</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌃ + \</kbd> Suchen und Ersetzen</li>
-                        <li><kbd>A</kbd> Alle ersetzen</li>
-                        <li><kbd>Y</kbd> Ja (einzeln ersetzen)</li>
-                        <li><kbd>N</kbd> Nein (überspringen)</li>
-                        <li><kbd>⌃ + C</kbd> Abbrechen</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="advanced" class="content-section">
-        <div class="section-header">
-            <span class="material-icons">engineering</span>
-            <h2>Fortgeschrittene Funktionen</h2>
-            <p>Erweiterte Features für Power-User</p>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">description</span> Datei-Operationen</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Strg + O</kbd> Speichern</li>
-                        <li><kbd>Strg + X</kbd> Beenden</li>
-                        <li><kbd>Strg + R</kbd> Datei einfügen</li>
-                        <li><kbd>Alt + F</kbd> Neue Datei</li>
-                        <li><kbd>Alt + &gt;</kbd> Nächster Buffer</li>
-                        <li><kbd>Alt + &lt;</kbd> Vorheriger Buffer</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌃ + O</kbd> Speichern</li>
-                        <li><kbd>⌃ + X</kbd> Beenden</li>
-                        <li><kbd>⌃ + R</kbd> Datei einfügen</li>
-                        <li><kbd>⌥ + F</kbd> Neue Datei</li>
-                        <li><kbd>⌥ + &gt;</kbd> Nächster Buffer</li>
-                        <li><kbd>⌥ + &lt;</kbd> Vorheriger Buffer</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="tip-card">
-                <span class="material-icons">info</span>
-                <p><strong>Hinweis:</strong> Buffer erlauben es dir, mehrere Dateien gleichzeitig zu
-                    bearbeiten!</p>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">code</span> Programmier-Features</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Alt + I</kbd> Auto-Einrückung umschalten</li>
-                        <li><kbd>Alt + ]</kbd> Zu schließender Klammer</li>
-                        <li><kbd>Alt + [</kbd> Zu öffnender Klammer</li>
-                        <li><kbd>Strg + ]</kbd> Einrückung erhöhen</li>
-                        <li><kbd>Alt + N</kbd> Zeilennummern umschalten</li>
-                        <li><kbd>Alt + P</kbd> Whitespace anzeigen</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌥ + I</kbd> Auto-Einrückung umschalten</li>
-                        <li><kbd>⌥ + ]</kbd> Zu schließender Klammer</li>
-                        <li><kbd>⌥ + [</kbd> Zu öffnender Klammer</li>
-                        <li><kbd>⌃ + ]</kbd> Einrückung erhöhen</li>
-                        <li><kbd>⌥ + N</kbd> Zeilennummern umschalten</li>
-                        <li><kbd>⌥ + P</kbd> Whitespace anzeigen</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">terminal</span> Shell-Integration</h3>
-
-            <div class="shortcut-grid">
-                <div class="shortcut-card">
-                    <h4>Windows/Linux</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>Strg + T</kbd> Rechtschreibprüfung</li>
-                        <li><kbd>Strg + Z</kbd> Nano suspendieren</li>
-                        <li><kbd>Alt + X</kbd> Befehl ausführen</li>
-                        <li><kbd>Strg + L</kbd> Bildschirm neu zeichnen</li>
-                    </ul>
-                </div>
-
-                <div class="shortcut-card">
-                    <h4>macOS</h4>
-                    <ul class="shortcut-list">
-                        <li><kbd>⌃ + T</kbd> Rechtschreibprüfung</li>
-                        <li><kbd>⌃ + Z</kbd> Nano suspendieren</li>
-                        <li><kbd>⌥ + X</kbd> Befehl ausführen</li>
-                        <li><kbd>⌃ + L</kbd> Bildschirm neu zeichnen</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="feature-card">
-                <h4>Befehl ausführen</h4>
-                <p>Mit <kbd>Alt/⌥ + X</kbd> kannst du Shell-Befehle ausführen und deren Ausgabe
-                    direkt in deine Datei einfügen!</p>
-                <div class="code-block">
-                        <pre><code># Beispiele:
-date        # Fügt das aktuelle Datum ein
-pwd         # Fügt den aktuellen Pfad ein
-ls -la      # Fügt Dateiliste ein</code></pre>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="customization" class="content-section">
-        <div class="section-header">
-            <span class="material-icons">settings</span>
-            <h2>Anpassung</h2>
-            <p>Mache Nano zu deinem eigenen Editor</p>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">tune</span> Konfigurationsdatei</h3>
-            <p>Nano kann über die Datei <code>~/.nanorc</code> konfiguriert werden:</p>
-
-            <div class="code-block">
-                    <pre><code># Beispiel .nanorc Konfiguration
-
-# Zeige Zeilennummern
-set linenumbers
-
-# Aktiviere Maus-Support
-set mouse
-
-# Automatisches Einrücken
-set autoindent
-
-# Tab-Größe setzen
-set tabsize 4
-
-# Tabs zu Spaces konvertieren
-set tabstospaces
-
-# Backup beim Speichern erstellen
-set backup
-set backupdir "~/.nano-backups"
-
-# Smooth scrolling
-set smooth
-
-# Syntax Highlighting aktivieren
-include "/usr/share/nano/*.nanorc"</code></pre>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">palette</span> Syntax Highlighting</h3>
-            <p>Nano unterstützt Syntax Highlighting für viele Programmiersprachen:</p>
-
-            <div class="feature-card">
-                <h4>Verfügbare Sprachen</h4>
-                <div class="language-grid">
-                    <span class="language-tag">Python</span>
-                    <span class="language-tag">JavaScript</span>
-                    <span class="language-tag">HTML/CSS</span>
-                    <span class="language-tag">C/C++</span>
-                    <span class="language-tag">Java</span>
-                    <span class="language-tag">Ruby</span>
-                    <span class="language-tag">PHP</span>
-                    <span class="language-tag">Bash</span>
-                    <span class="language-tag">Markdown</span>
-                    <span class="language-tag">XML</span>
-                    <span class="language-tag">JSON</span>
-                    <span class="language-tag">SQL</span>
-                </div>
-            </div>
-
-            <div class="code-block">
-                    <pre><code># Eigene Syntax-Regeln definieren
-syntax "mytype" "\.myext$"
-
-# Kommentare grün
-color green "#.*"
-
-# Strings rot
-color red ""[^"]*""
-
-# Zahlen blau
-color blue "[0-9]+"</code></pre>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">keyboard_alt</span> Tastenkombinationen anpassen</h3>
-
-            <div class="code-block">
-                    <pre><code># Eigene Keybindings in .nanorc
-
-# Strg+S zum Speichern (wie in anderen Editoren)
-bind ^S savefile main
-
-# F5 zum Aktualisieren
-bind F5 refresh all
-
-# Strg+F zum Suchen
-bind ^F whereis main
-
-# Alt+G für Goto Line
-bind M-G gotoline main</code></pre>
-            </div>
-        </div>
-    </section>
-
-    <section id="tips" class="content-section">
-        <div class="section-header">
-            <span class="material-icons">star</span>
-            <h2>Profi-Tipps</h2>
-            <p>Werde zum Nano-Ninja</p>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">flash_on</span> Workflow-Optimierung</h3>
-
-            <div class="tip-grid">
-                <div class="pro-tip">
-                    <h4>1. Multi-Buffer Workflow</h4>
-                    <p>Öffne mehrere Dateien gleichzeitig und wechsle mit <kbd>Alt + &lt;</kbd> und
-                        <kbd>Alt + &gt;</kbd> zwischen ihnen.</p>
-                    <div class="code-block">
-                        <pre><code>nano file1.txt file2.txt file3.txt</code></pre>
+nano -B dateiname.txt
+                        </div>
                     </div>
                 </div>
 
-                <div class="pro-tip">
-                    <h4>2. Makros aufzeichnen</h4>
-                    <p>Zeichne wiederkehrende Aktionen auf:</p>
-                    <ul>
-                        <li><kbd>Alt + :</kbd> Aufnahme starten/stoppen</li>
-                        <li><kbd>Alt + ;</kbd> Makro abspielen</li>
-                    </ul>
-                </div>
-
-                <div class="pro-tip">
-                    <h4>3. Rechtschreibprüfung</h4>
-                    <p>Nutze die eingebaute Rechtschreibprüfung mit <kbd>Strg + T</kbd> (benötigt
-                        aspell oder hunspell).</p>
-                </div>
-
-                <div class="pro-tip">
-                    <h4>4. Schnelles Speichern</h4>
-                    <p>Erstelle einen Alias für schnelleres Arbeiten:</p>
-                    <div class="code-block">
-                            <pre><code>alias n='nano -w -i -S'
-# -w: No line wrapping
-# -i: Auto-indent
-# -S: Smooth scrolling</code></pre>
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">settings</span>
+                        <h3 class="subsection-title">Interface verstehen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <ul>
+                            <li><strong>Titelzeile:</strong> Zeigt Version und aktuellen Dateinamen</li>
+                            <li><strong>Bearbeitungsbereich:</strong> Für den Text</li>
+                            <li><strong>Statuszeile:</strong> Zeigt wichtige Meldungen</li>
+                            <li><strong>Shortcut-Liste:</strong> Letzte zwei Zeilen zeigen verfügbare Befehle</li>
+                        </ul>
+                        <div class="feature-card">
+                            <h3>Tipp</h3>
+                            <p>^ steht für die Ctrl/Strg-Taste</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="subsection">
-            <h3><span class="material-icons">build</span> Nützliche Kommandozeilen-Optionen</h3>
-
-            <div class="code-block">
-                    <pre><code># Mit Backup
-nano -B wichtige_datei.conf
-
-# Zeilen umbrechen bei Spalte 80
-nano -r 80 text.txt
-
-# Nur lesen
-nano -v /etc/wichtige.conf
-
-# Mit Maus-Support
-nano -m datei.txt
-
-# Zeige Zeilennummern
-nano -l script.py
-
-# Keine Konvertierung von DOS/Mac Dateien
-nano -N windows_datei.txt</code></pre>
+        <!-- Section 2 -->
+        <section id="section2" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">dashboard</span>
+                <h2 class="section-title">2. Navigation</h2>
+                <span class="section-subtitle">Bewege dich wie ein Profi durch deine Dateien.</span>
             </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">psychology</span> Geheime Features</h3>
-
-            <div class="feature-list">
-                <div class="secret-feature">
-                    <h4>DOS/Unix Konvertierung</h4>
-                    <p>Mit <kbd>Alt + D</kbd> kannst du zwischen DOS und Unix Zeilenenden wechseln.
-                    </p>
-                </div>
-
-                <div class="secret-feature">
-                    <h4>Wort-Vervollständigung</h4>
-                    <p><kbd>Strg + ]</kbd> vervollständigt das aktuelle Wort basierend auf anderen
-                        Wörtern in der Datei.</p>
-                </div>
-
-                <div class="secret-feature">
-                    <h4>Zeilen verbinden</h4>
-                    <p>Gehe ans Ende einer Zeile und drücke <kbd>Delete</kbd> um sie mit der
-                        nächsten zu verbinden.</p>
-                </div>
-
-                <div class="secret-feature">
-                    <h4>Schnelle Kommentare</h4>
-                    <p>Markiere Zeilen und nutze <kbd>Alt + 3</kbd> um sie zu
-                        kommentieren/entkommentieren.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="subsection">
-            <h3><span class="material-icons">troubleshoot</span> Fehlerbehebung</h3>
-
-            <div class="troubleshooting-grid">
-                <div class="issue-card">
-                    <h4>Problem: Keine Farben</h4>
-                    <p><strong>Lösung:</strong> Stelle sicher, dass Syntax-Dateien geladen werden:
-                    </p>
-                    <div class="code-block">
-                        <pre><code>include "/usr/share/nano/*.nanorc"</code></pre>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">view_quilt</span>
+                        <h3 class="subsection-title">Basis-Navigation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Cursor bewegen</div>
+                                <div class="shortcut-key">↑ ↓ ← →</div>
+                                <div class="shortcut-key">↑ ↓ ← →</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zeilenanfang</div>
+                                <div class="shortcut-key">Strg + A</div>
+                                <div class="shortcut-key">⌃ + A</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zeilenende</div>
+                                <div class="shortcut-key">Strg + E</div>
+                                <div class="shortcut-key">⌃ + E</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Seite hoch</div>
+                                <div class="shortcut-key">Strg + Y</div>
+                                <div class="shortcut-key">⌃ + Y</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Seite runter</div>
+                                <div class="shortcut-key">Strg + V</div>
+                                <div class="shortcut-key">⌃ + V</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Suchen</div>
+                                <div class="shortcut-key">Strg + W</div>
+                                <div class="shortcut-key">⌃ + W</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zu Zeile springen</div>
+                                <div class="shortcut-key">Strg + _</div>
+                                <div class="shortcut-key">⌃ + _</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="issue-card">
-                    <h4>Problem: Seltsame Zeichen</h4>
-                    <p><strong>Lösung:</strong> Überprüfe deine Terminal-Einstellungen:</p>
-                    <div class="code-block">
-                        <pre><code>export LANG=de_DE.UTF-8</code></pre>
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">tune</span>
+                        <h3 class="subsection-title">Schnelle Navigation</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Dateianfang</div>
+                                <div class="shortcut-key">Alt + \</div>
+                                <div class="shortcut-key">⌥ + \</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Dateiende</div>
+                                <div class="shortcut-key">Alt + /</div>
+                                <div class="shortcut-key">⌥ + /</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Absatzanfang</div>
+                                <div class="shortcut-key">Alt + (</div>
+                                <div class="shortcut-key">⌥ + (</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Absatzende</div>
+                                <div class="shortcut-key">Alt + )</div>
+                                <div class="shortcut-key">⌥ + )</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Wort zurück</div>
+                                <div class="shortcut-key">Strg + ←</div>
+                                <div class="shortcut-key">⌥ + ←</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Wort vor</div>
+                                <div class="shortcut-key">Strg + →</div>
+                                <div class="shortcut-key">⌥ + →</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <div class="issue-card">
-                    <h4>Problem: Shortcuts funktionieren nicht</h4>
-                    <p><strong>Lösung:</strong> Manche Terminals fangen Shortcuts ab. Nutze
-                        alternative Kombinationen oder passe dein Terminal an.</p>
+        <!-- Section 3 -->
+        <section id="section3" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">content_cut</span>
+                <h2 class="section-title">3. Bearbeitung</h2>
+                <span class="section-subtitle">Text bearbeiten wie ein Profi.</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">timeline</span>
+                        <h3 class="subsection-title">Ausschneiden und Einfügen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zeile ausschneiden</div>
+                                <div class="shortcut-key">Strg + K</div>
+                                <div class="shortcut-key">⌃ + K</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Einfügen</div>
+                                <div class="shortcut-key">Strg + U</div>
+                                <div class="shortcut-key">⌃ + U</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zeile kopieren</div>
+                                <div class="shortcut-key">Alt + 6</div>
+                                <div class="shortcut-key">⌥ + 6</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Markierung beginnen</div>
+                                <div class="shortcut-key">Strg + 6</div>
+                                <div class="shortcut-key">⌃ + 6</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Markierung aufheben</div>
+                                <div class="shortcut-key">Alt + A</div>
+                                <div class="shortcut-key">⌥ + A</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zeichen löschen</div>
+                                <div class="shortcut-key">Strg + D</div>
+                                <div class="shortcut-key">⌃ + D</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Wort löschen</div>
+                                <div class="shortcut-key">Alt + D</div>
+                                <div class="shortcut-key">⌥ + D</div>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <strong>Profi-Tipp:</strong> Mehrere Zeilen mit Strg/⌃ + K ausschneiden und mit Strg/⌃ + U zusammen einfügen.
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="outro">
-        <h2>🎉 Herzlichen Glückwunsch!</h2>
-        <p>Du hast jetzt alle wichtigen Nano-Features kennengelernt. Mit diesen Shortcuts und Tipps
-            bist du bereit, effizient im Terminal zu arbeiten!</p>
+        <!-- Section 4 -->
+        <section id="section4" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">auto_fix_high</span>
+                <h2 class="section-title">4. Suchen und Ersetzen</h2>
+                <span class="section-subtitle">Finde und ändere Text effizient.</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">filter</span>
+                        <h3 class="subsection-title">Suchen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Suchen</div>
+                                <div class="shortcut-key">Strg + W</div>
+                                <div class="shortcut-key">⌃ + W</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Nächstes Vorkommen</div>
+                                <div class="shortcut-key">Alt + W</div>
+                                <div class="shortcut-key">⌥ + W</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Rückwärts suchen</div>
+                                <div class="shortcut-key">Alt + Q</div>
+                                <div class="shortcut-key">⌥ + Q</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Zu Zeile/Spalte springen</div>
+                                <div class="shortcut-key">Strg + T</div>
+                                <div class="shortcut-key">⌃ + T</div>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <strong>Such-Optionen</strong> (nach Strg/⌃ + W):<br>
+                            Strg/⌃ + R: Groß-/Kleinschreibung beachten<br>
+                            Strg/⌃ + X: Reguläre Ausdrücke<br>
+                            Strg/⌃ + B: Rückwärts suchen
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <div class="final-tips">
-            <h3>Nächste Schritte:</h3>
-            <ul>
-                <li>Erstelle deine eigene <code>.nanorc</code> Konfiguration</li>
-                <li>Übe die wichtigsten Shortcuts täglich</li>
-                <li>Experimentiere mit Makros für wiederkehrende Aufgaben</li>
-                <li>Passe Syntax-Highlighting für deine Projekte an</li>
-            </ul>
-        </div>
+        <!-- Section 5 -->
+        <section id="section5" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">volume_up</span>
+                <h2 class="section-title">5. Fortgeschrittene Funktionen</h2>
+                <span class="section-subtitle">Erweiterte Features für Power-User.</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">equalizer</span>
+                        <h3 class="subsection-title">Datei-Operationen</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <div class="shortcut-table">
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Speichern</div>
+                                <div class="shortcut-key">Strg + O</div>
+                                <div class="shortcut-key">⌃ + O</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Beenden</div>
+                                <div class="shortcut-key">Strg + X</div>
+                                <div class="shortcut-key">⌃ + X</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Datei einfügen</div>
+                                <div class="shortcut-key">Strg + R</div>
+                                <div class="shortcut-key">⌃ + R</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Neue Datei</div>
+                                <div class="shortcut-key">Alt + F</div>
+                                <div class="shortcut-key">⌥ + F</div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Nächster Buffer</div>
+                                <div class="shortcut-key">Alt + ></div>
+                                <div class="shortcut-key">⌥ + ></div>
+                            </div>
+                            <div class="shortcut-row">
+                                <div class="shortcut-action">Vorheriger Buffer</div>
+                                <div class="shortcut-key">Alt + <</div>
+                                <div class="shortcut-key">⌥ + <</div>
+                            </div>
+                        </div>
+                        <div class="tip-card">
+                            <strong>Hinweis:</strong> Buffer ermöglichen gleichzeitiges Bearbeiten mehrerer Dateien.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <div class="cta">
-            <p>Happy Editing! 🖊️✨</p>
-        </div>
-    </section>
-</main>
+        <!-- Section 6 -->
+        <section id="section6" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">palette</span>
+                <h2 class="section-title">6. Anpassung</h2>
+                <span class="section-subtitle">Mache Nano zu deinem eigenen Editor.</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">colorize</span>
+                        <h3 class="subsection-title">Konfigurationsdatei</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p>Nano wird über ~/.nanorc konfiguriert:</p>
+                        <div class="code-block">
+# Beispiel .nanorc
+set linenumbers          # Zeilennummern anzeigen
+set mouse                # Maus-Support aktivieren
+set autoindent           # Automatisches Einrücken
+set tabsize 4            # Tab-Größe auf 4
+set tabstospaces         # Tabs zu Spaces
+set backup               # Backup beim Speichern
+set backupdir "~/.nano-backups"  # Backup-Verzeichnis
+set smooth               # Smooth scrolling
+include "/usr/share/nano/*.nanorc"  # Syntax Highlighting
+                        </div>
+                        <div class="tip-card">
+                            <strong>Syntax Highlighting:</strong> Unterstützt Sprachen wie Python, JavaScript, HTML/CSS, C/C++, Java, Ruby, PHP, Bash, Markdown, XML, JSON, SQL.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<script src="script.js"></script>
+        <!-- Section 7 -->
+        <section id="section7" class="section">
+            <div class="section-header">
+                <span class="material-icons section-icon">movie_filter</span>
+                <h2 class="section-title">7. Profi-Tipps</h2>
+                <span class="section-subtitle">Werde zum Nano-Ninja.</span>
+            </div>
+            
+            <div class="subsections">
+                <div class="subsection">
+                    <div class="subsection-header">
+                        <span class="material-icons subsection-icon">layers</span>
+                        <h3 class="subsection-title">Workflow-Optimierung</h3>
+                    </div>
+                    <div class="subsection-content">
+                        <p><strong>Multi-Buffer Workflow:</strong></p>
+                        <div class="code-block">
+nano file1.txt file2.txt file3.txt
+                        </div>
+                        <p>Wechsle mit Alt + < und Alt + >.</p>
+                        <ul>
+                            <li><strong>Makros aufzeichnen:</strong> Alt + :: Aufnahme starten/stoppen, Alt + ;: Makro abspielen</li>
+                            <li><strong>Rechtschreibprüfung:</strong> Strg + T (benötigt aspell/hunspell)</li>
+                            <li><strong>Schnelles Speichern:</strong> alias n='nano -w -i -S'</li>
+                        </ul>
+                        <div class="feature-card">
+                            <h3>🎉 Herzlichen Glückwunsch!</h3>
+                            <p>Du kennst jetzt alle wichtigen Nano-Features und bist bereit, effizient im Terminal zu arbeiten. Happy Editing! 🖊️✨</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
 </body>
 </html>

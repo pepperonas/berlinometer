@@ -41,10 +41,10 @@ function handleKeyNavigation(event) {
 
     if (event.key === 'ArrowDown' && currentIndex < sections.length - 1) {
         event.preventDefault();
-        sections[currentIndex + 1].scrollIntoView({behavior: 'smooth'});
+        sections[currentIndex + 1].scrollIntoView({ behavior: 'smooth' });
     } else if (event.key === 'ArrowUp' && currentIndex > 0) {
         event.preventDefault();
-        sections[currentIndex - 1].scrollIntoView({behavior: 'smooth'});
+        sections[currentIndex - 1].scrollIntoView({ behavior: 'smooth' });
     }
 }
 
@@ -67,23 +67,14 @@ function initSmoothScroll() {
 // Animation on scroll
 function animateOnScroll() {
     const subsections = document.querySelectorAll('.subsection');
-
+    
     subsections.forEach(subsection => {
         const rect = subsection.getBoundingClientRect();
         const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-
+        
         if (isVisible) {
             subsection.classList.add('fade-in');
         }
-    });
-}
-
-// Simulate engagement meters
-function animateEngagementMeters() {
-    const meters = document.querySelectorAll('.engagement-bar');
-    meters.forEach(meter => {
-        const randomWidth = Math.random() * 100;
-        meter.style.width = randomWidth + '%';
     });
 }
 
@@ -93,19 +84,36 @@ function initMobileMenu() {
     const navMenu = document.getElementById('navMenu');
     
     if (mobileMenuToggle && navMenu) {
-        mobileMenuToggle.addEventListener('click', function() {
+        // Toggle menu
+        mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
             // Toggle active class on button for animation
             mobileMenuToggle.classList.toggle('active');
             
             // Toggle active class on menu for slide-in
             navMenu.classList.toggle('active');
-        });
-        
-        // Close menu when clicking on overlay
-        navMenu.addEventListener('click', function(e) {
-            if (e.target === navMenu) {
-                mobileMenuToggle.classList.remove('active');
-                navMenu.classList.remove('active');
+            
+            // Animate menu items with stagger effect
+            const navLinks = navMenu.querySelectorAll('.nav-link');
+            if (navMenu.classList.contains('active')) {
+                // Prevent body scroll when menu is open
+                document.body.style.overflow = 'hidden';
+                
+                navLinks.forEach((link, index) => {
+                    setTimeout(() => {
+                        link.style.animation = `slideInFromTop 0.4s ease forwards`;
+                        link.style.animationDelay = `${index * 0.05}s`;
+                    }, index * 50);
+                });
+            } else {
+                // Restore body scroll
+                document.body.style.overflow = '';
+                
+                navLinks.forEach(link => {
+                    link.style.animation = '';
+                });
             }
         });
         
@@ -115,23 +123,50 @@ function initMobileMenu() {
             link.addEventListener('click', function() {
                 mobileMenuToggle.classList.remove('active');
                 navMenu.classList.remove('active');
+                document.body.style.overflow = '';
             });
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!navMenu.contains(e.target) && !mobileMenuToggle.contains(e.target) && navMenu.classList.contains('active')) {
+                mobileMenuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close menu on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+                mobileMenuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768 && navMenu.classList.contains('active')) {
+                mobileMenuToggle.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         });
     }
 }
 
 // Initialize all functionality
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     initSmoothScroll();
     initMobileMenu();
     updateProgressBar();
     updateActiveNavigation();
     animateOnScroll();
-    animateEngagementMeters();
 });
 
 // Event listeners
-window.addEventListener('scroll', function () {
+window.addEventListener('scroll', function() {
     updateProgressBar();
     updateActiveNavigation();
     animateOnScroll();
@@ -153,34 +188,8 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.section-header').forEach(header => {
         observer.observe(header);
     });
 });
-
-// Counter animations for different metrics
-function animateCounters() {
-    const counterTypes = ['.subscriber-count', '.engagement-count', '.analytics-count', '.monetization-count', '.growth-count'];
-
-    counterTypes.forEach(type => {
-        const counters = document.querySelectorAll(type);
-        counters.forEach(counter => {
-            const target = parseInt(counter.getAttribute('data-target')) || 0;
-            const increment = target / 100;
-            let current = 0;
-
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
-                counter.textContent = Math.floor(current).toLocaleString();
-            }, 20);
-        });
-    });
-}
-
-// Initialize counter animations
-setTimeout(animateCounters, 1000);
