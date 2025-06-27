@@ -493,15 +493,64 @@ function ResultsDisplay({ results }) {
   return (
     <div className="card">
       <div className="card-header">
-        <div className="flex justify-between items-center">
-          <div>
-            <h3 className="card-title mb-0">Scraping Ergebnisse</h3>
-            <p className="card-description">
+        <div className="flex flex-col gap-3 mb-4" style={{
+          alignItems: 'stretch'
+        }}>
+          <div className="text-center">
+            <h3 className="card-title mb-2" style={{ fontSize: '1.25rem' }}>Scraping Ergebnisse</h3>
+            <p className="card-description" style={{ fontSize: '0.875rem' }}>
               {results.length} Location{results.length !== 1 ? 's' : ''} analysiert
             </p>
           </div>
           
-          <div className="flex gap-2">
+          {/* Mobile-optimized export buttons */}
+          <div className="mobile-button-group" style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+            width: '100%',
+            maxWidth: '200px'
+          }}>
+            <button 
+              onClick={exportToCsv}
+              className="btn btn-sm btn-secondary"
+              style={{
+                width: '100%',
+                fontSize: '0.75rem',
+                padding: '0.5rem 0.75rem'
+              }}
+            >
+              📈 CSV Export
+            </button>
+            <button 
+              onClick={exportToJson}
+              className="btn btn-sm btn-secondary"
+              style={{
+                width: '100%',
+                fontSize: '0.75rem',
+                padding: '0.5rem 0.75rem'
+              }}
+            >
+              📊 JSON Export
+            </button>
+            <button 
+              onClick={exportToHtml}
+              className="btn btn-sm btn-primary"
+              style={{
+                width: '100%',
+                fontSize: '0.75rem',
+                padding: '0.5rem 0.75rem',
+                fontWeight: '600'
+              }}
+            >
+              📄 HTML Report
+            </button>
+          </div>
+          
+          {/* Desktop layout */}
+          <div className="flex gap-2" style={{
+            display: 'none'
+          }}>
             <button 
               onClick={exportToCsv}
               className="btn btn-sm btn-secondary"
@@ -532,33 +581,47 @@ function ResultsDisplay({ results }) {
             style={{ 
               backgroundColor: 'var(--background-darker)', 
               borderRadius: 'var(--radius-lg)',
-              border: '1px solid rgba(209, 213, 219, 0.1)'
+              border: '1px solid rgba(209, 213, 219, 0.1)',
+              marginBottom: '1rem'
             }}
           >
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex-1">
-                <h4 className="mb-3">
+            {/* Mobile-optimized header */}
+            <div className="flex flex-col gap-3 mb-4">
+              <div className="flex justify-between items-start">
+                <h4 className="mb-0 flex-1" style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  lineHeight: '1.3',
+                  paddingRight: '0.5rem'
+                }}>
                   {result.location_name || 'Unbekannte Location'}
                 </h4>
                 
-                {result.address && (
-                  <p className="text-sm text-secondary mb-3">
-                    📍 {result.address}
-                  </p>
-                )}
-                
-                {result.rating && (
-                  <p className="text-sm text-secondary mb-3">
-                    ⭐ {result.rating} Sterne
-                  </p>
-                )}
+                <div className="flex flex-col gap-1 items-end" style={{ flexShrink: 0 }}>
+                  {getOccupancyStatus(result.live_occupancy, result.is_live_data)}
+                </div>
               </div>
               
-              <div className="flex flex-col gap-2 items-end">
-                {getOccupancyStatus(result.live_occupancy, result.is_live_data)}
+              {/* Mobile-optimized metadata */}
+              <div className="flex flex-col gap-2" style={{ fontSize: '0.875rem' }}>
+                {result.address && (
+                  <div className="flex items-start gap-2 text-secondary">
+                    <span style={{ flexShrink: 0 }}>📍</span>
+                    <span style={{ lineHeight: '1.4' }}>{result.address}</span>
+                  </div>
+                )}
                 
-                <div className="text-sm text-secondary">
-                  {formatTimestamp(result.timestamp)}
+                <div className="flex justify-between items-center">
+                  {result.rating && (
+                    <div className="flex items-center gap-1 text-secondary">
+                      <span>⭐</span>
+                      <span>{result.rating} Sterne</span>
+                    </div>
+                  )}
+                  
+                  <div className="text-xs text-secondary" style={{ textAlign: 'right' }}>
+                    {formatTimestamp(result.timestamp)}
+                  </div>
                 </div>
               </div>
             </div>
@@ -599,17 +662,40 @@ function ResultsDisplay({ results }) {
               </div>
             )}
 
-            <div className="flex justify-between items-center">
+            {/* Mobile-optimized footer */}
+            <div className="flex flex-col gap-2">
               <a 
                 href={result.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-sm text-accent hover:underline"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '0.75rem',
+                  backgroundColor: 'rgba(104, 141, 177, 0.1)',
+                  borderRadius: 'var(--radius)',
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.2)'
+                  e.target.style.transform = 'translateY(-1px)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.1)'
+                  e.target.style.transform = 'translateY(0)'
+                }}
               >
-                🔗 Google Maps öffnen
+                <span>🔗</span>
+                <span>Google Maps öffnen</span>
               </a>
               
-              <div className="text-xs text-secondary">
+              <div className="text-xs text-secondary text-center" style={{ opacity: '0.7' }}>
                 ID: {index + 1}
               </div>
             </div>

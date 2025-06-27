@@ -25,9 +25,9 @@ function ProgressBar({ progress, currentLocation, batchInfo }) {
     <div style={{
       backgroundColor: '#1a1a1a',
       borderRadius: '12px',
-      padding: '24px',
+      padding: 'clamp(1rem, 3vw, 1.5rem)',
       border: '1px solid #333',
-      margin: '16px 0'
+      margin: 'clamp(0.75rem, 2vw, 1rem) 0'
     }}>
       {/* Header */}
       <div style={{ marginBottom: '16px' }}>

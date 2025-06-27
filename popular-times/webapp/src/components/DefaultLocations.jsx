@@ -152,49 +152,79 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
       </div>
 
       <div className="p-4">
-        <div className="flex gap-2 mb-4">
-          <button 
-            className="btn btn-sm btn-outline"
-            onClick={handleSelectAll}
-          >
-            Alle auswählen
-          </button>
-          <button 
-            className="btn btn-sm btn-outline"
-            onClick={handleSelectNone}
-          >
-            Keine auswählen
-          </button>
-          <div className="ml-auto text-sm text-secondary">
+        {/* Mobile-optimized button layout */}
+        <div className="flex flex-col gap-3 mb-4">
+          <div className="flex gap-2">
+            <button 
+              className="btn btn-sm btn-outline flex-1"
+              onClick={handleSelectAll}
+            >
+              Alle auswählen
+            </button>
+            <button 
+              className="btn btn-sm btn-outline flex-1"
+              onClick={handleSelectNone}
+            >
+              Keine auswählen
+            </button>
+          </div>
+          <div className="text-center text-sm text-secondary">
             {selectedLocations.length} von {locations.length} ausgewählt
           </div>
         </div>
 
-        <div style={{ 
+        {/* Mobile-optimized table */}
+        <div className="mobile-table-wrapper" style={{ 
           maxHeight: '400px', 
           overflowY: 'auto',
-          border: '1px solid var(--gray-3)',
+          border: '1px solid rgba(156, 163, 175, 0.2)',
           borderRadius: 'var(--radius)',
           backgroundColor: 'var(--background-darker)'
         }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className="mobile-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead style={{ 
               position: 'sticky', 
               top: 0, 
-              backgroundColor: 'var(--background-darker)',
-              borderBottom: '2px solid var(--gray-3)',
+              backgroundColor: 'var(--card-background)',
+              borderBottom: '2px solid rgba(156, 163, 175, 0.2)',
               zIndex: 10
             }}>
               <tr>
-                <th style={{ padding: '12px', textAlign: 'left', width: '40px' }}>
+                <th style={{ 
+                  padding: '12px 8px', 
+                  textAlign: 'left', 
+                  width: '50px',
+                  fontSize: '0.75rem',
+                  fontWeight: '600'
+                }}>
                   <input
                     type="checkbox"
                     checked={selectedLocations.length === locations.length && locations.length > 0}
                     onChange={(e) => e.target.checked ? handleSelectAll() : handleSelectNone()}
+                    style={{
+                      width: '1.25rem',
+                      height: '1.25rem',
+                      cursor: 'pointer'
+                    }}
                   />
                 </th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Location</th>
-                <th style={{ padding: '12px', textAlign: 'left' }}>URL</th>
+                <th style={{ 
+                  padding: '12px 8px', 
+                  textAlign: 'left',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em'
+                }}>Location</th>
+                <th style={{ 
+                  padding: '12px 8px', 
+                  textAlign: 'left',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.025em',
+                  minWidth: '120px'
+                }}>Link</th>
               </tr>
             </thead>
             <tbody>
@@ -202,49 +232,83 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
                 <tr 
                   key={location.url}
                   style={{ 
-                    borderBottom: '1px solid var(--gray-2)',
+                    borderBottom: '1px solid rgba(156, 163, 175, 0.1)',
                     cursor: 'pointer',
                     transition: 'background-color 0.2s',
                     backgroundColor: 'transparent'
                   }}
                   onClick={() => handleToggleLocation(location.url)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(104, 141, 177, 0.1)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                  }}
                 >
-                  <td style={{ padding: '12px' }}>
+                  <td style={{ padding: '12px 8px', textAlign: 'center' }}>
                     <input
                       type="checkbox"
                       checked={selectedLocations.includes(location.url)}
                       onChange={() => handleToggleLocation(location.url)}
                       onClick={(e) => e.stopPropagation()}
+                      style={{
+                        width: '1.25rem',
+                        height: '1.25rem',
+                        cursor: 'pointer'
+                      }}
                     />
                   </td>
                   <td style={{ 
-                    padding: '12px', 
+                    padding: '12px 8px', 
                     fontWeight: '500',
-                    opacity: location.aktiv === 0 ? '0.5' : '1',
-                    color: location.aktiv === 0 ? 'var(--text-secondary)' : 'var(--text-primary)'
+                    opacity: location.aktiv === 0 ? '0.6' : '1',
+                    color: location.aktiv === 0 ? 'var(--text-secondary)' : 'var(--text-primary)',
+                    fontSize: '0.875rem',
+                    lineHeight: '1.4'
                   }}>
-                    {location.name}
-                    {location.aktiv === 0 && (
-                      <span style={{ 
-                        marginLeft: '8px', 
-                        fontSize: '0.75rem', 
-                        color: 'var(--text-secondary)',
-                        opacity: '0.7'
-                      }}>
-                        (inaktiv)
-                      </span>
-                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span>{location.name}</span>
+                      {location.aktiv === 0 && (
+                        <span style={{ 
+                          fontSize: '0.7rem', 
+                          color: 'var(--text-secondary)',
+                          opacity: '0.8',
+                          fontWeight: '400'
+                        }}>
+                          (inaktiv)
+                        </span>
+                      )}
+                    </div>
                   </td>
-                  <td style={{ padding: '12px' }}>
+                  <td style={{ padding: '12px 8px' }}>
                     <a 
                       href={location.url} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-accent-green hover:underline"
                       onClick={(e) => e.stopPropagation()}
-                      style={{ fontSize: '0.875rem' }}
+                      style={{ 
+                        fontSize: '0.75rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        padding: '0.25rem 0.5rem',
+                        backgroundColor: 'rgba(156, 182, 143, 0.1)',
+                        borderRadius: 'var(--radius-sm)',
+                        transition: 'all 0.2s ease',
+                        textDecoration: 'none'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.backgroundColor = 'rgba(156, 182, 143, 0.2)'
+                        e.target.style.transform = 'translateY(-1px)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.backgroundColor = 'rgba(156, 182, 143, 0.1)'
+                        e.target.style.transform = 'translateY(0)'
+                      }}
                     >
-                      Google Maps öffnen →
+                      <span>🔗</span>
+                      <span>Maps</span>
                     </a>
                   </td>
                 </tr>
@@ -253,20 +317,35 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
           </table>
         </div>
 
-        <div className="flex justify-end mt-4">
+        {/* Mobile-optimized action button */}
+        <div className="flex justify-center mt-4">
           <button
             type="button"
             className="btn btn-primary"
             onClick={handleStartScraping}
             disabled={isScrapingActive || selectedLocations.length === 0}
+            style={{
+              width: '100%',
+              maxWidth: '400px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              minHeight: '3rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}
           >
             {isScrapingActive ? (
               <>
-                <div className="loading mr-2"></div>
-                Scraping läuft...
+                <div className="loading" style={{ width: '1.25rem', height: '1.25rem' }}></div>
+                <span>Scraping läuft...</span>
               </>
             ) : (
-              `Scraping starten (${selectedLocations.length} Locations)`
+              <>
+                <span>🚀</span>
+                <span>Scraping starten ({selectedLocations.length})</span>
+              </>
             )}
           </button>
         </div>
