@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homebrew Installation Animation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2C2E3B, #1a1b24);
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .terminal-window {
+            background: #1d1f27;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 800px;
+            overflow: hidden;
+            border: 1px solid #3a3d4a;
+        }
+
+        .terminal-header {
+            background: linear-gradient(180deg, #3c3f4c, #2C2E3B);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #3a3d4a;
+        }
+
+        .traffic-lights {
+            display: flex;
+            gap: 8px;
+        }
+
+        .traffic-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .close { background: #ff5f57; }
+        .minimize { background: #ffbd2e; }
+        .maximize { background: #28ca42; }
+
+        .terminal-title {
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .terminal-content {
+            background: #1d1f27;
+            padding: 20px;
+            min-height: 400px;
+            color: #ffffff;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .prompt {
+            color: #4fc3f7;
+            margin-right: 8px;
+        }
+
+        .command {
+            color: #81c784;
+        }
+
+        .output {
+            color: #e0e0e0;
+            margin-left: 0;
+        }
+
+        .success {
+            color: #66bb6a;
+        }
+
+        .warning {
+            color: #ffb74d;
+        }
+
+        .info {
+            color: #64b5f6;
+        }
+
+        .cursor {
+            background: #4fc3f7;
+            animation: blink 1s infinite;
+            width: 8px;
+            height: 18px;
+            display: inline-block;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            background: #4fc3f7;
+            height: 4px;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-container {
+            background: #3a3d4a;
+            width: 300px;
+            height: 4px;
+            border-radius: 2px;
+            margin-right: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .typewriter {
+            overflow: hidden;
+            white-space: nowrap;
+            animation: typing 2s steps(40, end);
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .control-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(44, 46, 59, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #3a3d4a;
+        }
+
+        .control-btn {
+            background: #4fc3f7;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #29b6f6;
+            transform: translateY(-1px);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <div class="traffic-lights">
+                <div class="traffic-light close"></div>
+                <div class="traffic-light minimize"></div>
+                <div class="traffic-light maximize"></div>
+            </div>
+            <div class="terminal-title">Terminal</div>
+        </div>
+        
+        <div class="terminal-content" id="terminal">
+            <div id="line1" class="hidden">
+                <span class="prompt">user@macbook ~ %</span>
+                <span class="command">brew install git</span>
+                <span class="cursor" id="cursor1"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <button class="control-btn" onclick="startAnimation()">Restart Animation</button>
+    </div>
+
+    <script>
+        let animationTimeout;
+        
+        const steps = [
+            {
+                id: 'line1',
+                delay: 500,
+                type: 'command'
+            },
+            {
+                id: 'line2',
+                content: '==> Downloading https://github.com/nodejs/node/archive/v20.5.0.tar.gz',
+                delay: 800,
+                type: 'output',
+                class: 'info'
+            },
+            {
+                id: 'line3',
+                content: '######################################################################## 100.0%',
+                delay: 600,
+                type: 'progress'
+            },
+            {
+                id: 'line4',
+                content: '==> Installing dependencies for node: icu4c, brotli, c-ares, libnghttp2, libuv, openssl@3',
+                delay: 400,
+                type: 'output',
+                class: 'info'
+            },
+            {
+                id: 'line5',
+                content: '==> Installing node dependency: icu4c',
+                delay: 300,
+                type: 'output'
+            },
+            {
+                id: 'line6',
+                content: '######################################################################## 100.0%',
+                delay: 400,
+                type: 'progress'
+            },
+            {
+                id: 'line7',
+                content: '🍺  /usr/local/Cellar/icu4c/73.2: 263 files, 77.4MB',
+                delay: 500,
+                type: 'output',
+                class: 'success'
+            },
+            {
+                id: 'line8',
+                content: '==> Installing node dependency: brotli',
+                delay: 300,
+                type: 'output'
+            },
+            {
+                id: 'line9',
+                content: '######################################################################## 100.0%',
+                delay: 300,
+                type: 'progress'
+            },
+            {
+                id: 'line10',
+                content: '🍺  /usr/local/Cellar/brotli/1.0.9: 25 files, 2.2MB',
+                delay: 400,
+                type: 'output',
+                class: 'success'
+            },
+            {
+                id: 'line11',
+                content: '==> Installing node dependency: c-ares',
+                delay: 300,
+                type: 'output'
+            },
+            {
+                id: 'line12',
+                content: '######################################################################## 100.0%',
+                delay: 250,
+                type: 'progress'
+            },
+            {
+                id: 'line13',
+                content: '🍺  /usr/local/Cellar/c-ares/1.19.1: 85 files, 750KB',
+                delay: 400,
+                type: 'output',
+                class: 'success'
+            },
+            {
+                id: 'line14',
+                content: '==> Installing node dependency: libnghttp2',
+                delay: 300,
+                type: 'output'
+            },
+            {
+                id: 'line15',
+                content: '######################################################################## 100.0%',
+                delay: 350,
+                type: 'progress'
+            },
+            {
+                id: 'line16',
+                content: '🍺  /usr/local/Cellar/libnghttp2/1.55.1: 13 files, 1.6MB',
+                delay: 400,
+                type: 'output',
+                class: 'success'
+            },
+            {
+                id: 'line17',
+                content: '==> Installing node dependency: libuv',
+                delay: 300,
+                type: 'output'
+            },
+            {
+                id: 'line18',
+                content: '######################################################################## 100.0%',
+                delay: 300,
+                type: 'progress'
+            },
+            {
+                id: 'line19',
+                content: '🍺  /usr/local/Cellar/libuv/1.46.0: 48 files, 2.8MB',
+                delay: 400,
+                type: 'output',
+                class: 'success'
+            },
+            {
+                id: 'line20',
+                content: '==> Installing node dependency: openssl@3',
+                delay: 300,
+                type: 'output'
+            },
+            {
+                id: 'line21',
+                content: '######################################################################## 100.0%',
+                delay: 500,
+                type: 'progress'
+            },
+            {
+                id: 'line22',
+                content: '🍺  /usr/local/Cellar/openssl@3/3.1.2: 6,874 files, 31.5MB',
+                delay: 500,
+                type: 'output',
+                class: 'success'
+            },
+            {
+                id: 'line23',
+                content: '==> Installing node',
+                delay: 400,
+                type: 'output',
+                class: 'info'
+            },
+            {
+                id: 'line24',
+                content: '==> Pouring node--20.5.0.monterey.bottle.tar.gz',
+                delay: 600,
+                type: 'output'
+            },
+            {
+                id: 'line25',
+                content: '######################################################################## 100.0%',
+                delay: 800,
+                type: 'progress'
+            },
+            {
+                id: 'line26',
+                content: '🍺  /usr/local/Cellar/node/20.5.0: 2,132 files, 71.2MB',
+                delay: 700,
+                type: 'output',
+                class: 'success'
+            },
+            {
+                id: 'line27',
+                content: '==> Running `brew cleanup node`...',
+                delay: 400,
+                type: 'output',
+                class: 'warning'
+            },
+            {
+                id: 'line28',
+                content: '==> Summary',
+                delay: 500,
+                type: 'output',
+                class: 'info'
+            },
+            {
+                id: 'line29',
+                content: '🍺  6 dependencies installed successfully',
+                delay: 300,
+                type: 'output',
+                class: 'success'
+            },
+            {
+                id: 'line30',
+                content: '📦  Total download size: 112.9MB',
+                delay: 300,
+                type: 'output',
+                class: 'info'
+            },
+            {
+                id: 'finalPrompt',
+                content: '<span class="prompt">user@macbook ~ %</span><span class="cursor"></span>',
+                delay: 800,
+                type: 'prompt'
+            }
+        ];
+
+        function typeWriter(element, text, speed = 50) {
+            return new Promise(resolve => {
+                let i = 0;
+                function type() {
+                    if (i < text.length) {
+                        element.innerHTML += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    } else {
+                        resolve();
+                    }
+                }
+                type();
+            });
+        }
+
+        function createProgressBar() {
+            const container = document.createElement('div');
+            container.className = 'progress-bar';
+            
+            const progressContainer = document.createElement('div');
+            progressContainer.className = 'progress-container';
+            
+            const progressFill = document.createElement('div');
+            progressFill.className = 'progress-fill';
+            progressFill.style.width = '0%';
+            
+            progressContainer.appendChild(progressFill);
+            container.appendChild(progressContainer);
+            
+            return { container, progressFill };
+        }
+
+        async function animateProgress(progressFill) {
+            return new Promise(resolve => {
+                let width = 0;
+                const interval = setInterval(() => {
+                    width += Math.random() * 25 + 10;
+                    if (width >= 100) {
+                        width = 100;
+                        clearInterval(interval);
+                        setTimeout(resolve, 150);
+                    }
+                    progressFill.style.width = width + '%';
+                }, 50);
+            });
+        }
+
+        async function startAnimation() {
+            const terminal = document.getElementById('terminal');
+            terminal.innerHTML = '';
+            
+            // Erste Zeile mit Eingabeaufforderung und Befehl
+            const line1 = document.createElement('div');
+            line1.innerHTML = '<span class="prompt">user@macbook ~ %</span> ';
+            terminal.appendChild(line1);
+            
+            // Befehl eintippen
+            await typeWriter(line1, 'brew install node', 60);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Verarbeitung der restlichen Schritte
+            for (let i = 1; i < steps.length; i++) {
+                const step = steps[i];
+                const line = document.createElement('div');
+                
+                if (step.type === 'progress') {
+                    const { container, progressFill } = createProgressBar();
+                    line.appendChild(container);
+                    terminal.appendChild(line);
+                    await animateProgress(progressFill);
+                } else if (step.type === 'prompt') {
+                    line.innerHTML = step.content;
+                    if (step.class) line.className = step.class;
+                    terminal.appendChild(line);
+                } else {
+                    if (step.class) line.className = step.class;
+                    terminal.appendChild(line);
+                    await typeWriter(line, step.content, 20);
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, step.delay));
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        }
+
+        // Animation beim Laden starten
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(startAnimation, 500);
+        });
+    </script>
+</body>
+</html>
