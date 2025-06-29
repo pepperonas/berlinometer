@@ -49,7 +49,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(fileUpload({
     createParentPath: true,
     limits: {
-        fileSize: 50 * 1024 * 1024 // 50MB max Dateigröße
+        fileSize: 500 * 1024 * 1024 // 50MB max Dateigröße
     },
     abortOnLimit: true
 }));
