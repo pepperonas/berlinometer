@@ -20,7 +20,7 @@ Hochperformante React Web-App für das Scraping von Google Maps Auslastungsdaten
 **Durchbruch**: Von sequenziellem zu parallelem Processing umgestellt.
 
 **Implementation**: 
-- Locations in 3er-Batches aufgeteilt
+- Locations in 5er-Batches aufgeteilt
 - Bis zu 10 Batches laufen gleichzeitig parallel
 - Page-Wiederverwendung innerhalb Batches
 - Smart Resource Blocking für maximale Geschwindigkeit
