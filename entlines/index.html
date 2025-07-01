@@ -118,6 +118,9 @@
             .footer {
                 font-size: 10px;
                 bottom: 10px;
+                padding: 15px;
+                border-radius: 8px;
+                background: rgba(0, 0, 0, 0.1);
             }
         }
 
@@ -889,8 +892,19 @@
         // Only trigger if touch is outside game container and game is running
         const gameContainer = document.getElementById('gameContainer');
         const splashScreen = document.getElementById('splashScreen');
+        const footer = document.querySelector('.footer');
         
-        if (!gameContainer.contains(e.target) && !splashScreen.contains(e.target)) {
+        if (!gameContainer.contains(e.target) && !splashScreen.contains(e.target) && !footer.contains(e.target)) {
+            // Blockiere Touch Events in den linken 30% wenn Autopilot aktiv ist (nur mobile)
+            if (autopilotActive && window.innerWidth < 768) {
+                const touchX = e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX;
+                const leftZoneWidth = window.innerWidth * 0.3;
+                
+                if (touchX < leftZoneWidth) {
+                    return; // Ignoriere Touch in der linken Zone
+                }
+            }
+            
             handleTouch(e);
         }
     }, {passive: true});
@@ -916,6 +930,16 @@
 
     function handleTouch(e) {
         if (e.type === 'touchstart') {
+            // Blockiere Touch Events in den linken 30% wenn Autopilot aktiv ist (nur mobile)
+            if (autopilotActive && window.innerWidth < 768) {
+                const touchX = e.touches && e.touches[0] ? e.touches[0].clientX : e.clientX;
+                const leftZoneWidth = window.innerWidth * 0.3;
+                
+                if (touchX < leftZoneWidth) {
+                    return; // Ignoriere Touch in der linken Zone
+                }
+            }
+            
             // Don't preventDefault on passive listener
             if (!gameRunning && gameStarted) {
                 restartGame();
@@ -1663,6 +1687,12 @@
     function gameOver() {
         gameRunning = false;
         stopAudio(); // Musik stoppen bei Game Over
+        
+        // Auto-Pilot bei Game Over deaktivieren
+        if (autopilotActive) {
+            stopHiddenAutopilot();
+        }
+        
         document.getElementById('finalScore').textContent = score;
         document.getElementById('gameOver').style.display = 'block';
     }
