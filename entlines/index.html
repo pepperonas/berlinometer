@@ -109,7 +109,9 @@
             font-weight: 300;
             letter-spacing: 0.5px;
             z-index: 1000;
-            pointer-events: none;
+            pointer-events: auto;
+            cursor: default;
+            user-select: none;
         }
 
         @media (max-width: 768px) {
@@ -1748,6 +1750,137 @@
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', initGame);
+
+    // Hidden Auto-Pilot System
+    let autopilotActive = false;
+    let autopilotInterval = null;
+    let heartPressTimer = null;
+    let heartPressStart = 0;
+
+    function autopilotLogic() {
+        if (!autopilotActive || !gameRunning) return;
+        
+        const birdY = bird.y;
+        const birdVelocity = bird.velocity;
+        
+        // Absolute Grenzen
+        if (birdY < 5) return; // Lass fallen
+        if (birdY > 580) { jump(); return; }
+        
+        // Finde aktuelle Röhre
+        let currentPipe = null;
+        let minDistance = Infinity;
+        
+        for (let pipe of pipes) {
+            const distance = Math.abs(pipe.x + 30 - bird.x);
+            if (distance < minDistance && pipe.x + 60 > bird.x) {
+                minDistance = distance;
+                currentPipe = pipe;
+            }
+        }
+        
+        if (!currentPipe) {
+            if (birdY > 320 && birdVelocity > 0) jump();
+            return;
+        }
+        
+        const gapTop = currentPipe.topHeight;
+        const gapBottom = currentPipe.topHeight + 180;
+        const gapMiddle = gapTop + 90;
+        const distanceToPipe = currentPipe.x - bird.x;
+        
+        // Verhindere obere Kollisionen
+        if (birdY < gapTop + 35) return;
+        
+        if (distanceToPipe > 100) {
+            const targetHeight = 280;
+            if (birdY > targetHeight + 40 && birdVelocity > 0) jump();
+        } else if (distanceToPipe > 20) {
+            const targetHeight = gapMiddle + 5;
+            if (birdY > targetHeight && birdVelocity > 1) jump();
+            if (birdVelocity > 3.5 && birdY > targetHeight - 20) jump();
+            if (birdY + 25 > gapBottom - 40) jump();
+        } else {
+            const targetHeight = gapMiddle + 10;
+            if (birdY + 25 > gapBottom - 50) { jump(); return; }
+            if (birdY > targetHeight && birdVelocity > 0.5) jump();
+            if (birdVelocity > 2.5 && birdY > gapMiddle - 5) jump();
+            if (birdVelocity > 1.5 && birdY > gapMiddle + 20) jump();
+        }
+    }
+
+    function startHiddenAutopilot() {
+        autopilotActive = true;
+        if (!gameStarted) jump();
+        autopilotInterval = setInterval(autopilotLogic, 25);
+    }
+
+    function stopHiddenAutopilot() {
+        autopilotActive = false;
+        if (autopilotInterval) {
+            clearInterval(autopilotInterval);
+            autopilotInterval = null;
+        }
+    }
+
+    // Heart press detection
+    document.addEventListener('DOMContentLoaded', function() {
+        const footer = document.querySelector('.footer');
+        
+        footer.addEventListener('mousedown', function(e) {
+            if (e.target.textContent.includes('❤️')) {
+                heartPressStart = Date.now();
+                heartPressTimer = setTimeout(() => {
+                    if (!autopilotActive) {
+                        startHiddenAutopilot();
+                    }
+                }, 2000);
+            }
+        });
+        
+        footer.addEventListener('mouseup', function(e) {
+            if (e.target.textContent.includes('❤️')) {
+                const pressDuration = Date.now() - heartPressStart;
+                
+                if (heartPressTimer) {
+                    clearTimeout(heartPressTimer);
+                    heartPressTimer = null;
+                }
+                
+                // Kurzer Klick bei aktivem Autopilot = stoppen
+                if (autopilotActive && pressDuration < 500) {
+                    stopHiddenAutopilot();
+                }
+            }
+        });
+        
+        // Touch support für mobile
+        footer.addEventListener('touchstart', function(e) {
+            if (e.target.textContent.includes('❤️')) {
+                heartPressStart = Date.now();
+                heartPressTimer = setTimeout(() => {
+                    if (!autopilotActive) {
+                        startHiddenAutopilot();
+                    }
+                }, 2000);
+            }
+        });
+        
+        footer.addEventListener('touchend', function(e) {
+            if (e.target.textContent.includes('❤️')) {
+                const pressDuration = Date.now() - heartPressStart;
+                
+                if (heartPressTimer) {
+                    clearTimeout(heartPressTimer);
+                    heartPressTimer = null;
+                }
+                
+                if (autopilotActive && pressDuration < 500) {
+                    stopHiddenAutopilot();
+                }
+            }
+        });
+    });
 </script>
 
 <div class="footer">Made with ❤️  by Martin Pfeffer</div>
