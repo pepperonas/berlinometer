@@ -98,6 +98,27 @@
             height: auto;
         }
 
+        .footer {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            font-weight: 300;
+            letter-spacing: 0.5px;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                font-size: 10px;
+                bottom: 10px;
+            }
+        }
+
         #ui {
             position: absolute;
             top: 20px;
@@ -123,7 +144,7 @@
 
         #musicToggle {
             position: absolute;
-            top: 20px;
+            top: 8px;
             right: 20px;
         }
 
@@ -170,7 +191,7 @@
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             color: #FFFFFF;
             text-shadow: 1px 1px 0px #000000,
@@ -179,8 +200,8 @@
             -1px 1px 0px #000000,
             0px 2px 4px rgba(0, 0, 0, 0.8);
             background: rgba(0, 0, 0, 0.4);
-            padding: 10px 20px;
-            border-radius: 15px;
+            padding: 8px 16px;
+            border-radius: 12px;
             backdrop-filter: blur(5px);
             white-space: nowrap;
         }
@@ -594,11 +615,12 @@
             #musicBtn {
                 font-size: 16px;
                 padding: 8px 12px;
+                margin-top: -6px;
             }
 
             #instructions {
-                font-size: 16px;
-                padding: 8px 15px;
+                font-size: 12px;
+                padding: 6px 12px;
                 bottom: 10px;
             }
 
@@ -622,14 +644,19 @@
                 padding: 6px 12px;
             }
 
+            #musicToggle {
+                top: 10px;
+            }
+
             #musicBtn {
                 font-size: 14px;
                 padding: 6px 10px;
+                margin-top: -6px;
             }
 
             #instructions {
-                font-size: 14px;
-                padding: 6px 12px;
+                font-size: 11px;
+                padding: 5px 10px;
             }
 
             #gameOver {
@@ -854,6 +881,17 @@
     canvas.addEventListener('click', jump);
     canvas.addEventListener('touchstart', handleTouch, {passive: true});
     canvas.addEventListener('touchend', handleTouch, {passive: true});
+
+    // Global touch handler for background touches (mobile)
+    document.addEventListener('touchstart', (e) => {
+        // Only trigger if touch is outside game container and game is running
+        const gameContainer = document.getElementById('gameContainer');
+        const splashScreen = document.getElementById('splashScreen');
+        
+        if (!gameContainer.contains(e.target) && !splashScreen.contains(e.target)) {
+            handleTouch(e);
+        }
+    }, {passive: true});
 
     // Prevent scrolling on mobile only on game container
     const gameContainer = document.getElementById('gameContainer');
@@ -1711,5 +1749,8 @@
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', initGame);
 </script>
+
+<div class="footer">Made with ❤️  by Martin Pfeffer</div>
+
 </body>
 </html>
