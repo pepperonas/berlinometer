@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DefaultLocations from './components/DefaultLocations'
 import ProgressBar from './components/ProgressBar'
 import ResultsDisplay from './components/ResultsDisplay'
@@ -12,12 +12,63 @@ function App() {
   const [batchInfo, setBatchInfo] = useState(null)
   const [results, setResults] = useState([])
   const [showAboutDialog, setShowAboutDialog] = useState(false)
+  const [unsortedResults, setUnsortedResults] = useState([])
+
+  // Funktion zum Extrahieren der Auslastung in Prozent
+  const extractOccupancyPercentage = (occupancyText) => {
+    if (!occupancyText || typeof occupancyText !== 'string') return -1
+    
+    // Suche nach "zu X %" Pattern
+    const match = occupancyText.match(/zu\s+(\d+)\s*%/)
+    if (match) {
+      return parseInt(match[1])
+    }
+    
+    // Wenn kein Prozentsatz gefunden wurde
+    return -1
+  }
+
+  // Sortiere Ergebnisse nach Auslastung
+  const sortResultsByOccupancy = (results) => {
+    return [...results].sort((a, b) => {
+      const occupancyA = extractOccupancyPercentage(a.live_occupancy)
+      const occupancyB = extractOccupancyPercentage(b.live_occupancy)
+      const isLiveA = a.is_live_data === true
+      const isLiveB = b.is_live_data === true
+      
+      // Live-Daten haben höchste Priorität
+      if (isLiveA && !isLiveB) return -1
+      if (!isLiveA && isLiveB) return 1
+      
+      // Wenn beide live oder beide nicht live sind
+      if (isLiveA === isLiveB) {
+        // Locations ohne Daten ans Ende
+        if (occupancyA === -1 && occupancyB === -1) return 0
+        if (occupancyA === -1) return 1
+        if (occupancyB === -1) return -1
+        
+        // Höhere Auslastung zuerst
+        return occupancyB - occupancyA
+      }
+      
+      return 0
+    })
+  }
+
+  // Sortiere Ergebnisse wenn Scraping abgeschlossen ist
+  useEffect(() => {
+    if (!isScrapingActive && unsortedResults.length > 0) {
+      const sorted = sortResultsByOccupancy(unsortedResults)
+      setResults(sorted)
+    }
+  }, [isScrapingActive, unsortedResults])
 
 
   const handleStartScraping = async (urls) => {
     setIsScrapingActive(true)
     setProgress(0)
     setResults([])
+    setUnsortedResults([])
     setBatchInfo(null)
     
     try {
@@ -55,6 +106,8 @@ function App() {
                 setCurrentLocation(data.location || '')
                 setBatchInfo(data.batchInfo || null)
               } else if (data.type === 'result') {
+                setUnsortedResults(prev => [...prev, data.data])
+                // Zeige Ergebnisse während des Scrapings unsortiert an
                 setResults(prev => [...prev, data.data])
               } else if (data.type === 'complete') {
                 setIsScrapingActive(false)

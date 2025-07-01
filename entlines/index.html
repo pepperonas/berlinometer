@@ -815,8 +815,8 @@
         width: 30,
         height: 25,
         velocity: 0,
-        gravity: 0.25,
-        jump: -5.5,
+        gravity: 0.33,
+        jump: -6.05,
         rotation: 0
     };
 
@@ -856,8 +856,8 @@
 
     // Pipe-Einstellungen
     const pipeWidth = 60;
-    const pipeGap = 180;
-    const pipeSpeed = 2;
+    const pipeGap = 160;
+    const pipeSpeed = 2.2;
 
     // Learning to Fly Akkordfolge und Noten (höhere Oktave)
     const chordProgression = ['F', 'C', 'Am', 'G', 'F', 'C', 'Am', 'G'];
@@ -1249,14 +1249,77 @@
     }
 
     function drawSimpleMountain(x, groundY, width, height) {
+        ctx.save();
+        
+        // Unregelmäßige, realistische Berg-Silhouette
         ctx.beginPath();
-        ctx.moveTo(x, groundY);
-        ctx.lineTo(x + width * 0.3, groundY - height * 0.7);
-        ctx.lineTo(x + width * 0.6, groundY - height);
-        ctx.lineTo(x + width * 0.9, groundY - height * 0.5);
-        ctx.lineTo(x + width, groundY);
+        ctx.moveTo(x - width * 0.1, groundY);
+        
+        // Linke Seite mit natürlichen Kurven
+        ctx.quadraticCurveTo(x + width * 0.05, groundY - height * 0.3, x + width * 0.15, groundY - height * 0.45);
+        ctx.quadraticCurveTo(x + width * 0.22, groundY - height * 0.55, x + width * 0.3, groundY - height * 0.65);
+        ctx.lineTo(x + width * 0.35, groundY - height * 0.75);
+        ctx.quadraticCurveTo(x + width * 0.4, groundY - height * 0.82, x + width * 0.45, groundY - height * 0.88);
+        
+        // Hauptgipfel mit gezackter Spitze
+        ctx.lineTo(x + width * 0.48, groundY - height * 0.92);
+        ctx.lineTo(x + width * 0.52, groundY - height * 0.98);
+        ctx.lineTo(x + width * 0.55, groundY - height);
+        ctx.lineTo(x + width * 0.58, groundY - height * 0.97);
+        ctx.lineTo(x + width * 0.62, groundY - height * 0.94);
+        
+        // Rechte Seite mit Felsvorsprüngen
+        ctx.lineTo(x + width * 0.68, groundY - height * 0.85);
+        ctx.quadraticCurveTo(x + width * 0.72, groundY - height * 0.78, x + width * 0.75, groundY - height * 0.7);
+        ctx.lineTo(x + width * 0.78, groundY - height * 0.68);
+        ctx.quadraticCurveTo(x + width * 0.82, groundY - height * 0.6, x + width * 0.85, groundY - height * 0.5);
+        ctx.quadraticCurveTo(x + width * 0.92, groundY - height * 0.3, x + width * 0.98, groundY - height * 0.15);
+        ctx.lineTo(x + width * 1.1, groundY);
         ctx.closePath();
         ctx.fill();
+        
+        // Mehrschichtige Schneefelder
+        if (height > 90) {
+            // Hauptschneefläche
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            ctx.beginPath();
+            ctx.moveTo(x + width * 0.42, groundY - height * 0.8);
+            ctx.quadraticCurveTo(x + width * 0.5, groundY - height * 0.88, x + width * 0.58, groundY - height * 0.82);
+            ctx.lineTo(x + width * 0.62, groundY - height * 0.85);
+            ctx.quadraticCurveTo(x + width * 0.55, groundY - height * 0.92, x + width * 0.48, groundY - height * 0.85);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Gipfelschnee
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.beginPath();
+            ctx.moveTo(x + width * 0.52, groundY - height * 0.98);
+            ctx.lineTo(x + width * 0.55, groundY - height);
+            ctx.lineTo(x + width * 0.58, groundY - height * 0.97);
+            ctx.lineTo(x + width * 0.56, groundY - height * 0.94);
+            ctx.lineTo(x + width * 0.54, groundY - height * 0.95);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Schneeverwehungen
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(x + width * 0.65, groundY - height * 0.75, 8, 0, Math.PI * 2);
+            ctx.arc(x + width * 0.45, groundY - height * 0.7, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Felsschatten für mehr Tiefe
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.beginPath();
+        ctx.moveTo(x + width * 0.55, groundY - height);
+        ctx.lineTo(x + width * 0.62, groundY - height * 0.94);
+        ctx.quadraticCurveTo(x + width * 0.65, groundY - height * 0.8, x + width * 0.7, groundY - height * 0.65);
+        ctx.lineTo(x + width * 0.65, groundY - height * 0.7);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
     }
 
 
@@ -1265,30 +1328,39 @@
         ctx.translate(x, y);
         ctx.scale(scale, scale);
 
-        // Volumen-Schatten
+        // Vollständig gefüllte Wolke ohne Löcher
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        
+        // Erstelle eine zusammenhängende Wolkenform
+        ctx.beginPath();
+        // Linke Seite
+        ctx.arc(-10, 5, 20, Math.PI * 0.5, Math.PI * 1.5);
+        // Obere Kurven
+        ctx.arc(5, -8, 15, Math.PI, Math.PI * 2);
+        ctx.arc(25, -12, 18, Math.PI, Math.PI * 2);
+        ctx.arc(45, -8, 15, Math.PI, Math.PI * 2);
+        // Rechte Seite
+        ctx.arc(55, 5, 20, Math.PI * 1.5, Math.PI * 0.5);
+        // Untere Verbindung
+        ctx.arc(25, 15, 35, 0, Math.PI);
+        ctx.closePath();
+        ctx.fill();
+
+        // Schatten für Tiefe
         ctx.fillStyle = 'rgba(200, 200, 200, 0.3)';
         ctx.beginPath();
-        ctx.arc(2, 2, 25, 0, Math.PI * 2);
-        ctx.arc(32, -3, 35, 0, Math.PI * 2);
-        ctx.arc(62, 2, 25, 0, Math.PI * 2);
+        ctx.arc(2, 8, 18, 0, Math.PI);
+        ctx.arc(25, 8, 30, 0, Math.PI);
+        ctx.arc(48, 8, 18, 0, Math.PI);
         ctx.fill();
 
-        // Haupt-Wolke
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        // Glänzende Highlights
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
         ctx.beginPath();
-        ctx.arc(0, 0, 25, 0, Math.PI * 2);
-        ctx.arc(30, -5, 35, 0, Math.PI * 2);
-        ctx.arc(60, 0, 25, 0, Math.PI * 2);
-        ctx.arc(15, -15, 20, 0, Math.PI * 2);
-        ctx.arc(45, -18, 18, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Highlights
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.beginPath();
-        ctx.arc(-8, -8, 12, 0, Math.PI * 2);
-        ctx.arc(22, -18, 15, 0, Math.PI * 2);
-        ctx.arc(52, -8, 10, 0, Math.PI * 2);
+        ctx.arc(-5, -5, 8, 0, Math.PI * 2);
+        ctx.arc(15, -15, 10, 0, Math.PI * 2);
+        ctx.arc(35, -15, 8, 0, Math.PI * 2);
+        ctx.arc(50, -5, 6, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
@@ -1299,38 +1371,74 @@
         ctx.translate(x, groundY);
         ctx.scale(scale, scale);
 
-        // Baumstamm mit Gradient
-        const trunkGradient = ctx.createLinearGradient(-3, 0, 3, 0);
-        trunkGradient.addColorStop(0, '#8D6E63');
+        // Baumstamm mit leichter Verjüngung
+        const trunkGradient = ctx.createLinearGradient(-4, 0, 4, 0);
+        trunkGradient.addColorStop(0, '#8B6F47');
         trunkGradient.addColorStop(0.5, '#6D4C41');
         trunkGradient.addColorStop(1, '#5D4037');
 
         ctx.fillStyle = trunkGradient;
-        ctx.fillRect(-3, 0, 6, -35);
-
-        // Stamm-Textur
-        ctx.fillStyle = 'rgba(0,0,0,0.2)';
-        for (let i = 0; i < 3; i++) {
-            ctx.fillRect(-2, -10 - i * 8, 4, 1);
-        }
-
-        // Krone mit Gradient
-        const crownGradient = ctx.createRadialGradient(0, -40, 5, 0, -40, 22);
-        crownGradient.addColorStop(0, '#66BB6A');
-        crownGradient.addColorStop(0.6, '#4CAF50');
-        crownGradient.addColorStop(1, '#2E7D32');
-
-        ctx.fillStyle = crownGradient;
         ctx.beginPath();
-        ctx.arc(0, -40, 22, 0, Math.PI * 2);
+        ctx.moveTo(-4, 0);
+        ctx.lineTo(-3, -20);
+        ctx.lineTo(-2, -30);
+        ctx.lineTo(2, -30);
+        ctx.lineTo(3, -20);
+        ctx.lineTo(4, 0);
+        ctx.closePath();
         ctx.fill();
 
-        // Krone-Details
+        // Einfache Rindentextur
+        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-2, -5);
+        ctx.lineTo(2, -5);
+        ctx.moveTo(-2, -12);
+        ctx.lineTo(2, -12);
+        ctx.moveTo(-1, -19);
+        ctx.lineTo(1, -19);
+        ctx.stroke();
+
+        // Baumkrone mit mehreren überlappenden Kreisen (wie im Bild)
+        // Dunkelgrüne Basis
+        ctx.fillStyle = '#2E7D32';
+        ctx.beginPath();
+        ctx.arc(-8, -35, 12, 0, Math.PI * 2);
+        ctx.arc(8, -35, 12, 0, Math.PI * 2);
+        ctx.arc(0, -40, 14, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mittlere grüne Schicht
+        ctx.fillStyle = '#43A047';
+        ctx.beginPath();
+        ctx.arc(-6, -38, 10, 0, Math.PI * 2);
+        ctx.arc(6, -38, 10, 0, Math.PI * 2);
+        ctx.arc(0, -45, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hellgrüne Highlights
+        ctx.fillStyle = '#66BB6A';
+        ctx.beginPath();
+        ctx.arc(-4, -42, 8, 0, Math.PI * 2);
+        ctx.arc(4, -42, 8, 0, Math.PI * 2);
+        ctx.arc(0, -48, 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Oberste hellste Schicht
         ctx.fillStyle = '#81C784';
         ctx.beginPath();
-        ctx.arc(-8, -45, 8, 0, Math.PI * 2);
-        ctx.arc(8, -42, 6, 0, Math.PI * 2);
-        ctx.arc(-5, -35, 5, 0, Math.PI * 2);
+        ctx.arc(0, -50, 7, 0, Math.PI * 2);
+        ctx.arc(-3, -46, 5, 0, Math.PI * 2);
+        ctx.arc(3, -46, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Kleine Details für natürlicheren Look
+        ctx.fillStyle = '#A5D6A7';
+        ctx.beginPath();
+        ctx.arc(-7, -45, 3, 0, Math.PI * 2);
+        ctx.arc(7, -45, 3, 0, Math.PI * 2);
+        ctx.arc(0, -52, 4, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
