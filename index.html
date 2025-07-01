@@ -23,6 +23,16 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFB9X06V8L"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-CFB9X06V8L');
+    </script>
+
     <title>Innovative Apps für Dein digitales Leben - mrx3k1.de</title>
     <meta name="description"
           content="Entdecke einzigartige, benutzerfreundliche Apps, entwickelt von Martin Pfeffer. Optimiere Dein digitales Erlebnis mit unseren maßgeschneiderten Lösungen."/>
@@ -905,6 +915,25 @@
                 document.querySelector('.category-btn[data-category="all"]').click();
             }
         }
+
+        // Google Analytics Event Tracking für App-Öffnungen
+        const appLinks = document.querySelectorAll('.card a');
+        appLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const appName = this.closest('.card').querySelector('h2').textContent.trim();
+                const appUrl = this.href;
+                
+                // Google Analytics Event senden
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'app_open', {
+                        'app_name': appName,
+                        'app_url': appUrl,
+                        'event_category': 'App Interaction',
+                        'event_label': appName
+                    });
+                }
+            });
+        });
     });
 </script>
 
