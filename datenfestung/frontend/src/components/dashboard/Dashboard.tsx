@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { DashboardWidget } from './DashboardWidget';
 import { NotificationCenter } from './NotificationCenter';
-import { DashboardWidget as WidgetType, UpcomingDeadline, ComplianceMetric } from '@/types/dashboard.types';
+import { DashboardWidget as WidgetType, UpcomingDeadline, ComplianceMetric } from '../../types/dashboard.types';
 
 // Mock data - in real app this would come from API/store
 const mockWidgets: WidgetType[] = [

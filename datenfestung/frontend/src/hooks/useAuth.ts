@@ -1,17 +1,17 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { useCallback } from 'react';
-import { RootState } from '@/store';
+import { RootState } from '../store';
 import { 
   loginStart, 
   loginSuccess, 
   loginFailure, 
   logout as logoutAction,
   clearError,
-} from '@/store/authSlice';
-import { authService } from '@/services/auth.service';
-import { LoginRequest, RegisterRequest } from '@/types/auth.types';
+} from '../store/authSlice';
+import { authService } from '../services/auth.service';
+import { LoginRequest, RegisterRequest } from '../types/auth.types';
 
-export const useAuth = () => {
+const useAuth = () => {
   const dispatch = useDispatch();
   const { user, token, isAuthenticated, isLoading, error } = useSelector(
     (state: RootState) => state.auth
@@ -101,3 +101,5 @@ export const useAuth = () => {
     refreshToken,
   };
 };
+
+export default useAuth;

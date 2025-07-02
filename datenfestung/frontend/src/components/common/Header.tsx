@@ -18,7 +18,7 @@ import {
   Settings,
   Person,
 } from '@mui/icons-material';
-import { useAuth } from '@/hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 
 interface HeaderProps {
   onMenuClick: () => void;

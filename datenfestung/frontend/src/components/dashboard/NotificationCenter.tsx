@@ -24,7 +24,7 @@ import {
 } from '@mui/icons-material';
 import { formatDistanceToNow } from 'date-fns';
 import { de } from 'date-fns/locale';
-import { Notification } from '@/types/dashboard.types';
+import { Notification } from '../../types/dashboard.types';
 
 interface NotificationCenterProps {
   notifications: Notification[];

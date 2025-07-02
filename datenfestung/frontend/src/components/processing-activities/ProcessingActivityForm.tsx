@@ -39,7 +39,7 @@ import {
   DATA_CATEGORIES,
   DATA_SUBJECTS,
   RECIPIENTS,
-} from '@/types/processing-activity.types';
+} from '../../types/processing-activity.types';
 
 const steps = [
   'Grunddaten',

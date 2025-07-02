@@ -3,7 +3,7 @@ import { Box, CssBaseline, Fab, useMediaQuery, useTheme } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import { Header } from './Header';
 import { Sidebar } from './Sidebar';
-import { useAuth } from '@/hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 
 interface LayoutProps {
   children: React.ReactNode;

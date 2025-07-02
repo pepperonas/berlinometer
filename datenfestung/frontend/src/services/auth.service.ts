@@ -5,12 +5,19 @@ import {
   AuthResponse, 
   ResetPasswordRequest,
   UpdateProfileRequest 
-} from '@/types/auth.types';
+} from '../types/auth.types';
 
 class AuthService {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
-    const response = await api.post('/auth/login', credentials);
-    return response.data.data;
+    console.log('Login attempt with:', credentials);
+    try {
+      const response = await api.post('/auth/login', credentials);
+      console.log('Login response:', response.data);
+      return response.data.data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   }
 
   async register(userData: RegisterRequest): Promise<AuthResponse> {

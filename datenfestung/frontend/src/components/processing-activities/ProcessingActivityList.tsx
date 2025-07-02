@@ -41,7 +41,7 @@ import {
   ProcessingActivityStatus,
   LegalBasis,
   LEGAL_BASIS_LABELS 
-} from '@/types/processing-activity.types';
+} from '../../types/processing-activity.types';
 
 // Mock data - in real app this would come from API/store
 const mockActivities: ProcessingActivity[] = [

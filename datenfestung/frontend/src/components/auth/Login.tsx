@@ -22,8 +22,8 @@ import {
 } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { LoginRequest } from '@/types/auth.types';
+import useAuth from '../../hooks/useAuth';
+import { LoginRequest } from '../../types/auth.types';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -94,17 +94,13 @@ export const Login: React.FC = () => {
                 control={control}
                 rules={{
                   required: 'E-Mail-Adresse ist erforderlich',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Ungültige E-Mail-Adresse',
-                  },
                 }}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
                     label="E-Mail-Adresse"
-                    type="email"
+                    type="text"
                     error={!!errors.email}
                     helperText={errors.email?.message}
                     disabled={isLoading}
@@ -126,10 +122,6 @@ export const Login: React.FC = () => {
                 control={control}
                 rules={{
                   required: 'Passwort ist erforderlich',
-                  minLength: {
-                    value: 6,
-                    message: 'Passwort muss mindestens 6 Zeichen lang sein',
-                  },
                 }}
                 render={({ field }) => (
                   <TextField

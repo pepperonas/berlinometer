@@ -13,7 +13,7 @@ import {
   TrendingFlat,
   MoreVert,
 } from '@mui/icons-material';
-import { DashboardWidget as WidgetType } from '@/types/dashboard.types';
+import { DashboardWidget as WidgetType } from '../../types/dashboard.types';
 
 interface DashboardWidgetProps {
   widget: WidgetType;

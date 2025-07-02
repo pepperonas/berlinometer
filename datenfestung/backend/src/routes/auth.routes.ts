@@ -7,15 +7,14 @@ import { validateRequest } from '@/middleware/validation.middleware';
 const router = Router();
 const authController = new AuthController();
 
-// Validation rules
+// Validation rules - relaxed for development
 const loginValidation = [
   body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Valid email is required'),
+    .notEmpty()
+    .withMessage('Email is required'),
   body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
+    .notEmpty()
+    .withMessage('Password is required'),
 ];
 
 const registerValidation = [

@@ -920,19 +920,97 @@
         const appLinks = document.querySelectorAll('.card a');
         appLinks.forEach(link => {
             link.addEventListener('click', function(e) {
-                const appName = this.closest('.card').querySelector('h2').textContent.trim();
+                const card = this.closest('.card');
+                const appName = card.querySelector('h2').textContent.trim();
                 const appUrl = this.href;
+                const category = this.closest('.category').id;
                 
                 // Google Analytics Event senden
                 if (typeof gtag !== 'undefined') {
                     gtag('event', 'app_open', {
                         'app_name': appName,
                         'app_url': appUrl,
+                        'app_category': category,
                         'event_category': 'App Interaction',
-                        'event_label': appName
+                        'event_label': appName,
+                        'button_class': this.className,
+                        'search_active': searchInput.value.length > 0
                     });
                 }
             });
+        });
+
+        // Scroll-Tracking für Sichtbarkeit
+        let scrollTimer;
+        window.addEventListener('scroll', function() {
+            clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(function() {
+                const scrollPercentage = Math.round((window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100);
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'scroll', {
+                        'event_category': 'Engagement',
+                        'event_label': 'Scroll Depth',
+                        'value': scrollPercentage
+                    });
+                }
+            }, 500);
+        });
+
+        // Such-Tracking
+        let searchTimer;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => {
+                if (this.value.length > 2 && typeof gtag !== 'undefined') {
+                    gtag('event', 'search', {
+                        'search_term': this.value,
+                        'event_category': 'Site Search',
+                        'results_count': document.querySelectorAll('.card[style="display: block;"]').length
+                    });
+                }
+            }, 1000);
+        });
+
+        // Kategorie-Filter Tracking
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const selectedCategory = this.getAttribute('data-category');
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'filter_category', {
+                        'category_name': selectedCategory,
+                        'event_category': 'Navigation',
+                        'event_label': selectedCategory
+                    });
+                }
+            });
+        });
+
+        // Session-Dauer und Engagement-Tracking
+        let startTime = Date.now();
+        let activeTime = 0;
+        let isActive = true;
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                activeTime += Date.now() - startTime;
+                isActive = false;
+            } else {
+                startTime = Date.now();
+                isActive = true;
+            }
+        });
+
+        window.addEventListener('beforeunload', function() {
+            if (isActive) {
+                activeTime += Date.now() - startTime;
+            }
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'session_duration', {
+                    'event_category': 'Engagement',
+                    'value': Math.round(activeTime / 1000),
+                    'apps_viewed': document.querySelectorAll('.card:hover').length
+                });
+            }
         });
     });
 </script>
