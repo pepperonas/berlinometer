@@ -23,14 +23,33 @@
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFB9X06V8L"></script>
+    <!-- Google tag (gtag.js) - wird nur geladen wenn Zustimmung erteilt -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-CFB9X06V8L');
+      
+      // Analytics nur laden wenn Zustimmung vorliegt
+      function initializeAnalytics() {
+        if (document.getElementById('gtag-script')) return; // Bereits geladen
+        
+        const script = document.createElement('script');
+        script.id = 'gtag-script';
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-CFB9X06V8L';
+        document.head.appendChild(script);
+        
+        script.onload = function() {
+          gtag('js', new Date());
+          gtag('config', 'G-CFB9X06V8L', {
+            cookie_flags: 'SameSite=None;Secure'
+          });
+        };
+      }
+      
+      // Prüfe gespeicherte Zustimmung beim Laden
+      if (localStorage.getItem('cookieConsent') === 'accepted') {
+        initializeAnalytics();
+      }
     </script>
 
     <title>Innovative Apps für Dein digitales Leben - mrx3k1.de</title>
@@ -311,6 +330,111 @@
             display: none;
         }
 
+        /* Cookie Banner Styles */
+        .cookie-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--card-bg) 0%, #363849 100%);
+            color: var(--text);
+            padding: 1.5rem;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+            border-top: 2px solid var(--accent);
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .cookie-banner.show {
+            transform: translateY(0);
+        }
+
+        .cookie-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 1.5rem;
+        }
+
+        .cookie-text {
+            flex: 1;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .cookie-text strong {
+            color: var(--accent);
+        }
+
+        .cookie-text a {
+            color: var(--blue);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        .cookie-text a:hover {
+            border-bottom-color: var(--blue);
+        }
+
+        .cookie-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .cookie-btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .cookie-btn.accept {
+            background: linear-gradient(135deg, var(--accent) 0%, #22c55e 100%);
+            color: #1e293b;
+        }
+
+        .cookie-btn.accept:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+        }
+
+        .cookie-btn.decline {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cookie-btn.decline:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            .cookie-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .cookie-buttons {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .cookie-btn {
+                flex: 1;
+                min-width: 120px;
+            }
+        }
+
         /* Animations */
         @keyframes fadeInDown {
             from {
@@ -353,6 +477,22 @@
 <body>
 <canvas id="canvas"></canvas>
 <canvas id="weatherCanvas"></canvas>
+
+<!-- Cookie Banner -->
+<div id="cookie-banner" class="cookie-banner">
+    <div class="cookie-content">
+        <div class="cookie-text">
+            <strong>🍪 Cookies & Datenschutz</strong><br>
+            Wir verwenden Google Analytics zur Verbesserung unserer Website. 
+            <a href="https://celox.io/privacy" target="_blank">Datenschutzerklärung</a>
+        </div>
+        <div class="cookie-buttons">
+            <button id="cookie-decline" class="cookie-btn decline">Ablehnen</button>
+            <button id="cookie-accept" class="cookie-btn accept">Akzeptieren</button>
+        </div>
+    </div>
+</div>
+
 <header>
     <h1>🪩 mrx3k1.de</h1>
     <h2 id="app-count">Entdecke meine App-Sammlung</h2>
@@ -654,6 +794,20 @@
             <a href="https://mrx3k1.de/entlines/" target="_blank"
                class="btn-cyan">Spielen</a>
         </div>
+        <div class="card" data-keywords="billard pool 8-ball 3d physik kugeln queue snooker">
+            <h2>🎱 3D Billard</h2>
+            <p>Realistisches 3D-Billardspiel mit physikalisch korrekten Kugelbewegungen. Spiele 8-Ball 
+                gegen einen Freund und zeige dein Können am virtuellen Billardtisch!</p>
+            <a href="billiard/" target="_blank"
+               class="btn-green">Spielen</a>
+        </div>
+        <div class="card" data-keywords="moto racer racing motorrad 3d rennen physik geschwindigkeit">
+            <h2>🏍️ Moto Racer 2</h2>
+            <p>Rasante 3D-Motorradrennen mit realistischer Physik! Fahre durch anspruchsvolle Strecken, 
+                meistere enge Kurven und erlebe das ultimative Racing-Erlebnis im Browser.</p>
+            <a href="moto-racer-2/" target="_blank"
+               class="btn-orange">Spielen</a>
+        </div>
     </div>
 </section>
 
@@ -807,6 +961,56 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Cookie Banner Management
+        const cookieBanner = document.getElementById('cookie-banner');
+        const cookieAccept = document.getElementById('cookie-accept');
+        const cookieDecline = document.getElementById('cookie-decline');
+        
+        // Prüfe ob bereits eine Entscheidung getroffen wurde
+        const cookieConsent = localStorage.getItem('cookieConsent');
+        
+        if (!cookieConsent) {
+            // Zeige Banner nach kurzer Verzögerung
+            setTimeout(() => {
+                cookieBanner.classList.add('show');
+            }, 1000);
+        }
+        
+        // Cookie-Zustimmung
+        cookieAccept.addEventListener('click', function() {
+            localStorage.setItem('cookieConsent', 'accepted');
+            cookieBanner.classList.remove('show');
+            
+            // Analytics initialisieren
+            if (typeof initializeAnalytics === 'function') {
+                initializeAnalytics();
+            }
+            
+            // Analytics Event für Zustimmung
+            setTimeout(() => {
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'cookie_consent', {
+                        'event_category': 'Privacy',
+                        'event_label': 'Accepted',
+                        'consent_timestamp': new Date().toISOString()
+                    });
+                }
+            }, 500);
+        });
+        
+        // Cookie-Ablehnung
+        cookieDecline.addEventListener('click', function() {
+            localStorage.setItem('cookieConsent', 'declined');
+            cookieBanner.classList.remove('show');
+            
+            // Bereits geladene Analytics deaktivieren falls vorhanden
+            if (typeof gtag !== 'undefined') {
+                gtag('consent', 'update', {
+                    'analytics_storage': 'denied'
+                });
+            }
+        });
+
         // Zähle die Anzahl der Card-Elemente und aktualisiere den Text
         const cardCount = document.querySelectorAll('.card').length;
         document.getElementById('app-count').textContent = `${cardCount} nützliche Apps und Tools`;
@@ -920,6 +1124,9 @@
         const appLinks = document.querySelectorAll('.card a');
         appLinks.forEach(link => {
             link.addEventListener('click', function(e) {
+                // Nur tracking wenn Zustimmung erteilt wurde
+                if (localStorage.getItem('cookieConsent') !== 'accepted') return;
+                
                 const card = this.closest('.card');
                 const appName = card.querySelector('h2').textContent.trim();
                 const appUrl = this.href;
@@ -940,9 +1147,11 @@
             });
         });
 
-        // Scroll-Tracking für Sichtbarkeit
+        // Scroll-Tracking für Sichtbarkeit (nur mit Zustimmung)
         let scrollTimer;
         window.addEventListener('scroll', function() {
+            if (localStorage.getItem('cookieConsent') !== 'accepted') return;
+            
             clearTimeout(scrollTimer);
             scrollTimer = setTimeout(function() {
                 const scrollPercentage = Math.round((window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100);
@@ -956,9 +1165,11 @@
             }, 500);
         });
 
-        // Such-Tracking
+        // Such-Tracking (nur mit Zustimmung)
         let searchTimer;
         searchInput.addEventListener('input', function() {
+            if (localStorage.getItem('cookieConsent') !== 'accepted') return;
+            
             clearTimeout(searchTimer);
             searchTimer = setTimeout(() => {
                 if (this.value.length > 2 && typeof gtag !== 'undefined') {
@@ -971,9 +1182,11 @@
             }, 1000);
         });
 
-        // Kategorie-Filter Tracking
+        // Kategorie-Filter Tracking (nur mit Zustimmung)
         categoryButtons.forEach(button => {
             button.addEventListener('click', function() {
+                if (localStorage.getItem('cookieConsent') !== 'accepted') return;
+                
                 const selectedCategory = this.getAttribute('data-category');
                 if (typeof gtag !== 'undefined') {
                     gtag('event', 'filter_category', {
@@ -1001,6 +1214,8 @@
         });
 
         window.addEventListener('beforeunload', function() {
+            if (localStorage.getItem('cookieConsent') !== 'accepted') return;
+            
             if (isActive) {
                 activeTime += Date.now() - startTime;
             }

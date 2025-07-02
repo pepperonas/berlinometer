@@ -31,10 +31,31 @@
     <meta name="theme-color" content="#2B2E3B" />
     <meta name="application-name" content="Popular Times" />
     <meta name="robots" content="index, follow" />
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/popular-times/manifest.json" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Popular Times" />
+    <link rel="apple-touch-icon" href="/popular-times/apple-touch-icon.png" />
     <script type="module" crossorigin src="/popular-times/assets/index-U4Rnh4Xr.js"></script>
     <link rel="stylesheet" crossorigin href="/popular-times/assets/index-BG2BhjYZ.css">
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

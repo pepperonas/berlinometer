@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moto Racer 2 - 3D Web Racing</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Game UI Overlay -->
+        <div id="gameUI">
+            <!-- Speed and Performance Display -->
+            <div id="speedometer" class="ui-panel">
+                <div class="speed-display">
+                    <span id="speedValue">0</span>
+                    <span class="speed-unit">KM/H</span>
+                </div>
+            </div>
+            
+            <!-- Lap Information -->
+            <div id="lapInfo" class="ui-panel">
+                <div class="lap-display">
+                    <div>Lap: <span id="currentLap">1</span>/<span id="totalLaps">3</span></div>
+                    <div>Time: <span id="lapTime">00:00.00</span></div>
+                    <div>Best: <span id="bestTime">--:--.--</span></div>
+                </div>
+            </div>
+            
+            <!-- Controls Help -->
+            <div id="controlsHelp" class="ui-panel">
+                <h3>Controls</h3>
+                <div class="controls-list">
+                    <div><kbd>W</kbd> / <kbd>↑</kbd> Accelerate</div>
+                    <div><kbd>S</kbd> / <kbd>↓</kbd> Brake</div>
+                    <div><kbd>A</kbd> / <kbd>←</kbd> Turn Left</div>
+                    <div><kbd>D</kbd> / <kbd>→</kbd> Turn Right</div>
+                    <div><kbd>C</kbd> Change Camera</div>
+                    <div><kbd>R</kbd> Restart Race</div>
+                </div>
+            </div>
+            
+            <!-- Mobile Touch Controls -->
+            <div id="touchControls" class="mobile-only">
+                <div class="touch-joystick" id="steerJoystick">
+                    <div class="joystick-inner"></div>
+                </div>
+                <div class="touch-buttons">
+                    <button id="accelerateBtn" class="touch-btn">GAS</button>
+                    <button id="brakeBtn" class="touch-btn">BRAKE</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Game Menu -->
+        <div id="gameMenu" class="menu-overlay">
+            <div class="menu-content">
+                <h1>Moto Racer 2</h1>
+                <p>Experience high-speed 3D motorcycle racing in your browser!</p>
+                <button id="startRace" class="menu-btn">Start Race</button>
+                <button id="toggleControls" class="menu-btn">Toggle Controls</button>
+                <div class="menu-info">
+                    <p>Built with Three.js and Cannon.js physics</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Race Results -->
+        <div id="raceResults" class="menu-overlay" style="display: none;">
+            <div class="menu-content">
+                <h2>Race Complete!</h2>
+                <div id="finalStats">
+                    <div>Best Lap: <span id="finalBestLap">--:--.--</span></div>
+                    <div>Total Time: <span id="finalTotalTime">--:--.--</span></div>
+                    <div>Average Speed: <span id="finalAvgSpeed">-- KM/H</span></div>
+                </div>
+                <button id="restartRace" class="menu-btn">Race Again</button>
+                <button id="backToMenu" class="menu-btn">Main Menu</button>
+            </div>
+        </div>
+        
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="menu-overlay">
+            <div class="menu-content">
+                <h2>Loading Moto Racer 2...</h2>
+                <div class="loading-bar">
+                    <div id="loadingProgress" class="loading-fill"></div>
+                </div>
+                <p id="loadingStatus">Initializing 3D engine...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js and Physics Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cannon@0.6.2/build/cannon.min.js"></script>
+    
+    <!-- Game Scripts -->
+    <script src="game-fixed.js"></script>
+
+    <!-- Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFB9X06V8L"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-CFB9X06V8L');
+        
+        // Track game launch
+        gtag('event', 'app_launch', {
+            app_name: 'Moto Racer 2',
+            app_url: window.location.pathname,
+            app_category: 'Games'
+        });
+    </script>
+</body>
+</html>

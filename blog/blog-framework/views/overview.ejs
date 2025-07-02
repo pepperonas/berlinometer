@@ -1,0 +1,148 @@
+<section class="overview">
+    <div class="overview-header">
+        <h1>Alle Blogbeiträge</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Beiträge durchsuchen..." />
+            <button type="button" id="clearSearch">×</button>
+        </div>
+    </div>
+
+    <div class="filter-options">
+        <div class="category-filters">
+            <button class="filter-btn active" data-category="all">Alle</button>
+            <% categories.forEach(category => { %>
+                <button class="filter-btn" data-category="<%= category %>">
+                    <%= category.charAt(0).toUpperCase() + category.slice(1) %>
+                </button>
+            <% }) %>
+        </div>
+        <div class="sort-options">
+            <select id="sortSelect">
+                <option value="date-desc">Neueste zuerst</option>
+                <option value="date-asc">Älteste zuerst</option>
+                <option value="title-asc">Titel A-Z</option>
+                <option value="title-desc">Titel Z-A</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="posts-list" id="postsList">
+        <% allPosts.forEach(post => { %>
+            <article class="post-item" data-category="<%= post.category %>" data-title="<%= post.title.toLowerCase() %>" data-excerpt="<%= (post.excerpt || '').toLowerCase() %>" data-date="<%= post.date %>">
+                <div class="post-content">
+                    <div class="post-header">
+                        <div class="category-tag <%= post.category %>"><%= post.category %></div>
+                        <span class="post-date"><%= new Date(post.date).toLocaleDateString('de-DE', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }) %></span>
+                    </div>
+                    <h2 class="post-title">
+                        <a href="/blog/posts/<%= post.category %>/<%= post.slug %>"><%= post.title %></a>
+                    </h2>
+                    <% if (post.excerpt) { %>
+                        <p class="post-excerpt"><%= post.excerpt %></p>
+                    <% } %>
+                    <div class="post-footer">
+                        <a href="/blog/posts/<%= post.category %>/<%= post.slug %>" class="read-more">Weiterlesen →</a>
+                    </div>
+                </div>
+            </article>
+        <% }) %>
+    </div>
+
+    <div id="noResults" class="no-results" style="display: none;">
+        <p>Keine Beiträge gefunden. Versuche andere Suchbegriffe oder Filter.</p>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearch = document.getElementById('clearSearch');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const sortSelect = document.getElementById('sortSelect');
+    const postsList = document.getElementById('postsList');
+    const noResults = document.getElementById('noResults');
+    const allPosts = Array.from(document.querySelectorAll('.post-item'));
+
+    let currentCategory = 'all';
+    let currentSearch = '';
+
+    function filterAndSort() {
+        let filteredPosts = allPosts.filter(post => {
+            const matchesCategory = currentCategory === 'all' || post.dataset.category === currentCategory;
+            const matchesSearch = currentSearch === '' || 
+                post.dataset.title.includes(currentSearch.toLowerCase()) ||
+                post.dataset.excerpt.includes(currentSearch.toLowerCase());
+            return matchesCategory && matchesSearch;
+        });
+
+        // Sortierung
+        const sortValue = sortSelect.value;
+        filteredPosts.sort((a, b) => {
+            switch(sortValue) {
+                case 'date-desc':
+                    const dateA = new Date(a.dataset.date);
+                    const dateB = new Date(b.dataset.date);
+                    return dateB.getTime() - dateA.getTime();
+                case 'date-asc':
+                    const dateA2 = new Date(a.dataset.date);
+                    const dateB2 = new Date(b.dataset.date);
+                    return dateA2.getTime() - dateB2.getTime();
+                case 'title-asc':
+                    return a.dataset.title.localeCompare(b.dataset.title);
+                case 'title-desc':
+                    return b.dataset.title.localeCompare(a.dataset.title);
+                default:
+                    return 0;
+            }
+        });
+
+        // Posts anzeigen/verstecken und neu anordnen
+        allPosts.forEach(post => post.style.display = 'none');
+        
+        // Posts in der sortierten Reihenfolge zum DOM hinzufügen
+        filteredPosts.forEach(post => {
+            post.style.display = 'block';
+            postsList.appendChild(post);
+        });
+
+        // "Keine Ergebnisse" anzeigen wenn nötig
+        if (filteredPosts.length === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+
+    // Suchfunktion
+    searchInput.addEventListener('input', function() {
+        currentSearch = this.value;
+        filterAndSort();
+    });
+
+    clearSearch.addEventListener('click', function() {
+        searchInput.value = '';
+        currentSearch = '';
+        filterAndSort();
+    });
+
+    // Kategorie-Filter
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentCategory = this.dataset.category;
+            filterAndSort();
+        });
+    });
+
+    // Sortierung
+    sortSelect.addEventListener('change', filterAndSort);
+
+    // Initial anzeigen
+    filterAndSort();
+});
+</script>
