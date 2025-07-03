@@ -39,14 +39,233 @@ body {
 
 .ui-panel {
     position: absolute;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     border: 2px solid #00ff41;
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 12px;
+    padding: 16px;
     color: #00ff41;
     font-weight: bold;
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(10px);
     font-size: 14px;
+    box-shadow: 0 4px 20px rgba(0, 255, 65, 0.3);
+    border-style: solid;
+    border-image: linear-gradient(45deg, #00ff41, #00cc33, #00ff41) 1;
+}
+
+/* Professional Racing Dashboard */
+#racingDashboard {
+    top: 20px;
+    left: 20px;
+    width: 320px;
+    height: 160px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 20, 0.9));
+}
+
+.dashboard-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+}
+
+/* Speed Gauge */
+.speed-display {
+    position: relative;
+}
+
+.speed-gauge {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+#speedGauge {
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 20, 0, 0.8), rgba(0, 40, 0, 0.9));
+}
+
+.speed-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #00ff41;
+    text-shadow: 0 0 10px #00ff41;
+}
+
+.speed-unit {
+    font-size: 12px;
+    display: block;
+    margin-top: -2px;
+}
+
+/* RPM Gauge */
+.rpm-display {
+    position: relative;
+}
+
+.rpm-gauge {
+    position: relative;
+    width: 100px;
+    height: 100px;
+}
+
+#rpmGauge {
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(40, 0, 0, 0.8), rgba(60, 0, 0, 0.9));
+}
+
+.rpm-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ff4444;
+    text-shadow: 0 0 8px #ff4444;
+}
+
+.rpm-unit {
+    font-size: 10px;
+    display: block;
+    margin-top: -2px;
+}
+
+/* Gear Display */
+.gear-display {
+    text-align: center;
+}
+
+.gear-indicator {
+    background: linear-gradient(45deg, rgba(0, 40, 80, 0.8), rgba(0, 60, 120, 0.8));
+    border: 2px solid #4488ff;
+    border-radius: 8px;
+    padding: 12px 16px;
+    min-width: 60px;
+}
+
+.gear-label {
+    display: block;
+    font-size: 10px;
+    color: #4488ff;
+    margin-bottom: 4px;
+}
+
+.gear-number {
+    display: block;
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 10px #4488ff;
+}
+
+/* Race Information Panel */
+#raceInfo {
+    top: 20px;
+    right: 20px;
+    width: 280px;
+    height: 200px;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(20, 0, 20, 0.95));
+}
+
+.race-display {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+.lap-section {
+    text-align: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.lap-label {
+    display: block;
+    font-size: 12px;
+    color: #00ff41;
+    margin-bottom: 4px;
+}
+
+.lap-current {
+    font-size: 32px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 10px #00ff41;
+}
+
+.lap-separator {
+    font-size: 24px;
+    color: #00ff41;
+    margin: 0 8px;
+}
+
+.lap-total {
+    font-size: 24px;
+    color: #888888;
+}
+
+.time-section {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 0;
+}
+
+.current-time, .best-time, .total-time {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.time-label {
+    font-size: 10px;
+    color: #00ff41;
+    width: 50px;
+}
+
+.time-value {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    font-family: 'Courier New', monospace;
+}
+
+.best-time .time-value {
+    color: #ffaa00;
+    text-shadow: 0 0 8px #ffaa00;
+}
+
+.position-section {
+    text-align: center;
+    padding: 8px 0;
+    border-top: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.position-label {
+    display: block;
+    font-size: 12px;
+    color: #00ff41;
+    margin-bottom: 4px;
+}
+
+.position-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 10px #00ff41;
+}
+
+.position-suffix {
+    font-size: 16px;
+    color: #00ff41;
+    margin-left: 4px;
 }
 
 /* Speedometer */

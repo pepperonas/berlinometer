@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Vacanze - Fahrzeugsimulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <div id="ui-overlay">
+            <div id="speedometer">
+                <div class="speed-display">
+                    <span id="speed">0</span>
+                    <span class="unit">km/h</span>
+                </div>
+                <div class="gear-display">Gear: <span id="gear">N</span></div>
+            </div>
+            
+            <div id="damage-indicator">
+                <div class="damage-bar">
+                    <div class="damage-fill" id="damage-fill"></div>
+                </div>
+                <span class="damage-label">Schaden</span>
+            </div>
+            
+            <div id="controls-help">
+                <h3>Steuerung</h3>
+                <p>W/↑ - Gas | S/↓ - Bremse</p>
+                <p>A/← - Links | D/→ - Rechts</p>
+                <p>Space - Handbremse | R - Reset</p>
+                <p>C - Kamera | ESC - Menü</p>
+            </div>
+        </div>
+        
+        <div id="loading-screen">
+            <div class="loader"></div>
+            <p>Lade Fahrzeugsimulator...</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/16/Stats.min.js"></script>
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

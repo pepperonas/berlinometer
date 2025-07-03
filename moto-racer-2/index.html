@@ -13,20 +13,71 @@
         
         <!-- Game UI Overlay -->
         <div id="gameUI">
-            <!-- Speed and Performance Display -->
-            <div id="speedometer" class="ui-panel">
-                <div class="speed-display">
-                    <span id="speedValue">0</span>
-                    <span class="speed-unit">KM/H</span>
+            <!-- Professional Racing Dashboard -->
+            <div id="racingDashboard" class="ui-panel">
+                <div class="dashboard-main">
+                    <!-- Speedometer -->
+                    <div class="speed-display">
+                        <div class="speed-gauge">
+                            <canvas id="speedGauge" width="120" height="120"></canvas>
+                            <div class="speed-value">
+                                <span id="speedValue">0</span>
+                                <span class="speed-unit">KM/H</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- RPM Meter -->
+                    <div class="rpm-display">
+                        <div class="rpm-gauge">
+                            <canvas id="rpmGauge" width="100" height="100"></canvas>
+                            <div class="rpm-value">
+                                <span id="rpmValue">800</span>
+                                <span class="rpm-unit">RPM</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Gear Display -->
+                    <div class="gear-display">
+                        <div class="gear-indicator">
+                            <span class="gear-label">GEAR</span>
+                            <span id="gearValue" class="gear-number">1</span>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Lap Information -->
-            <div id="lapInfo" class="ui-panel">
-                <div class="lap-display">
-                    <div>Lap: <span id="currentLap">1</span>/<span id="totalLaps">3</span></div>
-                    <div>Time: <span id="lapTime">00:00.00</span></div>
-                    <div>Best: <span id="bestTime">--:--.--</span></div>
+            <!-- Race Information Panel -->
+            <div id="raceInfo" class="ui-panel">
+                <div class="race-display">
+                    <div class="lap-section">
+                        <span class="lap-label">LAP</span>
+                        <span id="currentLap" class="lap-current">1</span>
+                        <span class="lap-separator">/</span>
+                        <span id="totalLaps" class="lap-total">5</span>
+                    </div>
+                    
+                    <div class="time-section">
+                        <div class="current-time">
+                            <span class="time-label">CURRENT</span>
+                            <span id="lapTime" class="time-value">00:00.000</span>
+                        </div>
+                        <div class="best-time">
+                            <span class="time-label">BEST</span>
+                            <span id="bestTime" class="time-value">--:--.---</span>
+                        </div>
+                        <div class="total-time">
+                            <span class="time-label">TOTAL</span>
+                            <span id="totalTime" class="time-value">00:00.000</span>
+                        </div>
+                    </div>
+                    
+                    <div class="position-section">
+                        <span class="position-label">POSITION</span>
+                        <span id="racePosition" class="position-value">1</span>
+                        <span class="position-suffix">ST</span>
+                    </div>
                 </div>
             </div>
             
@@ -99,7 +150,7 @@
     <script src="https://cdn.jsdelivr.net/npm/cannon@0.6.2/build/cannon.min.js"></script>
     
     <!-- Game Scripts -->
-    <script src="game-fixed.js"></script>
+    <script src="game-premium.js"></script>
 
     <!-- Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFB9X06V8L"></script>

@@ -834,14 +834,14 @@
             <a href="https://mrx3k1.de/entlines/" target="_blank"
                class="btn-cyan">Spielen</a>
         </div>
-        <div class="card" data-keywords="billard pool 8-ball 3d physik kugeln queue snooker">
+        <div class="card secret-card" data-keywords="billard pool 8-ball 3d physik kugeln queue snooker" style="display: none;">
             <h2>🎱 3D Billard</h2>
             <p>Realistisches 3D-Billardspiel mit physikalisch korrekten Kugelbewegungen. Spiele 8-Ball 
                 gegen einen Freund und zeige dein Können am virtuellen Billardtisch!</p>
             <a href="billiard/" target="_blank"
                class="btn-green">Spielen</a>
         </div>
-        <div class="card" data-keywords="moto racer racing motorrad 3d rennen physik geschwindigkeit">
+        <div class="card secret-card" data-keywords="moto racer racing motorrad 3d rennen physik geschwindigkeit" style="display: none;">
             <h2>🏍️ Moto Racer 2</h2>
             <p>Rasante 3D-Motorradrennen mit realistischer Physik! Fahre durch anspruchsvolle Strecken, 
                 meistere enge Kurven und erlebe das ultimative Racing-Erlebnis im Browser.</p>
@@ -1106,7 +1106,8 @@
             }, 300);
             
             // Zeige Toast Notification
-            showToast('Gesperrte Apps entsperrt! 🎉', '🔓');
+            const secretCount = document.querySelectorAll('.secret-card').length;
+            showToast(`${secretCount} gesperrte Apps entsperrt! 🎉`, '🔓');
         }
         
         // Mouse/Touch Events für Heart

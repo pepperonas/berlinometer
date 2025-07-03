@@ -1,0 +1,24 @@
+{
+  "name": "auto-vacanze",
+  "version": "1.0.0",
+  "description": "Browser-based vehicle simulator with realistic soft-body physics",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "npx live-server --port=8080"
+  },
+  "keywords": [
+    "vehicle",
+    "simulator",
+    "physics",
+    "threejs",
+    "cannonjs",
+    "soft-body"
+  ],
+  "author": "Martin",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  }
+}
