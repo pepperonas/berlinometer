@@ -435,6 +435,40 @@
             }
         }
 
+        /* Toast Notification Styles */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast .toast-icon {
+            font-size: 16px;
+        }
+
         /* Animations */
         @keyframes fadeInDown {
             from {
@@ -1022,6 +1056,38 @@
         let heartPressTimer;
         let heartPressStart = 0;
         
+        // Toast Notification anzeigen
+        function showToast(message, icon = '🔓') {
+            // Entferne existierende Toasts
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // Erstelle Toast
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span class="toast-icon">${icon}</span>${message}`;
+            
+            // Füge Toast zum Body hinzu
+            document.body.appendChild(toast);
+            
+            // Zeige Toast mit Animation
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Verstecke Toast nach 3 Sekunden
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 3000);
+        }
+
         // Funktion zum Anzeigen der Secret Cards
         function revealSecretCards() {
             const secretCards = document.querySelectorAll('.secret-card');
@@ -1038,6 +1104,9 @@
             setTimeout(() => {
                 heartTrigger.style.transform = 'scale(1)';
             }, 300);
+            
+            // Zeige Toast Notification
+            showToast('Gesperrte Apps entsperrt! 🎉', '🔓');
         }
         
         // Mouse/Touch Events für Heart
@@ -1152,7 +1221,9 @@
                         cat.style.display = 'block';
                     });
                     document.querySelectorAll('.card').forEach(card => {
-                        card.style.display = 'block';
+                        if (!card.classList.contains('secret-card')) {
+                            card.style.display = 'block';
+                        }
                     });
                 } else {
                     // Verstecke alle Kategorien
@@ -1163,9 +1234,11 @@
                     // Zeige nur die ausgewählte Kategorie
                     document.getElementById(category).style.display = 'block';
 
-                    // Zeige alle Karten in der ausgewählten Kategorie
+                    // Zeige alle Karten in der ausgewählten Kategorie (außer secret cards)
                     document.querySelectorAll(`#${category} .card`).forEach(card => {
-                        card.style.display = 'block';
+                        if (!card.classList.contains('secret-card')) {
+                            card.style.display = 'block';
+                        }
                     });
                 }
             });
