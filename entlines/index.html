@@ -9,6 +9,14 @@
     <meta name="keywords"
           content="Entlines, Flappy Bird, Ente, Spiel, Browser Game, Arcade, Fliegen, Learning to Fly">
     <meta name="author" content="Entlines Game">
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#87CEEB">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Entlines">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="game">
@@ -2019,6 +2027,17 @@
             }
         });
     });
+    
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('sw.js').then(function(registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function(err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
 </script>
 
 <div class="footer">Made with ❤️  by Martin Pfeffer</div>

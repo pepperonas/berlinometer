@@ -648,6 +648,12 @@
                 Besucherzahlen von Orten - perfekt für die Planung von Besuchen zu weniger vollen Zeiten.</p>
             <a href="https://mrx3k1.de/popular-times/" target="_blank" class="btn-cyan">Öffnen</a>
         </div>
+        <div class="card secret-card" data-keywords="ticket generator qr code event support festival konzert" style="display: none;">
+            <h2>🎫 Ticket Generator</h2>
+            <p>Erstelle professionelle Event-Tickets mit QR-Codes, benutzerdefinierten Designs und 
+                automatischer Nummerierung - perfekt für Veranstaltungen, Konzerte und Festivals.</p>
+            <a href="ticket-generator/" target="_blank" class="btn-purple">Öffnen</a>
+        </div>
 
     </div>
 </section>
@@ -952,7 +958,7 @@
 </section>
 
 <div class="footer-buttons">
-    <p class="copyright">Made with ❤️ by Martin Pfeffer</p>
+    <p class="copyright">Made with <span id="heart-trigger" style="cursor: pointer; user-select: none;">❤️</span> by Martin Pfeffer</p>
     <div class="legal-links">
         <a href="https://celox.io/impressum" target="_blank">Impressum</a>
         <a href="https://celox.io/privacy" target="_blank">Datenschutz</a>
@@ -1011,9 +1017,62 @@
             }
         });
 
-        // Zähle die Anzahl der Card-Elemente und aktualisiere den Text
-        const cardCount = document.querySelectorAll('.card').length;
-        document.getElementById('app-count').textContent = `${cardCount} nützliche Apps und Tools`;
+        // Heart Press-and-Hold für Secret Cards
+        const heartTrigger = document.getElementById('heart-trigger');
+        let heartPressTimer;
+        let heartPressStart = 0;
+        
+        // Funktion zum Anzeigen der Secret Cards
+        function revealSecretCards() {
+            const secretCards = document.querySelectorAll('.secret-card');
+            secretCards.forEach(card => {
+                card.style.display = 'block';
+                card.style.animation = 'fadeInUp 0.5s ease-out';
+            });
+            
+            // Aktualisiere die App-Anzahl
+            updateAppCount();
+            
+            // Visuelles Feedback
+            heartTrigger.style.transform = 'scale(1.5)';
+            setTimeout(() => {
+                heartTrigger.style.transform = 'scale(1)';
+            }, 300);
+        }
+        
+        // Mouse/Touch Events für Heart
+        heartTrigger.addEventListener('mousedown', startHeartPress);
+        heartTrigger.addEventListener('touchstart', startHeartPress);
+        heartTrigger.addEventListener('mouseup', endHeartPress);
+        heartTrigger.addEventListener('touchend', endHeartPress);
+        heartTrigger.addEventListener('mouseleave', endHeartPress);
+        heartTrigger.addEventListener('touchcancel', endHeartPress);
+        
+        function startHeartPress(e) {
+            e.preventDefault();
+            heartPressStart = Date.now();
+            
+            heartPressTimer = setTimeout(() => {
+                revealSecretCards();
+            }, 2000);
+            
+            // Visueller Hinweis dass gedrückt wird
+            heartTrigger.style.opacity = '0.7';
+        }
+        
+        function endHeartPress() {
+            clearTimeout(heartPressTimer);
+            heartTrigger.style.opacity = '1';
+        }
+
+        // App-Count Update Funktion
+        function updateAppCount() {
+            const visibleCards = document.querySelectorAll('.card:not([style*="display: none"])');
+            document.getElementById('app-count').textContent = `${visibleCards.length} nützliche Apps und Tools`;
+        }
+        
+        // Initiale App-Anzahl
+        updateAppCount();
 
         // Suchfunktion
         const searchInput = document.getElementById('app-search');
@@ -1047,9 +1106,12 @@
                 const keywords = card.getAttribute('data-keywords') ? card.getAttribute('data-keywords').toLowerCase() : '';
 
                 if (title.includes(searchTerm) || description.includes(searchTerm) || keywords.includes(searchTerm)) {
-                    card.style.display = 'block';
-                    card.closest('.category').classList.remove('hidden');
-                    resultsFound = true;
+                    // Zeige nur nicht-secret Cards in der Suche
+                    if (!card.classList.contains('secret-card')) {
+                        card.style.display = 'block';
+                        card.closest('.category').classList.remove('hidden');
+                        resultsFound = true;
+                    }
                 } else {
                     card.style.display = 'none';
                 }

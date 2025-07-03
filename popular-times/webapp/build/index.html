@@ -2,7 +2,7 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/popular-times/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- App Meta Tags -->
@@ -33,12 +33,12 @@
     <meta name="robots" content="index, follow" />
     
     <!-- PWA Meta Tags -->
-    <link rel="manifest" href="/popular-times/manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Popular Times" />
-    <link rel="apple-touch-icon" href="/popular-times/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
     <script type="module" crossorigin src="/popular-times/assets/index-U4Rnh4Xr.js"></script>
     <link rel="stylesheet" crossorigin href="/popular-times/assets/index-BG2BhjYZ.css">
   </head>
@@ -47,7 +47,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('./sw.js')
             .then((registration) => {
               console.log('SW registered: ', registration);
             })
