@@ -61,6 +61,26 @@ const Login = () => {
         }
     };
 
+    const handleDemoLogin = async () => {
+        setError('');
+        setIsSubmitting(true);
+
+        try {
+            const result = await login('demo@bartender.de', 'demo123');
+
+            if (!result.success) {
+                setError(result.error || 'Demo-Anmeldung fehlgeschlagen');
+            } else {
+                navigate('/');
+            }
+        } catch (err) {
+            setError('Ein unerwarteter Fehler ist aufgetreten');
+            console.error('Demo login error:', err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <Box
             sx={{
@@ -161,7 +181,8 @@ const Login = () => {
                             sx={{
                                 py: 1.5,
                                 position: 'relative',
-                                fontSize: '1rem'
+                                fontSize: '1rem',
+                                mb: 2
                             }}
                             disabled={isSubmitting}
                         >
@@ -170,6 +191,19 @@ const Login = () => {
                             ) : (
                                 'Anmelden'
                             )}
+                        </Button>
+
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            sx={{
+                                py: 1.5,
+                                fontSize: '1rem'
+                            }}
+                            disabled={isSubmitting}
+                            onClick={handleDemoLogin}
+                        >
+                            Demo-Account testen
                         </Button>
 
                         <Box sx={{mt: 2, textAlign: 'center'}}>

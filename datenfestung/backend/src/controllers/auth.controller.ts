@@ -11,6 +11,44 @@ export class AuthController {
     try {
       const { email, password } = req.body;
 
+      // Check for demo account
+      if (email === 'demo@datenfestung.de' && password === 'demo123') {
+        const demoUser = {
+          id: 999999,
+          email: 'demo@datenfestung.de',
+          firstName: 'Demo',
+          lastName: 'User',
+          role: 'user' as const,
+          organizationId: 1,
+          organization: {
+            id: 1,
+            name: 'Demo Organisation'
+          }
+        };
+
+        const accessToken = jwt.sign(
+          { userId: demoUser.id, email: demoUser.email, role: demoUser.role },
+          process.env.JWT_SECRET as string,
+          { expiresIn: '1h' }
+        );
+
+        const refreshToken = jwt.sign(
+          { userId: demoUser.id },
+          process.env.JWT_REFRESH_SECRET as string,
+          { expiresIn: '7d' }
+        );
+
+        res.json({
+          success: true,
+          data: {
+            user: demoUser,
+            token: accessToken,
+            refreshToken,
+          },
+        });
+        return;
+      }
+
       // Find user by email
       const user = await prisma.user.findUnique({
         where: { email },

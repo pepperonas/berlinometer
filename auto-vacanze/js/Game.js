@@ -1,4 +1,4 @@
-import { Vehicle } from './Vehicle.js';
+import { BeamNGVehicle } from './BeamNGVehicle.js';
 
 export class Game {
     constructor(canvas) {
@@ -136,9 +136,9 @@ export class Game {
         this.world = new CANNON.World();
         this.world.gravity.set(0, -9.82, 0);
         this.world.broadphase = new CANNON.NaiveBroadphase();
-        this.world.solver.iterations = 20; // Increased for stability
-        this.world.solver.tolerance = 0.001; // Improved tolerance
-        this.world.defaultContactMaterial.friction = 0.4;
+        this.world.solver.iterations = 15; // Higher for BeamNG physics stability
+        this.world.solver.tolerance = 0.001; // Precise for node-beam system
+        this.world.defaultContactMaterial.friction = 0.4; // Restore friction for wheel contact
         this.world.defaultContactMaterial.restitution = 0.2;
     }
     
@@ -178,7 +178,7 @@ export class Game {
             mass: 0,
             shape: groundShape,
             material: new CANNON.Material({
-                friction: 0.4,
+                friction: 0.8, // High ground friction for tire contact
                 restitution: 0.3
             })
         });
@@ -258,11 +258,12 @@ export class Game {
     }
     
     async createVehicle() {
-        // Create vehicle with node-beam physics
-        const vehicle = new Vehicle(this.scene, this.world, {
+        // Create BeamNG-style vehicle with advanced physics
+        const vehicle = new BeamNGVehicle(this.scene, this.world, {
             mass: 1200,
             dimensions: { width: 1.8, height: 1.4, length: 4.2 },
-            nodeCount: 250
+            wheelBase: 2.6,
+            trackWidth: 1.5
         });
         
         this.activeVehicle = vehicle;

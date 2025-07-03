@@ -56,6 +56,23 @@ export const Header: React.FC<HeaderProps> = ({
       <Toolbar>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           Datenfestung
+          {user?.id === 999999 && (
+            <Typography
+              component="span"
+              variant="caption"
+              sx={{
+                ml: 1,
+                px: 1,
+                py: 0.5,
+                bgcolor: 'warning.main',
+                color: 'warning.contrastText',
+                borderRadius: 1,
+                fontSize: '0.7rem'
+              }}
+            >
+              DEMO
+            </Typography>
+          )}
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

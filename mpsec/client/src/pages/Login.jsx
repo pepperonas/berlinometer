@@ -85,6 +85,21 @@ const Login = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      setError('Verbinde mit Demo-Account...');
+      
+      await login('demo', 'demo123');
+      setError('');
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Demo-Login-Fehler:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <LoginContainer>
       <LoginCard>
@@ -122,9 +137,19 @@ const Login = () => {
               type="submit" 
               variant="primary" 
               disabled={isLoading}
-              style={{ width: '100%' }}
+              style={{ width: '100%', marginBottom: '12px' }}
             >
               {isLoading ? <Loader size="20px" /> : 'Anmelden'}
+            </Button>
+
+            <Button 
+              type="button" 
+              variant="secondary" 
+              disabled={isLoading}
+              style={{ width: '100%' }}
+              onClick={handleDemoLogin}
+            >
+              Demo-Account testen
             </Button>
           </Form>
           

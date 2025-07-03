@@ -68,9 +68,9 @@ export class Vehicle {
             })
         });
         
-        // Higher damping for stability
-        this.chassisBody.linearDamping = 0.1;
-        this.chassisBody.angularDamping = 0.3; // High angular damping to prevent flipping
+        // Reduced damping to allow movement
+        this.chassisBody.linearDamping = 0.01; // Much lower for movement
+        this.chassisBody.angularDamping = 0.1; // Reduced angular damping
         
         this.world.add(this.chassisBody);
     }
@@ -155,20 +155,29 @@ export class Vehicle {
     }
     
     applyThrottle(amount) {
-        // Simple direct velocity application - no force, no flipping
-        const maxSpeed = 20; // m/s
-        const acceleration = amount * 0.5; // acceleration factor
+        // Moderate acceleration with ground check
+        const maxSpeed = 15; // m/s (54 km/h)
+        const acceleration = amount * 0.8; // Balanced acceleration
         
-        // Get current forward direction
-        const forward = this.chassisBody.quaternion.vmult(new CANNON.Vec3(0, 0, -1));
+        // Only apply thrust if car is on ground (Y position check)
+        if (this.chassisBody.position.y > 3) {
+            // Car is airborne, don't add more speed
+            return;
+        }
         
-        // Add velocity in forward direction
-        this.chassisBody.velocity.vadd(forward.scale(acceleration), this.chassisBody.velocity);
+        // Apply force as impulse to prevent excessive velocity accumulation
+        const forward = this.chassisBody.quaternion.vmult(new CANNON.Vec3(0, 0, -acceleration));
+        this.chassisBody.velocity.vadd(forward, this.chassisBody.velocity);
         
         // Limit max speed
         const currentSpeed = this.chassisBody.velocity.length();
         if (currentSpeed > maxSpeed) {
             this.chassisBody.velocity.scale(maxSpeed / currentSpeed, this.chassisBody.velocity);
+        }
+        
+        // Keep car grounded (prevent flying)
+        if (this.chassisBody.velocity.y > 2) {
+            this.chassisBody.velocity.y = 2; // Limit upward velocity
         }
         
         // Update RPM
@@ -208,8 +217,8 @@ export class Vehicle {
         this.carMesh.position.copy(this.chassisBody.position);
         this.carMesh.quaternion.copy(this.chassisBody.quaternion);
         
-        // Stability control disabled for now
-        // this.updateStability();
+        // Add gentle stability control
+        this.updateStability();
         
         // Update wheels
         this.updateWheels();
@@ -238,18 +247,18 @@ export class Vehicle {
         // If vehicle is tilting too much, apply corrective torque
         const tiltAngle = Math.acos(chassisUp.dot(upVector));
         
-        if (tiltAngle > 0.8) { // 45 degrees tilt threshold (more lenient)
-            // Apply corrective torque to straighten vehicle
+        if (tiltAngle > 0.5) { // 30 degrees tilt threshold
+            // Apply gentle corrective torque to straighten vehicle
             const correctionAxis = chassisUp.cross(upVector);
             correctionAxis.normalize();
             
-            const correctionTorque = correctionAxis.scale(tiltAngle * 1000);
+            const correctionTorque = correctionAxis.scale(tiltAngle * 500); // Gentler correction
             this.chassisBody.angularVelocity.vadd(correctionTorque.scale(0.001), this.chassisBody.angularVelocity);
         }
         
-        // Limit excessive angular velocity (more lenient)
-        if (this.chassisBody.angularVelocity.length() > 10) {
-            this.chassisBody.angularVelocity.scale(0.9, this.chassisBody.angularVelocity);
+        // Limit excessive angular velocity to prevent flipping
+        if (this.chassisBody.angularVelocity.length() > 3) {
+            this.chassisBody.angularVelocity.scale(0.8, this.chassisBody.angularVelocity);
         }
     }
     

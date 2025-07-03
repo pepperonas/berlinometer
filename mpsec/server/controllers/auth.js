@@ -81,6 +81,34 @@ exports.login = async (req, res, next) => {
       });
     }
 
+    // Check for demo account
+    if (username === 'demo' && password === 'demo123') {
+      const demoUser = {
+        _id: 'demo999999',
+        username: 'demo',
+        createdAt: new Date()
+      };
+
+      console.log('Demo-Login erfolgreich');
+
+      // Create a mock JWT token for demo
+      const jwt = require('jsonwebtoken');
+      const token = jwt.sign(
+        { id: demoUser._id, username: demoUser.username },
+        process.env.JWT_SECRET || 'demo-secret',
+        { expiresIn: '30d' }
+      );
+
+      return res.status(200).json({
+        success: true,
+        token,
+        user: {
+          id: demoUser._id,
+          username: demoUser.username
+        }
+      });
+    }
+
     try {
       // Benutzer in DB suchen (mit Passwort)
       console.log('Suche Benutzer in der Datenbank...');

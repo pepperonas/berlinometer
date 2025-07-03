@@ -54,6 +54,19 @@ export const Login: React.FC = () => {
     }
   };
 
+  const handleDemoLogin = async () => {
+    try {
+      clearError();
+      await login({
+        email: 'demo@datenfestung.de',
+        password: 'demo123'
+      });
+      navigate(from, { replace: true });
+    } catch (error) {
+      // Error is handled by the auth hook
+    }
+  };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -168,6 +181,17 @@ export const Login: React.FC = () => {
               ) : (
                 'Anmelden'
               )}
+            </Button>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              size="large"
+              disabled={isLoading}
+              sx={{ mb: 2, py: 1.5, borderColor: 'primary.main', color: 'primary.main' }}
+              onClick={handleDemoLogin}
+            >
+              Demo-Account testen
             </Button>
 
             <Box sx={{ textAlign: 'center', mb: 2 }}>

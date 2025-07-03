@@ -124,6 +124,56 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    // Check for demo account
+    if (email === 'demo@bartender.de' && password === 'demo123') {
+      const demoUser = {
+        _id: 'demo999999',
+        name: 'Demo Bar',
+        email: 'demo@bartender.de',
+        role: 'admin',
+        active: true,
+        bar: {
+          id: 'demobar999999',
+          name: 'Demo Bar',
+          address: {
+            street: 'Musterstraße 123',
+            city: 'Berlin',
+            zipCode: '10115',
+            country: 'Deutschland'
+          },
+          contact: {
+            email: 'demo@bartender.de',
+            phone: '+49 30 12345678'
+          }
+        }
+      };
+
+      // Create a mock JWT token for demo
+      const jwt = require('jsonwebtoken');
+      const token = jwt.sign(
+        { id: demoUser._id },
+        process.env.JWT_SECRET || 'demo-secret',
+        { expiresIn: '24h' }
+      );
+
+      const options = {
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        httpOnly: true
+      };
+
+      if (process.env.NODE_ENV === 'production') {
+        options.secure = true;
+      }
+
+      return res.status(200)
+        .cookie('token', token, options)
+        .json({
+          success: true,
+          token,
+          user: demoUser
+        });
+    }
+
     console.log('Finding user in database...');
 
     // Benutzer in DB suchen mit Passwort

@@ -1,6 +1,7 @@
 export class InputController {
-    constructor(game) {
+    constructor(game, debugLogger = null) {
         this.game = game;
+        this.debugLogger = debugLogger;
         this.keys = {};
         this.mouseX = 0;
         this.mouseY = 0;
@@ -31,6 +32,10 @@ export class InputController {
     onKeyDown(event) {
         this.keys[event.code] = true;
         
+        if (this.debugLogger) {
+            this.debugLogger.logInput('KEY_DOWN', event.code);
+        }
+        
         // Handle special keys
         switch(event.code) {
             case 'KeyR':
@@ -42,11 +47,21 @@ export class InputController {
             case 'Escape':
                 this.togglePause();
                 break;
+            case 'F1':
+                this.exportDebugLog();
+                break;
+            case 'F2':
+                this.showDebugInfo();
+                break;
         }
     }
     
     onKeyUp(event) {
         this.keys[event.code] = false;
+        
+        if (this.debugLogger) {
+            this.debugLogger.logInput('KEY_UP', event.code);
+        }
     }
     
     onMouseMove(event) {
@@ -81,6 +96,31 @@ export class InputController {
         console.log('Pause toggled');
     }
     
+    exportDebugLog() {
+        if (this.debugLogger) {
+            this.debugLogger.exportLog();
+            console.log('Debug log exported!');
+        }
+    }
+    
+    showDebugInfo() {
+        if (this.debugLogger) {
+            const vehicle = this.game.getActiveVehicle();
+            if (vehicle) {
+                const info = {
+                    position: vehicle.getPosition(),
+                    velocity: vehicle.getVelocity(),
+                    speed: vehicle.getVelocity().length(),
+                    throttle: vehicle.throttleInput,
+                    wheelCount: vehicle.wheels.length,
+                    groundedWheels: vehicle.wheels.filter(w => w.isGrounded).length
+                };
+                console.table(info);
+                this.debugLogger.logEvent('DEBUG_INFO_SHOWN', info);
+            }
+        }
+    }
+    
     processInput() {
         const vehicle = this.game.getActiveVehicle();
         if (!vehicle) return;
@@ -111,6 +151,10 @@ export class InputController {
         const vehicle = this.game.getActiveVehicle();
         if (!vehicle) return;
         
+        if (this.debugLogger) {
+            this.debugLogger.logInput('THROTTLE', amount);
+        }
+        
         vehicle.applyThrottle(amount);
     }
     
@@ -118,12 +162,20 @@ export class InputController {
         const vehicle = this.game.getActiveVehicle();
         if (!vehicle) return;
         
+        if (this.debugLogger) {
+            this.debugLogger.logInput('BRAKE', amount);
+        }
+        
         vehicle.applyBrake(amount);
     }
     
     applySteering(amount) {
         const vehicle = this.game.getActiveVehicle();
         if (!vehicle) return;
+        
+        if (this.debugLogger && amount !== 0) {
+            this.debugLogger.logInput('STEERING', amount);
+        }
         
         vehicle.applySteering(amount);
     }
