@@ -2044,6 +2044,60 @@
             });
         });
     }
+    
+    // PWA Install Prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('PWA Install prompt triggered');
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show install button after a delay
+        setTimeout(() => {
+            if (deferredPrompt && !localStorage.getItem('pwa-installed')) {
+                const installBtn = document.createElement('div');
+                installBtn.innerHTML = '📱 App installieren';
+                installBtn.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 10px 15px;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    z-index: 10000;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                `;
+                
+                installBtn.addEventListener('click', () => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((result) => {
+                        if (result.outcome === 'accepted') {
+                            localStorage.setItem('pwa-installed', 'true');
+                        }
+                        installBtn.remove();
+                        deferredPrompt = null;
+                    });
+                });
+                
+                document.body.appendChild(installBtn);
+                
+                // Auto-hide after 10 seconds
+                setTimeout(() => {
+                    if (installBtn.parentNode) {
+                        installBtn.remove();
+                    }
+                }, 10000);
+            }
+        }, 3000);
+    });
+    
+    window.addEventListener('appinstalled', (evt) => {
+        console.log('PWA was installed');
+        localStorage.setItem('pwa-installed', 'true');
+    });
 </script>
 
 <div class="footer">Made with ❤️  by Martin Pfeffer</div>
