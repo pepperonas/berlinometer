@@ -60,6 +60,26 @@
         </div>
     </div>
 
+    <!-- Audio visualization -->
+    <div class="audio-viz-section">
+        <div class="audio-viz-header">
+            <h4>🎵 Audio-Visualisierung</h4>
+            <button id="vizToggle" class="viz-toggle" title="Visualisierung ein/aus">
+                <span class="icon">👁️</span>
+            </button>
+        </div>
+        <div class="audio-visualizer" id="audioVisualizer">
+            <canvas id="audioCanvas" width="800" height="100"></canvas>
+            <div class="volume-meter">
+                <div class="volume-label">Lautstärke:</div>
+                <div class="volume-bar">
+                    <div class="volume-fill" id="volumeFill"></div>
+                </div>
+                <div class="volume-level" id="volumeLevel">0%</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Transcript area -->
     <div class="transcript-section">
         <div class="transcript-header">
@@ -71,10 +91,41 @@
                 <button id="copyBtn" class="action-btn" title="Text kopieren">
                     <span class="icon">📋</span>
                 </button>
+                <div class="export-dropdown">
+                    <button id="exportBtn" class="action-btn" title="Text exportieren">
+                        <span class="icon">📄</span>
+                    </button>
+                    <div class="export-menu" id="exportMenu">
+                        <button class="export-option" data-format="txt">
+                            <span class="icon">📄</span> TXT
+                        </button>
+                        <button class="export-option" data-format="pdf">
+                            <span class="icon">📕</span> PDF
+                        </button>
+                        <button class="export-option" data-format="docx">
+                            <span class="icon">📘</span> DOCX
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="transcript" id="transcript" data-placeholder="Hier erscheint dein gesprochener Text...">
             <span class="placeholder">Hier erscheint dein gesprochener Text...</span>
+        </div>
+    </div>
+
+    <!-- History section -->
+    <div class="history-section">
+        <div class="history-header">
+            <h3>📚 Transkript-Verlauf</h3>
+            <div class="history-actions">
+                <button id="saveBtn" class="action-btn" title="Transkript speichern">
+                    <span class="icon">💾</span>
+                </button>
+                <button id="historyBtn" class="action-btn" title="Verlauf anzeigen">
+                    <span class="icon">📋</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -104,6 +155,20 @@
                 <select id="continuous">
                     <option value="true">Kontinuierlich</option>
                     <option value="false">Einzelne Sätze</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="timestamps">⏰ Zeitstempel</label>
+                <select id="timestamps">
+                    <option value="true">Aktiviert</option>
+                    <option value="false">Deaktiviert</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="theme">🎨 Theme</label>
+                <select id="theme">
+                    <option value="dark">Dark Mode</option>
+                    <option value="light">Light Mode</option>
                 </select>
             </div>
         </div>

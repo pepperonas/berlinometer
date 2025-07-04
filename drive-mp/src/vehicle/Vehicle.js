@@ -22,7 +22,7 @@ export class Vehicle {
         this.mass = 1500; // kg - heavier for stability
         this.engineForce = 5000; // Increased for better acceleration with advanced physics
         this.brakeForce = 50;
-        this.steeringAngle = 0.35;
+        this.steeringAngle = 0.4; // Increased for better steering response
         this.currentSteering = 0;
         this.currentThrottle = 0;
         this.currentBrake = 0;
@@ -144,6 +144,13 @@ export class Vehicle {
             shape: chassisShape,
             material: this.physicsWorld.materials?.vehicleBody
         });
+        
+        // Mark chassis for collision detection
+        this.chassis.userData = { 
+            isVehicle: true, 
+            vehicleInstance: this 
+        };
+        
         // Don't set position here, will be set later
     }
 
@@ -209,16 +216,16 @@ export class Vehicle {
                 radius: 0.4,
                 directionLocal: new CANNON.Vec3(0, -1, 0),
                 suspensionStiffness: isFront ? this.suspension.frontStiffness : this.suspension.rearStiffness,
-                suspensionRestLength: 0.6,
+                suspensionRestLength: 0.5, // Reduced for better ground contact
                 frictionSlip: this.calculateTireFriction(index),
                 dampingRelaxation: isFront ? this.suspension.frontCompression : this.suspension.rearCompression,
                 dampingCompression: isFront ? this.suspension.frontDamping : this.suspension.rearDamping,
-                maxSuspensionForce: 200000,
+                maxSuspensionForce: 250000, // Increased for better response
                 rollInfluence: 0.01,
                 axleLocal: new CANNON.Vec3(1, 0, 0),
                 chassisConnectionPointLocal: new CANNON.Vec3(pos.x, pos.y, pos.z),
-                maxSuspensionTravel: 0.5,
-                customSlidingRotationalSpeed: -30,
+                maxSuspensionTravel: 0.4, // Reduced for stability
+                customSlidingRotationalSpeed: -50, // Increased for better control
                 useCustomSlidingRotationalSpeed: true
             };
             
@@ -257,9 +264,13 @@ export class Vehicle {
         
         // Apply forces using RaycastVehicle
         if (this.vehicle) {
-            // Apply steering to front wheels
-            this.vehicle.setSteeringValue(this.currentSteering * this.steeringAngle, 0);
-            this.vehicle.setSteeringValue(this.currentSteering * this.steeringAngle, 1);
+            // Apply steering to front wheels with speed-dependent steering
+            const speed = this.getSpeed();
+            const speedFactor = Math.max(0.3, 1 - speed * 0.01); // Reduce steering at high speed
+            const finalSteering = this.currentSteering * this.steeringAngle * speedFactor;
+            
+            this.vehicle.setSteeringValue(finalSteering, 0);
+            this.vehicle.setSteeringValue(finalSteering, 1);
             
             // Apply engine force
             const scaledForce = engineForce * 1.0; // Increased to full force
@@ -268,7 +279,8 @@ export class Vehicle {
             
             // Debug log when throttle is pressed
             if (this.currentThrottle > 0) {
-                console.log(`Applying force: ${scaledForce}, RPM: ${this.rpm}, Gear: ${this.currentGear}`);
+                console.log(`Applying force: ${scaledForce}, RPM: ${this.rpm}, Gear: ${this.currentGear}, Throttle: ${this.currentThrottle}`);
+                console.log(`Engine force calc: gearRatio=${this.gearRatios[this.currentGear]}, engineForce=${this.engineForce}`);
             }
             
             // Apply brakes
@@ -310,7 +322,7 @@ export class Vehicle {
     }
 
     calculateEngineForce() {
-        if (this.currentGear === 1) return 0; // Neutral
+        if (this.currentGear === 1) return 0; // Neutral (index 1 = gear N)
         
         const gearRatio = this.gearRatios[this.currentGear] || 1;
         const totalRatio = Math.abs(gearRatio) * this.finalDriveRatio;
@@ -365,7 +377,7 @@ export class Vehicle {
 
     setThrottle(value) {
         this.currentThrottle = Math.max(0, Math.min(1, value));
-        // Throttle updated
+        console.log(`Vehicle setThrottle called: ${value} -> ${this.currentThrottle}`);
         
         // Auto gear shifting
         if (this.currentThrottle > 0 && this.currentGear > 1) {
@@ -654,6 +666,29 @@ export class Vehicle {
         // Destroy node-beam structure
         if (this.nodeBeamStructure) {
             this.nodeBeamStructure.destroy();
+        }
+    }
+    
+    // Collision handler for physics system
+    onCollision(collisionData) {
+        const { vehicleBody, otherBody, force, damage, position, normal } = collisionData;
+        
+        // Apply damage to node-beam structure
+        if (this.nodeBeamStructure) {
+            // Convert CANNON position to THREE position
+            const impactPoint = new THREE.Vector3(position.x, position.y, position.z);
+            const impactNormal = new THREE.Vector3(normal.x, normal.y, normal.z);
+            
+            // Apply localized damage based on impact point
+            this.nodeBeamStructure.applyDamage(impactPoint, damage, force);
+        }
+        
+        // Update vehicle damage
+        this.damage = Math.min(this.damage + damage, this.maxDamage);
+        
+        // Log significant collisions
+        if (force > 10) {
+            console.log(`Vehicle collision: force=${force.toFixed(1)}, damage=${damage.toFixed(1)}, total=${this.damage.toFixed(1)}%`);
         }
     }
 }

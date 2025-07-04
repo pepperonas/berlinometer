@@ -73,6 +73,9 @@ export class Renderer {
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         
+        // Set clear color to avoid black screen
+        this.renderer.setClearColor(0x87CEEB, 1.0); // Sky blue
+        
         // Advanced renderer settings
         this.renderer.shadowMap.enabled = this.renderSettings.shadows;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -106,11 +109,25 @@ export class Renderer {
             1000
         );
         
+        // Set initial camera position to ensure something is visible
+        this.camera.position.set(10, 8, 10);
+        this.camera.lookAt(0, 0, 0);
+        
         // Setup lighting
         this.setupLighting();
         
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
+        
+        // Add a test cube to ensure scene is visible
+        const testGeometry = new THREE.BoxGeometry(2, 2, 2);
+        const testMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const testCube = new THREE.Mesh(testGeometry, testMaterial);
+        testCube.position.set(0, 1, 0);
+        testCube.castShadow = true;
+        testCube.receiveShadow = true;
+        this.scene.add(testCube);
+        console.log('Added test cube to scene');
         
         // Setup post-processing (optional, for better visuals)
         this.setupPostProcessing();
@@ -621,6 +638,12 @@ export class Renderer {
     render() {
         if (this.renderer && this.scene && this.camera) {
             this.renderer.render(this.scene, this.camera);
+        } else {
+            console.warn('Renderer not ready:', {
+                renderer: !!this.renderer,
+                scene: !!this.scene,
+                camera: !!this.camera
+            });
         }
     }
     

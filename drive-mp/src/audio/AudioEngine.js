@@ -19,6 +19,10 @@ export class AudioEngine {
         this.engineOscillators = [];
         this.engineFilters = [];
         this.isInitialized = false;
+        
+        // Mute system
+        this.isMuted = true; // Start muted by default
+        this.savedMasterVolume = 1.0;
     }
 
     async init() {
@@ -29,6 +33,9 @@ export class AudioEngine {
             // Create master gain
             this.masterGain = this.context.createGain();
             this.masterGain.connect(this.context.destination);
+            
+            // Set initial volume based on mute state
+            this.masterGain.gain.value = this.isMuted ? 0 : this.savedMasterVolume;
             
             // Create category gains
             Object.keys(this.categories).forEach(category => {
@@ -469,6 +476,41 @@ export class AudioEngine {
             return this.context.resume();
         }
         return Promise.resolve();
+    }
+    
+    // Mute/Unmute system
+    toggleMute() {
+        this.isMuted = !this.isMuted;
+        
+        if (this.masterGain) {
+            if (this.isMuted) {
+                // Save current volume before muting
+                this.savedMasterVolume = this.masterGain.gain.value;
+                this.masterGain.gain.exponentialRampToValueAtTime(
+                    0.001, 
+                    this.context.currentTime + 0.1
+                );
+            } else {
+                // Restore saved volume
+                this.masterGain.gain.exponentialRampToValueAtTime(
+                    Math.max(0.001, this.savedMasterVolume), 
+                    this.context.currentTime + 0.1
+                );
+            }
+        }
+        
+        console.log(`Audio ${this.isMuted ? 'muted' : 'unmuted'}`);
+        return this.isMuted;
+    }
+    
+    getMuteState() {
+        return this.isMuted;
+    }
+    
+    setMuted(muted) {
+        if (this.isMuted !== muted) {
+            this.toggleMute();
+        }
     }
 
     destroy() {

@@ -20,6 +20,7 @@ export class InputManager {
             'KeyC': 'changeCamera',
             'KeyR': 'reset',
             'KeyF': 'toggleDebug',
+            'KeyM': 'toggleMute',
             'Escape': 'pause'
         };
         
@@ -143,7 +144,7 @@ export class InputManager {
         
         // Debug output
         if (value > 0) {
-            console.log(`Input: ${action} = ${value}`);
+            console.log(`InputManager: ${action} = ${value}`);
         }
     }
 

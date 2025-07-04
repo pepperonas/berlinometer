@@ -60,6 +60,14 @@ export class Physics {
         
         // Create contact materials
         this.createContactMaterials();
+        
+        // Setup collision event listener for damage detection
+        this.world.addEventListener('beginContact', (event) => {
+            this.handleCollision(event);
+        });
+        
+        // Collision event handlers
+        this.collisionHandlers = [];
     }
 
     createContactMaterials() {
@@ -190,6 +198,86 @@ export class Physics {
         const result = new CANNON.RaycastResult();
         this.world.rayTest(from, to, result);
         return result;
+    }
+
+    // Collision detection and damage system
+    handleCollision(event) {
+        const bodyA = event.bodyA;
+        const bodyB = event.bodyB;
+        const contact = event.contact;
+        
+        // Calculate collision impact force using relative velocity
+        const relativeVelocity = new CANNON.Vec3();
+        bodyA.velocity.vsub(bodyB.velocity, relativeVelocity);
+        
+        // Project relative velocity onto contact normal
+        const impactVelocity = relativeVelocity.dot(contact.ni);
+        const collisionForce = Math.abs(impactVelocity);
+        
+        // Only handle significant collisions
+        if (collisionForce > 5.0) {
+            // Determine if vehicle is involved
+            let vehicleBody = null;
+            let otherBody = null;
+            
+            if (bodyA.userData && bodyA.userData.isVehicle) {
+                vehicleBody = bodyA;
+                otherBody = bodyB;
+            } else if (bodyB.userData && bodyB.userData.isVehicle) {
+                vehicleBody = bodyB;
+                otherBody = bodyA;
+            }
+            
+            if (vehicleBody) {
+                // Calculate damage based on collision force and mass
+                const damage = this.calculateCollisionDamage(collisionForce, vehicleBody, otherBody);
+                
+                // Notify collision handlers
+                this.collisionHandlers.forEach(handler => {
+                    handler.onCollision({
+                        vehicleBody,
+                        otherBody,
+                        force: collisionForce,
+                        damage,
+                        position: contact.ri,
+                        normal: contact.ni
+                    });
+                });
+            }
+        }
+    }
+    
+    calculateCollisionDamage(force, vehicleBody, otherBody) {
+        let baseDamage = force / 20; // Base damage from impact force
+        
+        // Factor in other body's properties
+        if (otherBody) {
+            if (otherBody.mass > 0) {
+                // Collision with dynamic object
+                baseDamage *= Math.sqrt(otherBody.mass / 100);
+            } else {
+                // Collision with static object (more damage)
+                baseDamage *= 1.5;
+            }
+            
+            // Factor in material properties
+            if (otherBody.material === this.materials.metal) {
+                baseDamage *= 1.3; // Metal causes more damage
+            }
+        }
+        
+        return Math.min(baseDamage, 50); // Cap damage per collision
+    }
+    
+    addCollisionHandler(handler) {
+        this.collisionHandlers.push(handler);
+    }
+    
+    removeCollisionHandler(handler) {
+        const index = this.collisionHandlers.indexOf(handler);
+        if (index > -1) {
+            this.collisionHandlers.splice(index, 1);
+        }
     }
 
     destroy() {

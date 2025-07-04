@@ -523,6 +523,85 @@ export class AdvancedNodeBeamStructure {
         return this.beams.reduce((total, beam) => total + beam.stress, 0);
     }
 
+    applyDamage(impactPoint, damage, force) {
+        // Find nodes near the impact point
+        const impactRadius = Math.min(damage / 10, 2.0); // Damage radius based on impact force
+        const affectedNodes = [];
+        
+        this.nodes.forEach(node => {
+            const nodePos = new THREE.Vector3().copy(node.body.position);
+            const distance = nodePos.distanceTo(impactPoint);
+            
+            if (distance < impactRadius) {
+                const damageMultiplier = 1.0 - (distance / impactRadius); // More damage closer to impact
+                affectedNodes.push({
+                    node: node,
+                    distance: distance,
+                    damageMultiplier: damageMultiplier
+                });
+            }
+        });
+        
+        // Apply damage to affected nodes and their beams
+        affectedNodes.forEach(({ node, distance, damageMultiplier }) => {
+            // Reduce node health
+            const nodeDamage = (damage / 100) * damageMultiplier;
+            node.health = Math.max(0, node.health - nodeDamage);
+            
+            // Apply force to the node (simulating impact)
+            const impactForce = force * damageMultiplier * 0.1;
+            const forceDirection = new THREE.Vector3().copy(node.body.position).sub(impactPoint).normalize();
+            
+            node.body.force.x += forceDirection.x * impactForce;
+            node.body.force.y += Math.abs(forceDirection.y) * impactForce;
+            node.body.force.z += forceDirection.z * impactForce;
+            
+            // Damage connected beams
+            node.connections.forEach(beam => {
+                if (!beam.broken) {
+                    const beamDamage = nodeDamage * 0.5;
+                    beam.health = Math.max(0, beam.health - beamDamage);
+                    
+                    // Break beam if health is too low
+                    if (beam.health < 0.2) {
+                        this.breakBeam(beam);
+                    }
+                }
+            });
+        });
+        
+        // Update damage accumulator
+        this.damageAccumulator = Math.min(this.damageAccumulator + damage, 100);
+        
+        // Create impact spark effect
+        this.createImpactSparks(impactPoint, force);
+        
+        console.log(`Applied damage: ${damage.toFixed(1)} at impact point, affected ${affectedNodes.length} nodes`);
+    }
+    
+    createImpactSparks(position, force) {
+        // Create sparks at impact point
+        const sparkCount = Math.min(Math.floor(force / 5), 20);
+        
+        for (let i = 0; i < sparkCount; i++) {
+            const spark = {
+                position: position.clone().add(new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.2,
+                    (Math.random() - 0.5) * 0.2,
+                    (Math.random() - 0.5) * 0.2
+                )),
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 8,
+                    Math.random() * 5 + 2,
+                    (Math.random() - 0.5) * 8
+                ),
+                life: 0.3 + Math.random() * 0.7,
+                maxLife: 1.0
+            };
+            this.sparkParticles.push(spark);
+        }
+    }
+
     reset() {
         // Reset all beams and nodes
         this.brokenBeams.forEach(beam => {

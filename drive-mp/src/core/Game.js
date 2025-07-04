@@ -79,6 +79,10 @@ export class Game {
             await this.vehicle.init();
             this.vehicle.setPosition(0, 1.5, 0);
             this.vehicle.setRotation(0, 0, 0);
+            
+            // Register vehicle for collision detection
+            this.physics.addCollisionHandler(this.vehicle);
+            
             window.updateLoadingProgress(80);
             
             // Initialize particle effects
@@ -162,6 +166,14 @@ export class Game {
             }
             
             if (this.renderer) this.renderer.toggleDebug();
+        });
+        
+        // Audio mute toggle
+        this.inputManager.on('toggleMute', () => {
+            if (this.audioEngine) {
+                const isMuted = this.audioEngine.toggleMute();
+                this.updateMuteUI(isMuted);
+            }
         });
     }
 
@@ -687,6 +699,28 @@ export class Game {
         ctx.beginPath();
         ctx.arc(centerX + vectorX, centerY + vectorZ, 5, 0, Math.PI * 2);
         ctx.stroke();
+    }
+    
+    updateMuteUI(isMuted) {
+        // Update audio status in telemetry
+        const audioElement = document.getElementById('telemetryAudio');
+        if (audioElement) {
+            audioElement.textContent = isMuted ? 'MUTED' : 'ON';
+            audioElement.className = isMuted ? 'performance-critical' : 'performance-good';
+        }
+        
+        // Update controls display
+        const controlsElement = document.querySelector('#controls');
+        if (controlsElement) {
+            const muteInfo = controlsElement.querySelector('.mute-status') || document.createElement('div');
+            muteInfo.className = 'mute-status';
+            muteInfo.innerHTML = `<strong>Audio: ${isMuted ? '🔇 MUTED' : '🔊 ON'}</strong>`;
+            muteInfo.style.color = isMuted ? '#ff4444' : '#44ff44';
+            
+            if (!controlsElement.contains(muteInfo)) {
+                controlsElement.appendChild(muteInfo);
+            }
+        }
     }
 
     destroy() {

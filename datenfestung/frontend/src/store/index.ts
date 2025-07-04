@@ -3,6 +3,7 @@ import authReducer from './authSlice';
 import dashboardReducer from './dashboardSlice';
 import processingActivitiesReducer from './processingActivitiesSlice';
 import templateReducer from './templateSlice';
+import processIntelligenceReducer from './processIntelligenceSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     dashboard: dashboardReducer,
     processingActivities: processingActivitiesReducer,
     templates: templateReducer,
+    processIntelligence: processIntelligenceReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
