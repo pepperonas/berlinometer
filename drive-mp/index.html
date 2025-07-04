@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drive-MP - Vehicle Physics Simulation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #gameCanvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+
+        #hud {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            user-select: none;
+        }
+
+        #speedometer {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            user-select: none;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            user-select: none;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-top: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            background: #4CAF50;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        #debugInfo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 12px;
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .debug-line {
+            margin: 2px 0;
+        }
+
+        #telemetryPanel {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 15px;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            display: none;
+        }
+
+        .telemetry-section {
+            margin-bottom: 10px;
+            border-bottom: 1px solid #004400;
+            padding-bottom: 5px;
+        }
+
+        .telemetry-title {
+            color: #00ffff;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .telemetry-bar {
+            width: 100%;
+            height: 4px;
+            background: #222;
+            margin: 2px 0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .telemetry-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ffff00, #ff0000);
+            transition: width 0.1s ease;
+        }
+
+        .damage-indicator {
+            color: #ff4444;
+        }
+
+        .performance-good { color: #00ff00; }
+        .performance-warning { color: #ffff00; }
+        .performance-critical { color: #ff0000; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="loading">
+        <div>Loading Drive-MP...</div>
+        <div class="loading-bar">
+            <div class="loading-progress" id="loadingProgress"></div>
+        </div>
+    </div>
+
+    <div id="hud" style="display: none;">
+        <div>Drive-MP v1.0</div>
+        <div>FPS: <span id="fps">0</span></div>
+        <div>Physics: <span id="physicsTime">0</span>ms</div>
+    </div>
+
+    <div id="speedometer" style="display: none;">
+        <div><span id="speed">0</span> km/h</div>
+        <div style="font-size: 16px;">Gear: <span id="gear">N</span></div>
+    </div>
+
+    <div id="controls" style="display: none;">
+        <div><strong>Controls:</strong></div>
+        <div>W/↑ - Accelerate</div>
+        <div>S/↓ - Brake/Reverse</div>
+        <div>A/← - Steer Left</div>
+        <div>D/→ - Steer Right</div>
+        <div>Space - Handbrake</div>
+        <div>C - Change Camera</div>
+        <div>R - Reset Vehicle</div>
+        <div>F - Toggle Debug</div>
+    </div>
+
+    <div id="debugInfo">
+        <div class="debug-line">Vehicle Debug Info</div>
+        <div class="debug-line">━━━━━━━━━━━━━━━━━</div>
+        <div class="debug-line">Position: <span id="debugPos">0, 0, 0</span></div>
+        <div class="debug-line">Velocity: <span id="debugVel">0</span> m/s</div>
+        <div class="debug-line">Angular Vel: <span id="debugAngVel">0</span></div>
+        <div class="debug-line">RPM: <span id="debugRPM">0</span></div>
+        <div class="debug-line">Wheel FL: <span id="debugWheelFL">0</span></div>
+        <div class="debug-line">Wheel FR: <span id="debugWheelFR">0</span></div>
+        <div class="debug-line">Wheel RL: <span id="debugWheelRL">0</span></div>
+        <div class="debug-line">Wheel RR: <span id="debugWheelRR">0</span></div>
+        <div class="debug-line">Nodes: <span id="debugNodes">0</span></div>
+        <div class="debug-line">Damage: <span id="debugDamage">0%</span></div>
+    </div>
+
+    <div id="telemetryPanel">
+        <div class="telemetry-section">
+            <div class="telemetry-title">◤ ENGINE PERFORMANCE ◥</div>
+            <div>RPM: <span id="telemetryRPM">0</span> / 7000</div>
+            <div class="telemetry-bar"><div class="telemetry-bar-fill" id="rpmBar"></div></div>
+            <div>Throttle: <span id="telemetryThrottle">0</span>%</div>
+            <div class="telemetry-bar"><div class="telemetry-bar-fill" id="throttleBar"></div></div>
+            <div>Load: <span id="telemetryLoad">0</span>%</div>
+        </div>
+        
+        <div class="telemetry-section">
+            <div class="telemetry-title">◤ VEHICLE DYNAMICS ◥</div>
+            <div>Speed: <span id="telemetrySpeed">0</span> km/h</div>
+            <div>G-Force: <span id="telemetryGForce">0.0</span>g</div>
+            <div>Steering: <span id="telemetrySteering">0</span>°</div>
+        </div>
+        
+        <div class="telemetry-section">
+            <div class="telemetry-title">◤ TIRE STATUS ◥</div>
+            <div>FL Slip: <span id="telemetrySlipFL" class="performance-good">0.0</span></div>
+            <div>FR Slip: <span id="telemetrySlipFR" class="performance-good">0.0</span></div>
+            <div>RL Slip: <span id="telemetrySlipRL" class="performance-good">0.0</span></div>
+            <div>RR Slip: <span id="telemetrySlipRR" class="performance-good">0.0</span></div>
+        </div>
+        
+        <div class="telemetry-section">
+            <div class="telemetry-title">◤ STRUCTURAL INTEGRITY ◥</div>
+            <div class="damage-indicator">Damage: <span id="telemetryDamage">0</span>%</div>
+            <div class="telemetry-bar"><div class="telemetry-bar-fill" id="damageBar"></div></div>
+            <div>Broken Beams: <span id="telemetryBrokenBeams">0</span></div>
+            <div>Stress Level: <span id="telemetryStress" class="performance-good">LOW</span></div>
+        </div>
+        
+        <div class="telemetry-section">
+            <div class="telemetry-title">◤ SYSTEM STATUS ◥</div>
+            <div>Particles: <span id="telemetryParticles">0</span></div>
+            <div>Audio Load: <span id="telemetryAudio">0</span>%</div>
+            <div>Physics: <span id="telemetryPhysicsMS">0</span>ms</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Game } from './src/core/Game.js';
+
+        // Initialize the game
+        const game = new Game();
+        
+        // Update loading progress
+        window.updateLoadingProgress = (progress) => {
+            document.getElementById('loadingProgress').style.width = progress + '%';
+        };
+
+        // Hide loading screen when ready
+        window.hideLoading = () => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            document.getElementById('speedometer').style.display = 'block';
+            document.getElementById('controls').style.display = 'block';
+        };
+
+        // Start the game
+        game.init().then(() => {
+            console.log('Drive-MP initialized successfully');
+        }).catch(error => {
+            console.error('Failed to initialize Drive-MP:', error);
+            document.getElementById('loading').innerHTML = `
+                <div style="color: #ff5555;">Failed to initialize game</div>
+                <div style="font-size: 14px; margin-top: 10px;">${error.message}</div>
+            `;
+        });
+
+        // Global reference for debugging
+        window.game = game;
+    </script>
+</body>
+</html>

@@ -237,5 +237,123 @@ FLUSH PRIVILEGES;
 
 ---
 
+---
+
+## 🖥️ VPS Status (mrx3k1.de) - Ubuntu 24.04
+
+**Verbindung:** `ssh root@mrx3k1.de`  
+**System:** Linux mrx3k1 6.8.0-60-generic #63-Ubuntu SMP PREEMPT_DYNAMIC
+
+### 🍃 MongoDB Konfiguration auf VPS
+
+**Service Status:** ✅ Aktiv (läuft seit 2025-06-12)  
+**Port:** 27017  
+**Bind IP:** 0.0.0.0 (alle Interfaces)  
+**Auth:** ✅ Aktiviert  
+**Config:** `/etc/mongod.conf`
+
+#### Tatsächlich vorhandene Datenbanken:
+1. **admin** (184 KB) - Admin/Auth DB
+2. **bartender** (725 KB) - ✅ Läuft auf Port 5024
+3. **config** (49 KB) - MongoDB System DB
+4. **darts3k1** (512 KB) - 🎯 Darts App (nicht in lokaler Entwicklung gefunden)
+5. **local** (82 KB) - MongoDB System DB
+6. **mpsec** (184 KB) - ✅ Läuft auf Port 5012
+7. **techdocs** (94 KB) - ✅ Läuft auf Port 5007
+
+#### MongoDB Benutzer auf VPS:
+- **mongoAdmin** - Admin-Benutzer (in admin DB)
+- **bartenderUser** - Dedizierter User für Bartender DB
+- **mongoAdmin** - Zusätzliche Rechte für darts3k1 DB
+
+**⚠️ Fehlende Datenbanken auf VPS:**
+- medical-ai-reports
+- glitterhue
+- endeavour  
+- securemarket
+
+### 🐬 MySQL Konfiguration auf VPS
+
+**Service Status:** ✅ Aktiv (läuft seit 2025-06-12)  
+**Port:** 3306  
+**Status:** Server is operational
+
+#### Tatsächlich vorhandene Datenbanken:
+1. **weather_tracker** - ✅ Läuft auf Port 5033
+2. **firma_db** - 🏢 Zusätzliche DB (nicht in lokaler Entwicklung gefunden)
+3. **fooddb** - 🍔 Zusätzliche DB (nicht in lokaler Entwicklung gefunden)
+4. **test_db** - 🧪 Test-Datenbank
+
+#### MySQL Benutzer auf VPS:
+- **martin** (@localhost & @%)
+- **root** (@localhost)
+- **debian-sys-maint** (@localhost)
+
+### 📊 Aktive PM2 Prozesse auf VPS (27 Apps)
+
+| ID | App Name | Port | Status | DB Connected |
+|----|----------|------|--------|--------------|
+| 16 | bartender | 5024 | ✅ online | bartender (MongoDB) |
+| 15 | mpsec-backend | 5012 | ✅ online | mpsec (MongoDB) |
+| 3 | techdocs | 5007 | ✅ online | techdocs (MongoDB) |
+| 22 | medical-ai-backend | 5063 | ✅ online | ❌ DB fehlt |
+| 18 | weather-tracker | 5033 | ✅ online | weather_tracker (MySQL) |
+| 17 | darts-backend | - | ✅ online | darts3k1 (MongoDB) |
+
+**Weitere aktive Apps ohne DB-Verbindung:**
+- azul-multiplayer (5057), bomberman-multiplayer, poker-server
+- objectcut, voicextract-api, seolytix-backend
+- popular-times-server (5044), xchange-server (5009)
+- free-wifi, secret-content-server, zipzap-server-fixed
+- und weitere...
+
+### 🔍 VPS vs. Lokale Entwicklung - Unterschiede
+
+#### ✅ Übereinstimmungen:
+- **Bartender:** Identische Konfiguration und Collections
+- **MPSec:** Identische Konfiguration und Collections  
+- **TechDocs:** Identische Konfiguration
+- **Weather Tracker:** Läuft auf VPS mit korrekten Daten
+
+#### ❌ Abweichungen:
+
+**Nur auf VPS vorhanden:**
+- **darts3k1** MongoDB DB (512 KB)
+- **firma_db** MySQL DB
+- **fooddb** MySQL DB
+
+**Nur lokal entwickelt, fehlt auf VPS:**
+- medical-ai-reports DB
+- glitterhue DB
+- endeavour DB  
+- securemarket DB (Port 27018)
+
+**Port-Unterschiede:**
+- Weather Tracker: Lokale API läuft direkt, VPS auf Port 5033
+
+### 🚨 Kritische Befunde
+
+1. **Fehlende Datenbanken:** 4 lokale DBs nicht auf VPS deployed
+2. **Medical AI läuft ohne DB:** Backend online aber DB fehlt
+3. **Zusätzliche DBs auf VPS:** darts3k1, firma_db, fooddb nicht dokumentiert
+4. **Shared Credentials:** mongoAdmin weiterhin für mehrere DBs verwendet
+
+### 📋 Empfohlene Maßnahmen
+
+1. **Sofort:**
+   - medical-ai-reports DB auf VPS erstellen
+   - Andere fehlende DBs nach Bedarf deployen
+   - Darts3k1, firma_db, fooddb dokumentieren
+
+2. **Sicherheit:**
+   - Separate DB-Benutzer für jede Anwendung
+   - Credential-Rotation durchführen
+
+3. **Monitoring:**
+   - DB-Größen regelmäßig prüfen
+   - Performance-Überwachung einrichten
+
+---
+
 **Letzte Aktualisierung:** 2025-07-03  
-**Status:** Vollständige Bestandsaufnahme abgeschlossen
+**Status:** VPS-Analyse abgeschlossen - Abweichungen identifiziert
