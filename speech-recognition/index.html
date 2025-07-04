@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spracherkennung - Echtzeit Audio-zu-Text Konvertierung</title>
+    
+    <!-- Meta Description -->
+    <meta name="description" content="Moderne Spracherkennung App mit Echtzeit-Transkription, Audiovisualisierung und Multi-Sprach-Support. Wandle gesprochene Worte sofort in Text um.">
+    <meta name="keywords" content="Spracherkennung, Speech-to-Text, Audio Transkription, Audiovisualisierung, Spektrometer, Voice Recognition">
+    <meta name="author" content="Martin Pfeffer">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mrx3k1.de/speech-recognition/">
+    <meta property="og:title" content="Spracherkennung - Echtzeit Audio-zu-Text Konvertierung">
+    <meta property="og:description" content="Moderne Spracherkennung App mit Echtzeit-Transkription, Audiovisualisierung und Multi-Sprach-Support. Wandle gesprochene Worte sofort in Text um.">
+    <meta property="og:image" content="./speech-recognition.jpg">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mrx3k1.de/speech-recognition/">
+    <meta property="twitter:title" content="Spracherkennung - Echtzeit Audio-zu-Text Konvertierung">
+    <meta property="twitter:description" content="Moderne Spracherkennung App mit Echtzeit-Transkription, Audiovisualisierung und Multi-Sprach-Support.">
+    <meta property="twitter:image" content="./speech-recognition.jpg">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#2B2E3B">
+    <meta name="msapplication-TileColor" content="#2B2E3B">
+    <style>
+        :root {
+            /* Color Variables */
+            --background-dark: #2B2E3B;
+            --background-darker: #252830;
+            --card-background: #343845;
+            --accent-blue: #688db1;
+            --accent-green: #9cb68f;
+            --accent-red: #e16162;
+            --text-primary: #d1d5db;
+            --text-secondary: #9ca3af;
+            
+            /* Shadow Variables */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            
+            /* Spacing Variables */
+            --spacing-1: 0.25rem;
+            --spacing-2: 0.5rem;
+            --spacing-3: 0.75rem;
+            --spacing-4: 1rem;
+            --spacing-6: 1.5rem;
+            --spacing-8: 2rem;
+            --spacing-12: 3rem;
+            --spacing-16: 4rem;
+            
+            /* Radius Variables */
+            --radius-sm: 0.375rem;
+            --radius: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                         sans-serif;
+            background: var(--background-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--spacing-8);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--card-background);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-12);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (hover: none) {
+            .container:hover {
+                transform: none;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: var(--spacing-12);
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--accent-blue);
+            border-radius: var(--radius-sm);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: var(--accent-blue);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-3) var(--spacing-6);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            min-width: 140px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: #7399bf;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Touch feedback for mobile */
+        @media (hover: none) {
+            button:hover {
+                transform: none;
+            }
+
+            button:active {
+                transform: scale(0.98);
+                background: #5a7ca8;
+            }
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: var(--background-darker);
+            color: var(--text-secondary);
+            border-color: rgba(255, 255, 255, 0.05);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .recording-btn {
+            background: var(--accent-red);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recording-btn:hover {
+            background: #e87374;
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .recording-btn.active {
+            background: #c53030;
+            border-color: rgba(255, 255, 255, 0.2);
+            animation: pulse 1.5s infinite;
+        }
+
+        @media (hover: none) {
+            .recording-btn:hover {
+                transform: none;
+            }
+
+            .recording-btn:active {
+                transform: scale(0.98);
+                background: #c53030;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+            }
+            50% {
+                transform: scale(1.03);
+                box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200px 0;
+            }
+            100% {
+                background-position: 200px 0;
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes typewriter {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+            }
+            100% {
+                text-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+            }
+        }
+
+        .text-animate {
+            animation: typewriter 0.3s ease-out;
+        }
+
+        .interim-text {
+            animation: glow 1.5s ease-in-out infinite;
+            opacity: 0.8;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .status.listening {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .status.error {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: var(--spacing-8);
+            padding: var(--spacing-6);
+            border-radius: var(--radius-xl);
+            background: var(--background-darker);
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .status.listening {
+            background: rgba(156, 182, 143, 0.2);
+            border: 1px solid var(--accent-green);
+            color: var(--text-primary);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .status.listening::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .status.error {
+            background: rgba(225, 97, 98, 0.2);
+            border: 1px solid var(--accent-red);
+            color: var(--text-primary);
+            font-weight: 600;
+            position: relative;
+        }
+
+        .status.error::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        .transcript {
+            background: var(--background-darker);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-6);
+            min-height: 220px;
+            font-size: 1rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            max-height: 400px;
+            position: relative;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+
+        .transcript:focus-within {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(104, 141, 177, 0.1);
+        }
+
+        .transcript[data-placeholder]:empty::before {
+            content: attr(data-placeholder);
+            opacity: 0.7;
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .settings {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        select {
+            background: var(--background-darker);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-3) var(--spacing-4);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(104, 141, 177, 0.1);
+        }
+
+        select option {
+            background: var(--card-background);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .mic-icon {
+            display: inline-block;
+            margin-right: 8px;
+            font-size: 18px;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover .mic-icon {
+            transform: scale(1.1);
+        }
+
+        button:active .mic-icon {
+            transform: scale(0.95);
+        }
+
+        .spectrum-container {
+            margin: var(--spacing-6) 0;
+            padding: var(--spacing-3);
+            background: var(--background-darker);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .spectrum-container:hover {
+            opacity: 1;
+        }
+
+        #spectrum {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius);
+            background: var(--background-dark);
+            opacity: 0.6;
+        }
+
+        .debug-button {
+            background: var(--accent-blue);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-3) var(--spacing-6);
+            margin: var(--spacing-6) auto;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            display: block;
+            transition: all 0.3s ease;
+        }
+        
+        .debug-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: #7399bf;
+        }
+        
+        .debug-button:active {
+            transform: scale(0.98);
+        }
+        
+        .footer {
+            margin-top: var(--spacing-12);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 400;
+            padding: var(--spacing-6) 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Enhanced Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-4);
+            }
+
+            .container {
+                padding: var(--spacing-6);
+                border-radius: var(--radius-lg);
+                margin: 0 auto;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                margin-bottom: var(--spacing-8);
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+
+            button {
+                width: 100%;
+                max-width: 280px;
+                padding: var(--spacing-4) var(--spacing-6);
+                font-size: 1rem;
+                touch-action: manipulation;
+            }
+
+            .settings {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-6);
+            }
+
+            .transcript {
+                min-height: 180px;
+                font-size: 0.9375rem;
+                padding: var(--spacing-6);
+            }
+
+            .status {
+                padding: var(--spacing-4);
+                font-size: 0.9375rem;
+            }
+
+            .spectrum-container {
+                margin: var(--spacing-4) 0;
+                padding: var(--spacing-2);
+            }
+
+            #spectrum {
+                width: 100%;
+                height: 120px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: var(--spacing-3);
+            }
+
+            .container {
+                padding: var(--spacing-6);
+                border-radius: var(--radius-xl);
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: var(--spacing-6);
+            }
+
+            button {
+                padding: var(--spacing-3) var(--spacing-6);
+                font-size: 0.9375rem;
+                min-width: 120px;
+            }
+
+            .transcript {
+                min-height: 150px;
+                font-size: 0.875rem;
+                padding: var(--spacing-4);
+            }
+
+            .status {
+                padding: var(--spacing-3);
+                font-size: 0.875rem;
+            }
+
+            .spectrum-container {
+                margin: var(--spacing-3) 0;
+                padding: var(--spacing-2);
+            }
+
+            #spectrum {
+                width: 100%;
+                height: 100px;
+            }
+
+            .footer {
+                padding: var(--spacing-4) 0;
+                font-size: 0.8125rem;
+            }
+        }
+
+        /* Touch Device Optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            button {
+                min-height: 48px;
+                padding: var(--spacing-4) var(--spacing-6);
+            }
+
+            select {
+                min-height: 48px;
+                padding: var(--spacing-3) var(--spacing-4);
+            }
+
+            .transcript {
+                min-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🎤 Spracherkennung</h1>
+
+    <div class="status" id="status">
+        Klicke auf "Aufnahme starten" um zu beginnen
+    </div>
+
+    <div class="spectrum-container">
+        <canvas id="spectrum" width="800" height="200"></canvas>
+    </div>
+    
+    <!-- Debug button for mobile -->
+    <button id="mobile-debug-btn" class="debug-button">
+        🔍 Debug Info
+    </button>
+
+    <div class="controls">
+        <button id="startBtn">
+            <span class="mic-icon">🎤</span>Aufnahme starten
+        </button>
+        <button id="stopBtn" disabled>
+            <span class="mic-icon">⏹️</span>Aufnahme stoppen
+        </button>
+        <button id="clearBtn">
+            <span class="mic-icon">🗑️</span>Löschen
+        </button>
+        <button id="copyBtn">
+            <span class="mic-icon">📋</span>Kopieren
+        </button>
+    </div>
+
+    <div class="transcript" id="transcript" data-placeholder="Hier erscheint dein gesprochener Text...">
+        Hier erscheint dein gesprochener Text...
+    </div>
+
+    <div class="settings">
+        <div class="setting-group">
+            <label for="language">Sprache:</label>
+            <select id="language">
+                <option value="de-DE">Deutsch</option>
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+                <option value="fr-FR">Français</option>
+                <option value="es-ES">Español</option>
+                <option value="it-IT">Italiano</option>
+            </select>
+        </div>
+        <div class="setting-group">
+            <label for="continuous">Modus:</label>
+            <select id="continuous">
+                <option value="true">Kontinuierlich</option>
+                <option value="false">Einzelne Sätze</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    Made with ❤️ by Martin Pfeffer | 
+    <a href="https://mrx3k1.de" style="color: var(--accent-blue); text-decoration: none;">mrx3k1.de</a>
+</footer>
+
+<script>
+    let recognition;
+    let isRecording = false;
+    let finalTranscript = '';
+    let audioContext;
+    let analyser;
+    let dataArray;
+    let source;
+    let animationId;
+    let canvas;
+    let canvasCtx;
+
+    // Initialize canvas
+    canvas = document.getElementById('spectrum');
+    canvasCtx = canvas.getContext('2d');
+    
+    // Enhanced browser and mobile support check with detailed debugging
+    function checkSpeechRecognitionSupport() {
+        const hasWebkitSpeechRecognition = 'webkitSpeechRecognition' in window;
+        const hasSpeechRecognition = 'SpeechRecognition' in window;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const isChrome = /Chrome/i.test(navigator.userAgent);
+        const isSamsung = /SamsungBrowser/i.test(navigator.userAgent);
+        
+        console.log('Browser detection:', {
+            hasWebkitSpeechRecognition,
+            hasSpeechRecognition,
+            isAndroid,
+            isChrome,
+            isSamsung,
+            userAgent: navigator.userAgent
+        });
+        
+        if (!hasWebkitSpeechRecognition && !hasSpeechRecognition) {
+            let errorMsg = '❌ Spracherkennung wird von diesem Browser nicht unterstützt';
+            
+            if (isMobile) {
+                if (isIOS) {
+                    errorMsg += '<br>📱 Auf iOS: Verwende Safari Browser';
+                } else if (isAndroid) {
+                    if (isSamsung) {
+                        errorMsg += '<br>📱 Samsung Browser erkannt - verwende Google Chrome';
+                    } else {
+                        errorMsg += '<br>📱 Auf Android: Verwende Google Chrome Browser';
+                    }
+                } else {
+                    errorMsg += '<br>📱 Verwende Chrome oder Safari';
+                }
+            } else {
+                errorMsg += '<br>💻 Verwende Chrome, Edge oder Safari';
+            }
+            
+            document.getElementById('status').innerHTML = errorMsg;
+            document.getElementById('status').className = 'status error';
+            document.getElementById('startBtn').disabled = true;
+            return false;
+        }
+        
+        // Android-specific browser warnings
+        if (isAndroid) {
+            if (isSamsung) {
+                document.getElementById('status').innerHTML = '⚠️ Samsung Browser erkannt - für beste Ergebnisse verwende Google Chrome';
+                document.getElementById('status').className = 'status';
+            } else if (!isChrome) {
+                document.getElementById('status').innerHTML = '⚠️ Für beste Android-Kompatibilität verwende Google Chrome';
+                document.getElementById('status').className = 'status';
+            } else {
+                document.getElementById('status').innerHTML = '✅ Chrome auf Android erkannt - bereit für Aufnahme';
+                document.getElementById('status').className = 'status';
+            }
+        }
+        
+        return true;
+    }
+    
+    if (checkSpeechRecognitionSupport()) {
+        initializeRecognition();
+        initializeAudioVisualization();
+    }
+    
+    // Add debug button after page load (only on desktop)
+    if (!/Android|iPhone|iPad/.test(navigator.userAgent)) {
+        addDebugInfo();
+    }
+    
+    // Shared debug info function
+    function showDebugInfo() {
+        const info = {
+            'User Agent': navigator.userAgent,
+            'Speech Recognition': !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+            'MediaDevices': !!navigator.mediaDevices,
+            'getUserMedia': !!navigator.mediaDevices?.getUserMedia,
+            'Is Recording': isRecording,
+            'Recognition Object': !!recognition,
+            'Current Language': document.getElementById('language').value,
+            'Continuous Mode': document.getElementById('continuous').value,
+            'Protocol': window.location.protocol,
+            'Host': window.location.host,
+            'Browser': getBrowserInfo(),
+            'Platform': navigator.platform || 'Unknown'
+        };
+        
+        let debugText = 'DEBUG INFORMATIONEN:\n\n';
+        for (const [key, value] of Object.entries(info)) {
+            debugText += `${key}: ${value}\n`;
+        }
+        
+        // Try to copy to clipboard immediately
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(debugText)
+                .then(() => {
+                    // Show success message
+                    const statusEl = document.getElementById('status');
+                    const oldContent = statusEl.innerHTML;
+                    const oldClass = statusEl.className;
+                    
+                    statusEl.innerHTML = '✅ Debug-Info in Zwischenablage kopiert!';
+                    statusEl.className = 'status';
+                    
+                    // Restore after 3 seconds
+                    setTimeout(() => {
+                        statusEl.innerHTML = oldContent;
+                        statusEl.className = oldClass;
+                    }, 3000);
+                    
+                    // Also show in console for debugging
+                    console.log(debugText);
+                })
+                .catch((err) => {
+                    console.error('Clipboard error:', err);
+                    // Fallback: show alert
+                    alert(debugText);
+                });
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = debugText;
+            textArea.style.position = 'fixed';
+            textArea.style.top = '0';
+            textArea.style.left = '0';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                document.getElementById('status').innerHTML = '✅ Debug-Info kopiert!';
+                console.log(debugText);
+            } catch (err) {
+                console.error('Copy failed:', err);
+                alert(debugText);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+    }
+    
+    function getBrowserInfo() {
+        const ua = navigator.userAgent;
+        if (ua.includes('Chrome')) return 'Chrome';
+        if (ua.includes('Safari')) return 'Safari';
+        if (ua.includes('Firefox')) return 'Firefox';
+        if (ua.includes('SamsungBrowser')) return 'Samsung Browser';
+        return 'Unknown';
+    }
+
+    function initializeRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+
+        // Mobile-optimized settings
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        recognition.continuous = !isMobile; // iOS works better with non-continuous
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+        recognition.lang = document.getElementById('language').value;
+        
+        // Mobile-specific settings - don't set grammars at all
+        // Setting grammars to undefined causes errors on Android Chrome
+
+        // onstart is now handled in startSpeechRecognition function
+
+        recognition.onresult = function (event) {
+            let interimTranscript = '';
+            let newFinalText = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+
+                if (event.results[i].isFinal) {
+                    newFinalText += transcript + ' ';
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+
+            const transcriptElement = document.getElementById('transcript');
+            
+            // Add animation to new final text
+            if (newFinalText) {
+                const newTextSpan = document.createElement('span');
+                newTextSpan.className = 'text-animate';
+                newTextSpan.textContent = newFinalText;
+                
+                // Remove placeholder if present
+                if (transcriptElement.textContent === 'Hier erscheint dein gesprochener Text...') {
+                    transcriptElement.innerHTML = '';
+                    finalTranscript = '';
+                }
+                
+                finalTranscript += newFinalText;
+                transcriptElement.innerHTML = finalTranscript;
+                
+                // Scroll to bottom
+                transcriptElement.scrollTop = transcriptElement.scrollHeight;
+            }
+            
+            // Add interim text with glow effect
+            if (interimTranscript) {
+                const interimSpan = document.createElement('span');
+                interimSpan.className = 'interim-text';
+                interimSpan.textContent = interimTranscript;
+                
+                transcriptElement.innerHTML = finalTranscript;
+                transcriptElement.appendChild(interimSpan);
+            } else {
+                transcriptElement.innerHTML = finalTranscript;
+            }
+        };
+
+        recognition.onerror = function (event) {
+            let errorMessage = 'Fehler bei der Spracherkennung: ';
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            switch (event.error) {
+                case 'no-speech':
+                    errorMessage += 'Keine Sprache erkannt';
+                    if (isMobile) {
+                        errorMessage += '<br>📱 Tipp: Sprich lauter und deutlicher';
+                    }
+                    break;
+                case 'audio-capture':
+                    errorMessage += 'Mikrofon nicht gefunden';
+                    if (isMobile) {
+                        errorMessage += '<br>📱 Prüfe Mikrofon-Einstellungen';
+                    }
+                    break;
+                case 'not-allowed':
+                    errorMessage += 'Mikrofon-Berechtigung verweigert';
+                    if (isMobile) {
+                        errorMessage += '<br>📱 Erlaube Mikrofon-Zugriff in den Browser-Einstellungen';
+                    }
+                    break;
+                case 'network':
+                    errorMessage += 'Netzwerkfehler';
+                    if (isMobile) {
+                        errorMessage += '<br>📱 Prüfe deine Internetverbindung';
+                    }
+                    break;
+                case 'aborted':
+                    errorMessage = 'Aufnahme abgebrochen';
+                    break;
+                default:
+                    errorMessage += event.error;
+                    if (isMobile) {
+                        errorMessage += '<br>📱 Versuche Browser neu zu starten';
+                    }
+            }
+
+            document.getElementById('status').innerHTML = '❌ ' + errorMessage;
+            document.getElementById('status').className = 'status error';
+            isRecording = false;
+            updateUI();
+            
+            // Auto-retry on mobile for certain errors
+            if (isMobile && (event.error === 'no-speech' || event.error === 'aborted')) {
+                setTimeout(() => {
+                    if (!isRecording) {
+                        document.getElementById('status').innerHTML = 'Bereit für neue Aufnahme';
+                        document.getElementById('status').className = 'status';
+                    }
+                }, 3000);
+            }
+        };
+
+        recognition.onend = function () {
+            isRecording = false;
+            updateUI();
+            
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
+            if (isMobile && document.getElementById('continuous').value === 'true') {
+                // Auto-restart on mobile for continuous mode
+                setTimeout(() => {
+                    if (!isRecording && document.getElementById('startBtn').disabled) {
+                        try {
+                            recognition.start();
+                            return;
+                        } catch (e) {
+                            // If restart fails, show ended status
+                        }
+                    }
+                    document.getElementById('status').innerHTML = '⏸️ Aufnahme beendet';
+                    document.getElementById('status').className = 'status';
+                }, 100);
+            } else {
+                document.getElementById('status').innerHTML = '⏸️ Aufnahme beendet';
+                document.getElementById('status').className = 'status';
+            }
+            
+            stopVisualization();
+        };
+    }
+
+    function initializeAudioVisualization() {
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            console.log('Audio visualization initialized');
+        } catch (e) {
+            console.log('Audio visualization not supported:', e);
+        }
+    }
+
+    // Add debug button for testing
+    function addDebugInfo() {
+        // Remove existing debug button if present
+        const existingBtn = document.getElementById('debug-btn');
+        if (existingBtn) {
+            existingBtn.remove();
+        }
+        
+        const debugBtn = document.createElement('button');
+        debugBtn.id = 'debug-btn';
+        debugBtn.textContent = '🔍 Debug';
+        debugBtn.style.position = 'fixed';
+        debugBtn.style.top = '10px';
+        debugBtn.style.right = '10px';
+        debugBtn.style.zIndex = '9999';
+        debugBtn.style.fontSize = '12px';
+        debugBtn.style.padding = '8px 12px';
+        debugBtn.style.backgroundColor = 'var(--accent-blue)';
+        debugBtn.style.color = 'white';
+        debugBtn.style.border = 'none';
+        debugBtn.style.borderRadius = '6px';
+        debugBtn.style.cursor = 'pointer';
+        debugBtn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+        
+        debugBtn.addEventListener('click', showDebugInfo);
+        
+        document.body.appendChild(debugBtn);
+        console.log('Debug button added to page');
+    }
+    
+    // Add debug functionality to mobile button
+    document.getElementById('mobile-debug-btn').addEventListener('click', function() {
+        showDebugInfo();
+    });
+
+    function startVisualization() {
+        if (!audioContext || !analyser) return;
+        
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                drawSpectrum();
+            })
+            .catch(err => {
+                console.log('Microphone access denied for visualization');
+            });
+    }
+
+    function stopVisualization() {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
+        if (source) {
+            source.disconnect();
+            source = null;
+        }
+        clearCanvas();
+    }
+
+    function drawSpectrum() {
+        if (!isRecording) return;
+        
+        animationId = requestAnimationFrame(drawSpectrum);
+        
+        analyser.getByteFrequencyData(dataArray);
+        
+        // More subtle background clearing
+        canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        const barWidth = canvas.width / dataArray.length;
+        let x = 0;
+        
+        for (let i = 0; i < dataArray.length; i++) {
+            const barHeight = (dataArray[i] / 255) * canvas.height * 0.8; // Reduced height
+            
+            // More subtle color palette - blue/purple tones
+            const intensity = dataArray[i] / 255;
+            const alpha = Math.max(0.1, intensity * 0.4); // Lower opacity
+            
+            // Monochromatic blue/purple gradient
+            const hue = 240 + (i / dataArray.length) * 60; // Blue to purple range
+            canvasCtx.fillStyle = `hsla(${hue}, 50%, 70%, ${alpha})`;
+            canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+            
+            x += barWidth;
+        }
+    }
+
+    function clearCanvas() {
+        canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function startRecognition() {
+        if (!recognition) {
+            document.getElementById('status').innerHTML = '❌ Spracherkennung nicht initialisiert';
+            document.getElementById('status').className = 'status error';
+            return;
+        }
+
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        
+        // Show immediate feedback
+        document.getElementById('status').innerHTML = '🔄 Starte Aufnahme...';
+        document.getElementById('status').className = 'status';
+        
+        // Request microphone permission explicitly on Android
+        if (isAndroid) {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    // Permission granted, stop the stream and start recognition
+                    stream.getTracks().forEach(track => track.stop());
+                    startSpeechRecognition();
+                })
+                .catch(function(error) {
+                    console.error('Microphone permission error:', error);
+                    let errorMsg = '❌ Mikrofon-Zugriff verweigert';
+                    if (error.name === 'NotAllowedError') {
+                        errorMsg += '<br>📱 Bitte erlaube Mikrofon-Zugriff in den Browser-Einstellungen';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMsg += '<br>📱 Kein Mikrofon gefunden';
+                    }
+                    document.getElementById('status').innerHTML = errorMsg;
+                    document.getElementById('status').className = 'status error';
+                });
+        } else {
+            startSpeechRecognition();
+        }
+    }
+
+    function startSpeechRecognition() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        try {
+            // Stop any existing recognition
+            if (isRecording) {
+                recognition.stop();
+                isRecording = false;
+            }
+            
+            // Clear transcript if placeholder
+            finalTranscript = document.getElementById('transcript').innerHTML === 'Hier erscheint dein gesprochener Text...' ? '' : document.getElementById('transcript').textContent;
+            
+            // Configure recognition
+            recognition.lang = document.getElementById('language').value;
+            const continuousMode = document.getElementById('continuous').value === 'true';
+            recognition.continuous = isMobile ? false : continuousMode;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+            
+            // Start recognition with timeout protection
+            const startTimeout = setTimeout(() => {
+                if (!isRecording) {
+                    document.getElementById('status').innerHTML = '❌ Timeout beim Starten - versuche es erneut';
+                    document.getElementById('status').className = 'status error';
+                }
+            }, 5000);
+            
+            recognition.start();
+            
+            // Clear timeout when recognition starts
+            recognition.onstart = function() {
+                clearTimeout(startTimeout);
+                isRecording = true;
+                updateUI();
+                
+                const statusMsg = isMobile ? 
+                    '🎤 Höre zu... Sprich jetzt deutlich!' : 
+                    '🎤 Zuhören... Sprich jetzt!';
+                
+                document.getElementById('status').innerHTML = statusMsg;
+                document.getElementById('status').className = 'status listening';
+                
+                startVisualization();
+            };
+            
+        } catch (error) {
+            console.error('Speech recognition start error:', error);
+            let errorMsg = '❌ Fehler beim Starten: ' + error.message;
+            
+            if (error.name === 'InvalidStateError') {
+                errorMsg = '❌ Spracherkennung bereits aktiv - bitte warten';
+            } else if (error.name === 'NotAllowedError') {
+                errorMsg = '❌ Mikrofon-Berechtigung erforderlich';
+            }
+            
+            document.getElementById('status').innerHTML = errorMsg;
+            document.getElementById('status').className = 'status error';
+        }
+    }
+
+    function stopRecognition() {
+        if (recognition && isRecording) {
+            recognition.stop();
+            stopVisualization();
+        }
+    }
+
+    function clearTranscript() {
+        finalTranscript = '';
+        const transcriptElement = document.getElementById('transcript');
+        transcriptElement.innerHTML = 'Hier erscheint dein gesprochener Text...';
+        transcriptElement.classList.add('fade-in');
+        
+        // Remove animation class after animation completes
+        setTimeout(() => {
+            transcriptElement.classList.remove('fade-in');
+        }, 300);
+        
+        document.getElementById('status').innerHTML = 'Text gelöscht';
+        document.getElementById('status').className = 'status fade-in';
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('transcript').textContent;
+        if (text && text !== 'Hier erscheint dein gesprochener Text...') {
+            navigator.clipboard.writeText(text).then(() => {
+                const statusElement = document.getElementById('status');
+                statusElement.innerHTML = '📋 Text in Zwischenablage kopiert';
+                statusElement.className = 'status fade-in';
+                
+                // Add success animation
+                setTimeout(() => {
+                    statusElement.classList.remove('fade-in');
+                }, 300);
+            });
+        }
+    }
+
+    function updateUI() {
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        if (isRecording) {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            startBtn.className = 'recording-btn active';
+        } else {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            startBtn.className = '';
+        }
+    }
+
+    // Update recognition settings when changed
+    document.getElementById('language').addEventListener('change', function () {
+        if (recognition) {
+            recognition.lang = this.value;
+        }
+    });
+
+    document.getElementById('continuous').addEventListener('change', function () {
+        if (recognition) {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            // On mobile, always use non-continuous mode regardless of setting
+            recognition.continuous = isMobile ? false : (this.value === 'true');
+            
+            // Show mobile notice
+            if (isMobile && this.value === 'true') {
+                document.getElementById('status').innerHTML = '📱 Kontinuierlicher Modus auf Mobile simuliert durch Auto-Restart';
+                document.getElementById('status').className = 'status';
+            }
+        }
+    });
+
+    // Add event listeners for buttons with mobile optimization
+    document.getElementById('startBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        console.log('Start button clicked');
+        startRecognition();
+    });
+    
+    // Also add touch event for mobile
+    document.getElementById('startBtn').addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        console.log('Start button touched');
+    });
+    
+    document.getElementById('stopBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        stopRecognition();
+    });
+    
+    document.getElementById('clearBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        clearTranscript();
+    });
+    
+    document.getElementById('copyBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        copyToClipboard();
+    });
+    
+    // Mobile-specific optimizations
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        // Prevent zoom on double tap for buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.style.touchAction = 'manipulation';
+            button.addEventListener('touchend', function(e) {
+                // Don't prevent default here as it can interfere with click events
+            });
+        });
+        
+        // Show mobile-specific instructions with debugging
+        setTimeout(() => {
+            const statusElement = document.getElementById('status');
+            if (statusElement.textContent.includes('Klicke auf') || statusElement.textContent.includes('bereit')) {
+                if (isAndroid) {
+                    statusElement.innerHTML = '📱 Android erkannt: Tippe "Aufnahme starten" und erlaube Mikrofon-Zugriff wenn gefragt';
+                } else {
+                    statusElement.innerHTML = '📱 Mobile erkannt: Tippe "Aufnahme starten" und erlaube Mikrofon-Zugriff';
+                }
+            }
+        }, 1500);
+        
+        // Debug info for Android
+        if (isAndroid) {
+            console.log('Android device detected');
+            console.log('User agent:', navigator.userAgent);
+            console.log('MediaDevices available:', !!navigator.mediaDevices);
+            console.log('getUserMedia available:', !!navigator.mediaDevices?.getUserMedia);
+        }
+    }
+</script>
+</body>
+</html>

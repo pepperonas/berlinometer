@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+import * as THREE from 'three';
 
 export class ParticleEffectsManager {
     constructor(scene, physicsWorld) {
@@ -29,51 +29,186 @@ export class ParticleEffectsManager {
     }
 
     createMaterials() {
-        // Smoke material
+        // Create particle textures
+        this.createParticleTextures();
+        
+        // Smoke material with texture
         this.materials.smoke = new THREE.PointsMaterial({
+            map: this.textures.smoke,
             color: 0x444444,
-            size: 0.5,
+            size: 1.0,
             transparent: true,
             opacity: 0.6,
             alphaTest: 0.1,
             depthWrite: false,
-            blending: THREE.AdditiveBlending
+            blending: THREE.AdditiveBlending,
+            vertexColors: true
         });
         
-        // Spark material
+        // Spark material with glow texture
         this.materials.spark = new THREE.PointsMaterial({
+            map: this.textures.spark,
             color: 0xffaa22,
-            size: 0.1,
+            size: 0.3,
             transparent: true,
             opacity: 0.9,
-            blending: THREE.AdditiveBlending
+            blending: THREE.AdditiveBlending,
+            vertexColors: true
         });
         
-        // Dirt/dust material
+        // Dirt/dust material with particle texture
         this.materials.dirt = new THREE.PointsMaterial({
+            map: this.textures.dirt,
             color: 0x8b4513,
-            size: 0.2,
+            size: 0.4,
             transparent: true,
             opacity: 0.7,
-            alphaTest: 0.1
+            alphaTest: 0.1,
+            vertexColors: true
         });
         
-        // Water spray material
+        // Water spray material with droplet texture
         this.materials.water = new THREE.PointsMaterial({
+            map: this.textures.water,
             color: 0x87ceeb,
-            size: 0.15,
+            size: 0.3,
             transparent: true,
             opacity: 0.8,
-            blending: THREE.AdditiveBlending
+            blending: THREE.AdditiveBlending,
+            vertexColors: true
         });
         
         // Metal debris material
         this.materials.debris = new THREE.PointsMaterial({
+            map: this.textures.debris,
             color: 0x888888,
-            size: 0.08,
+            size: 0.2,
             transparent: true,
-            opacity: 1.0
+            opacity: 1.0,
+            vertexColors: true
         });
+    }
+    
+    createParticleTextures() {
+        this.textures = {};
+        
+        // Smoke texture
+        this.textures.smoke = this.createSmokeTexture();
+        
+        // Spark texture
+        this.textures.spark = this.createSparkTexture();
+        
+        // Dirt texture
+        this.textures.dirt = this.createDirtTexture();
+        
+        // Water droplet texture
+        this.textures.water = this.createWaterTexture();
+        
+        // Debris texture
+        this.textures.debris = this.createDebrisTexture();
+    }
+    
+    createSmokeTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
+        
+        const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)');
+        gradient.addColorStop(0.7, 'rgba(255, 255, 255, 0.3)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 64, 64);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    }
+    
+    createSparkTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        
+        const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+        gradient.addColorStop(0.2, 'rgba(255, 200, 100, 1)');
+        gradient.addColorStop(0.5, 'rgba(255, 100, 0, 0.8)');
+        gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 32, 32);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    }
+    
+    createDirtTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = '#8b4513';
+        ctx.fillRect(0, 0, 32, 32);
+        
+        // Add noise
+        for (let i = 0; i < 100; i++) {
+            const x = Math.random() * 32;
+            const y = Math.random() * 32;
+            const size = Math.random() * 3 + 1;
+            ctx.fillStyle = `rgba(${139 + Math.random() * 50}, ${69 + Math.random() * 30}, ${19 + Math.random() * 20}, ${Math.random() * 0.5 + 0.5})`;
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    }
+    
+    createWaterTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 32;
+        canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        
+        const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+        gradient.addColorStop(0, 'rgba(135, 206, 235, 1)');
+        gradient.addColorStop(0.6, 'rgba(135, 206, 235, 0.8)');
+        gradient.addColorStop(1, 'rgba(135, 206, 235, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 32, 32);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        return texture;
+    }
+    
+    createDebrisTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = '#666';
+        ctx.fillRect(0, 0, 16, 16);
+        
+        // Add metallic highlights
+        ctx.fillStyle = '#aaa';
+        ctx.fillRect(2, 2, 4, 4);
+        ctx.fillRect(10, 8, 3, 3);
+        
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        return texture;
     }
 
     setupParticlePool() {
@@ -379,9 +514,11 @@ export class ParticleEffectsManager {
         geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
         
-        // Create material with vertex colors
+        // Create material with vertex colors and improved settings
         const material = this.materials[type].clone();
         material.vertexColors = true;
+        material.sizeAttenuation = true;
+        material.alphaTest = type === 'spark' ? 0.01 : 0.1;
         
         // Create and add new system
         const system = new THREE.Points(geometry, material);

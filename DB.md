@@ -269,7 +269,7 @@ FLUSH PRIVILEGES;
 **⚠️ Fehlende Datenbanken auf VPS:**
 - medical-ai-reports
 - glitterhue
-- endeavour  
+- endeavour
 - securemarket
 
 ### 🐬 MySQL Konfiguration auf VPS
@@ -311,7 +311,7 @@ FLUSH PRIVILEGES;
 
 #### ✅ Übereinstimmungen:
 - **Bartender:** Identische Konfiguration und Collections
-- **MPSec:** Identische Konfiguration und Collections  
+- **MPSec:** Identische Konfiguration und Collections
 - **TechDocs:** Identische Konfiguration
 - **Weather Tracker:** Läuft auf VPS mit korrekten Daten
 
@@ -325,7 +325,7 @@ FLUSH PRIVILEGES;
 **Nur lokal entwickelt, fehlt auf VPS:**
 - medical-ai-reports DB
 - glitterhue DB
-- endeavour DB  
+- endeavour DB
 - securemarket DB (Port 27018)
 
 **Port-Unterschiede:**
@@ -355,5 +355,162 @@ FLUSH PRIVILEGES;
 
 ---
 
-**Letzte Aktualisierung:** 2025-07-03  
-**Status:** VPS-Analyse abgeschlossen - Abweichungen identifiziert
+## 🎮 Games Repository Datenbanken
+
+### Übersicht Games Repository
+**Repository:** `/Users/martin/WebstormProjects/games/`  
+**Aktive Datenbanken:** 1 MongoDB-Datenbank  
+**Status:** Produktiv auf VPS deployed
+
+---
+
+### 1. Darts3k1 Database
+- **Verzeichnis:** `games/api/darts-backend/`
+- **Datenbank:** `darts3k1`
+- **Host:** localhost:27017
+- **Benutzer:** `mongoAdmin`
+- **Passwort:** `#QGwODkgI7fx` ⚠️ (Geteilt mit Portfolio Apps)
+- **Auth Source:** admin
+- **App Port:** 5000 (lokal), 5XXX (VPS)
+- **Connection String:** `mongodb://mongoAdmin:%23QGwODkgI7fx@localhost:27017/darts3k1?authSource=admin`
+
+**Schema/Collections:**
+- **Player** (Spieler)
+   - Authentifizierung mit PBKDF2 Password Hashing
+   - Benutzerprofile und Statistiken
+   - Spielhistorie und Leistungsdaten
+- **Game** (Spiele)
+   - Spielsitzungen und Matches
+   - Spielmodi und Konfigurationen
+- **Throw** (Würfe)
+   - Detaillierte Wurfdaten
+   - Scoring und Punkteverfolgung
+
+**JWT Secret:** `#QGwODkgI7fx` ⚠️ (Identisch mit DB Password)
+
+**Besonderheiten:**
+- Vollständige Benutzerauthentifizierung mit JWT
+- Erweiterte Spielstatistiken und Analytics
+- Komplexe Datenmodelle für Dartsregeln
+- Automatische Datenbankverbindung mit Retry-Logik
+
+---
+
+### 2. Geplante Android API (MySQL)
+- **Verzeichnis:** `games/android-api/`
+- **Status:** 📋 Nur Dokumentation vorhanden
+- **Geplante Datenbank:** MySQL für Android-Spiele
+- **Geplante Features:**
+   - Benutzerverwaltung
+   - Score-Synchronisation
+   - In-App-Käufe
+   - Multiplayer-Funktionalität
+
+**⚠️ Hinweis:** Noch nicht implementiert - nur README.md vorhanden
+
+---
+
+### 3. Weitere Games (Stateless)
+**Multiplayer-Server ohne persistente Datenbanken:**
+- **Bomberman Multiplayer** - WebSocket Server
+- **Brain Buster Server** - WebSocket Server
+- **Hexpulse API** - Multiplayer Server
+- **Poker Server** - WebSocket Server
+
+Diese Spiele verwenden keine persistenten Datenbanken und speichern Spielstände nur im Memory/Session Storage.
+
+---
+
+## 🔄 Repository-Übergreifende Analyse
+
+### Credential-Sharing zwischen Repositories
+**Kritisches Sicherheitsproblem identifiziert:**
+
+| Repository | Database | User | Password | Shared |
+|------------|----------|------|----------|--------|
+| Portfolio | bartender | mongoAdmin | #QGwODkgI7fx | ✅ |
+| Portfolio | mpsec | mongoAdmin | #QGwODkgI7fx | ✅ |
+| **Games** | **darts3k1** | **mongoAdmin** | **#QGwODkgI7fx** | **✅** |
+
+**Sicherheitsrisiko:** Derselbe MongoDB-Benutzer wird für 3 verschiedene Anwendungen verwendet!
+
+### VPS Deployment Status
+
+| Database | Lokal | VPS Status | Sync Status |
+|----------|-------|------------|-------------|
+| darts3k1 | ✅ | ✅ Deployed | ✅ Synchron |
+| Android API | ❌ Nicht implementiert | ❌ | - |
+
+**VPS-Bestätigung:** darts3k1 ist auf dem VPS aktiv und läuft ordnungsgemäß.
+
+---
+
+## 📊 Erweiterte Port-Übersicht (Alle Repositories)
+
+### Portfolio Apps
+| Anwendung | App Port | DB Port | DB Type | Repository |
+|-----------|----------|---------|---------|------------|
+| Bartender | 5024 | 27017 | MongoDB | Portfolio |
+| Medical AI Reports | 5063 | 27017 | MongoDB | Portfolio |
+| MPSec | 5012 | 27017 | MongoDB | Portfolio |
+| TechDocs | 5007 | 27017 | MongoDB | Portfolio |
+| GlitterHue | 5001 | 27017 | MongoDB | Portfolio |
+| Endeavour | 5000 | 27017 | MongoDB | Portfolio |
+| Secure Marketplace | 5005 | 27018 | MongoDB | Portfolio |
+| Weather Tracker | 5033 | 3306 | MySQL | Portfolio |
+
+### Games Repository
+| Anwendung | App Port | DB Port | DB Type | Repository |
+|-----------|----------|---------|---------|------------|
+| **Darts Backend** | **5000** | **27017** | **MongoDB** | **Games** |
+| Android API | - | 3306 | MySQL (geplant) | Games |
+| Bomberman | - | - | Stateless | Games |
+| Brain Buster | - | - | Stateless | Games |
+| Hexpulse | - | - | Stateless | Games |
+| Poker | - | - | Stateless | Games |
+
+---
+
+## 🚨 Erweiterte Sicherheitsanalyse
+
+### Kritische Befunde (Repository-übergreifend)
+
+1. **Shared MongoDB Admin Account:**
+   - `mongoAdmin:#QGwODkgI7fx` wird in 3 verschiedenen Anwendungen verwendet
+   - Portfolio: bartender, mpsec
+   - Games: darts3k1
+   - **Risiko:** Vollzugriff auf alle Datenbanken bei Kompromittierung
+
+2. **Identische JWT/DB Secrets:**
+   - darts3k1 verwendet dasselbe Passwort für DB und JWT
+   - **Risiko:** Credential-Reuse über verschiedene Sicherheitsebenen
+
+3. **Repository-übergreifende Credential-Verteilung:**
+   - Credentials sind über 2 verschiedene Repositories verteilt
+   - **Risiko:** Inkonsistente Sicherheitsrichtlinien
+
+### Sofortige Empfehlungen
+
+1. **Separate MongoDB-Benutzer erstellen:**
+   ```bash
+   # Für darts3k1
+   use darts3k1
+   db.createUser({
+     user: "darts_user", 
+     pwd: "NEUES_STARKES_PASSWORT", 
+     roles: ["readWrite"]
+   })
+   ```
+
+2. **JWT Secret rotieren:**
+   - Neues, starkes JWT Secret für darts-backend generieren
+   - Unterschiedlich vom DB-Passwort
+
+3. **Credential-Audit durchführen:**
+   - Alle .env Dateien in beiden Repositories überprüfen
+   - Einheitliche Sicherheitsrichtlinien etablieren
+
+---
+
+**Letzte Aktualisierung:** 2025-07-04  
+**Status:** Vollständige Repository-übergreifende Analyse abgeschlossen - Kritische Sicherheitslücken identifiziert

@@ -1,5 +1,5 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
-import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
+import * as THREE from 'three';
+import * as CANNON from 'cannon-es';
 import { AdvancedNodeBeamStructure } from './AdvancedNodeBeamStructure.js';
 import { Wheel } from './Wheel.js';
 
@@ -20,13 +20,46 @@ export class Vehicle {
         
         // Vehicle properties
         this.mass = 1500; // kg - heavier for stability
-        this.engineForce = 2000; // Increased back to 2000 for better acceleration
+        this.engineForce = 5000; // Increased for better acceleration with advanced physics
         this.brakeForce = 50;
         this.steeringAngle = 0.35;
         this.currentSteering = 0;
         this.currentThrottle = 0;
         this.currentBrake = 0;
         this.handbrake = false;
+        
+        // Advanced physics
+        this.suspension = {
+            frontStiffness: 60,
+            rearStiffness: 55,
+            frontDamping: 4.4,
+            rearDamping: 4.0,
+            frontCompression: 2.3,
+            rearCompression: 2.1,
+            antiRollBar: 0.3
+        };
+        
+        // Tire physics
+        this.tires = [
+            { temperature: 20, wear: 0, pressure: 2.2, compound: 'medium' },
+            { temperature: 20, wear: 0, pressure: 2.2, compound: 'medium' },
+            { temperature: 20, wear: 0, pressure: 2.2, compound: 'medium' },
+            { temperature: 20, wear: 0, pressure: 2.2, compound: 'medium' }
+        ];
+        
+        this.tireCompounds = {
+            soft: { grip: 1.2, wearRate: 2.0, optimalTemp: 85 },
+            medium: { grip: 1.0, wearRate: 1.0, optimalTemp: 75 },
+            hard: { grip: 0.8, wearRate: 0.5, optimalTemp: 65 }
+        };
+        
+        // Aerodynamics
+        this.aero = {
+            dragCoefficient: 0.32,
+            frontalArea: 2.5,
+            downforceCoefficient: 0.15,
+            centerOfPressure: -0.5 // Behind center of mass
+        };
         
         // Engine properties
         this.rpm = 800; // idle RPM
@@ -171,16 +204,17 @@ export class Vehicle {
         ];
         
         wheelPositions.forEach((pos, index) => {
+            const isFront = index < 2;
             const wheelInfo = {
                 radius: 0.4,
                 directionLocal: new CANNON.Vec3(0, -1, 0),
-                suspensionStiffness: 60,
+                suspensionStiffness: isFront ? this.suspension.frontStiffness : this.suspension.rearStiffness,
                 suspensionRestLength: 0.6,
-                frictionSlip: 2.0, // Increased friction
-                dampingRelaxation: 2.3,
-                dampingCompression: 4.4,
-                maxSuspensionForce: 200000, // Increased
-                rollInfluence: 0.01, // Reduced for stability
+                frictionSlip: this.calculateTireFriction(index),
+                dampingRelaxation: isFront ? this.suspension.frontCompression : this.suspension.rearCompression,
+                dampingCompression: isFront ? this.suspension.frontDamping : this.suspension.rearDamping,
+                maxSuspensionForce: 200000,
+                rollInfluence: 0.01,
                 axleLocal: new CANNON.Vec3(1, 0, 0),
                 chassisConnectionPointLocal: new CANNON.Vec3(pos.x, pos.y, pos.z),
                 maxSuspensionTravel: 0.5,
@@ -207,6 +241,11 @@ export class Vehicle {
     update(deltaTime) {
         if (!this.vehicle) return;
         
+        // Update advanced physics systems
+        this.updateTirePhysics(deltaTime);
+        this.updateAerodynamics(deltaTime);
+        this.updateSuspension(deltaTime);
+        
         // Update engine RPM
         this.updateEngine(deltaTime);
         
@@ -223,7 +262,7 @@ export class Vehicle {
             this.vehicle.setSteeringValue(this.currentSteering * this.steeringAngle, 1);
             
             // Apply engine force
-            const scaledForce = engineForce * 0.1; // Increased from 0.01
+            const scaledForce = engineForce * 1.0; // Increased to full force
             this.vehicle.applyEngineForce(scaledForce, 2); // Rear left
             this.vehicle.applyEngineForce(scaledForce, 3); // Rear right
             
@@ -442,6 +481,156 @@ export class Vehicle {
                 wheel.deltaRotation = 0;
                 wheel.suspensionLength = wheel.suspensionRestLength;
             });
+        }
+    }
+
+    // Advanced physics methods
+    calculateTireFriction(wheelIndex) {
+        const tire = this.tires[wheelIndex];
+        const compound = this.tireCompounds[tire.compound];
+        
+        // Base friction from compound
+        let friction = compound.grip;
+        
+        // Temperature effect
+        const tempDiff = Math.abs(tire.temperature - compound.optimalTemp);
+        const tempFactor = Math.max(0.3, 1 - (tempDiff / 50));
+        friction *= tempFactor;
+        
+        // Wear effect
+        const wearFactor = Math.max(0.4, 1 - tire.wear);
+        friction *= wearFactor;
+        
+        // Pressure effect
+        const pressureFactor = Math.max(0.7, 1 - Math.abs(tire.pressure - 2.2) / 2.2);
+        friction *= pressureFactor;
+        
+        return friction * 3.0; // Increased base multiplier for better initial grip
+    }
+    
+    updateTirePhysics(deltaTime) {
+        if (!this.vehicle.wheelInfos) return;
+        
+        this.vehicle.wheelInfos.forEach((wheel, index) => {
+            const tire = this.tires[index];
+            
+            // Calculate tire slip
+            const slip = wheel.slipInfo || 0;
+            const slipMagnitude = Math.abs(slip);
+            
+            // Update temperature based on slip and speed
+            const speed = this.getSpeed();
+            const heatGeneration = slipMagnitude * 20 + speed * 0.5;
+            const cooling = (tire.temperature - 20) * 0.02; // Ambient cooling
+            
+            tire.temperature += (heatGeneration - cooling) * deltaTime;
+            tire.temperature = Math.max(20, Math.min(150, tire.temperature));
+            
+            // Update wear based on slip and temperature
+            const compound = this.tireCompounds[tire.compound];
+            const wearRate = compound.wearRate * (1 + tire.temperature / 100);
+            tire.wear += slipMagnitude * wearRate * deltaTime * 0.001;
+            tire.wear = Math.min(1.0, tire.wear);
+            
+            // Update friction in real-time
+            wheel.frictionSlip = this.calculateTireFriction(index);
+        });
+    }
+    
+    updateAerodynamics(deltaTime) {
+        const velocity = this.chassis.velocity;
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+        
+        if (speed < 0.1) return;
+        
+        // Calculate drag force
+        const dragForce = 0.5 * 1.225 * this.aero.dragCoefficient * this.aero.frontalArea * speed * speed;
+        
+        // Calculate drag direction (normalize velocity and negate)
+        const dragDirection = new CANNON.Vec3(
+            -velocity.x / speed,
+            0,
+            -velocity.z / speed
+        );
+        
+        // Apply drag
+        this.chassis.force.x += dragDirection.x * dragForce;
+        this.chassis.force.z += dragDirection.z * dragForce;
+        
+        // Calculate downforce
+        const downforce = 0.5 * 1.225 * this.aero.downforceCoefficient * this.aero.frontalArea * speed * speed;
+        this.chassis.force.y -= downforce;
+        
+        // Apply pitching moment from downforce
+        const pitchMoment = downforce * this.aero.centerOfPressure;
+        this.chassis.torque.x += pitchMoment;
+    }
+    
+    updateSuspension(deltaTime) {
+        if (!this.vehicle.wheelInfos) return;
+        
+        // Calculate anti-roll bar effect
+        const frontRollDiff = this.vehicle.wheelInfos[0].suspensionLength - this.vehicle.wheelInfos[1].suspensionLength;
+        const rearRollDiff = this.vehicle.wheelInfos[2].suspensionLength - this.vehicle.wheelInfos[3].suspensionLength;
+        
+        const antiRollForce = this.suspension.antiRollBar * 10000;
+        
+        // Apply anti-roll forces to front wheels
+        if (Math.abs(frontRollDiff) > 0.01) {
+            const force = frontRollDiff * antiRollForce;
+            this.chassis.force.y += force * 0.1;
+            this.chassis.torque.z += force * 0.8; // Roll moment
+        }
+        
+        // Apply anti-roll forces to rear wheels
+        if (Math.abs(rearRollDiff) > 0.01) {
+            const force = rearRollDiff * antiRollForce;
+            this.chassis.force.y += force * 0.1;
+            this.chassis.torque.z += force * 1.3; // Roll moment
+        }
+    }
+    
+    // Getters for advanced telemetry
+    getTireTemperatures() {
+        return this.tires.map(tire => tire.temperature);
+    }
+    
+    getTireWear() {
+        return this.tires.map(tire => tire.wear * 100);
+    }
+    
+    getTirePressures() {
+        return this.tires.map(tire => tire.pressure);
+    }
+    
+    getAerodynamicForces() {
+        const velocity = this.chassis.velocity;
+        const speed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+        
+        const drag = 0.5 * 1.225 * this.aero.dragCoefficient * this.aero.frontalArea * speed * speed;
+        const downforce = 0.5 * 1.225 * this.aero.downforceCoefficient * this.aero.frontalArea * speed * speed;
+        
+        return { drag, downforce };
+    }
+    
+    setSuspensionSettings(settings) {
+        Object.assign(this.suspension, settings);
+        
+        // Update existing wheels
+        if (this.vehicle && this.vehicle.wheelInfos) {
+            this.vehicle.wheelInfos.forEach((wheel, index) => {
+                const isFront = index < 2;
+                wheel.suspensionStiffness = isFront ? this.suspension.frontStiffness : this.suspension.rearStiffness;
+                wheel.dampingRelaxation = isFront ? this.suspension.frontCompression : this.suspension.rearCompression;
+                wheel.dampingCompression = isFront ? this.suspension.frontDamping : this.suspension.rearDamping;
+            });
+        }
+    }
+    
+    setTireCompound(wheelIndex, compound) {
+        if (wheelIndex >= 0 && wheelIndex < 4 && this.tireCompounds[compound]) {
+            this.tires[wheelIndex].compound = compound;
+            this.tires[wheelIndex].wear = 0; // Reset wear when changing compound
         }
     }
 

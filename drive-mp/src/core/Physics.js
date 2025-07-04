@@ -1,4 +1,4 @@
-import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
+import * as CANNON from 'cannon-es';
 
 export class Physics {
     constructor() {

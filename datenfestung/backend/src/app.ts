@@ -18,6 +18,8 @@ import tomsRoutes from '@/routes/toms.routes';
 import contractsRoutes from '@/routes/contracts.routes';
 import tasksRoutes from '@/routes/tasks.routes';
 import elearningRoutes from '@/routes/elearning.routes';
+import templateRoutes from '@/routes/template.routes';
+import aiRoutes from '@/routes/ai.routes';
 
 // Load environment variables
 dotenv.config();
@@ -32,7 +34,7 @@ app.use(helmet({
 
 // CORS configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: true, // Allow all origins in development
   credentials: process.env.CORS_CREDENTIALS === 'true',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -85,6 +87,8 @@ app.use('/api/toms', tomsRoutes);
 app.use('/api/contracts', contractsRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/elearning', elearningRoutes);
+app.use('/api/templates', templateRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Serve uploaded files (in production, use a CDN or object storage)
 app.use('/uploads', express.static('uploads'));

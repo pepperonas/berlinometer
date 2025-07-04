@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './authSlice';
 import dashboardReducer from './dashboardSlice';
 import processingActivitiesReducer from './processingActivitiesSlice';
+import templateReducer from './templateSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     dashboard: dashboardReducer,
     processingActivities: processingActivitiesReducer,
+    templates: templateReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

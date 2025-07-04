@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+import * as THREE from 'three';
 import { Renderer } from './Renderer.js';
 import { Physics } from './Physics.js';
 import { InputManager } from '../utils/InputManager.js';
@@ -32,6 +32,21 @@ export class Game {
         this.cameraMode = 0;
         this.cameraModes = ['chase', 'orbit', 'cockpit', 'free'];
         this.lastDamage = 0;
+        
+        // Racing HUD data
+        this.lapData = {
+            currentLapTime: 0,
+            bestLapTime: null,
+            sector1Time: null,
+            sector2Time: null,
+            sector3Time: null,
+            currentSector: 0,
+            lapStartTime: 0
+        };
+        
+        // G-Force canvas
+        this.gForceCanvas = null;
+        this.gForceCtx = null;
     }
 
     async init() {
@@ -77,6 +92,9 @@ export class Game {
             
             // Setup camera
             this.setupCamera();
+            
+            // Initialize racing HUD
+            this.setupRacingHUD();
             
             // Start game loop
             this.isRunning = true;
@@ -249,6 +267,11 @@ export class Game {
         // Update camera
         this.updateCamera(deltaTime);
         
+        // Update renderer with vehicle position
+        if (this.renderer && this.vehicle) {
+            this.renderer.update(deltaTime, this.vehicle.getPosition());
+        }
+        
         // Update world
         if (this.world) {
             this.world.update(deltaTime);
@@ -305,6 +328,9 @@ export class Game {
         
         // Update telemetry panel
         this.updateTelemetryPanel();
+        
+        // Update racing HUD
+        this.updateRacingHUD();
     }
 
     updateVehicleEffects(deltaTime) {
@@ -470,6 +496,59 @@ export class Game {
             }
         }
         
+        // Tire temperatures with color coding
+        if (this.vehicle.getTireTemperatures) {
+            const temps = this.vehicle.getTireTemperatures();
+            const tempElements = ['telemetryTempFL', 'telemetryTempFR', 'telemetryTempRL', 'telemetryTempRR'];
+            
+            temps.forEach((temp, i) => {
+                const element = document.getElementById(tempElements[i]);
+                if (element) {
+                    element.textContent = Math.round(temp);
+                    // Color code based on temperature
+                    if (temp < 40) {
+                        element.className = 'performance-good';
+                    } else if (temp < 100) {
+                        element.className = 'performance-warning';
+                    } else {
+                        element.className = 'performance-critical';
+                    }
+                }
+            });
+        }
+        
+        // Tire wear
+        if (this.vehicle.getTireWear) {
+            const wear = this.vehicle.getTireWear();
+            const wearElements = ['telemetryWearFL', 'telemetryWearFR', 'telemetryWearRL', 'telemetryWearRR'];
+            
+            wear.forEach((w, i) => {
+                const element = document.getElementById(wearElements[i]);
+                if (element) {
+                    element.textContent = Math.round(w);
+                    // Color code based on wear
+                    if (w < 30) {
+                        element.className = 'performance-good';
+                    } else if (w < 70) {
+                        element.className = 'performance-warning';
+                    } else {
+                        element.className = 'performance-critical';
+                    }
+                }
+            });
+        }
+        
+        // Aerodynamic forces
+        if (this.vehicle.getAerodynamicForces) {
+            const aero = this.vehicle.getAerodynamicForces();
+            document.getElementById('telemetryDrag').textContent = Math.round(aero.drag);
+            document.getElementById('telemetryDownforce').textContent = Math.round(aero.downforce);
+            
+            // Calculate aerodynamic balance
+            const balance = aero.downforce > 0 ? (aero.drag / (aero.drag + aero.downforce)) * 100 : 50;
+            document.getElementById('telemetryBalance').textContent = Math.round(balance);
+        }
+        
         // System status
         if (this.particleEffects) {
             document.getElementById('telemetryParticles').textContent = 
@@ -478,6 +557,136 @@ export class Game {
         
         document.getElementById('telemetryAudio').textContent = '85'; // Placeholder
         document.getElementById('telemetryPhysicsMS').textContent = this.stats.physicsTime;
+    }
+    
+    setupRacingHUD() {
+        // Initialize G-Force canvas
+        this.gForceCanvas = document.getElementById('gForceCanvas');
+        if (this.gForceCanvas) {
+            this.gForceCtx = this.gForceCanvas.getContext('2d');
+        }
+        
+        // Initialize lap timer
+        this.lapData.lapStartTime = Date.now();
+    }
+    
+    updateRacingHUD() {
+        if (!this.vehicle) return;
+        
+        // Update lap timer
+        this.updateLapTimer();
+        
+        // Update tire temperatures in HUD
+        this.updateHUDTireTemps();
+        
+        // Update G-Force meter
+        this.updateGForceMeter();
+    }
+    
+    updateLapTimer() {
+        const currentTime = Date.now();
+        this.lapData.currentLapTime = (currentTime - this.lapData.lapStartTime) / 1000;
+        
+        // Format time as MM:SS.mmm
+        const minutes = Math.floor(this.lapData.currentLapTime / 60);
+        const seconds = Math.floor(this.lapData.currentLapTime % 60);
+        const milliseconds = Math.floor((this.lapData.currentLapTime % 1) * 1000);
+        
+        const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(3, '0')}`;
+        document.getElementById('currentLapTime').textContent = timeString;
+        
+        // Update best lap if applicable
+        if (this.lapData.bestLapTime === null || this.lapData.currentLapTime < this.lapData.bestLapTime) {
+            // Don't update best time until lap is complete
+        }
+    }
+    
+    updateHUDTireTemps() {
+        if (!this.vehicle.getTireTemperatures) return;
+        
+        const temps = this.vehicle.getTireTemperatures();
+        const hudElements = ['hudTempFL', 'hudTempFR', 'hudTempRL', 'hudTempRR'];
+        
+        temps.forEach((temp, i) => {
+            const element = document.getElementById(hudElements[i]);
+            if (element) {
+                element.textContent = Math.round(temp) + '°';
+                
+                // Remove existing classes
+                element.classList.remove('cold', 'optimal', 'hot', 'critical');
+                
+                // Add appropriate class based on temperature
+                if (temp < 40) {
+                    element.classList.add('cold');
+                } else if (temp >= 40 && temp < 90) {
+                    element.classList.add('optimal');
+                } else if (temp >= 90 && temp < 120) {
+                    element.classList.add('hot');
+                } else {
+                    element.classList.add('critical');
+                }
+            }
+        });
+    }
+    
+    updateGForceMeter() {
+        if (!this.gForceCtx || !this.vehicle) return;
+        
+        const velocity = this.vehicle.getVelocity();
+        const angularVel = this.vehicle.getAngularVelocity();
+        
+        // Calculate G-forces
+        const gX = velocity.x / 9.81;
+        const gZ = velocity.z / 9.81;
+        const totalG = Math.sqrt(gX * gX + gZ * gZ);
+        
+        // Update G-force value
+        document.getElementById('gForceValue').textContent = totalG.toFixed(1) + 'g';
+        
+        // Draw G-force meter
+        const ctx = this.gForceCtx;
+        const centerX = 60;
+        const centerY = 60;
+        const radius = 50;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, 120, 120);
+        
+        // Draw background circles
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        for (let r = 10; r <= radius; r += 10) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        
+        // Draw center lines
+        ctx.beginPath();
+        ctx.moveTo(centerX - radius, centerY);
+        ctx.lineTo(centerX + radius, centerY);
+        ctx.moveTo(centerX, centerY - radius);
+        ctx.lineTo(centerX, centerY + radius);
+        ctx.stroke();
+        
+        // Draw G-force vector
+        const vectorX = (gX / 2) * radius; // Scale to fit meter
+        const vectorZ = (gZ / 2) * radius;
+        
+        ctx.strokeStyle = '#00ff00';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + vectorX, centerY + vectorZ);
+        ctx.stroke();
+        
+        // Draw G-force magnitude circle
+        const magRadius = Math.min((totalG / 2) * radius, radius);
+        ctx.strokeStyle = totalG > 1 ? '#ff0000' : '#00ff00';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(centerX + vectorX, centerY + vectorZ, 5, 0, Math.PI * 2);
+        ctx.stroke();
     }
 
     destroy() {
