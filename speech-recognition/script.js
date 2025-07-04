@@ -1,18 +1,7 @@
 let recognition;
 let isRecording = false;
 let finalTranscript = '';
-let audioContext;
-let analyser;
-let dataArray;
-let source;
-let animationId;
-let canvas;
-let canvasCtx;
 let userStoppedRecording = false;
-
-// Initialize canvas
-canvas = document.getElementById('spectrum');
-canvasCtx = canvas.getContext('2d');
 
 // Enhanced browser and mobile support check with detailed debugging
 function checkSpeechRecognitionSupport() {
@@ -84,9 +73,6 @@ function checkSpeechRecognitionSupport() {
 }
 
 if (checkSpeechRecognitionSupport()) {
-    // Skip initializeRecognition for Android compatibility
-    initializeAudioVisualization();
-    
     // Initialize UI state
     updateUI();
     
@@ -357,23 +343,6 @@ function stopAllTyping() {
 }
 
 
-function initializeRecognition() {
-    // Don't initialize here for Android - do it fresh each time in startRecognition
-    console.log('initializeRecognition called - skipping for Android compatibility');
-    // All initialization moved to startRecognition function
-}
-
-function initializeAudioVisualization() {
-    try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        console.log('Audio visualization initialized');
-    } catch (e) {
-        console.log('Audio visualization not supported:', e);
-    }
-}
 
 
 // Add debug functionality to mobile button
@@ -381,104 +350,6 @@ document.getElementById('mobile-debug-btn').addEventListener('click', function()
     showDebugInfo();
 });
 
-function startVisualization() {
-    if (!audioContext || !analyser) {
-        // Fallback: simple animated pulse without microphone access
-        drawSimplePulse();
-        return;
-    }
-    
-    // Try to get microphone access for real spectrum
-    navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            source = audioContext.createMediaStreamSource(stream);
-            source.connect(analyser);
-            drawSpectrum();
-        })
-        .catch(err => {
-            console.log('Microphone access denied for visualization, using simple pulse');
-            // Fallback to simple pulse animation
-            drawSimplePulse();
-        });
-}
-
-function stopVisualization() {
-    if (animationId) {
-        cancelAnimationFrame(animationId);
-        animationId = null;
-    }
-    if (source) {
-        source.disconnect();
-        source = null;
-    }
-    clearCanvas();
-}
-
-function drawSpectrum() {
-    if (!isRecording) return;
-    
-    animationId = requestAnimationFrame(drawSpectrum);
-    
-    analyser.getByteFrequencyData(dataArray);
-    
-    // Clear with very subtle background
-    canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    const barWidth = Math.max(2, canvas.width / dataArray.length);
-    let x = 0;
-    
-    // Draw only lower frequencies for cleaner look
-    const maxBars = Math.min(64, dataArray.length);
-    
-    for (let i = 0; i < maxBars; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height * 0.3; // Very subtle height
-        
-        // Very subtle single color
-        const intensity = dataArray[i] / 255;
-        const alpha = Math.max(0.05, intensity * 0.2); // Very low opacity
-        
-        // Single soft blue color
-        canvasCtx.fillStyle = `rgba(104, 141, 177, ${alpha})`;
-        canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-        
-        x += barWidth;
-    }
-}
-
-function drawSimplePulse() {
-    if (!isRecording) return;
-    
-    animationId = requestAnimationFrame(drawSimplePulse);
-    
-    // Clear canvas
-    canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Simple animated bars to show recording activity
-    const time = Date.now() * 0.003;
-    const centerY = canvas.height / 2;
-    const barCount = 20;
-    const barWidth = canvas.width / barCount;
-    
-    for (let i = 0; i < barCount; i++) {
-        // Create wave-like animation
-        const wave = Math.sin(time + i * 0.3) * 0.5 + 0.5;
-        const barHeight = wave * canvas.height * 0.2; // Very subtle
-        
-        // Very subtle single color
-        const alpha = 0.1 + wave * 0.1;
-        canvasCtx.fillStyle = `rgba(104, 141, 177, ${alpha})`;
-        
-        const x = i * barWidth;
-        canvasCtx.fillRect(x, centerY - barHeight/2, barWidth - 1, barHeight);
-    }
-}
-
-function clearCanvas() {
-    canvasCtx.fillStyle = 'rgba(43, 46, 59, 1)'; // Match background
-    canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-}
 
 function startRecognition() {
     console.log('=== startRecognition called ===');
@@ -509,23 +380,35 @@ function startRecognition() {
             userStoppedRecording = false; // Add stop flag for mobile too
             
             recognition = new SpeechRecognition();
-            recognition.lang = 'de-DE';
+            recognition.lang = document.getElementById('language').value || 'de-DE';
             recognition.continuous = false;
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
             
             // Minimal handlers (exact copy of working test)
             recognition.onresult = function(event) {
-                console.log('=== SUCCESS: Result received ===', event);
+                console.log('=== MOBILE SUCCESS: Result received ===', event);
+                console.log('=== Results array length:', event.results.length);
+                console.log('=== First result:', event.results[0]);
+                
                 const result = event.results[0][0].transcript;
+                console.log('=== Extracted text:', result);
+                
                 statusEl.innerHTML = '✅ Erkannt: "' + result + '"';
                 statusEl.className = 'status';
                 
-                // Clear placeholder
-                if (transcriptEl.innerHTML.includes('placeholder')) {
-                    transcriptEl.innerHTML = '';
+                // Simple text insertion for Android stability
+                console.log('=== Current transcript content:', transcriptEl.textContent);
+                
+                // Clear placeholder if present
+                if (transcriptEl.textContent.includes('Hier erscheint dein gesprochener Text')) {
+                    console.log('=== Clearing placeholder');
+                    transcriptEl.textContent = '';
                 }
-                transcriptEl.innerHTML += result + ' ';
+                
+                // Simply append the result
+                transcriptEl.textContent += result + ' ';
+                console.log('=== Text added, new content:', transcriptEl.textContent);
             };
             
             recognition.onerror = function(event) {
@@ -563,6 +446,8 @@ function startRecognition() {
                             // Reset UI state on failure
                             isRecording = false;
                             updateUI();
+                            stopVisualization();
+                            document.querySelector('.spectrum-container').classList.remove('active');
                         }
                     }, 500); // Längere Pause für mobile
                 } else {
@@ -586,8 +471,6 @@ function startRecognition() {
             
             isRecording = true;
             updateUI();
-            startVisualization();
-            document.querySelector('.spectrum-container').classList.add('active');
             
             // Full desktop handlers with animations
             recognition.onresult = function(event) {
@@ -628,8 +511,6 @@ function startRecognition() {
                 
                 isRecording = false;
                 updateUI();
-                stopVisualization();
-                document.querySelector('.spectrum-container').classList.remove('active');
             };
             
             recognition.onstart = function() {
@@ -657,8 +538,6 @@ function startRecognition() {
                 } else {
                     isRecording = false;
                     updateUI();
-                    stopVisualization();
-                    document.querySelector('.spectrum-container').classList.remove('active');
                     
                     if (!userStoppedRecording) {
                         statusEl.innerHTML = '✅ Aufnahme beendet';
@@ -670,7 +549,7 @@ function startRecognition() {
         
         // Start recognition
         if (isMobile) {
-            // Mobile: Ultra-simple start with UI update
+            // Mobile: Ultra-simple start
             isRecording = true;
             updateUI();
             statusEl.innerHTML = '🔄 Starte...';
@@ -679,6 +558,8 @@ function startRecognition() {
             recognition.start();
         } else {
             // Desktop: Full start
+            isRecording = true;
+            updateUI();
             statusEl.innerHTML = '🔄 Starte Spracherkennung...';
             statusEl.className = 'status';
             console.log('Starting speech recognition (desktop mode)');
@@ -715,18 +596,12 @@ function stopRecognition() {
         }
     }
     
-    // Clean up visualization
-    stopVisualization();
-    
     // Update UI immediately
     updateUI();
     
     // Update status
     document.getElementById('status').innerHTML = '⏹️ Aufnahme gestoppt';
     document.getElementById('status').className = 'status';
-    
-    // Hide spectrum container
-    document.querySelector('.spectrum-container').classList.remove('active');
     
     console.log('Stop recognition completed, isRecording:', isRecording);
 }
@@ -741,9 +616,6 @@ function clearTranscript() {
     
     document.getElementById('status').innerHTML = '🗑️ Text gelöscht';
     document.getElementById('status').className = 'status';
-    
-    // Fade out spectrum
-    document.querySelector('.spectrum-container').classList.remove('active');
 }
 
 function copyToClipboard() {
