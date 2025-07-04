@@ -482,11 +482,20 @@ function clearCanvas() {
 
 function startRecognition() {
     console.log('=== startRecognition called ===');
+    
+    // Check HTTPS requirement on mobile
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        document.getElementById('status').innerHTML = '❌ HTTPS erforderlich! Speech Recognition funktioniert auf mobilen Geräten nur über HTTPS.';
+        document.getElementById('status').className = 'status error';
+        return;
+    }
+    
     const statusEl = document.getElementById('status');
     const transcriptEl = document.getElementById('transcript');
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     try {
-        // Check if API exists (exactly like working test)
+        // Check if API exists
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
             statusEl.innerHTML = '❌ Speech Recognition API nicht verfügbar';
@@ -494,56 +503,196 @@ function startRecognition() {
             return;
         }
         
-        // Create minimal instance (exactly like working test)
-        recognition = new SpeechRecognition();
-        recognition.lang = 'de-DE';
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-        
-        // Success handler (exactly like working test)
-        recognition.onresult = function(event) {
-            console.log('=== SUCCESS: Result received ===', event);
-            const result = event.results[0][0].transcript;
-            statusEl.innerHTML = '✅ Erkannt: "' + result + '"';
-            statusEl.className = 'status';
+        // Use simple mode for mobile, full mode for desktop
+        if (isMobile) {
+            // MOBILE: Ultra-simple mode (exact copy of working test)
+            userStoppedRecording = false; // Add stop flag for mobile too
             
-            // Clear placeholder
-            if (transcriptEl.innerHTML.includes('placeholder')) {
-                transcriptEl.innerHTML = '';
-            }
-            transcriptEl.innerHTML += result + ' ';
-        };
+            recognition = new SpeechRecognition();
+            recognition.lang = 'de-DE';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            
+            // Minimal handlers (exact copy of working test)
+            recognition.onresult = function(event) {
+                console.log('=== SUCCESS: Result received ===', event);
+                const result = event.results[0][0].transcript;
+                statusEl.innerHTML = '✅ Erkannt: "' + result + '"';
+                statusEl.className = 'status';
+                
+                // Clear placeholder
+                if (transcriptEl.innerHTML.includes('placeholder')) {
+                    transcriptEl.innerHTML = '';
+                }
+                transcriptEl.innerHTML += result + ' ';
+            };
+            
+            recognition.onerror = function(event) {
+                console.log('=== ERROR ===', event.error, event);
+                statusEl.innerHTML = '❌ Fehler: ' + event.error;
+                statusEl.className = 'status error';
+                // Reset UI state on error
+                isRecording = false;
+                updateUI();
+            };
+            
+            recognition.onstart = function() {
+                console.log('=== Recognition started ===');
+                statusEl.innerHTML = '🎤 Sprich jetzt!';
+                statusEl.className = 'status listening';
+            };
+            
+            recognition.onend = function() {
+                console.log('=== Recognition ended ===');
+                
+                // Auto-restart for continuous listening on mobile (only if not manually stopped)
+                const continuousMode = document.getElementById('continuous').value === 'true';
+                if (continuousMode && !userStoppedRecording) {
+                    console.log('=== Mobile auto-restart ===');
+                    setTimeout(() => {
+                        try {
+                            if (!userStoppedRecording) { // Double-check
+                                statusEl.innerHTML = '🔄 Neustart...';
+                                recognition.start();
+                            }
+                        } catch (e) {
+                            console.error('Mobile auto-restart failed:', e);
+                            statusEl.innerHTML = '✅ Aufnahme beendet';
+                            statusEl.className = 'status';
+                            // Reset UI state on failure
+                            isRecording = false;
+                            updateUI();
+                        }
+                    }, 500); // Längere Pause für mobile
+                } else {
+                    // End recording - update UI
+                    statusEl.innerHTML = '✅ Aufnahme beendet';
+                    statusEl.className = 'status';
+                    isRecording = false;
+                    updateUI();
+                }
+            };
+            
+        } else {
+            // DESKTOP: Full featured mode
+            userStoppedRecording = false;
+            
+            recognition = new SpeechRecognition();
+            recognition.lang = document.getElementById('language').value || 'de-DE';
+            recognition.continuous = document.getElementById('continuous').value === 'true';
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+            
+            isRecording = true;
+            updateUI();
+            startVisualization();
+            document.querySelector('.spectrum-container').classList.add('active');
+            
+            // Full desktop handlers with animations
+            recognition.onresult = function(event) {
+                console.log('Desktop result received:', event);
+                
+                let interimTranscript = '';
+                let finalText = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalText += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                
+                if (finalText) {
+                    finalTranscript += finalText;
+                    updateTranscriptWithAnimation(transcriptEl, finalTranscript, interimTranscript);
+                    statusEl.innerHTML = '🎤 Höre zu... (zum Stoppen klicken Sie "Stoppen")';
+                    statusEl.className = 'status listening';
+                } else if (interimTranscript) {
+                    updateTranscriptWithAnimation(transcriptEl, finalTranscript, interimTranscript);
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Desktop recognition error:', event.error, event);
+                
+                if (event.error === 'aborted' && userStoppedRecording) {
+                    console.log('Recognition aborted by user - this is expected');
+                    return;
+                }
+                
+                statusEl.innerHTML = '❌ Fehler: ' + event.error;
+                statusEl.className = 'status error';
+                
+                isRecording = false;
+                updateUI();
+                stopVisualization();
+                document.querySelector('.spectrum-container').classList.remove('active');
+            };
+            
+            recognition.onstart = function() {
+                console.log('Desktop recognition started successfully');
+                statusEl.innerHTML = '🎤 Höre zu... (zum Stoppen klicken Sie "Stoppen")';
+                statusEl.className = 'status listening';
+            };
+            
+            recognition.onend = function() {
+                console.log('Desktop recognition ended');
+                
+                if (isRecording && !userStoppedRecording && document.getElementById('continuous').value === 'true') {
+                    console.log('Auto-restarting for continuous mode');
+                    setTimeout(() => {
+                        if (isRecording && !userStoppedRecording) {
+                            try {
+                                recognition.start();
+                            } catch (e) {
+                                console.error('Auto-restart failed:', e);
+                                isRecording = false;
+                                updateUI();
+                            }
+                        }
+                    }, 100);
+                } else {
+                    isRecording = false;
+                    updateUI();
+                    stopVisualization();
+                    document.querySelector('.spectrum-container').classList.remove('active');
+                    
+                    if (!userStoppedRecording) {
+                        statusEl.innerHTML = '✅ Aufnahme beendet';
+                        statusEl.className = 'status';
+                    }
+                }
+            };
+        }
         
-        // Error handler (exactly like working test)
-        recognition.onerror = function(event) {
-            console.log('=== ERROR ===', event.error, event);
-            statusEl.innerHTML = '❌ Fehler: ' + event.error;
-            statusEl.className = 'status error';
-        };
-        
-        // Start handler (exactly like working test)
-        recognition.onstart = function() {
-            console.log('=== Recognition started ===');
-            statusEl.innerHTML = '🎤 Teste... Sprich jetzt!';
-            statusEl.className = 'status listening';
-        };
-        
-        // End handler (exactly like working test)
-        recognition.onend = function() {
-            console.log('=== Recognition ended ===');
-        };
-        
-        // Start (exactly like working test)
-        statusEl.innerHTML = '🔄 Starte Test...';
-        statusEl.className = 'status';
-        console.log('=== Calling recognition.start() ===');
-        recognition.start();
+        // Start recognition
+        if (isMobile) {
+            // Mobile: Ultra-simple start with UI update
+            isRecording = true;
+            updateUI();
+            statusEl.innerHTML = '🔄 Starte...';
+            statusEl.className = 'status';
+            console.log('=== Calling recognition.start() ===');
+            recognition.start();
+        } else {
+            // Desktop: Full start
+            statusEl.innerHTML = '🔄 Starte Spracherkennung...';
+            statusEl.className = 'status';
+            console.log('Starting speech recognition (desktop mode)');
+            recognition.start();
+        }
         
     } catch (error) {
-        console.error('=== CATCH ERROR ===', error);
-        statusEl.innerHTML = '❌ Test-Fehler: ' + error.message;
+        console.error('Start recognition error:', error);
+        statusEl.innerHTML = '❌ Fehler beim Starten: ' + error.message;
         statusEl.className = 'status error';
+        
+        // Reset state on error for both mobile and desktop
+        isRecording = false;
+        updateUI();
     }
 }
 
