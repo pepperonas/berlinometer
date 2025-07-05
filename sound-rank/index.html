@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound Rank - Top 200 Genre Tracks</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sound Rank</h1>
+            <p class="subtitle">Die 200 beliebtesten Tracks nach Genre</p>
+        </header>
+
+        <div class="controls">
+            <div class="genre-selector">
+                <label for="genre">Genre auswählen:</label>
+                <select id="genre" class="select">
+                    <option value="italo-disco">Italo Disco</option>
+                    <option value="nu-disco">Nu Disco</option>
+                </select>
+            </div>
+            
+            <div class="ai-selector">
+                <label for="ai-source">KI-Quelle:</label>
+                <select id="ai-source" class="select">
+                    <option value="claude">Claude</option>
+                    <option value="grok">Grok</option>
+                </select>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="search" class="search-input" placeholder="Suche nach Track oder Künstler...">
+            </div>
+        </div>
+
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-value" id="total-tracks">200</div>
+                <div class="stat-label">Tracks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="filtered-tracks">200</div>
+                <div class="stat-label">Gefiltert</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="current-genre">Italo Disco</div>
+                <div class="stat-label">Aktuelles Genre</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="current-ai">Claude</div>
+                <div class="stat-label">KI-Quelle</div>
+            </div>
+        </div>
+
+        <div class="tracks-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Lade Tracks...</p>
+            </div>
+            <div id="tracks-grid" class="tracks-grid"></div>
+        </div>
+
+        <div id="no-results" class="no-results" style="display: none;">
+            <p>Keine Tracks gefunden</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

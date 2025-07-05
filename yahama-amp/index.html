@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yamaha Receiver Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #1a1a1a;
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #fff;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+            flex: 1;
+        }
+
+        .connection-panel {
+            background-color: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid #333;
+        }
+
+        .connection-panel h2 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .input-group label {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .input-group input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.5rem 1rem;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
+        .btn {
+            padding: 0.5rem 1.5rem;
+            background-color: #4a9eff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #3a8eef;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn:disabled {
+            background-color: #444;
+            cursor: not-allowed;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background-color: #2a2a2a;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #666;
+        }
+
+        .status-indicator.connected::before {
+            background-color: #4ade80;
+        }
+
+        .status-indicator.error::before {
+            background-color: #f87171;
+        }
+
+        .control-panel {
+            display: grid;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .control-section {
+            background-color: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .control-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .zone-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .zone-tab {
+            padding: 0.5rem 1.5rem;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .zone-tab.active {
+            background-color: #4a9eff;
+            border-color: #4a9eff;
+            color: #fff;
+        }
+
+        .power-control {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .power-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid #444;
+            background-color: #2a2a2a;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .power-button.on {
+            border-color: #4ade80;
+            background-color: #134e26;
+        }
+
+        .power-button:hover {
+            border-color: #666;
+        }
+
+        .power-button svg {
+            width: 40px;
+            height: 40px;
+            fill: #666;
+            transition: fill 0.3s;
+        }
+
+        .power-button.on svg {
+            fill: #4ade80;
+        }
+
+        .power-status {
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+
+        .volume-control {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .volume-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .volume-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4a9eff;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4a9eff;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .volume-value {
+            min-width: 60px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .volume-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .input-btn {
+            padding: 0.75rem;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .input-btn:hover {
+            border-color: #666;
+            color: #fff;
+        }
+
+        .input-btn.active {
+            background-color: #4a9eff;
+            border-color: #4a9eff;
+            color: #fff;
+        }
+
+        .scene-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .scene-btn {
+            padding: 1rem;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .scene-btn:hover {
+            border-color: #666;
+            color: #fff;
+        }
+
+        .message {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+
+        .message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .message.error {
+            border-color: #f87171;
+            background-color: #450a0a;
+        }
+
+        .message.success {
+            border-color: #4ade80;
+            background-color: #052e16;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 0.5rem;
+            }
+
+            .control-section {
+                padding: 1rem;
+            }
+
+            .input-selection {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Yamaha Receiver Control</h1>
+    </header>
+
+    <div class="container">
+        <div class="connection-panel">
+            <h2>Connection Settings</h2>
+            <div class="input-group">
+                <label for="receiver-ip">Receiver IP:</label>
+                <input type="text" id="receiver-ip" placeholder="192.168.1.100" value="">
+                <button class="btn" id="connect-btn">Connect</button>
+                <span class="status-indicator" id="connection-status">Disconnected</span>
+            </div>
+        </div>
+
+        <div class="zone-tabs">
+            <div class="zone-tab active" data-zone="Main_Zone">Main Zone</div>
+            <div class="zone-tab" data-zone="Zone_2">Zone 2</div>
+        </div>
+
+        <div class="control-panel" id="controls" style="display: none;">
+            <div class="control-section">
+                <h3>Power</h3>
+                <div class="power-control">
+                    <div class="power-button" id="power-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2v10m-6.5-5.5C3.5 8.5 2 11 2 14c0 5.5 4.5 10 10 10s10-4.5 10-10c0-3-1.5-5.5-3.5-7.5"/>
+                        </svg>
+                    </div>
+                    <div class="power-status">
+                        Status: <span id="power-status">Unknown</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Volume</h3>
+                <div class="volume-control">
+                    <div class="volume-slider-container">
+                        <button class="btn btn-icon" id="vol-down">−</button>
+                        <input type="range" class="volume-slider" id="volume-slider" min="-80" max="16" value="-40" step="0.5">
+                        <button class="btn btn-icon" id="vol-up">+</button>
+                        <div class="volume-value" id="volume-value">-40 dB</div>
+                    </div>
+                    <div class="volume-buttons">
+                        <button class="btn" id="mute-btn">Mute</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Input Selection</h3>
+                <div class="input-selection" id="input-selection">
+                    <button class="input-btn" data-input="HDMI1">HDMI 1</button>
+                    <button class="input-btn" data-input="HDMI2">HDMI 2</button>
+                    <button class="input-btn" data-input="HDMI3">HDMI 3</button>
+                    <button class="input-btn" data-input="HDMI4">HDMI 4</button>
+                    <button class="input-btn" data-input="HDMI5">HDMI 5</button>
+                    <button class="input-btn" data-input="AV1">AV 1</button>
+                    <button class="input-btn" data-input="AV2">AV 2</button>
+                    <button class="input-btn" data-input="AV3">AV 3</button>
+                    <button class="input-btn" data-input="AV4">AV 4</button>
+                    <button class="input-btn" data-input="AUDIO1">Audio 1</button>
+                    <button class="input-btn" data-input="AUDIO2">Audio 2</button>
+                    <button class="input-btn" data-input="AirPlay">AirPlay</button>
+                    <button class="input-btn" data-input="SERVER">Server</button>
+                    <button class="input-btn" data-input="NET_RADIO">Net Radio</button>
+                    <button class="input-btn" data-input="USB">USB</button>
+                    <button class="input-btn" data-input="TUNER">Tuner</button>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Scene Selection</h3>
+                <div class="scene-selection">
+                    <button class="scene-btn" data-scene="1">Scene 1</button>
+                    <button class="scene-btn" data-scene="2">Scene 2</button>
+                    <button class="scene-btn" data-scene="3">Scene 3</button>
+                    <button class="scene-btn" data-scene="4">Scene 4</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <script>
+        class YamahaReceiver {
+            constructor() {
+                this.ip = '';
+                this.currentZone = 'Main_Zone';
+                this.connected = false;
+                this.statusInterval = null;
+                this.initializeElements();
+                this.attachEventListeners();
+                this.loadSavedIP();
+            }
+
+            initializeElements() {
+                this.elements = {
+                    ipInput: document.getElementById('receiver-ip'),
+                    connectBtn: document.getElementById('connect-btn'),
+                    connectionStatus: document.getElementById('connection-status'),
+                    controls: document.getElementById('controls'),
+                    powerBtn: document.getElementById('power-btn'),
+                    powerStatus: document.getElementById('power-status'),
+                    volumeSlider: document.getElementById('volume-slider'),
+                    volumeValue: document.getElementById('volume-value'),
+                    volUpBtn: document.getElementById('vol-up'),
+                    volDownBtn: document.getElementById('vol-down'),
+                    muteBtn: document.getElementById('mute-btn'),
+                    message: document.getElementById('message'),
+                    zoneTabs: document.querySelectorAll('.zone-tab'),
+                    inputBtns: document.querySelectorAll('.input-btn'),
+                    sceneBtns: document.querySelectorAll('.scene-btn')
+                };
+            }
+
+            attachEventListeners() {
+                this.elements.connectBtn.addEventListener('click', () => this.connect());
+                this.elements.ipInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.connect();
+                });
+
+                this.elements.powerBtn.addEventListener('click', () => this.togglePower());
+                
+                this.elements.volumeSlider.addEventListener('input', (e) => {
+                    this.updateVolumeDisplay(e.target.value);
+                });
+                
+                this.elements.volumeSlider.addEventListener('change', (e) => {
+                    this.setVolume(e.target.value);
+                });
+
+                this.elements.volUpBtn.addEventListener('click', () => {
+                    const current = parseFloat(this.elements.volumeSlider.value);
+                    const newVal = Math.min(current + 0.5, 16);
+                    this.elements.volumeSlider.value = newVal;
+                    this.setVolume(newVal);
+                });
+
+                this.elements.volDownBtn.addEventListener('click', () => {
+                    const current = parseFloat(this.elements.volumeSlider.value);
+                    const newVal = Math.max(current - 0.5, -80);
+                    this.elements.volumeSlider.value = newVal;
+                    this.setVolume(newVal);
+                });
+
+                this.elements.muteBtn.addEventListener('click', () => this.toggleMute());
+
+                this.elements.zoneTabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => this.switchZone(e.target.dataset.zone));
+                });
+
+                this.elements.inputBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => this.selectInput(e.target.dataset.input));
+                });
+
+                this.elements.sceneBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => this.selectScene(e.target.dataset.scene));
+                });
+            }
+
+            loadSavedIP() {
+                const savedIP = localStorage.getItem('yamaha-receiver-ip');
+                if (savedIP) {
+                    this.elements.ipInput.value = savedIP;
+                }
+            }
+
+            async connect() {
+                const ip = this.elements.ipInput.value.trim();
+                if (!ip) {
+                    this.showMessage('Please enter the receiver IP address', 'error');
+                    return;
+                }
+
+                this.ip = ip;
+                localStorage.setItem('yamaha-receiver-ip', ip);
+                
+                this.elements.connectBtn.disabled = true;
+                this.elements.connectBtn.textContent = 'Connecting...';
+
+                try {
+                    // First, set the receiver IP on the server
+                    await this.setReceiverIP(ip);
+                    
+                    // Then try to get status (this is the connection test)
+                    await this.getStatus(true);
+                    this.connected = true;
+                    this.elements.connectionStatus.textContent = 'Connected';
+                    this.elements.connectionStatus.classList.add('connected');
+                    this.elements.connectionStatus.classList.remove('error');
+                    this.elements.controls.style.display = 'grid';
+                    this.showMessage('Connected successfully', 'success');
+                    
+                    this.startStatusPolling();
+                } catch (error) {
+                    this.connected = false;
+                    this.elements.connectionStatus.textContent = 'Connection Failed';
+                    this.elements.connectionStatus.classList.add('error');
+                    this.elements.connectionStatus.classList.remove('connected');
+                    this.elements.controls.style.display = 'none';
+                    this.showMessage('Failed to connect: ' + error.message, 'error');
+                } finally {
+                    this.elements.connectBtn.disabled = false;
+                    this.elements.connectBtn.textContent = 'Connect';
+                }
+            }
+
+            async setReceiverIP(ip) {
+                const response = await fetch('/api/set-receiver-ip', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ ip })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to set receiver IP');
+                }
+
+                return response.json();
+            }
+
+            async sendCommand(xml, isConnectionAttempt = false) {
+                if (!this.connected && !isConnectionAttempt) {
+                    throw new Error('Not connected to receiver');
+                }
+
+                const url = '/api/receiver/YamahaRemoteControl/ctrl';
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/xml',
+                        },
+                        body: xml
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const text = await response.text();
+                    return this.parseXML(text);
+                } catch (error) {
+                    if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                        throw new Error('Network error - check if server is running');
+                    }
+                    throw error;
+                }
+            }
+
+            parseXML(xmlString) {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+                return xmlDoc;
+            }
+
+            async getStatus(isConnectionAttempt = false) {
+                const xml = `<YAMAHA_AV cmd="GET"><${this.currentZone}><Basic_Status>GetParam</Basic_Status></${this.currentZone}></YAMAHA_AV>`;
+                const response = await this.sendCommand(xml, isConnectionAttempt);
+                
+                const power = response.querySelector('Power')?.textContent;
+                const volume = response.querySelector('Volume Lvl Val')?.textContent;
+                const mute = response.querySelector('Mute')?.textContent;
+                const input = response.querySelector('Input Input_Sel')?.textContent;
+                
+                this.updateUI({ power, volume, mute, input });
+            }
+
+            updateUI({ power, volume, mute, input }) {
+                if (power) {
+                    const isOn = power === 'On';
+                    this.elements.powerBtn.classList.toggle('on', isOn);
+                    this.elements.powerStatus.textContent = isOn ? 'On' : 'Standby';
+                }
+
+                if (volume) {
+                    const vol = parseInt(volume) / 10;
+                    this.elements.volumeSlider.value = vol;
+                    this.updateVolumeDisplay(vol);
+                }
+
+                if (mute) {
+                    this.elements.muteBtn.textContent = mute === 'On' ? 'Unmute' : 'Mute';
+                }
+
+                if (input) {
+                    this.elements.inputBtns.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.input === input);
+                    });
+                }
+            }
+
+            updateVolumeDisplay(value) {
+                this.elements.volumeValue.textContent = `${value} dB`;
+            }
+
+            async togglePower() {
+                const isOn = this.elements.powerBtn.classList.contains('on');
+                const newState = isOn ? 'Standby' : 'On';
+                const xml = `<YAMAHA_AV cmd="PUT"><${this.currentZone}><Power_Control><Power>${newState}</Power></Power_Control></${this.currentZone}></YAMAHA_AV>`;
+                
+                try {
+                    await this.sendCommand(xml);
+                    this.showMessage(`Power ${newState}`, 'success');
+                    setTimeout(() => this.getStatus(), 500);
+                } catch (error) {
+                    this.showMessage('Failed to toggle power: ' + error.message, 'error');
+                }
+            }
+
+            async setVolume(value) {
+                const volValue = Math.round(value * 10);
+                const xml = `<YAMAHA_AV cmd="PUT"><${this.currentZone}><Volume><Lvl><Val>${volValue}</Val><Exp>1</Exp><Unit>dB</Unit></Lvl></Volume></${this.currentZone}></YAMAHA_AV>`;
+                
+                try {
+                    await this.sendCommand(xml);
+                    this.updateVolumeDisplay(value);
+                } catch (error) {
+                    this.showMessage('Failed to set volume: ' + error.message, 'error');
+                }
+            }
+
+            async toggleMute() {
+                const isMuted = this.elements.muteBtn.textContent === 'Unmute';
+                const newState = isMuted ? 'Off' : 'On';
+                const xml = `<YAMAHA_AV cmd="PUT"><${this.currentZone}><Volume><Mute>${newState}</Mute></Volume></${this.currentZone}></YAMAHA_AV>`;
+                
+                try {
+                    await this.sendCommand(xml);
+                    this.elements.muteBtn.textContent = newState === 'On' ? 'Unmute' : 'Mute';
+                    this.showMessage(`Mute ${newState}`, 'success');
+                } catch (error) {
+                    this.showMessage('Failed to toggle mute: ' + error.message, 'error');
+                }
+            }
+
+            async selectInput(input) {
+                const xml = `<YAMAHA_AV cmd="PUT"><${this.currentZone}><Input><Input_Sel>${input}</Input_Sel></Input></${this.currentZone}></YAMAHA_AV>`;
+                
+                try {
+                    await this.sendCommand(xml);
+                    this.showMessage(`Input changed to ${input}`, 'success');
+                    setTimeout(() => this.getStatus(), 500);
+                } catch (error) {
+                    this.showMessage('Failed to change input: ' + error.message, 'error');
+                }
+            }
+
+            async selectScene(scene) {
+                const xml = `<YAMAHA_AV cmd="PUT"><${this.currentZone}><Scene><Scene_Sel>Scene ${scene}</Scene_Sel></Scene></${this.currentZone}></YAMAHA_AV>`;
+                
+                try {
+                    await this.sendCommand(xml);
+                    this.showMessage(`Scene ${scene} activated`, 'success');
+                    setTimeout(() => this.getStatus(), 1000);
+                } catch (error) {
+                    this.showMessage('Failed to select scene: ' + error.message, 'error');
+                }
+            }
+
+            switchZone(zone) {
+                this.currentZone = zone;
+                this.elements.zoneTabs.forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.zone === zone);
+                });
+                
+                if (this.connected) {
+                    this.getStatus();
+                }
+            }
+
+            startStatusPolling() {
+                if (this.statusInterval) {
+                    clearInterval(this.statusInterval);
+                }
+                
+                this.statusInterval = setInterval(() => {
+                    if (this.connected) {
+                        this.getStatus().catch(error => {
+                            console.error('Status polling error:', error);
+                        });
+                    }
+                }, 5000);
+            }
+
+            showMessage(text, type = 'info') {
+                this.elements.message.textContent = text;
+                this.elements.message.className = `message ${type} show`;
+                
+                setTimeout(() => {
+                    this.elements.message.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        const receiver = new YamahaReceiver();
+    </script>
+</body>
+</html>
