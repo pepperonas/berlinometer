@@ -36,7 +36,13 @@ function formatAIName(ai) {
 // Genres und AI-Quellen dynamisch laden
 async function loadGenresAndSources() {
     try {
-        const response = await fetch('get-genres.php');
+        // Versuche zuerst JSON-Datei
+        let response = await fetch('genres.json');
+        if (!response.ok) {
+            // Falls JSON nicht verfügbar, versuche PHP
+            response = await fetch('get-genres.php');
+        }
+        
         if (!response.ok) {
             throw new Error('Konnte Genre-Liste nicht laden');
         }
@@ -64,7 +70,7 @@ async function loadGenresAndSources() {
 // Fallback-Funktion falls PHP nicht verfügbar ist
 async function loadFallbackGenres() {
     // Versuche bekannte Kombinationen zu finden
-    const possibleGenres = ['80s', 'italo-disco', 'nu-disco'];
+    const possibleGenres = ['80s', 'italo-disco', 'nu-disco', 'postmodern-jukebox', 'rock'];
     const possibleAISources = ['claude', 'grok'];
     
     availableGenres = [];
