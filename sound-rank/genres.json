@@ -1,0 +1,4 @@
+{
+  "genres": ["80s", "italo-disco", "nu-disco", "postmodern-jukebox", "rock"],
+  "aiSources": ["claude", "grok"]
+}
