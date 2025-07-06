@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Shot - Kamera Web-App | Fotos direkt im Browser aufnehmen</title>
+    
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="Web-Shot - Kamera Web-App | Fotos direkt im Browser aufnehmen">
+    <meta name="description" content="Kostenlose Kamera-Web-App zum Aufnehmen, Speichern und Herunterladen von Fotos direkt im Browser. Keine Installation erforderlich - funktioniert auf allen Geräten mit Kamera.">
+    <meta name="keywords" content="kamera app, web kamera, foto aufnehmen, browser kamera, online foto, webcam capture, foto tool, kostenlose kamera app">
+    <meta name="author" content="mrx3k1.de">
+    <meta name="language" content="de">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mrx3k1.de/web-shot/">
+    <meta property="og:title" content="Web-Shot - Kamera Web-App | Fotos direkt im Browser aufnehmen">
+    <meta property="og:description" content="Kostenlose Kamera-Web-App zum Aufnehmen von Fotos direkt im Browser. Keine Installation erforderlich.">
+    <meta property="og:image" content="https://mrx3k1.de/web-shot/og-image.jpg?v=1">
+    <meta property="og:image:secure_url" content="https://mrx3k1.de/web-shot/og-image.jpg?v=1">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Web-Shot Kamera App Screenshot">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:site_name" content="mrx3k1.de">
+    
+    <!-- WhatsApp specific -->
+    <meta property="og:image:url" content="https://mrx3k1.de/web-shot/og-image.jpg?v=1">
+    <link rel="image_src" href="https://mrx3k1.de/web-shot/og-image.jpg?v=1">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mrx3k1.de/web-shot/">
+    <meta property="twitter:title" content="Web-Shot - Kamera Web-App">
+    <meta property="twitter:description" content="Fotos direkt im Browser aufnehmen - kostenlos und ohne Installation.">
+    <meta property="twitter:image" content="https://mrx3k1.de/web-shot/twitter-image.jpg">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" href="favicon-32x32.png">
+    
+    <!-- Schema.org for Google -->
+    <meta itemprop="name" content="Web-Shot - Kamera Web-App">
+    <meta itemprop="description" content="Kostenlose Kamera-Web-App zum Aufnehmen von Fotos direkt im Browser">
+    <meta itemprop="image" content="https://mrx3k1.de/web-shot/og-image.jpg">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="theme-color" content="#688db1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="application-name" content="Web-Shot">
+    <meta name="msapplication-TileColor" content="#2B2E3B">
+    <meta name="format-detection" content="telephone=no">
+    <style>
+        :root {
+            --background-dark: #2B2E3B;
+            --background-darker: #252830;
+            --card-background: #343845;
+            --accent-blue: #688db1;
+            --accent-green: #9cb68f;
+            --accent-red: #e16162;
+            --text-primary: #d1d5db;
+            --text-secondary: #9ca3af;
+
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+            --radius-sm: 0.5rem;
+            --radius: 0.75rem;
+            --radius-lg: 1rem;
+            --radius-xl: 1.5rem;
+
+            --spacing-2: 0.5rem;
+            --spacing-4: 1rem;
+            --spacing-6: 1.5rem;
+            --spacing-8: 2rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+            sans-serif;
+            background: var(--background-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--spacing-4);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--spacing-8);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+        }
+
+        .camera-section {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-6);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--spacing-6);
+        }
+
+        .video-container {
+            position: relative;
+            text-align: center;
+            margin-bottom: var(--spacing-6);
+        }
+
+        #video {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            border-radius: var(--radius);
+            background: var(--background-darker);
+        }
+
+        .controls {
+            display: flex;
+            gap: var(--spacing-4);
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: var(--spacing-6);
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a7a9a;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #8ba580;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d14545;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--spacing-4);
+            margin-top: var(--spacing-6);
+        }
+
+        .photo-item {
+            background: var(--card-background);
+            border-radius: var(--radius);
+            padding: var(--spacing-4);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .photo-item .timestamp {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-2);
+        }
+
+        .status {
+            text-align: center;
+            padding: var(--spacing-4);
+            border-radius: var(--radius);
+            margin-bottom: var(--spacing-4);
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: rgba(156, 182, 143, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .status.error {
+            background: rgba(225, 97, 98, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #canvas {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-2);
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📸 Kamera Web-App</h1>
+        <p class="subtitle">Nimm Fotos direkt im Browser auf</p>
+    </div>
+
+    <div id="status" class="status hidden"></div>
+
+    <div class="camera-section">
+        <div class="video-container">
+            <video id="video" autoplay muted playsinline></video>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <button id="startBtn" class="btn btn-primary">🎥 Kamera starten</button>
+            <button id="photoBtn" class="btn btn-secondary hidden" disabled>📷 Foto aufnehmen
+            </button>
+            <button id="stopBtn" class="btn btn-danger hidden">⏹️ Kamera stoppen</button>
+        </div>
+    </div>
+
+    <div id="photosSection" class="hidden">
+        <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">Aufgenommene Fotos</h3>
+        <div id="photosGrid" class="photos-grid"></div>
+    </div>
+</div>
+
+<script>
+    let stream = null;
+    let photos = [];
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const startBtn = document.getElementById('startBtn');
+    const photoBtn = document.getElementById('photoBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const status = document.getElementById('status');
+    const photosSection = document.getElementById('photosSection');
+    const photosGrid = document.getElementById('photosGrid');
+
+    function showStatus(message, type = 'success') {
+        status.textContent = message;
+        status.className = `status ${type}`;
+        status.classList.remove('hidden');
+
+        setTimeout(() => {
+            status.classList.add('hidden');
+        }, 3000);
+    }
+
+    async function startCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    width: {ideal: 1280},
+                    height: {ideal: 720}
+                },
+                audio: false
+            });
+
+            video.srcObject = stream;
+
+            // UI aktualisieren
+            startBtn.classList.add('hidden');
+            photoBtn.classList.remove('hidden');
+            stopBtn.classList.remove('hidden');
+            photoBtn.disabled = false;
+
+            showStatus('Kamera erfolgreich gestartet!');
+
+        } catch (error) {
+            console.error('Fehler beim Zugriff auf Kamera:', error);
+            showStatus('Fehler beim Zugriff auf die Kamera. Berechtigung erteilt?', 'error');
+        }
+    }
+
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+            video.srcObject = null;
+        }
+
+        // UI zurücksetzen
+        startBtn.classList.remove('hidden');
+        photoBtn.classList.add('hidden');
+        stopBtn.classList.add('hidden');
+        photoBtn.disabled = true;
+
+        showStatus('Kamera gestoppt');
+    }
+
+    function takePhoto() {
+        if (!stream) return;
+
+        // Canvas-Größe an Video anpassen
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Video-Frame auf Canvas zeichnen
+        ctx.drawImage(video, 0, 0);
+
+        // Foto als Data URL erstellen
+        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+        // Foto zur Liste hinzufügen
+        const timestamp = new Date().toLocaleString('de-DE');
+        const photo = {
+            id: Date.now(),
+            dataUrl: photoDataUrl,
+            timestamp: timestamp
+        };
+
+        photos.unshift(photo); // Am Anfang hinzufügen
+        updatePhotosGrid();
+
+        showStatus(`Foto aufgenommen! (${photos.length} Fotos gespeichert)`);
+    }
+
+    function updatePhotosGrid() {
+        if (photos.length === 0) {
+            photosSection.classList.add('hidden');
+            return;
+        }
+
+        photosSection.classList.remove('hidden');
+        photosGrid.innerHTML = '';
+
+        photos.forEach(photo => {
+            const photoItem = document.createElement('div');
+            photoItem.className = 'photo-item';
+            photoItem.innerHTML = `
+                    <img src="${photo.dataUrl}" alt="Foto vom ${photo.timestamp}">
+                    <div class="timestamp">${photo.timestamp}</div>
+                    <button class="btn btn-primary" onclick="downloadPhoto('${photo.dataUrl}', '${photo.timestamp}')">
+                        💾 Herunterladen
+                    </button>
+                `;
+            photosGrid.appendChild(photoItem);
+        });
+    }
+
+    function downloadPhoto(dataUrl, timestamp) {
+        const link = document.createElement('a');
+        link.download = `foto_${timestamp.replace(/[\/\s:]/g, '_')}.jpg`;
+        link.href = dataUrl;
+        link.click();
+    }
+
+    // Event Listeners
+    startBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
+    photoBtn.addEventListener('click', takePhoto);
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && !photoBtn.classList.contains('hidden') && !photoBtn.disabled) {
+            e.preventDefault();
+            takePhoto();
+        }
+    });
+</script>
+</body>
+</html>

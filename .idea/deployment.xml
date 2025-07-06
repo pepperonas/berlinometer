@@ -3,7 +3,7 @@
   <component name="PublishConfigData" exclude=".svn;.cvs;.idea;.DS_Store;.git;.hg;*.hprof;*.pyc;node_modules" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
-      <paths name="69.62.121.168">
+      <paths name="mrx3k1">
         <serverdata>
           <mappings>
             <mapping deploy="/var/www/html" local="$PROJECT_DIR$" web="/" />
