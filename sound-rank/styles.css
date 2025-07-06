@@ -263,6 +263,13 @@ h1 {
     line-height: 1.4;
 }
 
+.track-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    align-items: center;
+}
+
 .track-year {
     background-color: rgba(104, 141, 177, 0.2);
     color: var(--accent-blue);
@@ -270,6 +277,70 @@ h1 {
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
     font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-2);
+    align-items: center;
+}
+
+.search-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(104, 141, 177, 0.2);
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.google-link {
+    background-color: rgba(66, 133, 244, 0.2);
+}
+
+.google-link:hover {
+    background-color: #4285f4;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
+}
+
+.google-g {
+    font-family: 'Arial', sans-serif;
+    font-weight: 700;
+    color: #4285f4;
+    font-size: 1.1rem;
+}
+
+.google-link:hover .google-g {
+    color: white;
+}
+
+.spotify-link {
+    background-color: rgba(30, 215, 96, 0.2);
+}
+
+.spotify-link:hover {
+    background-color: #1db954;
+    transform: scale(1.1);
+    box-shadow: 0 4px 8px rgba(30, 215, 96, 0.3);
+}
+
+.spotify-icon {
+    color: #1db954;
+    font-size: 1.3rem;
+}
+
+.spotify-link:hover .spotify-icon {
+    color: white;
+}
+
+.search-link:active {
+    transform: scale(0.95);
 }
 
 .no-results {
@@ -297,12 +368,36 @@ h1 {
     }
     
     .track-card {
-        grid-template-columns: auto 1fr;
+        grid-template-columns: auto 1fr auto;
         gap: var(--spacing-3);
     }
     
+    .track-actions {
+        flex-direction: row;
+        gap: var(--spacing-2);
+    }
+    
     .track-year {
-        display: none;
+        font-size: 0.75rem;
+        padding: var(--spacing-1) var(--spacing-2);
+    }
+    
+    .search-link {
+        width: 28px;
+        height: 28px;
+        font-size: 1rem;
+    }
+    
+    .google-g {
+        font-size: 0.95rem;
+    }
+    
+    .spotify-icon {
+        font-size: 1.1rem;
+    }
+    
+    .action-buttons {
+        gap: var(--spacing-1);
     }
     
     .track-rank {

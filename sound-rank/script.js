@@ -135,7 +135,12 @@ function displayTracks() {
     noResultsDiv.style.display = 'none';
     tracksGrid.style.display = 'grid';
     
-    tracksGrid.innerHTML = filteredTracks.map(track => `
+    tracksGrid.innerHTML = filteredTracks.map(track => {
+        const searchQuery = encodeURIComponent(`${track.artist || ''} ${track.title || ''}`);
+        const googleSearchUrl = `https://www.google.com/search?q=${searchQuery}`;
+        const spotifySearchUrl = `https://open.spotify.com/search/${searchQuery}`;
+        
+        return `
         <div class="track-card">
             <div class="track-rank">#${track.rank || ''}</div>
             <div class="track-info">
@@ -143,9 +148,20 @@ function displayTracks() {
                 <div class="track-artist">${track.artist || 'Unbekannter Künstler'}</div>
                 <div class="track-description">${track.description || ''}</div>
             </div>
-            ${track.year ? `<div class="track-year">${track.year}</div>` : ''}
+            <div class="track-actions">
+                ${track.year ? `<div class="track-year">${track.year}</div>` : ''}
+                <div class="action-buttons">
+                    <a href="${googleSearchUrl}" target="_blank" rel="noopener noreferrer" class="search-link google-link" title="Bei Google suchen: ${track.artist || ''} - ${track.title || ''}">
+                        <span class="google-g">G</span>
+                    </a>
+                    <a href="${spotifySearchUrl}" target="_blank" rel="noopener noreferrer" class="search-link spotify-link" title="In Spotify öffnen: ${track.artist || ''} - ${track.title || ''}">
+                        <span class="spotify-icon">♫</span>
+                    </a>
+                </div>
+            </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Statistiken aktualisieren
