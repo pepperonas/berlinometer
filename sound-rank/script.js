@@ -1,7 +1,9 @@
-let currentGenre = 'italo-disco';
-let currentAI = 'claude';
+let currentGenre = '';
+let currentAI = '';
 let allTracks = [];
 let filteredTracks = [];
+let availableGenres = [];
+let availableAISources = [];
 
 const genreSelect = document.getElementById('genre');
 const aiSelect = document.getElementById('ai-source');
@@ -14,17 +16,100 @@ const filteredTracksEl = document.getElementById('filtered-tracks');
 const currentGenreEl = document.getElementById('current-genre');
 const currentAIEl = document.getElementById('current-ai');
 
-// Genre-Namen für Anzeige
-const genreNames = {
-    'italo-disco': 'Italo Disco',
-    'nu-disco': 'Nu Disco'
-};
+// Funktion zum Konvertieren von Dateinamen zu Display-Namen
+function formatGenreName(genre) {
+    // Spezialfall für '80s'
+    if (genre === '80s') return '80s';
+    
+    // Konvertiere 'italo-disco' zu 'Italo Disco'
+    return genre
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+}
 
-// AI-Namen für Anzeige
-const aiNames = {
-    'claude': 'Claude',
-    'grok': 'Grok'
-};
+// Funktion zum Formatieren von AI-Namen
+function formatAIName(ai) {
+    return ai.charAt(0).toUpperCase() + ai.slice(1).toLowerCase();
+}
+
+// Genres und AI-Quellen dynamisch laden
+async function loadGenresAndSources() {
+    try {
+        const response = await fetch('get-genres.php');
+        if (!response.ok) {
+            throw new Error('Konnte Genre-Liste nicht laden');
+        }
+        
+        const data = await response.json();
+        availableGenres = data.genres;
+        availableAISources = data.aiSources;
+        
+        // Dropdowns füllen
+        populateDropdowns();
+        
+        // Erste Option als Standard setzen
+        if (availableGenres.length > 0 && availableAISources.length > 0) {
+            currentGenre = availableGenres[0];
+            currentAI = availableAISources[0];
+            loadTracks(currentGenre, currentAI);
+        }
+    } catch (error) {
+        console.error('Fehler beim Laden der Genres:', error);
+        // Fallback: Versuche bekannte Genres zu laden
+        loadFallbackGenres();
+    }
+}
+
+// Fallback-Funktion falls PHP nicht verfügbar ist
+async function loadFallbackGenres() {
+    // Versuche bekannte Kombinationen zu finden
+    const possibleGenres = ['80s', 'italo-disco', 'nu-disco'];
+    const possibleAISources = ['claude', 'grok'];
+    
+    availableGenres = [];
+    availableAISources = [];
+    
+    // Teste welche Dateien existieren
+    for (const genre of possibleGenres) {
+        for (const ai of possibleAISources) {
+            try {
+                const response = await fetch(`data/${genre}_${ai}.csv`);
+                if (response.ok) {
+                    if (!availableGenres.includes(genre)) {
+                        availableGenres.push(genre);
+                    }
+                    if (!availableAISources.includes(ai)) {
+                        availableAISources.push(ai);
+                    }
+                }
+            } catch (e) {
+                // Ignoriere Fehler
+            }
+        }
+    }
+    
+    populateDropdowns();
+    
+    if (availableGenres.length > 0 && availableAISources.length > 0) {
+        currentGenre = availableGenres[0];
+        currentAI = availableAISources[0];
+        loadTracks(currentGenre, currentAI);
+    }
+}
+
+// Dropdowns mit verfügbaren Optionen füllen
+function populateDropdowns() {
+    // Genre-Dropdown
+    genreSelect.innerHTML = availableGenres
+        .map(genre => `<option value="${genre}">${formatGenreName(genre)}</option>`)
+        .join('');
+    
+    // AI-Dropdown
+    aiSelect.innerHTML = availableAISources
+        .map(ai => `<option value="${ai}">${formatAIName(ai)}</option>`)
+        .join('');
+}
 
 // CSV Parser für das neue Format (Artist,Title,Year,Description)
 function parseCSV(text) {
@@ -84,7 +169,8 @@ async function loadTracks(genre, ai) {
     noResultsDiv.style.display = 'none';
     
     try {
-        const response = await fetch(`data/${genre}-${ai}.csv`);
+        // Verwende Unterstrich statt Bindestrich im Dateinamen
+        const response = await fetch(`data/${genre}_${ai}.csv`);
         if (!response.ok) {
             throw new Error('CSV-Datei nicht gefunden');
         }
@@ -168,8 +254,8 @@ function displayTracks() {
 function updateStats() {
     totalTracksEl.textContent = allTracks.length;
     filteredTracksEl.textContent = filteredTracks.length;
-    currentGenreEl.textContent = genreNames[currentGenre];
-    currentAIEl.textContent = aiNames[currentAI];
+    currentGenreEl.textContent = formatGenreName(currentGenre);
+    currentAIEl.textContent = formatAIName(currentAI);
 }
 
 // Event Listeners
@@ -186,4 +272,4 @@ aiSelect.addEventListener('change', (e) => {
 searchInput.addEventListener('input', filterTracks);
 
 // Initial laden
-loadTracks(currentGenre, currentAI);
+loadGenresAndSources();
