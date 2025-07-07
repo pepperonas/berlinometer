@@ -239,56 +239,79 @@
             resultsDiv.style.display = 'none';
             resultsDiv.innerHTML = '';
             
-            // Simuliere Checks
-            setTimeout(() => {
-                const results = [];
+            const results = [];
+            
+            // Syntax-Check
+            const syntaxValid = validateEmailSyntax(email);
+            results.push({
+                title: 'Syntax-Validierung',
+                desc: syntaxValid ? 'E-Mail-Format ist korrekt' : 'Ungültiges E-Mail-Format',
+                status: syntaxValid ? 'valid' : 'invalid'
+            });
+            
+            if (syntaxValid) {
+                const domain = extractDomain(email);
                 
-                // Syntax-Check
-                const syntaxValid = validateEmailSyntax(email);
+                // Domain-Check
+                const commonDomains = ['gmail.com', 'outlook.com', 'yahoo.com', 'web.de', 'gmx.de', 't-online.de'];
+                const isCommonDomain = commonDomains.includes(domain.toLowerCase());
+                
                 results.push({
-                    title: 'Syntax-Validierung',
-                    desc: syntaxValid ? 'E-Mail-Format ist korrekt' : 'Ungültiges E-Mail-Format',
-                    status: syntaxValid ? 'valid' : 'invalid'
+                    title: 'Domain-Prüfung',
+                    desc: isCommonDomain ? `${domain} ist ein bekannter E-Mail-Provider` : `${domain} wird geprüft...`,
+                    status: isCommonDomain ? 'valid' : 'warning'
                 });
                 
-                if (syntaxValid) {
-                    const domain = extractDomain(email);
-                    
-                    // Domain-Check (simuliert)
-                    const commonDomains = ['gmail.com', 'outlook.com', 'yahoo.com', 'web.de', 'gmx.de', 't-online.de'];
-                    const isCommonDomain = commonDomains.includes(domain.toLowerCase());
-                    
-                    results.push({
-                        title: 'Domain-Prüfung',
-                        desc: isCommonDomain ? `${domain} ist ein bekannter E-Mail-Provider` : `${domain} - Status unbekannt`,
-                        status: isCommonDomain ? 'valid' : 'warning'
+                // MX-Record Check via API
+                try {
+                    const response = await fetch('http://localhost:5076/api/validate-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email })
                     });
                     
-                    // MX-Record Check (simuliert)
+                    const data = await response.json();
+                    
+                    if (data.hasMxRecords) {
+                        results.push({
+                            title: 'Mail-Server (MX-Records)',
+                            desc: `${data.mxRecords.length} Mail-Server gefunden (${data.mxRecords[0].exchange})`,
+                            status: 'valid'
+                        });
+                    } else {
+                        results.push({
+                            title: 'Mail-Server (MX-Records)',
+                            desc: data.error || 'Keine Mail-Server gefunden',
+                            status: 'invalid'
+                        });
+                    }
+                } catch (error) {
                     results.push({
                         title: 'Mail-Server (MX-Records)',
-                        desc: 'Prüfung würde Server-seitige API erfordern',
+                        desc: 'Server nicht erreichbar - Starte den Server mit: cd server && npm start',
                         status: 'warning'
                     });
                 }
-                
-                // Ergebnisse anzeigen
-                resultsDiv.innerHTML = results.map(result => `
-                    <div class="result-item">
-                        <div class="status-icon status-${result.status}">
-                            ${getStatusIcon(result.status)}
-                        </div>
-                        <div class="result-text">
-                            <div class="result-title">${result.title}</div>
-                            <div class="result-desc">${result.desc}</div>
-                        </div>
+            }
+            
+            // Ergebnisse anzeigen
+            resultsDiv.innerHTML = results.map(result => `
+                <div class="result-item">
+                    <div class="status-icon status-${result.status}">
+                        ${getStatusIcon(result.status)}
                     </div>
-                `).join('');
-                
-                resultsDiv.style.display = 'block';
-                button.disabled = false;
-                button.textContent = 'E-Mail prüfen';
-            }, 1000);
+                    <div class="result-text">
+                        <div class="result-title">${result.title}</div>
+                        <div class="result-desc">${result.desc}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            resultsDiv.style.display = 'block';
+            button.disabled = false;
+            button.textContent = 'E-Mail prüfen';
         }
         
         function getStatusIcon(status) {

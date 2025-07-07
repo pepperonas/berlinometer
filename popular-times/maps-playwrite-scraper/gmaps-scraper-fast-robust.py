@@ -795,6 +795,45 @@ async def process_locations(locations):
 
     total_retries = sum(r.get('statistics', {}).get('retries_needed', 0) for r in results)
 
+    # Sortiere Ergebnisse nach Auslastung - gleiche Logik wie Frontend
+    def extract_occupancy_percentage(occupancy_text):
+        """Extrahiert Prozentangabe aus Auslastungstext"""
+        if not occupancy_text:
+            return -1
+        
+        # Suche nach Prozentangaben
+        matches = re.findall(r'(\d+)\s*%', occupancy_text)
+        if matches:
+            return int(matches[0])
+        
+        return -1
+
+    def sort_results_by_occupancy(results):
+        """Sortiert Ergebnisse nach Auslastung - Live-Daten zuerst, dann nach Prozent"""
+        def sort_key(result):
+            occupancy = extract_occupancy_percentage(result.get('live_occupancy', ''))
+            is_live = result.get('is_live_data', False)
+            
+            # Live-Daten haben höchste Priorität (negative Werte für absteigende Sortierung)
+            if is_live:
+                priority = 0
+            else:
+                priority = 1
+            
+            # Locations ohne Daten ans Ende
+            if occupancy == -1:
+                occupancy_sort = -1000
+            else:
+                occupancy_sort = occupancy
+            
+            # Tuple für Sortierung: (Priorität, -Auslastung für absteigend)
+            return (priority, -occupancy_sort)
+        
+        return sorted(results, key=sort_key)
+
+    # Sortiere die Ergebnisse vor dem Export
+    sorted_results = sort_results_by_occupancy(results)
+    
     # Erstelle finales JSON mit korrigierten Statistiken
     final_data = {
         'metadata': {
@@ -815,7 +854,7 @@ async def process_locations(locations):
             'batch_size': 3,
             'max_concurrent_batches': 2
         },
-        'locations': results
+        'locations': sorted_results
     }
 
     # Ergebnisse in JSON speichern

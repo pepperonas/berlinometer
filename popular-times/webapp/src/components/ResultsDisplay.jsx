@@ -182,8 +182,47 @@ function ResultsDisplay({ results }) {
     }
   }
 
+  // Hilfsfunktion für Sortierung - gleiche Logik wie in App.jsx
+  const extractOccupancyPercentage = (occupancyText) => {
+    if (!occupancyText) return -1
+    
+    const matches = occupancyText.match(/(\d+)\s*%/g)
+    if (matches && matches.length > 0) {
+      return parseInt(matches[0].replace('%', '').trim())
+    }
+    
+    return -1
+  }
+
+  const sortResultsByOccupancy = (results) => {
+    return [...results].sort((a, b) => {
+      const occupancyA = extractOccupancyPercentage(a.live_occupancy)
+      const occupancyB = extractOccupancyPercentage(b.live_occupancy)
+      const isLiveA = a.is_live_data === true
+      const isLiveB = b.is_live_data === true
+      
+      // Live-Daten haben höchste Priorität
+      if (isLiveA && !isLiveB) return -1
+      if (!isLiveA && isLiveB) return 1
+      
+      // Wenn beide live oder beide nicht live sind
+      if (isLiveA === isLiveB) {
+        // Locations ohne Daten ans Ende
+        if (occupancyA === -1 && occupancyB === -1) return 0
+        if (occupancyA === -1) return 1
+        if (occupancyB === -1) return -1
+        
+        // Höhere Auslastung zuerst
+        return occupancyB - occupancyA
+      }
+      
+      return 0
+    })
+  }
+
   const exportToJson = () => {
-    const dataStr = JSON.stringify(results, null, 2)
+    const sortedResults = sortResultsByOccupancy(results)
+    const dataStr = JSON.stringify(sortedResults, null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })
     const url = URL.createObjectURL(dataBlob)
     const link = document.createElement('a')
@@ -194,10 +233,11 @@ function ResultsDisplay({ results }) {
   }
 
   const exportToCsv = () => {
+    const sortedResults = sortResultsByOccupancy(results)
     const headers = ['Location Name', 'Address', 'Rating', 'Live Occupancy', 'Is Live', 'URL', 'Timestamp']
     const csvContent = [
       headers.join(','),
-      ...results.map(result => [
+      ...sortedResults.map(result => [
         `"${(result.location_name || '').replace(/"/g, '""')}"`,
         `"${(result.address || '').replace(/"/g, '""')}"`,
         result.rating || '',
@@ -453,18 +493,19 @@ function ResultsDisplay({ results }) {
 
   const exportToHtml = async () => {
     try {
+      const sortedResults = sortResultsByOccupancy(results)
       // Erstelle Datenstruktur im erwarteten Format
       const reportData = {
         metadata: {
           scraping_timestamp: new Date().toISOString(),
-          total_locations: results.length,
-          success_rate_percent: Math.round((results.filter(r => !r.error).length / results.length) * 100),
+          total_locations: sortedResults.length,
+          success_rate_percent: Math.round((sortedResults.filter(r => !r.error).length / sortedResults.length) * 100),
           total_execution_time_seconds: 'N/A',
           average_processing_time_seconds: 'N/A',
           locations_per_minute: 'N/A',
           total_retries_needed: 0
         },
-        locations: results.map(result => ({
+        locations: sortedResults.map(result => ({
           location_name: result.location_name || 'Unbekannte Location',
           live_occupancy: result.live_occupancy || '',
           is_live_data: result.is_live_data || false,
