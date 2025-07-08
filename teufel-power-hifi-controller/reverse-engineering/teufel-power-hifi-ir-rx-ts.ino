@@ -2,7 +2,7 @@
  * Teufel Power HiFi IR Sender + Empfänger Test
  * 
  * Hardware:
- * - IR LED an Pin 3 (mit 100 Ohm Widerstand)
+ * - IR LED an Pin 3 (ohne Widerstand)
  * - VS1838B IR-Empfänger an Pin 2
  * 
  * Testet ob gesendete Signale korrekt empfangen werden
@@ -313,7 +313,7 @@ void loop() {
  * === VERKABELUNG ===
  * 
  * IR-LED Sender (Pin 3):
- * Pin 3 ──[100Ω]──┬── IR-LED Anode (+)
+ * Pin 3 ──┬── IR-LED Anode (+)
  *                 │
  *                GND ── IR-LED Kathode (-)
  * 

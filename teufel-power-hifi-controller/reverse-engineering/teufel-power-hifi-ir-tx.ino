@@ -3,7 +3,7 @@
  * 
  * Hardware:
  * - Arduino Uno/Nano
- * - IR LED an Pin 3 (mit 100 Ohm Widerstand)
+ * - IR LED an Pin 3 (ohne Widerstand)
  * - Optional: Transistor für mehr Reichweite
  * 
  * Protokoll: NEC
@@ -232,7 +232,7 @@ void setFlatEQ() {
  *                 |
  *                 R1 (10k)
  *                 |
- * Pin 3 ---R2(100)---+--- Base (2N2222)
+ * Pin 3 ---+--- Base (2N2222)
  *                         |
  *                         Emitter
  *                         |

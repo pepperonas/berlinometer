@@ -16,7 +16,7 @@ besteht aus drei Komponenten:
 - Arduino Uno oder Nano
 - VS1838B IR-Empfänger
 - IR-LED (940nm)
-- 100Ω Widerstand
+- Optional: 100Ω Widerstand (nicht erforderlich)
 - Optional: 2N2222 Transistor für mehr Reichweite
 
 ## 📐 Schaltung
@@ -34,7 +34,7 @@ VCC (Pin 3)  →   5V
 ### IR-Sender (LED)
 
 ```
-Arduino Pin 3 ──[100Ω]──┬── IR-LED Anode (+)
+Arduino Pin 3 ──┬── IR-LED Anode (+)
                         │
                        GND ── IR-LED Kathode (-)
 ```
@@ -46,7 +46,7 @@ Arduino Pin 3 ──[100Ω]──┬── IR-LED Anode (+)
                 │
                [10kΩ]
                 │
-Pin 3 ──[100Ω]──┤ 2N2222
+Pin 3 ──┤ 2N2222
                 │E
                GND
                 
@@ -143,7 +143,7 @@ Modi:
 - Abstand verringern (10-20cm)
 - LED-Polung prüfen (langes Bein = +)
 - Transistor-Verstärker verwenden
-- Widerstand weglassen (nur kurz testen!)
+- Widerstand ist optional und kann weggelassen werden
 
 ### Keine IR-Codes empfangen
 
