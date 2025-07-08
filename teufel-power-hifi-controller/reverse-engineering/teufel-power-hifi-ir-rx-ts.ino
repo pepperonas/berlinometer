@@ -70,7 +70,7 @@ void setup() {
   Serial.println("A - Alle Codes automatisch testen");
   Serial.println();
   Serial.println("Sende-Befehle:");
-  Serial.println("p=Power, m=Mute, l=bLuetooth");
+  Serial.println("p=Power, m=Mute, l=Bluetooth");
   Serial.println("+/-=Volume, a/d=Links/Rechts");
   Serial.println("B/b=Bass, M/n=Mid, T/y=Treble");
   Serial.println("1=AUX, 2=Line, 3=Optical, 4=USB");

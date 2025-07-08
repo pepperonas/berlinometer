@@ -56,7 +56,7 @@ void setup() {
   Serial.println("Befehle:");
   Serial.println("p - Power ON/OFF");
   Serial.println("m - Mute");
-  Serial.println("l - bLuetooth");
+  Serial.println("l - Bluetooth");
   Serial.println("+ - Lautstärke +");
   Serial.println("- - Lautstärke -");
   Serial.println("← - Links (a)");
@@ -159,7 +159,7 @@ void loop() {
       case 'h':
       case '?':
         Serial.println("\n=== Hilfe ===");
-        Serial.println("p=Power, m=Mute, l=bLuetooth");
+        Serial.println("p=Power, m=Mute, l=Bluetooth");
         Serial.println("+/-=Volume, a/d=Links/Rechts");
         Serial.println("B/b=Bass+/-, M/n=Mid+/-, T/t=Treble+/-");
         Serial.println("1=AUX, 2=Line, 3=Opt, 4=USB");
