@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspberry Pi GPIO Pin-Layout</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1b21;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #2C2E3B;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffffff;
+            font-weight: 300;
+            font-size: 2rem;
+        }
+
+        .gpio-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .pin-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .pin-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        .pin-row:hover {
+            background-color: #3a3c4a;
+            transform: translateX(5px);
+        }
+
+        .pin-row.active {
+            background-color: #4a4c5a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .pin-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .pin-number.odd {
+            background-color: #f57c00;
+            color: #2C2E3B;
+        }
+
+        .pin-number.even {
+            background-color: #388e3c;
+            color: #ffffff;
+        }
+
+        .pin-label {
+            flex-grow: 1;
+            font-size: 0.95rem;
+            color: #e0e0e0;
+        }
+
+        .pin-row.power .pin-label {
+            color: #ffab40;
+            font-weight: 500;
+        }
+
+        .pin-row.ground .pin-label {
+            color: #90a4ae;
+            font-weight: 500;
+        }
+
+        .pin-row.i2c .pin-label {
+            color: #64b5f6;
+            font-weight: 500;
+        }
+
+        .pin-row.spi .pin-label {
+            color: #ba68c8;
+            font-weight: 500;
+        }
+
+        .pin-row.uart .pin-label {
+            color: #4db6ac;
+            font-weight: 500;
+        }
+
+        .legend {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #1f2029;
+            border-radius: 12px;
+        }
+
+        .legend h3 {
+            margin-bottom: 15px;
+            color: #ffffff;
+            font-weight: 300;
+        }
+
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .tooltip {
+            position: fixed;
+            background-color: #1a1b21;
+            color: #e0e0e0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .gpio-container {
+                gap: 20px;
+            }
+            
+            .pin-row {
+                min-width: 150px;
+                padding: 6px 10px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Raspberry Pi GPIO Pinout</h1>
+        
+        <div class="gpio-container">
+            <div class="pin-column" id="odd-pins"></div>
+            <div class="pin-column" id="even-pins"></div>
+        </div>
+        
+        <div class="legend">
+            <h3>Legende</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ffab40;"></div>
+                    <span>Power (3.3V / 5V)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #90a4ae;"></div>
+                    <span>Ground (GND)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #64b5f6;"></div>
+                    <span>I²C</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ba68c8;"></div>
+                    <span>SPI</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4db6ac;"></div>
+                    <span>UART</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #e0e0e0;"></div>
+                    <span>GPIO</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        const pins = [
+            { pin: 1, label: "+ 3.3 V", type: "power" },
+            { pin: 2, label: "+ 5 V", type: "power" },
+            { pin: 3, label: "(SDA) GPIO 2", type: "i2c" },
+            { pin: 4, label: "+ 5 V", type: "power" },
+            { pin: 5, label: "(SCL) GPIO 3", type: "i2c" },
+            { pin: 6, label: "GND", type: "ground" },
+            { pin: 7, label: "(GPCLK0) GPIO 4", type: "gpio" },
+            { pin: 8, label: "GPIO 14 (TXD)", type: "uart" },
+            { pin: 9, label: "GND", type: "ground" },
+            { pin: 10, label: "GPIO 15 (RXD)", type: "uart" },
+            { pin: 11, label: "GPIO 17", type: "gpio" },
+            { pin: 12, label: "GPIO 18", type: "gpio" },
+            { pin: 13, label: "GPIO 27", type: "gpio" },
+            { pin: 14, label: "GND", type: "ground" },
+            { pin: 15, label: "GPIO 22", type: "gpio" },
+            { pin: 16, label: "GPIO 23", type: "gpio" },
+            { pin: 17, label: "+ 3.3 V", type: "power" },
+            { pin: 18, label: "GPIO 24", type: "gpio" },
+            { pin: 19, label: "(MOSI) GPIO 10", type: "spi" },
+            { pin: 20, label: "GND", type: "ground" },
+            { pin: 21, label: "(MISO) GPIO 9", type: "spi" },
+            { pin: 22, label: "GPIO 25", type: "gpio" },
+            { pin: 23, label: "(SCLK) GPIO 11", type: "spi" },
+            { pin: 24, label: "GPIO 8 (CE0)", type: "spi" },
+            { pin: 25, label: "GND", type: "ground" },
+            { pin: 26, label: "GPIO 7 (CE1)", type: "spi" },
+            { pin: 27, label: "ID_SD", type: "gpio" },
+            { pin: 28, label: "ID_SC", type: "gpio" },
+            { pin: 29, label: "GPIO 5", type: "gpio" },
+            { pin: 30, label: "GND", type: "ground" },
+            { pin: 31, label: "GPIO 6", type: "gpio" },
+            { pin: 32, label: "GPIO 12", type: "gpio" },
+            { pin: 33, label: "GPIO 13", type: "gpio" },
+            { pin: 34, label: "GND", type: "ground" },
+            { pin: 35, label: "GPIO 19", type: "gpio" },
+            { pin: 36, label: "GPIO 16", type: "gpio" },
+            { pin: 37, label: "GPIO 26", type: "gpio" },
+            { pin: 38, label: "GPIO 20", type: "gpio" },
+            { pin: 39, label: "GND", type: "ground" },
+            { pin: 40, label: "GPIO 21", type: "gpio" }
+        ];
+
+        const tooltip = document.getElementById('tooltip');
+        const oddPinsContainer = document.getElementById('odd-pins');
+        const evenPinsContainer = document.getElementById('even-pins');
+
+        function createPinElement(pinData) {
+            const pinRow = document.createElement('div');
+            pinRow.className = `pin-row ${pinData.type}`;
+            pinRow.dataset.pin = pinData.pin;
+            
+            const pinNumber = document.createElement('div');
+            pinNumber.className = `pin-number ${pinData.pin % 2 === 0 ? 'even' : 'odd'}`;
+            pinNumber.textContent = pinData.pin;
+            
+            const pinLabel = document.createElement('div');
+            pinLabel.className = 'pin-label';
+            pinLabel.textContent = pinData.label;
+            
+            if (pinData.pin % 2 === 0) {
+                pinRow.appendChild(pinLabel);
+                pinRow.appendChild(pinNumber);
+            } else {
+                pinRow.appendChild(pinNumber);
+                pinRow.appendChild(pinLabel);
+            }
+            
+            pinRow.addEventListener('mouseenter', (e) => {
+                showTooltip(e, pinData);
+                pinRow.classList.add('active');
+            });
+            
+            pinRow.addEventListener('mouseleave', () => {
+                hideTooltip();
+                pinRow.classList.remove('active');
+            });
+            
+            pinRow.addEventListener('click', () => {
+                console.log(`Pin ${pinData.pin} clicked:`, pinData);
+            });
+            
+            return pinRow;
+        }
+
+        function showTooltip(event, pinData) {
+            const typeDescriptions = {
+                power: 'Stromversorgung',
+                ground: 'Masse (0V)',
+                i2c: 'I²C Kommunikation',
+                spi: 'SPI Kommunikation',
+                uart: 'UART Seriell',
+                gpio: 'Allgemeiner GPIO'
+            };
+            
+            tooltip.innerHTML = `
+                <strong>Pin ${pinData.pin}</strong><br>
+                ${pinData.label}<br>
+                <small>${typeDescriptions[pinData.type]}</small>
+            `;
+            
+            tooltip.style.left = event.pageX + 10 + 'px';
+            tooltip.style.top = event.pageY - 30 + 'px';
+            tooltip.classList.add('visible');
+        }
+
+        function hideTooltip() {
+            tooltip.classList.remove('visible');
+        }
+
+        // Pins rendern
+        pins.forEach(pinData => {
+            const pinElement = createPinElement(pinData);
+            if (pinData.pin % 2 === 0) {
+                evenPinsContainer.appendChild(pinElement);
+            } else {
+                oddPinsContainer.appendChild(pinElement);
+            }
+        });
+
+        // Tooltip-Position bei Mausbewegung aktualisieren
+        document.addEventListener('mousemove', (e) => {
+            if (tooltip.classList.contains('visible')) {
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top = e.pageY - 30 + 'px';
+            }
+        });
+    </script>
+</body>
+</html>
