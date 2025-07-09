@@ -15,9 +15,6 @@ This document lists all ports used by applications in this project.
 | 4996 | Hidden Content Server | hidden-content | `hidden-content/server.js` |
 | 5000 | Energy Tracking | glitter-hue | `glitter-hue/server/server.js` |
 | 5000 | Challenge Platform | endeavour | `endeavour/backend/server.js` |
-| 5000 | Philips Hue Controller | philips-hue-controller | Raspberry Pi service |
-| 5001 | Yamaha RX-V577 Controller | yamaha-rxv-577-controller | Raspberry Pi service |
-| 5002 | Teufel Power HiFi Controller | teufel-power-hifi-controller | Raspberry Pi service |
 | 5005 | Secure Marketplace | secure-marketplace | `secure-marketplace/backend/server.js` |
 | 5007 | Tech Documentation | techdocs | `techdocs/server/server.js` |
 | 5009 | File Sharing | xchange | `xchange/server.js` |
@@ -50,7 +47,7 @@ This document lists all ports used by applications in this project.
 
 ⚠️ **Note:** The following ports are used by multiple services:
 - **4996**: Used by both secret-content and hidden-content servers
-- **5000**: Used by glitter-hue, endeavour, and philips-hue-controller (Raspberry Pi) services
+- **5000**: Used by both glitter-hue and endeavour applications  
 - **5012**: Used by both mpsec security app and iconif-ai server
 
 ## Environment Variables
