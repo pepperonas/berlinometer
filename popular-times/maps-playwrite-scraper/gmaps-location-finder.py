@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
 import asyncio
+from playwright.async_api import async_playwright
+import re
 import json
 import os
-import re
-import time
-import urllib.parse
 from datetime import datetime
-from playwright.async_api import async_playwright
+import time
 from typing import List, Dict, Optional
-
+import urllib.parse
 
 class BarFinder:
     def __init__(self):
@@ -25,8 +24,7 @@ class BarFinder:
         async with async_playwright() as p:
             browser = await p.chromium.launch(
                 headless=False,  # Debug: Browser sichtbar machen
-                args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu',
-                      '--disable-extensions']
+                args=['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu', '--disable-extensions']
             )
             context = await browser.new_context(
                 viewport={'width': 1920, 'height': 1080},
@@ -45,8 +43,7 @@ class BarFinder:
                 # Füge Parameter hinzu um nur aktuell geöffnete Orte anzuzeigen
                 maps_url = f"https://www.google.com/maps/search/{urllib.parse.quote(search_query)}?authuser=0&hl=de&entry=ttu&g_ep=CAI%3D&g_st=ic"
 
-                print(
-                    f"🔍 Suche nach Bars, Clubs, Kneipen und Biergärten in der Nähe von: {address}")
+                print(f"🔍 Suche nach Bars, Clubs, Kneipen und Biergärten in der Nähe von: {address}")
                 print(f"🔗 URL: {maps_url}")
 
                 await page.goto(maps_url, wait_until='domcontentloaded', timeout=30000)
@@ -176,7 +173,7 @@ class BarFinder:
             # Begrenze auf die ersten 20 Ergebnisse für Performance
             for i, result in enumerate(results[:20]):
                 try:
-                    print(f"🔍 Verarbeite Ergebnis {i + 1}...")
+                    print(f"🔍 Verarbeite Ergebnis {i+1}...")
                     bar_info = await self._extract_single_bar_info(result, page, i)
                     if bar_info:
                         print(f"📍 Gefunden: {bar_info['name']}")
@@ -186,7 +183,7 @@ class BarFinder:
                         else:
                             print(f"❌ Nicht als Location erkannt: {bar_info['name']}")
                     else:
-                        print(f"❌ Keine Daten aus Ergebnis {i + 1} extrahiert")
+                        print(f"❌ Keine Daten aus Ergebnis {i+1} extrahiert")
                 except Exception as e:
                     print(f"⚠️ Fehler bei Ergebnis {i}: {e}")
                     continue
@@ -321,8 +318,7 @@ class BarFinder:
         is_special = any(location in name for location in special_locations)
 
         # Debug-Ausgabe
-        print(
-            f"    🔍 Name: '{name}' | Bar/Club-Keyword: {has_bar_keyword} | Spezial: {is_special} | Ausgeschlossen: {has_exclude_keyword}")
+        print(f"    🔍 Name: '{name}' | Bar/Club-Keyword: {has_bar_keyword} | Spezial: {is_special} | Ausgeschlossen: {has_exclude_keyword}")
 
         # Erweiterte Logik: Bar-Keywords ODER bekannte Locations
         return (has_bar_keyword or is_special) and not has_exclude_keyword
@@ -335,7 +331,7 @@ class BarFinder:
 
         for i, bar in enumerate(bars):
             try:
-                print(f"[{i + 1}/{len(bars)}] Prüfe: {bar['name']}")
+                print(f"[{i+1}/{len(bars)}] Prüfe: {bar['name']}")
 
                 # Gehe zur Detailseite der Bar
                 await page.goto(bar['url'], wait_until='domcontentloaded', timeout=15000)
@@ -430,9 +426,7 @@ class BarFinder:
             for indicator in closed_indicators:
                 if indicator in content_lower:
                     # Prüfe ob es nicht Teil von "öffnet um X" ist
-                    context = content_lower[
-                              max(0, content_lower.index(indicator) - 50):content_lower.index(
-                                  indicator) + 50]
+                    context = content_lower[max(0, content_lower.index(indicator)-50):content_lower.index(indicator)+50]
                     if not any(open_ind in context for open_ind in open_indicators):
                         return False
 
@@ -462,7 +456,6 @@ class BarFinder:
             print(f"⚠️ Fehler beim Prüfen der Öffnungszeiten: {e}")
             return None
 
-
 async def main():
     print("🍺 Bar, Club, Kneipen & Biergarten Finder - Finde offene Locations in deiner Nähe!")
     print("=" * 60)
@@ -476,8 +469,7 @@ async def main():
 
     finder = BarFinder()
 
-    print(
-        f"\n🔍 Suche nach offenen Bars, Clubs, Kneipen und Biergärten im Umkreis von {finder.radius_km}km...")
+    print(f"\n🔍 Suche nach offenen Bars, Clubs, Kneipen und Biergärten im Umkreis von {finder.radius_km}km...")
 
     # Suche nach Bars
     bars = await finder.search_bars_near_address(address)
@@ -508,7 +500,6 @@ async def main():
 
     print(f"📊 Zusammenfassung: {open_count} von {len(bars)} Locations sind geöffnet")
     print(f"💾 URLs gespeichert in: urls_scraped.txt")
-
 
 if __name__ == "__main__":
     asyncio.run(main())
