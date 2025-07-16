@@ -64,6 +64,8 @@
             border: 2px solid transparent;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .model-card:before {
@@ -112,6 +114,11 @@
         
         .spec-group {
             margin-bottom: 25px;
+            min-height: 200px;
+        }
+        
+        .spec-group:last-of-type {
+            margin-top: auto;
         }
         
         .spec-group h3 {

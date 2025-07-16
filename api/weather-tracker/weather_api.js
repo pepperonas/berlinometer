@@ -390,6 +390,89 @@ app.get('/', async (req, res) => {
             .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                 background: rgba(0, 0, 0, 0.5);
             }
+            
+            /* Name Overlay Styles */
+            .chart-container {
+                position: relative;
+            }
+            
+            .name-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 10;
+                pointer-events: none;
+            }
+            
+            .name-overlay.active {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .name-text {
+                font-size: clamp(48px, 8vw, 96px);
+                font-weight: 900;
+                font-family: 'Arial Black', Arial, sans-serif;
+                letter-spacing: 0.2em;
+                text-transform: uppercase;
+                text-align: center;
+                transform: scale(0.8);
+                transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            .name-overlay.active .name-text {
+                transform: scale(1);
+            }
+            
+            .name-text.uli {
+                background: linear-gradient(135deg, #ff6b6b, #ee5a52, #dc4343);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                filter: drop-shadow(0 4px 12px rgba(238, 90, 82, 0.4))
+                        drop-shadow(0 0 20px rgba(238, 90, 82, 0.3));
+            }
+            
+            .name-text.martin {
+                background: linear-gradient(135deg, #4facfe, #00f2fe, #0093e6);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                filter: drop-shadow(0 4px 12px rgba(79, 172, 254, 0.4))
+                        drop-shadow(0 0 20px rgba(79, 172, 254, 0.3));
+            }
+            
+            .chart-container.dimmed canvas {
+                opacity: 0.15;
+                filter: blur(1px);
+                transition: all 0.8s ease;
+            }
+            
+            /* Pulse Animation */
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+            
+            .name-overlay.active .name-text {
+                animation: pulse 3s ease-in-out infinite;
+            }
+            
+            /* Mobile Optimizations */
+            @media (max-width: 640px) {
+                .name-text {
+                    font-size: clamp(32px, 12vw, 64px);
+                    letter-spacing: 0.15em;
+                }
+            }
         </style>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
@@ -436,6 +519,9 @@ app.get('/', async (req, res) => {
                 <h2 id="tempChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Temperaturverlauf</h2>
                 <div class="chart-container" style="height: 300px;">
                     <canvas id="tempChart"></canvas>
+                    <div id="tempNameOverlay" class="name-overlay">
+                        <div class="name-text uli">LOVIN'</div>
+                    </div>
                 </div>
             </div>
             
@@ -444,6 +530,9 @@ app.get('/', async (req, res) => {
                 <h2 id="humChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Luftfeuchtigkeitsverlauf</h2>
                 <div class="chart-container" style="height: 300px;">
                     <canvas id="humChart"></canvas>
+                    <div id="humNameOverlay" class="name-overlay">
+                        <div class="name-text martin">ULI 💋</div>
+                    </div>
                 </div>
             </div>
             
@@ -520,6 +609,44 @@ app.get('/', async (req, res) => {
             let tempChart = null;
             let humChart = null;
             let currentTimeRange = 24;
+            let isNameMode = false;
+            let originalChartData = null;
+            
+            // Toggle zwischen Namen- und Normal-Modus
+            function toggleNameMode() {
+                const tempOverlay = document.getElementById('tempNameOverlay');
+                const humOverlay = document.getElementById('humNameOverlay');
+                const tempContainer = document.getElementById('tempChart').parentElement;
+                const humContainer = document.getElementById('humChart').parentElement;
+                
+                if (isNameMode) {
+                    // Zurück zu normalen Charts
+                    isNameMode = false;
+                    tempOverlay.classList.remove('active');
+                    humOverlay.classList.remove('active');
+                    tempContainer.classList.remove('dimmed');
+                    humContainer.classList.remove('dimmed');
+                    document.getElementById('tempChartTitle').innerHTML = 'Temperaturverlauf';
+                    document.getElementById('humChartTitle').innerHTML = 'Luftfeuchtigkeitsverlauf';
+                } else {
+                    // Zu Namen-Modus wechseln
+                    isNameMode = true;
+                    tempOverlay.classList.add('active');
+                    humOverlay.classList.add('active');
+                    tempContainer.classList.add('dimmed');
+                    humContainer.classList.add('dimmed');
+                    document.getElementById('tempChartTitle').innerHTML = 'Temperaturverlauf';
+                    document.getElementById('humChartTitle').innerHTML = 'Luftfeuchtigkeitsverlauf';
+                }
+            }
+            
+            // Keyboard Event Listener
+            document.addEventListener('keydown', function(event) {
+                if (event.key.toLowerCase() === 'x') {
+                    event.preventDefault();
+                    toggleNameMode();
+                }
+            });
             
             async function loadChartData(hours = 24) {
                 try {
