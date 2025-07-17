@@ -21,6 +21,7 @@ This document lists all ports used by applications in this project.
 | 5010 | SEO Analytics         | seolytix           | `seolytix/backend/server.js`           |
 | 5012 | Security App          | mpsec              | `mpsec/server/.env`                    |
 | 5012 | Icon AI Server        | iconif-ai          | `iconif-ai/server/Dockerfile`          |
+| 5015 | Social Market Backend | social-market      | `social-market/backend/server.js`      |
 | 5024 | Bartender System      | bartender          | `bartender/.env`                       |
 | 5033 | Weather API           | weather-tracker    | `api/weather-tracker/weather_api.js`   |
 | 5044 | Popular Times API     | popular-times      | `popular-times/server.py`              |
