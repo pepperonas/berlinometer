@@ -8,13 +8,10 @@ import os
 import random
 import sys
 import time
-import threading
 import urllib.parse
 from datetime import datetime
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -1538,216 +1535,6 @@ async def scrape_live_occupancy_single(url, attempt_num, location_name_from_csv=
 app = Flask(__name__)
 CORS(app)
 
-# Global variables for automated scraping
-scheduler = None
-last_scraping_time = None
-scraping_in_progress = False
-RESULTS_FILE = os.path.join(os.path.dirname(__file__), 'latest_results.json')
-
-
-def load_active_locations_from_csv():
-    """Load active locations from default-locations.csv"""
-    csv_path = os.path.join(os.path.dirname(__file__), 'default-locations.csv')
-    locations = []
-    
-    try:
-        if os.path.exists(csv_path):
-            with open(csv_path, 'r', encoding='utf-8') as f:
-                # Skip header
-                next(f)
-                for line in f:
-                    if line.strip():
-                        parts = line.strip().split(';')
-                        if len(parts) >= 3:
-                            # Remove quotes from aktiv, name and URL
-                            aktiv = parts[0].strip('"')
-                            name = parts[1].strip('"')
-                            url = parts[2].strip('"')
-                            # Only include active locations
-                            if aktiv == '1':
-                                locations.append({
-                                    'name': name,
-                                    'url': url
-                                })
-        logger.info(f"Loaded {len(locations)} active locations for automated scraping")
-        return locations
-    except Exception as e:
-        logger.error(f"Error loading locations from CSV: {e}")
-        return []
-
-
-def save_results_to_file(results):
-    """Save scraping results to JSON file"""
-    try:
-        data = {
-            'timestamp': datetime.now().isoformat(),
-            'total_locations': len(results),
-            'successful_locations': len([r for r in results if r.get('live_occupancy')]),
-            'results': results
-        }
-        
-        with open(RESULTS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        
-        logger.info(f"Saved {len(results)} results to {RESULTS_FILE}")
-        return True
-    except Exception as e:
-        logger.error(f"Error saving results to file: {e}")
-        return False
-
-
-def load_results_from_file():
-    """Load latest results from JSON file"""
-    try:
-        if os.path.exists(RESULTS_FILE):
-            with open(RESULTS_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            logger.info(f"Loaded {len(data.get('results', []))} results from file")
-            return data
-        else:
-            logger.info("No results file found")
-            return None
-    except Exception as e:
-        logger.error(f"Error loading results from file: {e}")
-        return None
-
-
-async def automated_scraping_job():
-    """Background job that runs automated scraping"""
-    global last_scraping_time, scraping_in_progress
-    
-    if scraping_in_progress:
-        logger.warning("Scraping already in progress, skipping this interval")
-        return
-    
-    scraping_in_progress = True
-    logger.info("🤖 Starting automated scraping job...")
-    
-    try:
-        # Load active locations
-        locations = load_active_locations_from_csv()
-        if not locations:
-            logger.warning("No active locations found for automated scraping")
-            return
-        
-        urls = [loc['url'] for loc in locations]
-        logger.info(f"🚀 Automated scraping starting for {len(urls)} locations")
-        
-        # Create browser context
-        playwright, browser, context = await create_browser_context()
-        
-        try:
-            # Process in batches like manual scraping
-            batch_size = 3
-            max_concurrent = 10
-            semaphore = asyncio.Semaphore(max_concurrent)
-            
-            # Split into batches
-            batches = [locations[i:i + batch_size] for i in range(0, len(locations), batch_size)]
-            all_results = []
-            
-            # Process batches
-            for batch_idx, batch in enumerate(batches):
-                batch_id = batch_idx + 1
-                logger.info(f"🔄 Processing automated batch {batch_id}/{len(batches)} ({len(batch)} locations)")
-                
-                try:
-                    batch_results = await process_batch_concurrent(batch, context, semaphore, batch_id)
-                    if isinstance(batch_results, list):
-                        all_results.extend(batch_results)
-                    
-                    # Small delay between batches
-                    if batch_idx < len(batches) - 1:
-                        await asyncio.sleep(2)
-                        
-                except Exception as e:
-                    logger.error(f"Error in automated batch {batch_id}: {e}")
-                    continue
-            
-            # Save results
-            if all_results:
-                save_results_to_file(all_results)
-                successful = len([r for r in all_results if r.get('live_occupancy')])
-                logger.info(f"✅ Automated scraping completed: {successful}/{len(all_results)} locations with data")
-            else:
-                logger.warning("⚠️ No results from automated scraping")
-            
-        finally:
-            # Cleanup
-            try:
-                await context.close()
-                await browser.close()
-                await playwright.stop()
-                gc.collect()
-            except Exception as cleanup_error:
-                logger.warning(f"Automated scraping cleanup failed: {cleanup_error}")
-        
-        last_scraping_time = datetime.now()
-        
-    except Exception as e:
-        logger.error(f"❌ Error in automated scraping job: {e}")
-    finally:
-        scraping_in_progress = False
-
-
-def run_automated_scraping_sync():
-    """Synchronous wrapper for the async scraping job"""
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(automated_scraping_job())
-    except Exception as e:
-        logger.error(f"Error in sync wrapper: {e}")
-    finally:
-        try:
-            loop.close()
-        except:
-            pass
-
-
-def start_automated_scraping():
-    """Start the automated scraping scheduler"""
-    global scheduler, last_scraping_time
-    
-    try:
-        scheduler = BackgroundScheduler()
-        
-        # Schedule scraping every 10 minutes
-        scheduler.add_job(
-            func=run_automated_scraping_sync,
-            trigger=IntervalTrigger(minutes=10),
-            id='automated_scraping',
-            name='Automated Popular Times Scraping',
-            replace_existing=True
-        )
-        
-        scheduler.start()
-        logger.info("🤖 Automated scraping scheduler started (every 10 minutes)")
-        
-        # Run initial scraping in background thread to not block startup
-        def initial_scraping():
-            time.sleep(5)  # Wait 5 seconds after startup
-            logger.info("🚀 Running initial automated scraping...")
-            run_automated_scraping_sync()
-        
-        thread = threading.Thread(target=initial_scraping, daemon=True)
-        thread.start()
-        
-    except Exception as e:
-        logger.error(f"Failed to start automated scraping: {e}")
-
-
-def stop_automated_scraping():
-    """Stop the automated scraping scheduler"""
-    global scheduler
-    
-    try:
-        if scheduler and scheduler.running:
-            scheduler.shutdown()
-            logger.info("🛑 Automated scraping scheduler stopped")
-    except Exception as e:
-        logger.error(f"Error stopping scheduler: {e}")
-
 
 def create_progress_response(current_index, total, location_name=None, batch_info=None):
     """Create a progress update response with batch information"""
@@ -1967,102 +1754,6 @@ async def process_urls_stream(urls):
     yield create_progress_response(total, total,
                                    f"Alle {total} Locations abgeschlossen - {len(successful_requests)} erfolgreich")
     yield create_complete_response()
-
-
-@app.route('/latest-results', methods=['GET'])
-def get_latest_results():
-    """Get the latest cached scraping results"""
-    try:
-        data = load_results_from_file()
-        
-        if data:
-            return jsonify({
-                'success': True,
-                'cached': True,
-                'timestamp': data['timestamp'],
-                'total_locations': data['total_locations'],
-                'successful_locations': data['successful_locations'],
-                'results': data['results'],
-                'age_minutes': int((datetime.now() - datetime.fromisoformat(data['timestamp'])).total_seconds() / 60)
-            })
-        else:
-            return jsonify({
-                'success': True,
-                'cached': False,
-                'results': [],
-                'message': 'No cached results available yet'
-            })
-            
-    except Exception as e:
-        logger.error(f"Error getting latest results: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/scraping-status', methods=['GET'])
-def get_scraping_status():
-    """Get the status of automated scraping"""
-    global scheduler, last_scraping_time, scraping_in_progress
-    
-    try:
-        status = {
-            'scheduler_running': scheduler is not None and scheduler.running,
-            'scraping_in_progress': scraping_in_progress,
-            'last_scraping_time': last_scraping_time.isoformat() if last_scraping_time else None,
-            'next_scheduled_run': None
-        }
-        
-        # Get next scheduled run time
-        if scheduler and scheduler.running:
-            jobs = scheduler.get_jobs()
-            for job in jobs:
-                if job.id == 'automated_scraping':
-                    status['next_scheduled_run'] = job.next_run_time.isoformat() if job.next_run_time else None
-                    break
-        
-        # Calculate time since last run
-        if last_scraping_time:
-            status['minutes_since_last_run'] = int((datetime.now() - last_scraping_time).total_seconds() / 60)
-        
-        return jsonify({
-            'success': True,
-            'status': status,
-            'timestamp': datetime.now().isoformat()
-        })
-        
-    except Exception as e:
-        logger.error(f"Error getting scraping status: {e}")
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/trigger-scraping', methods=['POST'])
-def trigger_manual_scraping():
-    """Manually trigger immediate scraping"""
-    global scraping_in_progress
-    
-    try:
-        if scraping_in_progress:
-            return jsonify({
-                'success': False,
-                'error': 'Scraping already in progress'
-            }), 409
-        
-        # Start scraping in background thread
-        def run_manual_scraping():
-            logger.info("🚀 Manual scraping triggered via API")
-            run_automated_scraping_sync()
-        
-        thread = threading.Thread(target=run_manual_scraping, daemon=True)
-        thread.start()
-        
-        return jsonify({
-            'success': True,
-            'message': 'Manual scraping started',
-            'timestamp': datetime.now().isoformat()
-        })
-        
-    except Exception as e:
-        logger.error(f"Error triggering manual scraping: {e}")
-        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/scrape', methods=['POST'])
@@ -2346,50 +2037,29 @@ def root():
     """Root endpoint with service info"""
     return jsonify({
         'service': 'Popular Times Scraper API',
-        'version': '2.0.0 - Automated Scraping Edition',
+        'version': '1.5.0 - Final Enhanced Edition',
         'endpoints': {
             '/scrape': 'POST - Scrape Google Maps locations',
-            '/latest-results': 'GET - Get cached scraping results',
-            '/scraping-status': 'GET - Get automated scraping status',
-            '/trigger-scraping': 'POST - Manually trigger scraping',
             '/find-locations': 'POST - Find locations near address',
             '/health': 'GET - Health check'
         },
-        'features': [
-            'Automated scraping every 10 minutes',
-            'Persistent result caching',
-            'Real-time progress streaming',
-            'Batch processing optimization'
-        ],
         'timestamp': datetime.now().isoformat()
     })
 
 
 if __name__ == '__main__':
-    logger.info("🚀 Starting Popular Times Scraper Server (Automated Scraping Edition) on port 5044...")
-    logger.info("📡 Features: Automated scraping, Multi-retry, Random delays, Adaptive timeouts, URL fallbacks")
+    logger.info("🚀 Starting Popular Times Scraper Server (Final Enhanced Edition) on port 5044...")
+    logger.info("📡 Features: Multi-retry, Random delays, Adaptive timeouts, URL fallbacks")
     logger.info("📡 API Endpoints:")
     logger.info("   POST /scrape - Scrape Google Maps locations")
-    logger.info("   GET /latest-results - Get cached scraping results")
-    logger.info("   GET /scraping-status - Get automated scraping status")
-    logger.info("   POST /trigger-scraping - Manually trigger scraping")
     logger.info("   POST /find-locations - Find locations near address")
     logger.info("   GET /health - Health check")
     logger.info("   GET / - Service info")
     logger.info("=" * 50)
-    
-    # Start automated scraping scheduler
-    start_automated_scraping()
-    
-    try:
-        app.run(
-            host='0.0.0.0',
-            port=5044,
-            debug=False,
-            threaded=True
-        )
-    except KeyboardInterrupt:
-        logger.info("🛑 Server shutdown requested")
-    finally:
-        # Stop automated scraping when server shuts down
-        stop_automated_scraping()
+
+    app.run(
+        host='0.0.0.0',
+        port=5044,
+        debug=False,
+        threaded=True
+    )

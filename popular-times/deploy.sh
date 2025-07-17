@@ -40,7 +40,19 @@ if [ ! -d "$LOCAL_BUILD_DIR" ]; then
     exit 1
 fi
 
+print_status "Building React application..."
+cd webapp
+npm run build
+cd ..
 
+print_status "Deploying frontend to VPS..."
+
+# Create remote directories
+ssh $VPS_USER@$VPS_HOST "mkdir -p $REMOTE_WEB_DIR"
+ssh $VPS_USER@$VPS_HOST "mkdir -p $REMOTE_API_DIR"
+
+# Upload frontend build
+rsync -avz --delete $LOCAL_BUILD_DIR/ $VPS_USER@$VPS_HOST:$REMOTE_WEB_DIR/
 
 print_status "Deploying backend to VPS..."
 
@@ -92,6 +104,48 @@ else
     echo "❌ Service $SERVICE_NAME failed to start"
     systemctl status $SERVICE_NAME
 fi
+EOF
+
+print_status "Setting up Nginx configuration..."
+
+# Create nginx configuration
+ssh $VPS_USER@$VPS_HOST << 'EOF'
+cat > /etc/nginx/sites-available/popular-times << 'EOL'
+# Popular Times Frontend
+location /popular-times {
+    alias /var/www/html/popular-times;
+    try_files $uri $uri/ /popular-times/index.html;
+    
+    # Cache static assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+
+# Popular Times API
+location /api/popular-times {
+    proxy_pass http://localhost:5044;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    
+    # For streaming responses
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_read_timeout 300s;
+    proxy_connect_timeout 75s;
+}
+EOL
+
+# Include in main nginx config if not already included
+if ! grep -q "include /etc/nginx/sites-available/popular-times" /etc/nginx/sites-available/default; then
+    sed -i '/server {/a\    include /etc/nginx/sites-available/popular-times;' /etc/nginx/sites-available/default
+fi
+
+# Test and reload nginx
+nginx -t && systemctl reload nginx
 EOF
 
 print_status "Deployment completed! 🎉"
