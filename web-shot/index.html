@@ -56,6 +56,13 @@
     <meta name="application-name" content="Web-Shot">
     <meta name="msapplication-TileColor" content="#2B2E3B">
     <meta name="format-detection" content="telephone=no">
+    
+    <!-- MediaPipe for background removal -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+    
     <style>
         :root {
             --background-dark: #2B2E3B;
@@ -357,6 +364,93 @@
             min-width: 40px;
         }
 
+        .background-section {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-6);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--spacing-6);
+        }
+
+        .background-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--spacing-4);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .background-option {
+            background: var(--background-darker);
+            border: 2px solid transparent;
+            border-radius: var(--radius);
+            padding: var(--spacing-4);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .background-option:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .background-option.active {
+            border-color: var(--accent-green);
+            background: rgba(156, 182, 143, 0.2);
+        }
+
+        .background-option-icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-2);
+        }
+
+        .upload-section {
+            margin-top: var(--spacing-4);
+            padding: var(--spacing-4);
+            background: var(--background-darker);
+            border-radius: var(--radius);
+            text-align: center;
+        }
+
+        #backgroundUpload {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-2);
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #5a7a9a;
+            transform: translateY(-1px);
+        }
+
+        .background-preview {
+            margin-top: var(--spacing-4);
+            display: none;
+        }
+
+        .background-preview img {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: var(--radius);
+            border: 2px solid var(--accent-blue);
+        }
+
+        #hiddenVideo {
+            display: none;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: var(--spacing-2);
@@ -390,6 +484,7 @@
     <div class="camera-section">
         <div class="video-container">
             <video id="video" autoplay muted playsinline></video>
+            <video id="hiddenVideo" autoplay muted playsinline></video>
             <canvas id="canvas"></canvas>
         </div>
 
