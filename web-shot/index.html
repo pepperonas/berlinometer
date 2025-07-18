@@ -265,6 +265,98 @@
             display: none;
         }
 
+        .filter-section {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-6);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: var(--spacing-6);
+        }
+
+        .filter-presets {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: var(--spacing-2);
+            margin-bottom: var(--spacing-4);
+        }
+
+        .filter-preset {
+            background: var(--background-darker);
+            border: 2px solid transparent;
+            border-radius: var(--radius);
+            padding: var(--spacing-2);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .filter-preset:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-1px);
+        }
+
+        .filter-preset.active {
+            border-color: var(--accent-green);
+            background: rgba(156, 182, 143, 0.2);
+        }
+
+        .filter-controls {
+            margin-top: var(--spacing-4);
+        }
+
+        .filter-control {
+            margin-bottom: var(--spacing-4);
+        }
+
+        .filter-control label {
+            display: block;
+            margin-bottom: var(--spacing-2);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .filter-slider {
+            width: 100%;
+            height: 6px;
+            background: var(--background-darker);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .filter-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .filter-slider::-webkit-slider-thumb:hover {
+            background: #5a7a9a;
+        }
+
+        .filter-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--accent-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .filter-value {
+            display: inline-block;
+            margin-left: var(--spacing-2);
+            color: var(--accent-blue);
+            font-weight: 600;
+            min-width: 40px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: var(--spacing-2);
@@ -309,6 +401,52 @@
         </div>
     </div>
 
+    <div class="filter-section hidden" id="filterSection">
+        <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">🎨 Filter & Effekte</h3>
+        
+        <div class="filter-presets">
+            <div class="filter-preset active" data-preset="normal">Normal</div>
+            <div class="filter-preset" data-preset="vintage">Vintage</div>
+            <div class="filter-preset" data-preset="blackwhite">S/W</div>
+            <div class="filter-preset" data-preset="warm">Warm</div>
+            <div class="filter-preset" data-preset="cold">Kalt</div>
+            <div class="filter-preset" data-preset="dramatic">Dramatisch</div>
+            <div class="filter-preset" data-preset="blur">Blur</div>
+            <div class="filter-preset" data-preset="bokeh">Bokeh</div>
+        </div>
+
+        <div class="filter-controls">
+            <div class="filter-control">
+                <label>Unschärfe <span class="filter-value" id="blurValue">0</span></label>
+                <input type="range" class="filter-slider" id="blurSlider" min="0" max="20" value="0" step="0.5">
+            </div>
+            <div class="filter-control">
+                <label>Helligkeit <span class="filter-value" id="brightnessValue">100%</span></label>
+                <input type="range" class="filter-slider" id="brightnessSlider" min="0" max="200" value="100">
+            </div>
+            <div class="filter-control">
+                <label>Kontrast <span class="filter-value" id="contrastValue">100%</span></label>
+                <input type="range" class="filter-slider" id="contrastSlider" min="0" max="200" value="100">
+            </div>
+            <div class="filter-control">
+                <label>Sättigung <span class="filter-value" id="saturateValue">100%</span></label>
+                <input type="range" class="filter-slider" id="saturateSlider" min="0" max="200" value="100">
+            </div>
+            <div class="filter-control">
+                <label>Graustufen <span class="filter-value" id="grayscaleValue">0%</span></label>
+                <input type="range" class="filter-slider" id="grayscaleSlider" min="0" max="100" value="0">
+            </div>
+            <div class="filter-control">
+                <label>Sepia <span class="filter-value" id="sepiaValue">0%</span></label>
+                <input type="range" class="filter-slider" id="sepiaSlider" min="0" max="100" value="0">
+            </div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+            <button class="btn btn-secondary" id="resetFiltersBtn">🔄 Filter zurücksetzen</button>
+        </div>
+    </div>
+
     <div id="photosSection" class="hidden">
         <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">Aufgenommene Fotos</h3>
         <div id="photosGrid" class="photos-grid"></div>
@@ -328,6 +466,49 @@
     const status = document.getElementById('status');
     const photosSection = document.getElementById('photosSection');
     const photosGrid = document.getElementById('photosGrid');
+    const filterSection = document.getElementById('filterSection');
+    const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+
+    // Filter state
+    let currentFilters = {
+        blur: 0,
+        brightness: 100,
+        contrast: 100,
+        saturate: 100,
+        grayscale: 0,
+        sepia: 0
+    };
+
+    // Filter presets
+    const filterPresets = {
+        normal: { blur: 0, brightness: 100, contrast: 100, saturate: 100, grayscale: 0, sepia: 0 },
+        vintage: { blur: 0, brightness: 110, contrast: 90, saturate: 70, grayscale: 0, sepia: 40 },
+        blackwhite: { blur: 0, brightness: 100, contrast: 120, saturate: 0, grayscale: 100, sepia: 0 },
+        warm: { blur: 0, brightness: 110, contrast: 100, saturate: 130, grayscale: 0, sepia: 20 },
+        cold: { blur: 0, brightness: 100, contrast: 110, saturate: 80, grayscale: 10, sepia: 0 },
+        dramatic: { blur: 0, brightness: 90, contrast: 140, saturate: 110, grayscale: 0, sepia: 0 },
+        blur: { blur: 8, brightness: 100, contrast: 100, saturate: 100, grayscale: 0, sepia: 0 },
+        bokeh: { blur: 0, brightness: 105, contrast: 95, saturate: 110, grayscale: 0, sepia: 0 }
+    };
+
+    // Get all filter elements
+    const filterSliders = {
+        blur: document.getElementById('blurSlider'),
+        brightness: document.getElementById('brightnessSlider'),
+        contrast: document.getElementById('contrastSlider'),
+        saturate: document.getElementById('saturateSlider'),
+        grayscale: document.getElementById('grayscaleSlider'),
+        sepia: document.getElementById('sepiaSlider')
+    };
+
+    const filterValues = {
+        blur: document.getElementById('blurValue'),
+        brightness: document.getElementById('brightnessValue'),
+        contrast: document.getElementById('contrastValue'),
+        saturate: document.getElementById('saturateValue'),
+        grayscale: document.getElementById('grayscaleValue'),
+        sepia: document.getElementById('sepiaValue')
+    };
 
     function showStatus(message, type = 'success') {
         status.textContent = message;
@@ -356,6 +537,7 @@
             photoBtn.classList.remove('hidden');
             stopBtn.classList.remove('hidden');
             photoBtn.disabled = false;
+            filterSection.classList.remove('hidden');
 
             showStatus('Kamera erfolgreich gestartet!');
 
@@ -379,6 +561,112 @@
         photoBtn.disabled = true;
 
         showStatus('Kamera gestoppt');
+        filterSection.classList.add('hidden');
+    }
+
+    // Filter functions
+    function updateFilterValues() {
+        filterValues.blur.textContent = currentFilters.blur + 'px';
+        filterValues.brightness.textContent = currentFilters.brightness + '%';
+        filterValues.contrast.textContent = currentFilters.contrast + '%';
+        filterValues.saturate.textContent = currentFilters.saturate + '%';
+        filterValues.grayscale.textContent = currentFilters.grayscale + '%';
+        filterValues.sepia.textContent = currentFilters.sepia + '%';
+    }
+
+    function applyFiltersToVideo() {
+        const filterString = `
+            blur(${currentFilters.blur}px)
+            brightness(${currentFilters.brightness}%)
+            contrast(${currentFilters.contrast}%)
+            saturate(${currentFilters.saturate}%)
+            grayscale(${currentFilters.grayscale}%)
+            sepia(${currentFilters.sepia}%)
+        `;
+        video.style.filter = filterString;
+    }
+
+    function applyFiltersToCanvas(imageData) {
+        // Apply filters to canvas for photo capture
+        ctx.filter = `
+            blur(${currentFilters.blur}px)
+            brightness(${currentFilters.brightness}%)
+            contrast(${currentFilters.contrast}%)
+            saturate(${currentFilters.saturate}%)
+            grayscale(${currentFilters.grayscale}%)
+            sepia(${currentFilters.sepia}%)
+        `;
+    }
+
+    function applyPreset(presetName) {
+        const preset = filterPresets[presetName];
+        if (!preset) return;
+
+        currentFilters = { ...preset };
+        
+        // Update sliders
+        Object.keys(filterSliders).forEach(key => {
+            filterSliders[key].value = currentFilters[key];
+        });
+
+        updateFilterValues();
+        applyFiltersToVideo();
+
+        // Update active preset button
+        document.querySelectorAll('.filter-preset').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-preset="${presetName}"]`).classList.add('active');
+    }
+
+    function resetFilters() {
+        applyPreset('normal');
+        showStatus('Filter zurückgesetzt');
+    }
+
+    // Special bokeh effect implementation
+    function applyBokehEffect(ctx, canvas) {
+        // Create a radial gradient for depth simulation
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(canvas.width, canvas.height) * 0.4;
+        
+        // Save current state
+        ctx.save();
+        
+        // Create temporary canvas for the blurred background
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Draw blurred version
+        tempCtx.filter = 'blur(15px)';
+        tempCtx.drawImage(canvas, 0, 0);
+        
+        // Clear original canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw blurred background
+        ctx.drawImage(tempCanvas, 0, 0);
+        
+        // Create radial gradient mask
+        ctx.globalCompositeOperation = 'destination-out';
+        const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+        gradient.addColorStop(0, 'rgba(0,0,0,1)');
+        gradient.addColorStop(0.5, 'rgba(0,0,0,0.8)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw sharp center
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.filter = 'none';
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Restore state
+        ctx.restore();
     }
 
     function takePhoto() {
@@ -388,8 +676,21 @@
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
 
-        // Video-Frame auf Canvas zeichnen
-        ctx.drawImage(video, 0, 0);
+        // Check if bokeh effect is active
+        const isBokeh = document.querySelector('[data-preset="bokeh"]').classList.contains('active');
+        
+        if (isBokeh) {
+            // First draw the video without filters
+            ctx.filter = 'none';
+            ctx.drawImage(video, 0, 0);
+            // Then apply bokeh effect
+            applyBokehEffect(ctx, canvas);
+        } else {
+            // Apply regular filters
+            applyFiltersToCanvas();
+            // Video-Frame auf Canvas zeichnen
+            ctx.drawImage(video, 0, 0);
+        }
 
         // Foto als Data URL erstellen
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
@@ -442,6 +743,29 @@
     startBtn.addEventListener('click', startCamera);
     stopBtn.addEventListener('click', stopCamera);
     photoBtn.addEventListener('click', takePhoto);
+    resetFiltersBtn.addEventListener('click', resetFilters);
+
+    // Filter preset listeners
+    document.querySelectorAll('.filter-preset').forEach(preset => {
+        preset.addEventListener('click', (e) => {
+            const presetName = e.target.dataset.preset;
+            applyPreset(presetName);
+        });
+    });
+
+    // Filter slider listeners
+    Object.keys(filterSliders).forEach(key => {
+        filterSliders[key].addEventListener('input', (e) => {
+            currentFilters[key] = parseFloat(e.target.value);
+            updateFilterValues();
+            applyFiltersToVideo();
+            
+            // Remove active state from presets when manually adjusting
+            document.querySelectorAll('.filter-preset').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        });
+    });
 
     // Keyboard Shortcuts
     document.addEventListener('keydown', (e) => {
