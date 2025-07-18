@@ -39,9 +39,52 @@ const upload = multer({
   }
 });
 
-// In-memory storage for keys and products
-const keys = new Map();
-const products = [];
+// File-based persistent storage
+const DATA_DIR = path.join(__dirname, 'data');
+const KEYS_FILE = path.join(DATA_DIR, 'keys.json');
+const PRODUCTS_FILE = path.join(DATA_DIR, 'products.json');
+const PRODUCT_LINKS_FILE = path.join(DATA_DIR, 'product-links.json');
+
+// Create data directory if it doesn't exist
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR);
+}
+
+// Load data from files
+function loadData() {
+  try {
+    const keysData = fs.existsSync(KEYS_FILE) ? JSON.parse(fs.readFileSync(KEYS_FILE, 'utf8')) : {};
+    const productsData = fs.existsSync(PRODUCTS_FILE) ? JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf8')) : [];
+    const productLinksData = fs.existsSync(PRODUCT_LINKS_FILE) ? JSON.parse(fs.readFileSync(PRODUCT_LINKS_FILE, 'utf8')) : {};
+    
+    return {
+      keys: new Map(Object.entries(keysData)),
+      products: productsData,
+      productLinks: new Map(Object.entries(productLinksData))
+    };
+  } catch (error) {
+    console.error('Error loading data:', error);
+    return {
+      keys: new Map(),
+      products: [],
+      productLinks: new Map()
+    };
+  }
+}
+
+// Save data to files
+function saveData() {
+  try {
+    fs.writeFileSync(KEYS_FILE, JSON.stringify(Object.fromEntries(keys), null, 2));
+    fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(products, null, 2));
+    fs.writeFileSync(PRODUCT_LINKS_FILE, JSON.stringify(Object.fromEntries(productLinks), null, 2));
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+}
+
+// Initialize data
+const { keys, products, productLinks } = loadData();
 const MASTER_PASSWORD = 'cx6fEwxbA3K-';
 
 // Generate key format: XXXX-XXXX-XXXX-XXXX
@@ -75,11 +118,37 @@ app.post('/api/validate-key', (req, res) => {
     const keyData = keys.get(key);
     if (!keyData.used) {
       keys.set(key, { ...keyData, used: true, usedAt: new Date() });
+      saveData(); // Save changes to file
       return res.json({ 
         valid: true, 
         isMaster: false,
         products 
       });
+    }
+  }
+  
+  res.json({ valid: false });
+});
+
+app.post('/api/validate-product-key', (req, res) => {
+  const { key } = req.body;
+  
+  // Check if it's a valid product link key
+  if (productLinks.has(key)) {
+    const linkData = productLinks.get(key);
+    if (!linkData.used && linkData.isProduct) {
+      // Mark as used
+      productLinks.set(key, { ...linkData, used: true, usedAt: new Date() });
+      saveData(); // Save changes to file
+      
+      // Find the product
+      const product = products.find(p => p.id === linkData.productId);
+      if (product) {
+        return res.json({ 
+          valid: true, 
+          product: product
+        });
+      }
     }
   }
   
@@ -98,6 +167,7 @@ app.post('/api/generate-key', (req, res) => {
     created: new Date(),
     used: false
   });
+  saveData(); // Save changes to file
   
   res.json({ key: newKey });
 });
@@ -115,8 +185,35 @@ app.post('/api/generate-link', (req, res) => {
     used: false,
     isLink: true
   });
+  saveData(); // Save changes to file
   
-  const link = `${req.protocol}://${req.get('host')}?key=${linkKey}`;
+  const link = `${req.protocol}://${req.get('host')}/social-market?key=${linkKey}`;
+  res.json({ link });
+});
+
+app.post('/api/share-product', (req, res) => {
+  const { password, productId } = req.body;
+  
+  if (password !== MASTER_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid master password' });
+  }
+  
+  // Find the product
+  const product = products.find(p => p.id === productId);
+  if (!product) {
+    return res.status(404).json({ error: 'Product not found' });
+  }
+  
+  const linkKey = uuidv4();
+  productLinks.set(linkKey, {
+    productId: productId,
+    created: new Date(),
+    used: false,
+    isProduct: true
+  });
+  saveData(); // Save changes to file
+  
+  const link = `${req.protocol}://${req.get('host')}/social-market?productKey=${linkKey}`;
   res.json({ link });
 });
 
@@ -140,6 +237,7 @@ app.post('/api/upload-product', upload.single('image'), (req, res) => {
   };
   
   products.push(product);
+  saveData(); // Save changes to file
   res.json({ success: true, product });
 });
 

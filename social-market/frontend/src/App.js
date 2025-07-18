@@ -18,13 +18,21 @@ function App() {
     price: '',
     image: null
   });
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  const [singleProduct, setSingleProduct] = useState(null);
+  const [isProductView, setIsProductView] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     // Check for key in URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const urlKey = urlParams.get('key');
+    const productKey = urlParams.get('productKey');
+    
     if (urlKey) {
       validateKey(urlKey);
+    } else if (productKey) {
+      validateProductKey(productKey);
     }
   }, []);
 
@@ -53,6 +61,30 @@ function App() {
     }
   };
 
+  const validateProductKey = async (key) => {
+    try {
+      const response = await fetch(`${API_URL}/validate-product-key`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key })
+      });
+      
+      const data = await response.json();
+      
+      if (data.valid) {
+        setSingleProduct(data.product);
+        setIsProductView(true);
+        setError('');
+        // Clear URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        setError('Invalid or already used product link');
+      }
+    } catch (err) {
+      setError('Connection error');
+    }
+  };
+
   const handleKeySubmit = (e) => {
     e.preventDefault();
     validateKey(keyInput);
@@ -70,6 +102,7 @@ function App() {
       
       if (response.ok) {
         setGeneratedKey(data.key);
+        showToast('Key generated successfully!');
       } else {
         setError(data.error);
       }
@@ -90,6 +123,7 @@ function App() {
       
       if (response.ok) {
         setGeneratedLink(data.link);
+        showToast('Link generated successfully!');
       } else {
         setError(data.error);
       }
@@ -128,9 +162,35 @@ function App() {
     }
   };
 
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
+
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+    showToast('Copied to clipboard!');
+  };
+
+  const shareProduct = async (productId) => {
+    try {
+      const response = await fetch(`${API_URL}/share-product`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: keyInput, productId })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        copyToClipboard(data.link);
+        showToast('Product share link generated and copied!');
+      } else {
+        setError(data.error);
+      }
+    } catch (err) {
+      setError('Connection error');
+    }
   };
 
   const handleLogout = () => {
@@ -140,7 +200,41 @@ function App() {
     setProducts([]);
     setGeneratedKey('');
     setGeneratedLink('');
+    setSelectedProduct(null);
   };
+
+  const showProductDetail = (product) => {
+    setSelectedProduct(product);
+  };
+
+  const backToOverview = () => {
+    setSelectedProduct(null);
+  };
+
+  if (isProductView && singleProduct) {
+    return (
+      <div className="App">
+        <div className="product-detail-container">
+          <h1 className="typewriter">SOCIAL MARKET</h1>
+          <div className="single-product-card">
+            <img 
+              src={process.env.NODE_ENV === 'production' 
+                ? `/social-market${singleProduct.image}` 
+                : `http://localhost:5015${singleProduct.image}`} 
+              alt={singleProduct.text}
+              className="single-product-image"
+            />
+            <div className="single-product-info">
+              <h2 className="single-product-text">{singleProduct.text}</h2>
+              <p className="single-product-price">${singleProduct.price.toFixed(2)}</p>
+              <p className="single-product-note">This is a one-time view link. This product is no longer accessible through this link.</p>
+            </div>
+          </div>
+        </div>
+        {error && <div className="error">{error}</div>}
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -160,6 +254,47 @@ function App() {
           </form>
           {error && <div className="error">{error}</div>}
         </div>
+      </div>
+    );
+  }
+
+  // Show product detail if selected (for authenticated users)
+  if (selectedProduct && isAuthenticated) {
+    return (
+      <div className="App">
+        <button className="btn logout-btn" onClick={handleLogout}>LOGOUT</button>
+        <button className="btn back-btn" onClick={backToOverview}>BACK</button>
+        
+        <div className="product-detail-container">
+          <h1 className="typewriter">SOCIAL MARKET</h1>
+          <div className="single-product-card">
+            <img 
+              src={process.env.NODE_ENV === 'production' 
+                ? `/social-market${selectedProduct.image}` 
+                : `http://localhost:5015${selectedProduct.image}`} 
+              alt={selectedProduct.text}
+              className="single-product-image"
+            />
+            <div className="single-product-info">
+              <h2 className="single-product-text">{selectedProduct.text}</h2>
+              <p className="single-product-price">${selectedProduct.price.toFixed(2)}</p>
+              {isMaster && (
+                <button 
+                  className="btn share-btn" 
+                  onClick={() => shareProduct(selectedProduct.id)}
+                >
+                  SHARE THIS PRODUCT
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {toast.show && (
+          <div className={`toast toast-${toast.type}`}>
+            {toast.message}
+          </div>
+        )}
       </div>
     );
   }
@@ -226,7 +361,12 @@ function App() {
         
         <div className="products-grid">
           {products.map(product => (
-            <div key={product.id} className="product-card">
+            <div 
+              key={product.id} 
+              className="product-card"
+              onClick={() => showProductDetail(product)}
+              style={{ cursor: 'pointer' }}
+            >
               <img 
                 src={process.env.NODE_ENV === 'production' 
                   ? `/social-market${product.image}` 
@@ -237,11 +377,28 @@ function App() {
               <div className="product-info">
                 <p className="product-text">{product.text}</p>
                 <p className="product-price">${product.price.toFixed(2)}</p>
+                {isMaster && (
+                  <button 
+                    className="btn share-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      shareProduct(product.id);
+                    }}
+                  >
+                    SHARE
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
+      
+      {toast.show && (
+        <div className={`toast toast-${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }
