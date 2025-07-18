@@ -57,11 +57,8 @@
     <meta name="msapplication-TileColor" content="#2B2E3B">
     <meta name="format-detection" content="telephone=no">
     
-    <!-- MediaPipe for background removal -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js" crossorigin="anonymous"></script>
+    <!-- Simplified approach - will use CSS filters for now -->
+    <!-- Could be enhanced with ML libraries later -->
     
     <style>
         :root {
@@ -270,6 +267,11 @@
 
         #canvas {
             display: none;
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            border-radius: var(--radius);
+            background: var(--background-darker);
         }
 
         .filter-section {
@@ -484,8 +486,8 @@
     <div class="camera-section">
         <div class="video-container">
             <video id="video" autoplay muted playsinline></video>
-            <video id="hiddenVideo" autoplay muted playsinline></video>
             <canvas id="canvas"></canvas>
+            <video id="hiddenVideo" autoplay muted playsinline></video>
         </div>
 
         <div class="controls">
@@ -542,6 +544,36 @@
         </div>
     </div>
 
+    <div class="background-section hidden" id="backgroundSection">
+        <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">🖼️ Hintergrund</h3>
+        
+        <div class="background-options">
+            <div class="background-option active" data-background="none">
+                <div class="background-option-icon">🎥</div>
+                <div>Original</div>
+            </div>
+            <div class="background-option" data-background="blur">
+                <div class="background-option-icon">🌫️</div>
+                <div>Unschärfe</div>
+            </div>
+            <div class="background-option" data-background="custom">
+                <div class="background-option-icon">🖼️</div>
+                <div>Eigenes Bild</div>
+            </div>
+        </div>
+
+        <div class="upload-section hidden" id="uploadSection">
+            <input type="file" id="backgroundUpload" accept="image/*">
+            <label for="backgroundUpload" class="upload-btn">
+                📤 Bild hochladen
+            </label>
+            <div class="background-preview" id="backgroundPreview">
+                <p style="margin-bottom: 0.5rem; color: var(--text-secondary);">Aktueller Hintergrund:</p>
+                <img id="previewImage" src="" alt="Hintergrund Vorschau">
+            </div>
+        </div>
+    </div>
+
     <div id="photosSection" class="hidden">
         <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">Aufgenommene Fotos</h3>
         <div id="photosGrid" class="photos-grid"></div>
@@ -553,6 +585,7 @@
     let photos = [];
 
     const video = document.getElementById('video');
+    const hiddenVideo = document.getElementById('hiddenVideo');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const startBtn = document.getElementById('startBtn');
@@ -563,6 +596,11 @@
     const photosGrid = document.getElementById('photosGrid');
     const filterSection = document.getElementById('filterSection');
     const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+    const backgroundSection = document.getElementById('backgroundSection');
+    const uploadSection = document.getElementById('uploadSection');
+    const backgroundUpload = document.getElementById('backgroundUpload');
+    const backgroundPreview = document.getElementById('backgroundPreview');
+    const previewImage = document.getElementById('previewImage');
 
     // Filter state
     let currentFilters = {
@@ -605,6 +643,77 @@
         sepia: document.getElementById('sepiaValue')
     };
 
+    // Background state
+    let backgroundMode = 'none'; // none, blur, custom
+    let customBackgroundImage = null;
+    let segmentationActive = false;
+
+    // Simplified background processing using CSS filters and Canvas
+    function processSimpleBackgroundEffect() {
+        if (!segmentationActive) return;
+
+        try {
+            console.log('Processing background with simple method...');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            if (backgroundMode === 'blur') {
+                // Apply blur effect to the entire video
+                ctx.filter = 'blur(25px)';
+                ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
+                ctx.filter = 'none';
+                
+                // Add a subtle overlay to make it look more professional
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+            } else if (backgroundMode === 'custom' && customBackgroundImage) {
+                // Draw custom background
+                const imgAspect = customBackgroundImage.width / customBackgroundImage.height;
+                const canvasAspect = canvas.width / canvas.height;
+                
+                let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+                
+                if (imgAspect > canvasAspect) {
+                    drawHeight = canvas.height;
+                    drawWidth = drawHeight * imgAspect;
+                    offsetX = (canvas.width - drawWidth) / 2;
+                } else {
+                    drawWidth = canvas.width;
+                    drawHeight = drawWidth / imgAspect;
+                    offsetY = (canvas.height - drawHeight) / 2;
+                }
+                
+                ctx.drawImage(customBackgroundImage, offsetX, offsetY, drawWidth, drawHeight);
+                
+                // Add semi-transparent video overlay for blend effect
+                ctx.globalAlpha = 0.6;
+                ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
+                ctx.globalAlpha = 1.0;
+            }
+            
+            // Apply additional filters if any
+            if (video.style.filter && video.style.filter !== 'none') {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                tempCtx.filter = video.style.filter;
+                tempCtx.drawImage(canvas, 0, 0);
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(tempCanvas, 0, 0);
+            }
+            
+            console.log('Background processed successfully');
+        } catch (error) {
+            console.error('Background processing error:', error);
+            fallbackToSimpleBlur();
+        }
+    }
+
     function showStatus(message, type = 'success') {
         status.textContent = message;
         status.className = `status ${type}`;
@@ -633,6 +742,15 @@
             stopBtn.classList.remove('hidden');
             photoBtn.disabled = false;
             filterSection.classList.remove('hidden');
+            backgroundSection.classList.remove('hidden');
+
+            // Background processing is now simplified and ready to use
+            console.log('Background processing ready');
+
+            // Set up video for MediaPipe
+            hiddenVideo.srcObject = stream;
+            console.log('Stream assigned to hiddenVideo:', stream);
+            console.log('HiddenVideo dimensions:', hiddenVideo.videoWidth, 'x', hiddenVideo.videoHeight);
 
             showStatus('Kamera erfolgreich gestartet!');
 
@@ -657,6 +775,133 @@
 
         showStatus('Kamera gestoppt');
         filterSection.classList.add('hidden');
+        backgroundSection.classList.add('hidden');
+        
+        // Stop segmentation
+        segmentationActive = false;
+        canvas.style.display = 'none';
+        video.style.display = 'block';
+    }
+
+    // Background functions
+    async function startBackgroundProcessing() {
+        console.log('Starting background processing...');
+        console.log('Stream available:', !!stream);
+        
+        if (!stream) {
+            console.error('Missing stream');
+            showStatus('Hintergrund-Verarbeitung nicht verfügbar', 'error');
+            return;
+        }
+
+        segmentationActive = true;
+        
+        // Wait for video to be ready
+        const waitForVideo = () => {
+            console.log('Waiting for video... Current dimensions:', hiddenVideo.videoWidth, 'x', hiddenVideo.videoHeight);
+            
+            if (hiddenVideo.videoWidth > 0 && hiddenVideo.videoHeight > 0) {
+                console.log('Video ready, setting canvas dimensions:', hiddenVideo.videoWidth, 'x', hiddenVideo.videoHeight);
+                
+                canvas.width = hiddenVideo.videoWidth;
+                canvas.height = hiddenVideo.videoHeight;
+                canvas.style.display = 'block';
+                video.style.display = 'none';
+                
+                showStatus('Hintergrund-Effekt aktiv', 'success');
+                
+                const processFrame = () => {
+                    if (!segmentationActive) return;
+                    
+                    try {
+                        processSimpleBackgroundEffect();
+                        setTimeout(processFrame, 50); // ~20 FPS for smooth effect
+                    } catch (error) {
+                        console.error('Frame processing error:', error);
+                        fallbackToSimpleBlur();
+                    }
+                };
+
+                processFrame();
+            } else {
+                setTimeout(waitForVideo, 100);
+            }
+        };
+        
+        waitForVideo();
+    }
+
+    function stopBackgroundProcessing() {
+        segmentationActive = false;
+        canvas.style.display = 'none';
+        video.style.display = 'block';
+        video.style.filter = 'none';
+    }
+
+    // Fallback function for simple blur without segmentation
+    function fallbackToSimpleBlur() {
+        console.log('Falling back to simple blur effect');
+        segmentationActive = false;
+        canvas.style.display = 'none';
+        video.style.display = 'block';
+        
+        if (backgroundMode === 'blur') {
+            video.style.filter = 'blur(15px)';
+            showStatus('Einfacher Blur-Effekt aktiviert (Fallback)', 'success');
+        }
+    }
+
+    function setBackgroundMode(mode) {
+        console.log('Setting background mode to:', mode);
+        backgroundMode = mode;
+
+        // Update UI
+        document.querySelectorAll('.background-option').forEach(option => {
+            option.classList.remove('active');
+        });
+        document.querySelector(`[data-background="${mode}"]`).classList.add('active');
+
+        if (mode === 'none') {
+            stopBackgroundProcessing();
+            uploadSection.classList.add('hidden');
+        } else {
+            // Start background processing (simplified approach)
+            startBackgroundProcessing();
+            
+            // Add timeout fallback in case processing fails
+            setTimeout(() => {
+                if (backgroundMode === 'blur' && canvas.style.display === 'none') {
+                    console.log('Background processing timeout, using fallback');
+                    fallbackToSimpleBlur();
+                }
+            }, 3000);
+            
+            if (mode === 'custom') {
+                uploadSection.classList.remove('hidden');
+            } else {
+                uploadSection.classList.add('hidden');
+            }
+        }
+
+        showStatus(`Hintergrund: ${mode === 'none' ? 'Original' : mode === 'blur' ? 'Unschärfe' : 'Eigenes Bild'}`);
+    }
+
+    function handleBackgroundUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                customBackgroundImage = img;
+                previewImage.src = img.src;
+                backgroundPreview.style.display = 'block';
+                showStatus('Hintergrundbild geladen');
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
     // Filter functions
@@ -767,28 +1012,42 @@
     function takePhoto() {
         if (!stream) return;
 
-        // Canvas-Größe an Video anpassen
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        // Create temporary canvas for photo
+        const photoCanvas = document.createElement('canvas');
+        photoCanvas.width = video.videoWidth;
+        photoCanvas.height = video.videoHeight;
+        const photoCtx = photoCanvas.getContext('2d');
 
-        // Check if bokeh effect is active
-        const isBokeh = document.querySelector('[data-preset="bokeh"]').classList.contains('active');
-        
-        if (isBokeh) {
-            // First draw the video without filters
-            ctx.filter = 'none';
-            ctx.drawImage(video, 0, 0);
-            // Then apply bokeh effect
-            applyBokehEffect(ctx, canvas);
+        // If background processing is active, copy from main canvas
+        if (segmentationActive && backgroundMode !== 'none' && canvas.style.display !== 'none') {
+            photoCtx.drawImage(canvas, 0, 0);
         } else {
-            // Apply regular filters
-            applyFiltersToCanvas();
-            // Video-Frame auf Canvas zeichnen
-            ctx.drawImage(video, 0, 0);
+            // Check if bokeh effect is active
+            const isBokeh = document.querySelector('[data-preset="bokeh"]').classList.contains('active');
+            
+            if (isBokeh) {
+                // First draw the video without filters
+                photoCtx.filter = 'none';
+                photoCtx.drawImage(video, 0, 0);
+                // Then apply bokeh effect
+                applyBokehEffect(photoCtx, photoCanvas);
+            } else {
+                // Apply regular filters
+                photoCtx.filter = `
+                    blur(${currentFilters.blur}px)
+                    brightness(${currentFilters.brightness}%)
+                    contrast(${currentFilters.contrast}%)
+                    saturate(${currentFilters.saturate}%)
+                    grayscale(${currentFilters.grayscale}%)
+                    sepia(${currentFilters.sepia}%)
+                `;
+                // Video-Frame auf Canvas zeichnen
+                photoCtx.drawImage(video, 0, 0);
+            }
         }
 
         // Foto als Data URL erstellen
-        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        const photoDataUrl = photoCanvas.toDataURL('image/jpeg', 0.9);
 
         // Foto zur Liste hinzufügen
         const timestamp = new Date().toLocaleString('de-DE');
@@ -839,6 +1098,7 @@
     stopBtn.addEventListener('click', stopCamera);
     photoBtn.addEventListener('click', takePhoto);
     resetFiltersBtn.addEventListener('click', resetFilters);
+    backgroundUpload.addEventListener('change', handleBackgroundUpload);
 
     // Filter preset listeners
     document.querySelectorAll('.filter-preset').forEach(preset => {
@@ -859,6 +1119,14 @@
             document.querySelectorAll('.filter-preset').forEach(btn => {
                 btn.classList.remove('active');
             });
+        });
+    });
+
+    // Background option listeners
+    document.querySelectorAll('.background-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            const mode = e.currentTarget.dataset.background;
+            setBackgroundMode(mode);
         });
     });
 
