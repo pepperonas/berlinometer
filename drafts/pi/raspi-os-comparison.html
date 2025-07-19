@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raspberry Pi OS Desktop vs Lite - Umfassender Vergleich für Raspberry Pi 5</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #1a1b23;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 2.8rem;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #9e9e9e;
+            margin-bottom: 40px;
+            font-size: 1.2rem;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .spec-card {
+            background-color: #2C2E3B;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .spec-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .spec-card h2 {
+            color: #64b5f6;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .spec-card.lite h2 {
+            color: #81c784;
+        }
+        
+        .icon {
+            font-size: 2rem;
+        }
+        
+        .spec-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .spec-label {
+            color: #9e9e9e;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .spec-value {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .section-title {
+            color: #64b5f6;
+            font-size: 2rem;
+            margin: 60px 0 30px 0;
+            text-align: center;
+            font-weight: 300;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #64b5f6, transparent);
+        }
+        
+        .chart-container {
+            background-color: #2C2E3B;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chart-title {
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            text-align: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+        }
+        
+        .chart-wrapper.small {
+            height: 300px;
+        }
+        
+        .chart-wrapper.large {
+            height: 450px;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .performance-table {
+            background-color: #2C2E3B;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+        }
+        
+        .performance-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .performance-table th {
+            background-color: rgba(100, 181, 246, 0.2);
+            color: #ffffff;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .performance-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #e0e0e0;
+        }
+        
+        .performance-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .winner {
+            color: #81c784;
+            font-weight: 600;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background-color: #2C2E3B;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-title {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature-description {
+            color: #9e9e9e;
+            font-size: 0.95rem;
+        }
+        
+        .summary {
+            background-color: #2C2E3B;
+            border-radius: 12px;
+            padding: 40px;
+            margin-top: 60px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        .summary h3 {
+            color: #64b5f6;
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+        }
+        
+        .summary-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .summary-section h4 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .summary p {
+            color: #e0e0e0;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        
+        .highlight {
+            color: #81c784;
+            font-weight: 500;
+        }
+        
+        .desktop-highlight {
+            color: #64b5f6;
+            font-weight: 500;
+        }
+        
+        .pro-con-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .pro-list, .con-list {
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .pro-list {
+            background-color: rgba(129, 199, 132, 0.1);
+            border: 1px solid rgba(129, 199, 132, 0.3);
+        }
+        
+        .con-list {
+            background-color: rgba(239, 83, 80, 0.1);
+            border: 1px solid rgba(239, 83, 80, 0.3);
+        }
+        
+        .pro-list h5, .con-list h5 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .pro-list h5 {
+            color: #81c784;
+        }
+        
+        .con-list h5 {
+            color: #ef5350;
+        }
+        
+        .pro-list ul, .con-list ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .pro-list li, .con-list li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .pro-list li:before {
+            content: '✓';
+            color: #81c784;
+            position: absolute;
+            left: 0;
+        }
+        
+        .con-list li:before {
+            content: '✗';
+            color: #ef5350;
+            position: absolute;
+            left: 0;
+        }
+        
+        .command-box {
+            background-color: #1a1b23;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #81c784;
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-wrapper {
+                height: 300px;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pro-con-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .performance-table {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Raspberry Pi OS: Desktop vs Lite Edition</h1>
+        <p class="subtitle">Detaillierter Vergleich für Raspberry Pi 5 - Welche Version passt zu deinem Projekt?</p>
+        
+        <div class="comparison-grid">
+            <div class="spec-card">
+                <h2><span class="icon">🖥️</span> Raspberry Pi OS Desktop</h2>
+                <div class="spec-item">
+                    <div class="spec-label">Basis</div>
+                    <div class="spec-value">Debian 12 (Bookworm) mit PIXEL Desktop</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Image-Größe</div>
+                    <div class="spec-value">~2.6 GB (komprimiert: ~1.1 GB)</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Minimaler Speicher</div>
+                    <div class="spec-value">8 GB SD-Karte empfohlen</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">RAM-Verbrauch (Idle)</div>
+                    <div class="spec-value">~380-450 MB</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Boot-Zeit</div>
+                    <div class="spec-value">~35-45 Sekunden bis Desktop</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Vorinstallierte Software</div>
+                    <div class="spec-value">Chromium, LibreOffice, VLC, Python IDE,<br>Scratch, Minecraft Pi, Git, VS Code</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Benutzerfreundlichkeit</div>
+                    <div class="spec-value">⭐⭐⭐⭐⭐ Sehr einfach</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Ideal für</div>
+                    <div class="spec-value">Desktop-Nutzung, Lernen, Entwicklung,<br>Media Center, Anfänger</div>
+                </div>
+            </div>
+            
+            <div class="spec-card lite">
+                <h2><span class="icon">⚡</span> Raspberry Pi OS Lite</h2>
+                <div class="spec-item">
+                    <div class="spec-label">Basis</div>
+                    <div class="spec-value">Debian 12 (Bookworm) ohne GUI</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Image-Größe</div>
+                    <div class="spec-value">~500 MB (komprimiert: ~270 MB)</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Minimaler Speicher</div>
+                    <div class="spec-value">2 GB SD-Karte ausreichend</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">RAM-Verbrauch (Idle)</div>
+                    <div class="spec-value">~50-80 MB</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Boot-Zeit</div>
+                    <div class="spec-value">~12-18 Sekunden bis Login</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Vorinstallierte Software</div>
+                    <div class="spec-value">Nur Basis-System, SSH Server,<br>APT, Nano, Git, Python3</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Benutzerfreundlichkeit</div>
+                    <div class="spec-value">⭐⭐ Terminal-Kenntnisse erforderlich</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Ideal für</div>
+                    <div class="spec-value">Server, IoT, Headless-Betrieb,<br>Container, Automatisierung</div>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">Ressourcenverbrauch</h2>
+        
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Speicher- und RAM-Verbrauch</h3>
+                <div class="chart-wrapper small">
+                    <canvas id="resourceChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">CPU-Auslastung bei verschiedenen Szenarien</h3>
+                <div class="chart-wrapper small">
+                    <canvas id="cpuUsageChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="performance-table">
+            <h3 class="chart-title">Detaillierte Performance-Metriken</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metrik</th>
+                        <th>Desktop Edition</th>
+                        <th>Lite Edition</th>
+                        <th>Vorteil</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Boot-Zeit (Sekunden)</td>
+                        <td>35-45</td>
+                        <td class="winner">12-18</td>
+                        <td>Lite: 65% schneller</td>
+                    </tr>
+                    <tr>
+                        <td>RAM nach Boot (MB)</td>
+                        <td>380-450</td>
+                        <td class="winner">50-80</td>
+                        <td>Lite: 85% weniger</td>
+                    </tr>
+                    <tr>
+                        <td>Disk Usage (GB)</td>
+                        <td>4.2-5.0</td>
+                        <td class="winner">1.2-1.8</td>
+                        <td>Lite: 70% weniger</td>
+                    </tr>
+                    <tr>
+                        <td>Laufende Prozesse</td>
+                        <td>120-150</td>
+                        <td class="winner">40-60</td>
+                        <td>Lite: 65% weniger</td>
+                    </tr>
+                    <tr>
+                        <td>Idle CPU (%)</td>
+                        <td>3-8%</td>
+                        <td class="winner">0-2%</td>
+                        <td>Lite: 75% weniger</td>
+                    </tr>
+                    <tr>
+                        <td>Update-Download (MB)</td>
+                        <td>300-500</td>
+                        <td class="winner">50-150</td>
+                        <td>Lite: 70% weniger</td>
+                    </tr>
+                    <tr>
+                        <td>Stromverbrauch Idle (W)</td>
+                        <td>3.5-4.0</td>
+                        <td class="winner">2.8-3.2</td>
+                        <td>Lite: 20% weniger</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <h2 class="section-title">Software & Pakete</h2>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">Vorinstallierte Software-Pakete</h3>
+            <div class="chart-wrapper large">
+                <canvas id="softwareChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Systemdienste im Vergleich</h3>
+                <div class="chart-wrapper small">
+                    <canvas id="servicesChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Netzwerk-Performance</h3>
+                <div class="chart-wrapper small">
+                    <canvas id="networkChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">Anwendungsfälle</h2>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🏠</div>
+                <div class="feature-title">Home Assistant</div>
+                <div class="feature-description">
+                    <strong>Empfehlung:</strong> <span class="highlight">Lite Edition</span><br>
+                    Spart Ressourcen für Automatisierungen, Web-UI reicht völlig aus
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎮</div>
+                <div class="feature-title">Retro Gaming</div>
+                <div class="feature-description">
+                    <strong>Empfehlung:</strong> <span class="desktop-highlight">Desktop Edition</span><br>
+                    GUI für Emulator-Konfiguration, bessere Controller-Unterstützung
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <div class="feature-title">Web Server</div>
+                <div class="feature-description">
+                    <strong>Empfehlung:</strong> <span class="highlight">Lite Edition</span><br>
+                    Maximale Performance für Apache/Nginx, kein GUI-Overhead
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <div class="feature-title">Lernen & Bildung</div>
+                <div class="feature-description">
+                    <strong>Empfehlung:</strong> <span class="desktop-highlight">Desktop Edition</span><br>
+                    Scratch, Python IDE, Visual Tools vorinstalliert
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🐳</div>
+                <div class="feature-title">Docker Host</div>
+                <div class="feature-description">
+                    <strong>Empfehlung:</strong> <span class="highlight">Lite Edition</span><br>
+                    Mehr RAM für Container, bessere Isolation
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎬</div>
+                <div class="feature-title">Media Center</div>
+                <div class="feature-description">
+                    <strong>Empfehlung:</strong> <span class="desktop-highlight">Desktop Edition</span><br>
+                    Kodi/VLC vorinstalliert, einfache Konfiguration
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">Performance-Benchmarks</h2>
+        
+        <div class="chart-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">Boot-Zeit Analyse</h3>
+                <div class="chart-wrapper small">
+                    <canvas id="bootTimeChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3 class="chart-title">Speicher-Effizienz über Zeit</h3>
+                <div class="chart-wrapper small">
+                    <canvas id="memoryTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">Stromverbrauch & Temperatur</h2>
+        
+        <div class="chart-container">
+            <h3 class="chart-title">Stromverbrauch und Temperatur bei verschiedenen Lasten</h3>
+            <div class="chart-wrapper">
+                <canvas id="powerTempChart"></canvas>
+            </div>
+        </div>
+        
+        <h2 class="section-title">Installation & Migration</h2>
+        
+        <div class="performance-table">
+            <h3 class="chart-title">Von Desktop zu Lite migrieren</h3>
+            <p style="margin-bottom: 15px;">Falls du bereits Desktop installiert hast und zu Lite wechseln möchtest:</p>
+            
+            <div class="command-box">
+# Desktop-Umgebung deinstallieren
+sudo apt purge xserver* lightdm* raspberrypi-ui-mods vlc* lxde* chromium* desktop-base
+sudo apt autoremove --purge
+
+# Speicher aufräumen
+sudo apt clean
+sudo rm -rf ~/.cache/*
+
+# System neu starten
+sudo reboot
+            </div>
+            
+            <p style="margin-top: 15px; color: #ef5350;">⚠️ Warnung: Diese Befehle entfernen die komplette Desktop-Umgebung unwiderruflich!</p>
+        </div>
+        
+        <div class="performance-table">
+            <h3 class="chart-title">Desktop-Umgebung zu Lite hinzufügen</h3>
+            <p style="margin-bottom: 15px;">Falls du Lite installiert hast und nachträglich eine GUI möchtest:</p>
+            
+            <div class="command-box">
+# PIXEL Desktop installieren (empfohlen)
+sudo apt update
+sudo apt install raspberrypi-ui-mods
+
+# Oder minimaler Desktop mit LXDE
+sudo apt install lxde-core lxterminal lxappearance
+
+# Nach Installation neu starten
+sudo reboot
+            </div>
+        </div>
+        
+        <div class="summary">
+            <h3>Zusammenfassung & Empfehlungen</h3>
+            
+            <div class="summary-section">
+                <h4>🖥️ Raspberry Pi OS Desktop Edition</h4>
+                <div class="pro-con-grid">
+                    <div class="pro-list">
+                        <h5>Vorteile</h5>
+                        <ul>
+                            <li>Einsteigerfreundliche GUI</li>
+                            <li>Alle Tools vorinstalliert</li>
+                            <li>Visuelle Konfiguration</li>
+                            <li>Perfekt zum Lernen</li>
+                            <li>Multimedia-fähig out-of-the-box</li>
+                            <li>Browser für Web-Konfiguration</li>
+                        </ul>
+                    </div>
+                    <div class="con-list">
+                        <h5>Nachteile</h5>
+                        <ul>
+                            <li>5x mehr RAM-Verbrauch</li>
+                            <li>4x mehr Speicherplatz</li>
+                            <li>Langsamerer Boot</li>
+                            <li>Höherer Stromverbrauch</li>
+                            <li>Mehr Angriffsfläche</li>
+                            <li>Unnötig für Server</li>
+                        </ul>
+                    </div>
+                </div>
+                <p style="margin-top: 15px;"><strong>Perfekt für:</strong> Anfänger, Desktop-Ersatz, Multimedia, Entwicklung mit IDE, Bildungsprojekte, Präsentationen</p>
+            </div>
+            
+            <div class="summary-section">
+                <h4>⚡ Raspberry Pi OS Lite Edition</h4>
+                <div class="pro-con-grid">
+                    <div class="pro-list">
+                        <h5>Vorteile</h5>
+                        <ul>
+                            <li>Minimaler Ressourcenverbrauch</li>
+                            <li>Schneller Boot (~15 Sek)</li>
+                            <li>Mehr RAM für Anwendungen</li>
+                            <li>Ideal für Headless-Betrieb</li>
+                            <li>Weniger Sicherheitslücken</li>
+                            <li>Stabile Server-Performance</li>
+                        </ul>
+                    </div>
+                    <div class="con-list">
+                        <h5>Nachteile</h5>
+                        <ul>
+                            <li>Nur Terminal/SSH</li>
+                            <li>Linux-Kenntnisse nötig</li>
+                            <li>Keine visuellen Tools</li>
+                            <li>Manueller Setup-Prozess</li>
+                            <li>Keine Desktop-Software</li>
+                            <li>Steile Lernkurve</li>
+                        </ul>
+                    </div>
+                </div>
+                <p style="margin-top: 15px;"><strong>Perfekt für:</strong> Server, Docker-Host, IoT-Projekte, Home Assistant, Pi-hole, Webserver, Datenbanken</p>
+            </div>
+            
+            <div class="summary-section">
+                <h4>📊 Entscheidungshilfe nach Projekt</h4>
+                <p><strong>NAS/Fileserver:</strong> <span class="highlight">Lite</span> - Maximale I/O-Performance</p>
+                <p><strong>Überwachungskamera:</strong> <span class="highlight">Lite</span> - Mehr Ressourcen für Motion Detection</p>
+                <p><strong>3D-Drucker Host (OctoPrint):</strong> <span class="highlight">Lite</span> - Stabilität wichtiger als GUI</p>
+                <p><strong>Robotik-Projekte:</strong> <span class="desktop-highlight">Desktop</span> - Visuelle Debugging-Tools hilfreich</p>
+                <p><strong>Digital Signage:</strong> <span class="desktop-highlight">Desktop</span> - Browser im Kiosk-Modus nötig</p>
+                <p><strong>VPN Server:</strong> <span class="highlight">Lite</span> - Keine GUI benötigt</p>
+                <p><strong>Minecraft Server:</strong> <span class="highlight">Lite</span> - Jedes MB RAM zählt</p>
+                <p><strong>Wetterstation:</strong> <span class="highlight">Lite</span> - Läuft jahrelang ohne Eingriff</p>
+            </div>
+            
+            <div class="summary-section">
+                <h4>💡 Hybrid-Ansatz</h4>
+                <p>Du kannst auch einen Mittelweg wählen:</p>
+                <ul style="list-style: disc; padding-left: 20px; color: #e0e0e0;">
+                    <li>Starte mit <span class="highlight">Lite</span> und installiere nur benötigte GUI-Komponenten</li>
+                    <li>Nutze <strong>X11 Forwarding</strong> über SSH für gelegentliche GUI-Apps</li>
+                    <li>Installiere einen leichtgewichtigen Window Manager (z.B. Openbox)</li>
+                    <li>Verwende <strong>VNC Server</strong> nur bei Bedarf</li>
+                    <li>Web-basierte Tools (Webmin, Cockpit) als GUI-Alternative</li>
+                </ul>
+            </div>
+            
+            <div class="summary-section">
+                <h4>🚀 Performance-Tipps</h4>
+                <p><strong>Für Desktop Edition:</strong></p>
+                <ul style="list-style: disc; padding-left: 20px; margin-bottom: 15px;">
+                    <li>Deaktiviere nicht benötigte Dienste</li>
+                    <li>Nutze leichtere Alternativen (z.B. Midori statt Chromium)</li>
+                    <li>Reduziere visuelle Effekte in den Einstellungen</li>
+                    <li>Verwende zram für bessere RAM-Nutzung</li>
+                </ul>
+                
+                <p><strong>Für Lite Edition:</strong></p>
+                <ul style="list-style: disc; padding-left: 20px;">
+                    <li>Nutze systemd-analyze für Boot-Optimierung</li>
+                    <li>Deaktiviere nicht benötigte Kernel-Module</li>
+                    <li>Verwende log2ram zur SD-Karten-Schonung</li>
+                    <li>Optimiere /boot/config.txt für dein Setup</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Chart Defaults
+        Chart.defaults.color = '#e0e0e0';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+        Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif';
+        
+        // Resource Usage Chart
+        const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+        new Chart(resourceCtx, {
+            type: 'bar',
+            data: {
+                labels: ['RAM (MB)', 'Storage (GB)', 'Swap Usage (MB)', 'Paket-Anzahl (÷100)'],
+                datasets: [{
+                    label: 'Desktop Edition',
+                    data: [450, 5.0, 100, 12],
+                    backgroundColor: 'rgba(100, 181, 246, 0.8)',
+                    borderColor: 'rgba(100, 181, 246, 1)',
+                    borderWidth: 2
+                }, {
+                    label: 'Lite Edition',
+                    data: [80, 1.8, 0, 4],
+                    backgroundColor: 'rgba(129, 199, 132, 0.8)',
+                    borderColor: 'rgba(129, 199, 132, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 46, 59, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    }
+                }
+            }
+        });
+        
+        // CPU Usage Chart
+        const cpuUsageCtx = document.getElementById('cpuUsageChart').getContext('2d');
+        new Chart(cpuUsageCtx, {
+            type: 'line',
+            data: {
+                labels: ['Idle', 'Web Browsing', 'Video Playback', 'Compilation', 'Stress Test'],
+                datasets: [{
+                    label: 'Desktop Edition',
+                    data: [5, 25, 45, 85, 100],
+                    backgroundColor: 'rgba(100, 181, 246, 0.2)',
+                    borderColor: 'rgba(100, 181, 246, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }, {
+                    label: 'Lite Edition',
+                    data: [1, 8, 20, 80, 100],
+                    backgroundColor: 'rgba(129, 199, 132, 0.2)',
+                    borderColor: 'rgba(129, 199, 132, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 46, 59, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { 
+                            color: '#e0e0e0',
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'CPU Auslastung (%)',
+                            color: '#e0e0e0'
+                        }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    }
+                }
+            }
+        });
+        
+        // Software Packages Chart
+        const softwareCtx = document.getElementById('softwareChart').getContext('2d');
+        new Chart(softwareCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Development Tools', 'Multimedia', 'Office Suite', 'Educational', 'System Tools', 'Networking', 'Programming Languages', 'Libraries'],
+                datasets: [{
+                    label: 'Desktop Edition',
+                    data: [8, 10, 8, 10, 7, 6, 8, 9],
+                    backgroundColor: 'rgba(100, 181, 246, 0.2)',
+                    borderColor: 'rgba(100, 181, 246, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(100, 181, 246, 1)'
+                }, {
+                    label: 'Lite Edition',
+                    data: [2, 0, 0, 0, 8, 6, 6, 4],
+                    backgroundColor: 'rgba(129, 199, 132, 0.2)',
+                    borderColor: 'rgba(129, 199, 132, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(129, 199, 132, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 46, 59, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 10,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                        pointLabels: {
+                            color: '#e0e0e0',
+                            font: { size: 11 }
+                        },
+                        ticks: {
+                            color: '#e0e0e0',
+                            backdropColor: 'transparent'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // System Services Chart
+        const servicesCtx = document.getElementById('servicesChart').getContext('2d');
+        new Chart(servicesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Aktive Services', 'Autostart Services', 'Background Tasks', 'System Daemons'],
+                datasets: [{
+                    label: 'Desktop Edition',
+                    data: [45, 28, 15, 12],
+                    backgroundColor: 'rgba(100, 181, 246, 0.8)',
+                    borderColor: 'rgba(100, 181, 246, 1)',
+                    borderWidth: 2
+                }, {
+                    label: 'Lite Edition',
+                    data: [18, 12, 5, 8],
+                    backgroundColor: 'rgba(129, 199, 132, 0.8)',
+                    borderColor: 'rgba(129, 199, 132, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 46, 59, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    }
+                }
+            }
+        });
+        
+        // Network Performance Chart
+        const networkCtx = document.getElementById('networkChart').getContext('2d');
+        new Chart(networkCtx, {
+            type: 'line',
+            data: {
+                labels: ['SSH Response', 'HTTP Server', 'File Transfer', 'Database Query', 'API Response'],
+                datasets: [{
+                    label: 'Desktop Edition (ms)',
+                    data: [25, 35, 850, 15, 45],
+                    backgroundColor: 'rgba(100, 181, 246, 0.2)',
+                    borderColor: 'rgba(100, 181, 246, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }, {
+                    label: 'Lite Edition (ms)',
+                    data: [15, 20, 820, 10, 25],
+                    backgroundColor: 'rgba(129, 199, 132, 0.2)',
+                    borderColor: 'rgba(129, 199, 132, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 46, 59, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' },
+                        title: {
+                            display: true,
+                            text: 'Response Time (ms)',
+                            color: '#e0e0e0'
+                        }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    }
+                }
+            }
+        });
+        
+        // Boot Time Analysis
+        const bootTimeCtx = document.getElementById('bootTimeChart').getContext('2d');
+        new Chart(bootTimeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Kernel', 'Init System', 'Network', 'Services', 'GUI/Login'],
+                datasets: [{
+                    label: 'Desktop Edition (Sekunden)',
+                    data: [3, 5, 4, 8, 20],
+                    backgroundColor: 'rgba(100, 181, 246, 0.8)',
+                    borderColor: 'rgba(100, 181, 246, 1)',
+                    borderWidth: 2
+                }, {
+                    label: 'Lite Edition (Sekunden)',
+                    data: [3, 4, 3, 5, 0],
+                    backgroundColor: 'rgba(129, 199, 132, 0.8)',
+                    borderColor: 'rgba(129, 199, 132, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 46, 59, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        stacked: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    },
+                    x: {
+                        stacked: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    }
+                }
+            }
+        });
+        
+        // Memory Usage Over Time
+        const memoryTimeCtx = document.getElementById('memoryTimeChart').getContext('2d');
+        new Chart(memoryTimeCtx, {
+            type: 'line',
+            data: {
+                labels: ['Boot', '1h', '6h', '24h', '7d', '30d'],
+                datasets: [{
+                    label: 'Desktop Edition',
+                    data: [450, 520, 580, 620, 680, 750],
+                    backgroundColor: 'rgba(100, 181, 246, 0.2)',
+                    borderColor: 'rgba(100, 181, 246, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }, {
+                    label: 'Lite Edition',
+                    data: [80, 85, 90, 95, 100, 110],
+                    backgroundColor: 'rgba(129, 199, 132, 0.2)',
+                    borderColor: 'rgba(129, 199, 132, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 46, 59, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' },
+                        title: {
+                            display: true,
+                            text: 'RAM Usage (MB)',
+                            color: '#e0e0e0'
+                        }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    }
+                }
+            }
+        });
+        
+        // Power and Temperature Chart
+        const powerTempCtx = document.getElementById('powerTempChart').getContext('2d');
+        new Chart(powerTempCtx, {
+            type: 'line',
+            data: {
+                labels: ['Idle', 'Light Load', 'Web Browsing', 'Video', 'Compilation', 'Stress Test'],
+                datasets: [{
+                    label: 'Desktop Power (W)',
+                    data: [3.8, 4.5, 5.2, 6.8, 8.5, 10.2],
+                    backgroundColor: 'rgba(100, 181, 246, 0.2)',
+                    borderColor: 'rgba(100, 181, 246, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: false,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Lite Power (W)',
+                    data: [3.0, 3.5, 4.0, 5.5, 8.0, 9.8],
+                    backgroundColor: 'rgba(129, 199, 132, 0.2)',
+                    borderColor: 'rgba(129, 199, 132, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: false,
+                    yAxisID: 'y'
+                }, {
+                    label: 'Desktop Temp (°C)',
+                    data: [42, 48, 52, 58, 65, 75],
+                    backgroundColor: 'rgba(239, 83, 80, 0.2)',
+                    borderColor: 'rgba(239, 83, 80, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: false,
+                    borderDash: [5, 5],
+                    yAxisID: 'y1'
+                }, {
+                    label: 'Lite Temp (°C)',
+                    data: [40, 45, 48, 55, 63, 73],
+                    backgroundColor: 'rgba(255, 152, 0, 0.2)',
+                    borderColor: 'rgba(255, 152, 0, 1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: false,
+                    borderDash: [5, 5],
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        backgroundColor: 'rgba(44, 46, 59, 0.95)',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e0e0e0',
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' },
+                        title: {
+                            display: true,
+                            text: 'Stromverbrauch (W)',
+                            color: '#e0e0e0'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        beginAtZero: false,
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#e0e0e0' },
+                        title: {
+                            display: true,
+                            text: 'Temperatur (°C)',
+                            color: '#e0e0e0'
+                        }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#e0e0e0' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
