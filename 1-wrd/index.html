@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-WRD - Word List Tool</title>
+    <style>
+        :root {
+            --background-dark: #2B2E3B;
+            --background-darker: #252830;
+            --card-background: #343845;
+            --accent-blue: #688db1;
+            --accent-green: #9cb68f;
+            --accent-red: #e16162;
+            --text-primary: #d1d5db;
+            --text-secondary: #9ca3af;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius: 1rem;
+            --radius-sm: 0.5rem;
+            --radius-lg: 1.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--accent-blue);
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .description {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: var(--background-darker);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .word-item {
+            background-color: var(--card-background);
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .word-item:hover {
+            background-color: #3f4350;
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .word-english {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .word-german {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background-color: var(--accent-green);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            font-weight: 500;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .search-input {
+            background-color: var(--card-background);
+            border: 2px solid transparent;
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            width: 100%;
+            max-width: 400px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(104, 141, 177, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .word-grid {
+                grid-template-columns: 1fr;
+                max-height: 60vh;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>1-WRD</h1>
+        <p class="description">Klicke auf ein Wort, um es mit "..." ins Clipboard zu kopieren</p>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Wort suchen..." id="searchInput">
+        </div>
+
+        <div class="word-grid" id="wordGrid">
+            <!-- Words will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const words = [
+            { english: 'Moseying', german: 'umhergehen' },
+            { english: 'Elucidating', german: 'erklären/erläutern' },
+            { english: 'Unravelling', german: 'entwirren' },
+            { english: 'Tinkering', german: 'basteln/herumtüfteln' },
+            { english: 'Noodling', german: 'herumdenken' },
+            { english: 'Marinating', german: 'marinieren/sacken lassen' },
+            { english: 'Musing', german: 'nachsinnen/reflektieren' },
+            { english: 'Pondering', german: 'grübeln/überlegen' },
+            { english: 'Contemplating', german: 'betrachten/erwägen' },
+            { english: 'Ruminating', german: 'sinnieren/wiederkäuen' },
+            { english: 'Mulling', german: 'durchdenken/überdenken' },
+            { english: 'Cogitating', german: 'nachdenken/sinnen' },
+            { english: 'Deliberating', german: 'abwägen/beratschlagen' },
+            { english: 'Reflecting', german: 'reflektieren/nachdenken' },
+            { english: 'Considering', german: 'erwägen/berücksichtigen' },
+            { english: 'Reasoning', german: 'schlussfolgern/argumentieren' },
+            { english: 'Analyzing', german: 'analysieren' },
+            { english: 'Processing', german: 'verarbeiten' },
+            { english: 'Puzzling', german: 'rätseln/grübeln' },
+            { english: 'Wondering', german: 'sich wundern/fragen' },
+            { english: 'Brainstorming', german: 'Ideen sammeln' },
+            { english: 'Ideating', german: 'Ideen entwickeln' },
+            { english: 'Conceptualizing', german: 'konzeptualisieren' },
+            { english: 'Theorizing', german: 'theoretisieren' },
+            { english: 'Hypothesizing', german: 'Hypothesen aufstellen' },
+            { english: 'Speculating', german: 'spekulieren' },
+            { english: 'Meditating', german: 'meditieren' },
+            { english: 'Brooding', german: 'brüten/grübeln' },
+            { english: 'Dwelling', german: 'verweilen/nachsinnen' },
+            { english: 'Percolating', german: 'durchsickern lassen' },
+            { english: 'Incubating', german: 'ausbrüten' },
+            { english: 'Gestating', german: 'heranreifen lassen' },
+            { english: 'Fermenting', german: 'gären lassen' },
+            { english: 'Stewing', german: 'schmoren/brodeln' },
+            { english: 'Simmering', german: 'köcheln lassen' },
+            { english: 'Churning', german: 'aufwühlen/durcharbeiten' },
+            { english: 'Synthesizing', german: 'synthetisieren' },
+            { english: 'Evaluating', german: 'bewerten' },
+            { english: 'Assessing', german: 'einschätzen' },
+            { english: 'Examining', german: 'untersuchen' },
+            { english: 'Scrutinizing', german: 'prüfen/durchleuchten' },
+            { english: 'Investigating', german: 'erforschen' },
+            { english: 'Exploring', german: 'erkunden' },
+            { english: 'Probing', german: 'sondieren' },
+            { english: 'Dissecting', german: 'sezieren/zerlegen' },
+            { english: 'Deconstructing', german: 'dekonstruieren' },
+            { english: 'Reconstructing', german: 'rekonstruieren' },
+            { english: 'Formulating', german: 'formulieren' },
+            { english: 'Calculating', german: 'berechnen' },
+            { english: 'Computing', german: 'rechnen' },
+            { english: 'Calibrating', german: 'kalibrieren' },
+            { english: 'Weighing', german: 'abwägen' },
+            { english: 'Balancing', german: 'ausbalancieren' },
+            { english: 'Juggling', german: 'jonglieren' },
+            { english: 'Navigating', german: 'navigieren' },
+            { english: 'Wandering', german: 'wandern' },
+            { english: 'Meandering', german: 'mäandern' },
+            { english: 'Perusing', german: 'durchstöbern' },
+            { english: 'Surveying', german: 'überblicken' },
+            { english: 'Orchestrating', german: 'orchestrieren' },
+            { english: 'Architecting', german: 'entwerfen' },
+            { english: 'Engineering', german: 'konstruieren' },
+            { english: 'Crafting', german: 'erschaffen' },
+            { english: 'Molding', german: 'formen' },
+            { english: 'Shaping', german: 'gestalten' },
+            { english: 'Forging', german: 'schmieden' },
+            { english: 'Brewing', german: 'brauen' },
+            { english: 'Distilling', german: 'destillieren' },
+            { english: 'Crystallizing', german: 'kristallisieren' },
+            { english: 'Coalescing', german: 'verschmelzen' },
+            { english: 'Converging', german: 'konvergieren' },
+            { english: 'Diverging', german: 'divergieren' },
+            { english: 'Iterating', german: 'iterieren' },
+            { english: 'Refining', german: 'verfeinern' },
+            { english: 'Polishing', german: 'polieren' },
+            { english: 'Honing', german: 'schärfen' },
+            { english: 'Sharpening', german: 'spitzen' },
+            { english: 'Focusing', german: 'fokussieren' },
+            { english: 'Zooming', german: 'zoomen' },
+            { english: 'Pivoting', german: 'schwenken' },
+            { english: 'Rotating', german: 'rotieren' },
+            { english: 'Spiraling', german: 'spiralen' },
+            { english: 'Circling', german: 'kreisen' },
+            { english: 'Looping', german: 'schleifen' },
+            { english: 'Threading', german: 'fädeln' },
+            { english: 'Weaving', german: 'weben' },
+            { english: 'Knitting', german: 'stricken' },
+            { english: 'Stitching', german: 'nähen' },
+            { english: 'Quilting', german: 'steppen' },
+            { english: 'Assembling', german: 'zusammenbauen' },
+            { english: 'Dismantling', german: 'zerlegen' },
+            { english: 'Mapping', german: 'kartografieren' },
+            { english: 'Charting', german: 'aufzeichnen' },
+            { english: 'Plotting', german: 'planen' },
+            { english: 'Scheming', german: 'aushecken' },
+            { english: 'Strategizing', german: 'Strategie entwickeln' },
+            { english: 'Tacticalizing', german: 'taktieren' },
+            { english: 'Maneuvering', german: 'manövrieren' },
+            { english: 'Positioning', german: 'positionieren' },
+            { english: 'Germinating', german: 'keimen' },
+            { english: 'Sprouting', german: 'sprießen' },
+            { english: 'Blossoming', german: 'aufblühen' },
+            { english: 'Flowering', german: 'erblühen' },
+            { english: 'Ripening', german: 'reifen' },
+            { english: 'Harvesting', german: 'ernten' },
+            { english: 'Cultivating', german: 'kultivieren' },
+            { english: 'Nurturing', german: 'nähren' },
+            { english: 'Fostering', german: 'fördern' },
+            { english: 'Inciting', german: 'anstiften' },
+            { english: 'Sparking', german: 'entfachen' },
+            { english: 'Igniting', german: 'entzünden' },
+            { english: 'Kindling', german: 'anzünden' },
+            { english: 'Illuminating', german: 'beleuchten' },
+            { english: 'Radiating', german: 'ausstrahlen' },
+            { english: 'Beaming', german: 'strahlen' },
+            { english: 'Glowing', german: 'glühen' },
+            { english: 'Shimmering', german: 'schimmern' },
+            { english: 'Flickering', german: 'flackern' },
+            { english: 'Pulsating', german: 'pulsieren' },
+            { english: 'Vibrating', german: 'vibrieren' },
+            { english: 'Oscillating', german: 'oszillieren' },
+            { english: 'Resonating', german: 'resonieren' },
+            { english: 'Echoing', german: 'widerhallen' },
+            { english: 'Reverberating', german: 'nachhallen' },
+            { english: 'Amplifying', german: 'verstärken' },
+            { english: 'Modulating', german: 'modulieren' },
+            { english: 'Tuning', german: 'stimmen' },
+            { english: 'Harmonizing', german: 'harmonisieren' },
+            { english: 'Synchronizing', german: 'synchronisieren' },
+            { english: 'Aligning', german: 'ausrichten' },
+            { english: 'Calibrating', german: 'kalibrieren' },
+            { english: 'Adjusting', german: 'anpassen' },
+            { english: 'Tweaking', german: 'feintunen' },
+            { english: 'Optimizing', german: 'optimieren' },
+            { english: 'Maximizing', german: 'maximieren' },
+            { english: 'Streamlining', german: 'rationalisieren' },
+            { english: 'Simplifying', german: 'vereinfachen' },
+            { english: 'Clarifying', german: 'klären' },
+            { english: 'Purifying', german: 'reinigen' },
+            { english: 'Excavating', german: 'ausgraben' },
+            { english: 'Mining', german: 'schürfen' },
+            { english: 'Drilling', german: 'bohren' },
+            { english: 'Tunneling', german: 'tunneln' },
+            { english: 'Burrowing', german: 'graben' },
+            { english: 'Diving', german: 'tauchen' },
+            { english: 'Plunging', german: 'eintauchen' },
+            { english: 'Surfacing', german: 'auftauchen' },
+            { english: 'Emerging', german: 'hervorkommen' },
+            { english: 'Ascending', german: 'aufsteigen' },
+            { english: 'Descending', german: 'absteigen' },
+            { english: 'Traversing', german: 'durchqueren' },
+            { english: 'Crossing', german: 'überqueren' },
+            { english: 'Bridging', german: 'überbrücken' },
+            { english: 'Linking', german: 'verknüpfen' },
+            { english: 'Chaining', german: 'verketten' },
+            { english: 'Binding', german: 'binden' },
+            { english: 'Fusing', german: 'verschmelzen' },
+            { english: 'Melding', german: 'vermischen' },
+            { english: 'Blending', german: 'mischen' },
+            { english: 'Mixing', german: 'vermischen' },
+            { english: 'Stirring', german: 'rühren' },
+            { english: 'Swirling', german: 'wirbeln' },
+            { english: 'Whirling', german: 'drehen' },
+            { english: 'Spinning', german: 'spinnen' },
+            { english: 'Revolving', german: 'revolvieren' },
+            { english: 'Gyrating', german: 'kreiseln' },
+            { english: 'Pivoting', german: 'schwenken' },
+            { english: 'Swiveling', german: 'schwenken' },
+            { english: 'Tilting', german: 'neigen' },
+            { english: 'Leaning', german: 'lehnen' },
+            { english: 'Bending', german: 'biegen' },
+            { english: 'Flexing', german: 'beugen' },
+            { english: 'Stretching', german: 'dehnen' },
+            { english: 'Expanding', german: 'erweitern' },
+            { english: 'Contracting', german: 'zusammenziehen' },
+            { english: 'Compressing', german: 'komprimieren' },
+            { english: 'Condensing', german: 'kondensieren' },
+            { english: 'Concentrating', german: 'konzentrieren' },
+            { english: 'Focusing', german: 'fokussieren' },
+            { english: 'Absorbing', german: 'absorbieren' },
+            { english: 'Soaking', german: 'einsaugen' },
+            { english: 'Immersing', german: 'eintauchen' },
+            { english: 'Steeping', german: 'ziehen lassen' },
+            { english: 'Infusing', german: 'durchdringen' },
+            { english: 'Saturating', german: 'sättigen' },
+            { english: 'Permeating', german: 'durchdringen' },
+            { english: 'Infiltrating', german: 'infiltrieren' },
+            { english: 'Penetrating', german: 'durchdringen' },
+            { english: 'Piercing', german: 'durchbohren' },
+            { english: 'Puncturing', german: 'durchstechen' },
+            { english: 'Skewering', german: 'aufspießen' },
+            { english: 'Impaling', german: 'durchbohren' },
+            { english: 'Lancing', german: 'aufschlitzen' },
+            { english: 'Slicing', german: 'schneiden' },
+            { english: 'Dicing', german: 'würfeln' },
+            { english: 'Chopping', german: 'hacken' },
+            { english: 'Mincing', german: 'zerkleinern' },
+            { english: 'Grinding', german: 'mahlen' },
+            { english: 'Pulverizing', german: 'pulverisieren' },
+            { english: 'Crushing', german: 'zerquetschen' },
+            { english: 'Smashing', german: 'zerschmettern' },
+            { english: 'Shattering', german: 'zerschmettern' },
+            { english: 'Fragmenting', german: 'fragmentieren' },
+            { english: 'Splintering', german: 'zersplittern' },
+            { english: 'Fracturing', german: 'brechen' },
+            { english: 'Cracking', german: 'knacken' },
+            { english: 'Splitting', german: 'spalten' },
+            { english: 'Cleaving', german: 'spalten' },
+            { english: 'Separating', german: 'trennen' },
+            { english: 'Dividing', german: 'teilen' },
+            { english: 'Partitioning', german: 'aufteilen' },
+            { english: 'Segmenting', german: 'segmentieren' },
+            { english: 'Compartmentalizing', german: 'unterteilen' },
+            { english: 'Categorizing', german: 'kategorisieren' },
+            { english: 'Classifying', german: 'klassifizieren' },
+            { english: 'Sorting', german: 'sortieren' },
+            { english: 'Organizing', german: 'organisieren' },
+            { english: 'Arranging', german: 'arrangieren' },
+            { english: 'Ordering', german: 'ordnen' },
+            { english: 'Decoding', german: 'dekodieren' },
+            { english: 'Encoding', german: 'enkodieren' },
+            { english: 'Encrypting', german: 'verschlüsseln' },
+            { english: 'Decrypting', german: 'entschlüsseln' },
+            { english: 'Translating', german: 'übersetzen' },
+            { english: 'Interpreting', german: 'interpretieren' },
+            { english: 'Transcribing', german: 'transkribieren' },
+            { english: 'Annotating', german: 'annotieren' },
+            { english: 'Documenting', german: 'dokumentieren' },
+            { english: 'Recording', german: 'aufzeichnen' },
+            { english: 'Logging', german: 'protokollieren' },
+            { english: 'Tracking', german: 'verfolgen' },
+            { english: 'Monitoring', german: 'überwachen' },
+            { english: 'Observing', german: 'beobachten' },
+            { english: 'Watching', german: 'zuschauen' },
+            { english: 'Scanning', german: 'scannen' },
+            { english: 'Screening', german: 'durchleuchten' },
+            { english: 'Filtering', german: 'filtern' },
+            { english: 'Sifting', german: 'sieben' },
+            { english: 'Straining', german: 'durchseihen' },
+            { english: 'Draining', german: 'ablassen' },
+            { english: 'Funneling', german: 'trichtern' },
+            { english: 'Channeling', german: 'kanalisieren' },
+            { english: 'Directing', german: 'lenken' },
+            { english: 'Steering', german: 'steuern' },
+            { english: 'Piloting', german: 'lotsen' },
+            { english: 'Guiding', german: 'führen' },
+            { english: 'Leading', german: 'leiten' },
+            { english: 'Shepherding', german: 'hüten' },
+            { english: 'Herding', german: 'treiben' },
+            { english: 'Corralling', german: 'zusammentreiben' },
+            { english: 'Gathering', german: 'sammeln' },
+            { english: 'Collecting', german: 'kollektion' },
+            { english: 'Accumulating', german: 'anhäufen' },
+            { english: 'Amassing', german: 'ansammeln' },
+            { english: 'Stockpiling', german: 'horten' },
+            { english: 'Hoarding', german: 'bunkern' },
+            { english: 'Storing', german: 'lagern' },
+            { english: 'Archiving', german: 'archivieren' },
+            { english: 'Preserving', german: 'bewahren' },
+            { english: 'Cogitabunding', german: 'in tiefem Nachdenken versunken' },
+            { english: 'Lucubrating', german: 'bei Kerzenlicht studieren' },
+            { english: 'Ratiocinating', german: 'logisch schlussfolgern' },
+            { english: 'Cerebrating', german: 'geistig arbeiten' },
+            { english: 'Excogitating', german: 'ausdenken/ersinnen' },
+            { english: 'Perpending', german: 'sorgfältig erwägen' },
+            { english: 'Perlustrating', german: 'gründlich durchmustern' },
+            { english: 'Compenetrating', german: 'durchdringen' },
+            { english: 'Adumbrating', german: 'andeuten/skizzieren' },
+            { english: 'Concatenating', german: 'verketten' },
+            { english: 'Intercalating', german: 'einschieben' },
+            { english: 'Tessellating', german: 'mosaikartig anordnen' },
+            { english: 'Reticulating', german: 'vernetzen' },
+            { english: 'Anastomosing', german: 'verbinden/verzweigen' },
+            { english: 'Bifurcating', german: 'gabeln/verzweigen' },
+            { english: 'Ramifying', german: 'verästeln' },
+            { english: 'Arborizing', german: 'baumartig verzweigen' },
+            { english: 'Efflorescing', german: 'aufblühen/auskristallisieren' },
+            { english: 'Sublimating', german: 'sublimieren' },
+            { english: 'Precipitating', german: 'ausfällen' },
+            { english: 'Coagulating', german: 'gerinnen' },
+            { english: 'Congealing', german: 'erstarren' },
+            { english: 'Vitrifying', german: 'verglasen' },
+            { english: 'Ossifying', german: 'verknöchern' },
+            { english: 'Petrifying', german: 'versteinern' },
+            { english: 'Fossilizing', german: 'fossilieren' },
+            { english: 'Mineralizing', german: 'mineralisieren' },
+            { english: 'Transmuting', german: 'umwandeln' },
+            { english: 'Transmogrifying', german: 'verwandeln' },
+            { english: 'Metamorphosing', german: 'metamorphosieren' },
+            { english: 'Shapeshifting', german: 'gestaltwandeln' },
+            { english: 'Subliming', german: 'sublimieren' },
+            { english: 'Rarefying', german: 'verdünnen' },
+            { english: 'Attenuating', german: 'abschwächen' },
+            { english: 'Etiolating', german: 'vergeilen/bleichen' },
+            { english: 'Deliquescing', german: 'zerfließen' },
+            { english: 'Effervescing', german: 'aufbrausen' },
+            { english: 'Phosphorescing', german: 'phosphoreszieren' },
+            { english: 'Coruscating', german: 'funkeln/blitzen' },
+            { english: 'Scintillating', german: 'szintillieren' },
+            { english: 'Confabulating', german: 'fabulieren/erfinden' },
+            { english: 'Tergiversating', german: 'ausweichen/winden' },
+            { english: 'Animadverting', german: 'tadeln/kritisieren' },
+            { english: 'Elucubrating', german: 'mühsam ausarbeiten' },
+            { english: 'Genuflecting', german: 'knien/verbeugen' },
+            { english: 'Catechizing', german: 'ausfragen/belehren' },
+            { english: 'Apostrophizing', german: 'feierlich anreden' },
+            { english: 'Anathematizing', german: 'verfluchen' },
+            { english: 'Genuflexing', german: 'niederknien' },
+            { english: 'Tintinnabulating', german: 'klingeln/läuten' },
+            { english: 'Susurrating', german: 'säuseln/rauschen' },
+            { english: 'Ululating', german: 'heulen/klagen' },
+            { english: 'Cachinnating', german: 'schallend lachen' },
+            { english: 'Sibilating', german: 'zischen' },
+            { english: 'Stridulating', german: 'zirpen' },
+            { english: 'Borborygmating', german: 'knurren [Magen]' },
+            { english: 'Crepitating', german: 'knistern/knirschen' },
+            { english: 'Deflagrating', german: 'verpuffen/abbrennen' },
+            { english: 'Fulminating', german: 'wettern/explodieren' },
+            { english: 'Deracinating', german: 'entwurzeln' },
+            { english: 'Exsanguinating', german: 'ausbluten' },
+            { english: 'Eviscrating', german: 'ausweiden' },
+            { english: 'Cicatrizing', german: 'vernarben' },
+            { english: 'Suppurating', german: 'eitern' },
+            { english: 'Granulating', german: 'granulieren' },
+            { english: 'Pustulating', german: 'Pusteln bilden' },
+            { english: 'Vesicating', german: 'Blasen werfen' },
+            { english: 'Tumefying', german: 'anschwellen' },
+            { english: 'Intumescing', german: 'aufquellen' },
+            { english: 'Detumescing', german: 'abschwellen' },
+            { english: 'Inspissating', german: 'eindicken' },
+            { english: 'Crassifying', german: 'verdicken' },
+            { english: 'Rarefacting', german: 'verdünnen' },
+            { english: 'Obnubilating', german: 'verdunkeln/verwirren' },
+            { english: 'Tenebrating', german: 'verfinstern' },
+            { english: 'Obfuscating', german: 'verdunkeln' },
+            { english: 'Adumbrating', german: 'umreißen/andeuten' },
+            { english: 'Limning', german: 'zeichnen/darstellen' },
+            { english: 'Luminescing', german: 'leuchten' },
+            { english: 'Rutilating', german: 'rötlich glänzen' }
+        ];
+
+        let filteredWords = [...words];
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                return navigator.clipboard.writeText(text);
+            } else {
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-999999px";
+                textArea.style.top = "-999999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                return new Promise((res, rej) => {
+                    document.execCommand('copy') ? res() : rej();
+                    textArea.remove();
+                });
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function renderWords(wordsToRender) {
+            const wordGrid = document.getElementById('wordGrid');
+            wordGrid.innerHTML = '';
+
+            wordsToRender.forEach(word => {
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.innerHTML = `
+                    <div class="word-english">${word.english}</div>
+                    <div class="word-german">(${word.german})</div>
+                `;
+                
+                wordItem.addEventListener('click', () => {
+                    const textToCopy = `${word.english}...`;
+                    copyToClipboard(textToCopy)
+                        .then(() => {
+                            showToast(`"${textToCopy}" ins Clipboard übertragen!`);
+                        })
+                        .catch(err => {
+                            console.error('Failed to copy: ', err);
+                            showToast('Fehler beim Kopieren!');
+                        });
+                });
+
+                wordGrid.appendChild(wordItem);
+            });
+        }
+
+        function filterWords(searchTerm) {
+            const filtered = words.filter(word => 
+                word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                word.german.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            filteredWords = filtered;
+            renderWords(filtered);
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            filterWords(e.target.value);
+        });
+
+        renderWords(words);
+    </script>
+</body>
+</html>
