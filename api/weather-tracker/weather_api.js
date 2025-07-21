@@ -28,6 +28,7 @@ async function initDatabase() {
             id INT AUTO_INCREMENT PRIMARY KEY,
             temperature DECIMAL(5,2) NOT NULL,
             humidity DECIMAL(5,2) NOT NULL,
+            pressure DECIMAL(7,2) DEFAULT NULL,
             timestamp INT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_timestamp (timestamp)
@@ -66,13 +67,14 @@ setInterval(() => {
 async function loadData(limit = 1000) {
     try {
         const [rows] = await pool.execute(
-            `SELECT id, temperature, humidity, timestamp, created_at FROM weather_data ORDER BY timestamp DESC LIMIT ${parseInt(limit)}`
+            `SELECT id, temperature, humidity, pressure, timestamp, created_at FROM weather_data ORDER BY timestamp DESC LIMIT ${parseInt(limit)}`
         );
         // Konvertiere die Daten und stelle sicher, dass sie Zahlen sind
         return rows.reverse().map(row => ({
             id: row.id,
             temperature: parseFloat(row.temperature),
             humidity: parseFloat(row.humidity),
+            pressure: row.pressure ? parseFloat(row.pressure) : null,
             timestamp: parseInt(row.timestamp),
             created_at: row.created_at
         }));
@@ -85,12 +87,13 @@ async function loadData(limit = 1000) {
 async function getLastValidReading() {
     try {
         const [rows] = await pool.execute(
-            'SELECT temperature, humidity, timestamp FROM weather_data ORDER BY timestamp DESC LIMIT 1'
+            'SELECT temperature, humidity, pressure, timestamp FROM weather_data ORDER BY timestamp DESC LIMIT 1'
         );
         if (rows.length > 0) {
             return {
                 temperature: parseFloat(rows[0].temperature),
                 humidity: parseFloat(rows[0].humidity),
+                pressure: rows[0].pressure ? parseFloat(rows[0].pressure) : null,
                 timestamp: parseInt(rows[0].timestamp)
             };
         }
@@ -172,11 +175,11 @@ function validateSensorData(temperature, humidity, timestamp, lastReading) {
     };
 }
 
-async function saveData(temperature, humidity, timestamp) {
+async function saveData(temperature, humidity, pressure, timestamp) {
     try {
         await pool.execute(
-            'INSERT INTO weather_data (temperature, humidity, timestamp) VALUES (?, ?, ?)',
-            [temperature, humidity, timestamp]
+            'INSERT INTO weather_data (temperature, humidity, pressure, timestamp) VALUES (?, ?, ?, ?)',
+            [temperature, humidity, pressure, timestamp]
         );
     } catch (error) {
         console.error('Error saving data:', error);
@@ -191,7 +194,7 @@ function formatTimestamp(timestamp) {
 // API endpoint for receiving sensor data
 app.post('/weather-tracker', async (req, res) => {
     try {
-        const {temperature, humidity, timestamp} = req.body;
+        const {temperature, humidity, pressure, timestamp} = req.body;
 
         if (temperature === undefined || humidity === undefined) {
             return res.status(400).json({error: 'Missing temperature or humidity'});
@@ -199,6 +202,7 @@ app.post('/weather-tracker', async (req, res) => {
 
         const temp = parseFloat(temperature);
         const hum = parseFloat(humidity);
+        const press = pressure ? parseFloat(pressure) : null;
         const ts = timestamp || Math.floor(Date.now() / 1000);
 
         // Check rate limiting - only one entry per minute
@@ -243,7 +247,7 @@ app.post('/weather-tracker', async (req, res) => {
             });
         }
 
-        await saveData(temp, hum, ts);
+        await saveData(temp, hum, press, ts);
 
         // Store in recent readings map
         recentReadings.set(minuteKey, {
@@ -252,9 +256,10 @@ app.post('/weather-tracker', async (req, res) => {
         });
 
         // Update last valid reading
-        lastValidReading = { temperature: temp, humidity: hum, timestamp: ts };
+        lastValidReading = { temperature: temp, humidity: hum, pressure: press, timestamp: ts };
 
-        console.log(`Accepted: ${temp.toFixed(1)}°C, ${hum.toFixed(1)}% at ${formatTimestamp(ts)}`);
+        const pressureText = press ? `, ${press.toFixed(1)}hPa` : '';
+        console.log(`Accepted: ${temp.toFixed(1)}°C, ${hum.toFixed(1)}%${pressureText} at ${formatTimestamp(ts)}`);
 
         res.json({status: 'success'});
 
@@ -477,6 +482,10 @@ app.get('/', async (req, res) => {
         <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js"></script>
+        <!-- Cache buster for development -->
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Expires" content="0">
     </head>
     <body class="min-h-screen transition-colors duration-300 bg-primary text-white">
         <div class="container mx-auto px-4 py-6 sm:py-8 max-w-5xl">
@@ -488,7 +497,7 @@ app.get('/', async (req, res) => {
             ${latest ? `
             <!-- Current Weather Card -->
             <div class="bg-primary rounded-lg shadow-lg p-6 sm:p-8 mb-6 text-center animate-slideIn">
-                <div class="grid grid-cols-2 gap-4 sm:gap-6">
+                <div class="grid grid-cols-${latest.pressure ? '3' : '2'} gap-4 sm:gap-6">
                     <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
                         <div class="text-blue-400 text-sm font-medium mb-2">Temperatur</div>
                         <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.temperature).toFixed(1)}°</div>
@@ -499,6 +508,13 @@ app.get('/', async (req, res) => {
                         <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.humidity).toFixed(0)}%</div>
                         <div class="text-gray-400 text-xs sm:text-sm mt-1">Relative</div>
                     </div>
+                    ${latest.pressure ? `
+                    <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
+                        <div class="text-green-400 text-sm font-medium mb-2">Luftdruck</div>
+                        <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.pressure).toFixed(1)}</div>
+                        <div class="text-gray-400 text-xs sm:text-sm mt-1">hPa</div>
+                    </div>
+                    ` : ''}
                 </div>
                 <div class="text-gray-500 text-xs sm:text-sm mt-4 pt-4 border-t border-gray-600">
                     Zuletzt aktualisiert: ${formatTimestamp(latest.timestamp)}
@@ -536,25 +552,53 @@ app.get('/', async (req, res) => {
                 </div>
             </div>
             
+            <!-- Pressure Chart -->
+            <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-chartLoad" style="animation-delay: 0.2s">
+                <h2 id="pressChartTitle" class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Luftdruckverlauf</h2>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="pressChart"></canvas>
+                </div>
+            </div>
+            
             <!-- Statistics -->
             <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-slideIn" style="animation-delay: 0.2s">
                 <h2 class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Statistiken (24 Stunden)</h2>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                    <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
-                        <div class="text-xs text-gray-400 font-medium">MIN TEMP</div>
-                        <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minTemp">--</div>
+                
+                <!-- MAX Values Row -->
+                <div class="mb-3">
+                    <div class="text-xs text-gray-500 font-medium mb-2 text-center">MAXIMUM WERTE</div>
+                    <div class="grid gap-3 sm:gap-4" id="maxStatsGrid">
+                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                            <div class="text-xs text-gray-400 font-medium">MAX TEMP</div>
+                            <div class="text-2xl sm:text-3xl font-bold text-red-400 mt-1" id="maxTemp">--</div>
+                        </div>
+                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                            <div class="text-xs text-gray-400 font-medium">MAX FEUCHTE</div>
+                            <div class="text-2xl sm:text-3xl font-bold text-green-400 mt-1" id="maxHum">--</div>
+                        </div>
+                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105" id="maxPressureStat" style="display: none;">
+                            <div class="text-xs text-gray-400 font-medium">MAX DRUCK</div>
+                            <div class="text-2xl sm:text-3xl font-bold text-purple-400 mt-1" id="maxPressure">--</div>
+                        </div>
                     </div>
-                    <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
-                        <div class="text-xs text-gray-400 font-medium">MAX TEMP</div>
-                        <div class="text-2xl sm:text-3xl font-bold text-red-400 mt-1" id="maxTemp">--</div>
-                    </div>
-                    <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
-                        <div class="text-xs text-gray-400 font-medium">MIN FEUCHTE</div>
-                        <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minHum">--</div>
-                    </div>
-                    <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
-                        <div class="text-xs text-gray-400 font-medium">MAX FEUCHTE</div>
-                        <div class="text-2xl sm:text-3xl font-bold text-green-400 mt-1" id="maxHum">--</div>
+                </div>
+                
+                <!-- MIN Values Row -->
+                <div>
+                    <div class="text-xs text-gray-500 font-medium mb-2 text-center">MINIMUM WERTE</div>
+                    <div class="grid gap-3 sm:gap-4" id="minStatsGrid">
+                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                            <div class="text-xs text-gray-400 font-medium">MIN TEMP</div>
+                            <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minTemp">--</div>
+                        </div>
+                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                            <div class="text-xs text-gray-400 font-medium">MIN FEUCHTE</div>
+                            <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minHum">--</div>
+                        </div>
+                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105" id="minPressureStat" style="display: none;">
+                            <div class="text-xs text-gray-400 font-medium">MIN DRUCK</div>
+                            <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minPressure">--</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -570,6 +614,10 @@ app.get('/', async (req, res) => {
                                     <span class="text-white font-medium">${parseFloat(entry.temperature).toFixed(1)}°C</span>
                                     <span class="text-gray-400">|</span>
                                     <span class="text-white font-medium">${parseFloat(entry.humidity).toFixed(1)}%</span>
+                                    ${entry.pressure ? `
+                                    <span class="text-gray-400">|</span>
+                                    <span class="text-white font-medium">${parseFloat(entry.pressure).toFixed(1)}hPa</span>
+                                    ` : ''}
                                 </div>
                                 <span class="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0">${formatTimestamp(entry.timestamp)}</span>
                             </div>
@@ -608,6 +656,7 @@ app.get('/', async (req, res) => {
         <script>
             let tempChart = null;
             let humChart = null;
+            let pressChart = null;
             let currentTimeRange = 24;
             let isNameMode = false;
             let originalChartData = null;
@@ -664,9 +713,15 @@ app.get('/', async (req, res) => {
                 // Destroy existing charts
                 if (tempChart) {
                     tempChart.destroy();
+                    tempChart = null;
                 }
                 if (humChart) {
                     humChart.destroy();
+                    humChart = null;
+                }
+                if (pressChart) {
+                    pressChart.destroy();
+                    pressChart = null;
                 }
                 
                 // Chart options
@@ -802,11 +857,72 @@ app.get('/', async (req, res) => {
                     }
                 });
                 
+                // Pressure Chart (only if we have pressure data)
+                if (data.pressure && data.pressure.length > 0) {
+                    const pressCtx = document.getElementById('pressChart').getContext('2d');
+                    pressChart = new Chart(pressCtx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Luftdruck (hPa)',
+                                data: data.pressure,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            ...commonOptions,
+                            scales: {
+                                ...commonOptions.scales,
+                                y: {
+                                    ...commonOptions.scales.y,
+                                    title: {
+                                        display: true,
+                                        text: 'Luftdruck (hPa)',
+                                        color: textPrimary
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    // Hide pressure chart section if no pressure data
+                    const pressureChartElement = document.getElementById('pressChart');
+                    if (pressureChartElement) {
+                        const pressureChartSection = pressureChartElement.parentElement.parentElement;
+                        if (pressureChartSection) {
+                            pressureChartSection.style.display = 'none';
+                        }
+                    }
+                }
+                
                 // Update stats
                 document.getElementById('minTemp').textContent = data.stats.minTemp + '°C';
                 document.getElementById('maxTemp').textContent = data.stats.maxTemp + '°C';
                 document.getElementById('minHum').textContent = data.stats.minHum + '%';
                 document.getElementById('maxHum').textContent = data.stats.maxHum + '%';
+                
+                // Update pressure stats if available
+                if (data.stats.hasPressureData) {
+                    document.getElementById('minPressure').textContent = data.stats.minPressure + 'hPa';
+                    document.getElementById('maxPressure').textContent = data.stats.maxPressure + 'hPa';
+                    document.getElementById('minPressureStat').style.display = 'block';
+                    document.getElementById('maxPressureStat').style.display = 'block';
+                    // 3 columns when pressure data is available
+                    document.getElementById('maxStatsGrid').className = 'grid grid-cols-3 gap-3 sm:gap-4';
+                    document.getElementById('minStatsGrid').className = 'grid grid-cols-3 gap-3 sm:gap-4';
+                } else {
+                    document.getElementById('minPressureStat').style.display = 'none';
+                    document.getElementById('maxPressureStat').style.display = 'none';
+                    // 2 columns when no pressure data
+                    document.getElementById('maxStatsGrid').className = 'grid grid-cols-2 gap-3 sm:gap-4';
+                    document.getElementById('minStatsGrid').className = 'grid grid-cols-2 gap-3 sm:gap-4';
+                }
                 
                 // Show data point info
                 const tempChartTitle = document.getElementById('tempChartTitle');
@@ -825,6 +941,11 @@ app.get('/', async (req, res) => {
                 
                 tempChartTitle.innerHTML = 'Temperaturverlauf' + aggregationText;
                 humChartTitle.innerHTML = 'Luftfeuchtigkeitsverlauf' + aggregationText;
+                
+                const pressChartTitle = document.getElementById('pressChartTitle');
+                if (pressChartTitle && data.pressure && data.pressure.length > 0) {
+                    pressChartTitle.innerHTML = 'Luftdruckverlauf' + aggregationText;
+                }
                 } catch (error) {
                     console.error('Error loading chart data:', error);
                 }
@@ -922,10 +1043,13 @@ app.get('/api/chart-data', async (req, res) => {
                 SELECT 
                     AVG(temperature) as temperature,
                     AVG(humidity) as humidity,
+                    AVG(pressure) as pressure,
                     MIN(temperature) as min_temp,
                     MAX(temperature) as max_temp,
                     MIN(humidity) as min_hum,
                     MAX(humidity) as max_hum,
+                    MIN(pressure) as min_pressure,
+                    MAX(pressure) as max_pressure,
                     FLOOR(timestamp / ${groupInterval}) * ${groupInterval} as grouped_timestamp,
                     COUNT(*) as data_points
                 FROM weather_data 
@@ -940,14 +1064,19 @@ app.get('/api/chart-data', async (req, res) => {
         const labels = [];
         const temperature = [];
         const humidity = [];
+        const pressure = [];
         const tempRanges = [];
         const humRanges = [];
+        const pressRanges = [];
         
         rows.forEach(row => {
             const timestamp = aggregation === 'raw' ? row.timestamp : row.grouped_timestamp;
             labels.push(formatTimestamp(timestamp));
             temperature.push(parseFloat(row.temperature));
             humidity.push(parseFloat(row.humidity));
+            if (row.pressure) {
+                pressure.push(parseFloat(row.pressure));
+            }
             
             // Store ranges for aggregated data
             if (aggregation !== 'raw') {
@@ -959,24 +1088,35 @@ app.get('/api/chart-data', async (req, res) => {
                     min: parseFloat(row.min_hum),
                     max: parseFloat(row.max_hum)
                 });
+                if (row.min_pressure && row.max_pressure) {
+                    pressRanges.push({
+                        min: parseFloat(row.min_pressure),
+                        max: parseFloat(row.max_pressure)
+                    });
+                }
             }
         });
         
         // Calculate stats
         const temps = rows.map(r => parseFloat(r.temperature));
         const hums = rows.map(r => parseFloat(r.humidity));
+        const pressures = rows.filter(r => r.pressure).map(r => parseFloat(r.pressure));
         
         const stats = {
             minTemp: temps.length ? Math.min(...temps).toFixed(1) : '--',
             maxTemp: temps.length ? Math.max(...temps).toFixed(1) : '--',
             minHum: hums.length ? Math.min(...hums).toFixed(1) : '--',
-            maxHum: hums.length ? Math.max(...hums).toFixed(1) : '--'
+            maxHum: hums.length ? Math.max(...hums).toFixed(1) : '--',
+            minPressure: pressures.length ? Math.min(...pressures).toFixed(1) : '--',
+            maxPressure: pressures.length ? Math.max(...pressures).toFixed(1) : '--',
+            hasPressureData: pressures.length > 0
         };
         
         const responseData = { 
             labels, 
             temperature, 
             humidity, 
+            pressure,
             stats,
             aggregation,
             dataPoints: rows.length
@@ -986,6 +1126,7 @@ app.get('/api/chart-data', async (req, res) => {
         if (aggregation !== 'raw') {
             responseData.tempRanges = tempRanges;
             responseData.humRanges = humRanges;
+            responseData.pressRanges = pressRanges;
         }
         
         res.json(responseData);

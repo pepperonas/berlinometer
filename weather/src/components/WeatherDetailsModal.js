@@ -1,5 +1,7 @@
 import React, { useContext, useEffect, useRef } from 'react';
 import { ThemeContext } from '../context/ThemeContext';
+import InfoTooltip from './InfoTooltip';
+import { getHumidityInfo, getWindInfo } from '../utils/weatherInfo';
 
 function WeatherDetailsModal({ dayData, onClose }) {
     const { darkMode } = useContext(ThemeContext);
@@ -118,6 +120,10 @@ function WeatherDetailsModal({ dayData, onClose }) {
     const avgHumidity = getAverageHumidity(dayData);
     const avgWindSpeed = getAverageWindSpeed(dayData);
     const timeBasedWeather = getTimeBasedWeather(dayData);
+    
+    // Info objects for tooltips
+    const humidityInfo = getHumidityInfo(avgHumidity);
+    const windInfo = getWindInfo(avgWindSpeed / 3.6); // Convert back to m/s for the function
 
     // Handle direct click on overlay
     const handleOverlayClick = (e) => {
@@ -160,14 +166,24 @@ function WeatherDetailsModal({ dayData, onClose }) {
 
                 {/* Zusätzliche Informationen */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-primary' : 'bg-blue-50'}`}>
-                        <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Luftfeuchtigkeit</p>
-                        <p className="text-xl font-semibold">{avgHumidity}%</p>
-                    </div>
-                    <div className={`p-3 rounded-lg ${darkMode ? 'bg-primary' : 'bg-blue-50'}`}>
-                        <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Wind</p>
-                        <p className="text-xl font-semibold">{avgWindSpeed} km/h</p>
-                    </div>
+                    <InfoTooltip 
+                        content={`<strong>${humidityInfo.description}</strong><br/>${humidityInfo.details}`}
+                        position="top"
+                    >
+                        <div className={`p-3 rounded-lg cursor-help hover:opacity-80 transition-opacity ${darkMode ? 'bg-primary' : 'bg-blue-50'}`}>
+                            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Luftfeuchtigkeit ℹ️</p>
+                            <p className="text-xl font-semibold">{avgHumidity}%</p>
+                        </div>
+                    </InfoTooltip>
+                    <InfoTooltip 
+                        content={`<strong>${windInfo.description}</strong><br/>${windInfo.details}`}
+                        position="top"
+                    >
+                        <div className={`p-3 rounded-lg cursor-help hover:opacity-80 transition-opacity ${darkMode ? 'bg-primary' : 'bg-blue-50'}`}>
+                            <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-500'}`}>Wind ℹ️</p>
+                            <p className="text-xl font-semibold">{avgWindSpeed} km/h</p>
+                        </div>
+                    </InfoTooltip>
                 </div>
 
                 {/* Wetterinformationen nach Tageszeiten */}
