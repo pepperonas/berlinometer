@@ -1535,6 +1535,43 @@ async def scrape_live_occupancy_single(url, attempt_num, location_name_from_csv=
 app = Flask(__name__)
 CORS(app)
 
+def save_scraping_data(results, search_params=None):
+    """
+    Speichert Scraping-Ergebnisse als minified JSON-Datei
+    """
+    try:
+        # Verwende absoluten Pfad basierend auf dem Skript-Verzeichnis
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        scraping_dir = os.path.join(script_dir, "popular-times-scrapings")
+        
+        # Stelle sicher, dass der Ordner existiert
+        os.makedirs(scraping_dir, exist_ok=True)
+        
+        # Timestamp für Dateiname
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"scraping_{timestamp}.json"
+        filepath = os.path.join(scraping_dir, filename)
+        
+        # Bereite Daten für JSON vor
+        output_data = {
+            "timestamp": datetime.now().isoformat(),
+            "total_locations": len(results),
+            "successful_scrapes": len([r for r in results if r.get('statistics', {}).get('success', False)]),
+            "search_params": search_params or {},
+            "results": results
+        }
+        
+        # Speichere als minified JSON
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(output_data, f, ensure_ascii=False, separators=(',', ':'))
+        
+        logger.info(f"✅ Scraping-Daten gespeichert: {filepath} ({len(results)} Locations)")
+        return filepath
+        
+    except Exception as e:
+        logger.error(f"❌ Fehler beim Speichern der Scraping-Daten: {e}")
+        return None
+
 
 def create_progress_response(current_index, total, location_name=None, batch_info=None):
     """Create a progress update response with batch information"""
@@ -1750,6 +1787,10 @@ async def process_urls_stream(urls):
     logger.info(
         f"🚀 Durchschnitt: {(total / (total_execution_time / 60)):.1f} Locations/min mit Concurrent Batches")
 
+    # Speichere Scraping-Daten automatisch
+    logger.info("💾 Speichere Scraping-Ergebnisse...")
+    save_scraping_data(results, {"total_urls": total})
+    
     # Final progress update
     yield create_progress_response(total, total,
                                    f"Alle {total} Locations abgeschlossen - {len(successful_requests)} erfolgreich")
@@ -2004,6 +2045,17 @@ def find_locations():
                 urls = [location['url'] for location in locations]
                 logger.info(f"Fallback found {len(locations)} locations")
 
+            # Speichere auch die Location-Finder-Ergebnisse
+            if len(locations) > 0:
+                logger.info("💾 Speichere Location-Finder-Ergebnisse...")
+                location_results = [{
+                    'location_name': loc['name'],
+                    'url': loc['url'],
+                    'address': address,
+                    'timestamp': datetime.now().isoformat()
+                } for loc in locations]
+                save_scraping_data(location_results, {"address": address, "type": "location_finder"})
+            
             return jsonify({
                 'success': True,
                 'address': address,
@@ -2021,6 +2073,105 @@ def find_locations():
         logger.error(f"Location finder error: {e}")
         return jsonify({'error': str(e)}), 500
 
+
+@app.route('/latest-scraping', methods=['GET'])
+def get_latest_scraping():
+    """Endpoint to get the latest scraping result"""
+    try:
+        # Verwende absoluten Pfad basierend auf dem Skript-Verzeichnis
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        scraping_dir = os.path.join(script_dir, "popular-times-scrapings")
+        logger.info(f"🔍 Script-Verzeichnis: {script_dir}")
+        logger.info(f"🔍 Suche in Ordner: {os.path.abspath(scraping_dir)}")
+        logger.info(f"🔍 Working Directory: {os.getcwd()}")
+        
+        if not os.path.exists(scraping_dir):
+            logger.warning(f"❌ Ordner existiert nicht: {scraping_dir}")
+            
+            # Versuche alternative Pfade
+            alternative_paths = [
+                os.path.join(os.getcwd(), "popular-times-scrapings"),
+                "/var/www/html/popular-times/popular-times-scrapings",
+                "popular-times-scrapings"
+            ]
+            
+            logger.info(f"🔄 Versuche alternative Pfade...")
+            for alt_path in alternative_paths:
+                logger.info(f"   Teste: {alt_path} - Existiert: {os.path.exists(alt_path)}")
+                if os.path.exists(alt_path):
+                    scraping_dir = alt_path
+                    logger.info(f"✅ Alternative gefunden: {scraping_dir}")
+                    break
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Scraping-Ordner existiert nicht', 
+                    'debug_info': {
+                        'expected_path': os.path.abspath(scraping_dir),
+                        'script_dir': script_dir,
+                        'current_dir': os.getcwd(),
+                        'tested_paths': alternative_paths,
+                        'path_exists': [os.path.exists(p) for p in alternative_paths]
+                    }
+                }), 404
+        
+        # Finde alle JSON-Dateien
+        try:
+            all_files = os.listdir(scraping_dir)
+            json_files = [f for f in all_files if f.endswith('.json')]
+            logger.info(f"📁 Gefundene Dateien: {all_files}")
+            logger.info(f"📄 JSON-Dateien: {json_files}")
+        except Exception as list_error:
+            logger.error(f"❌ Fehler beim Lesen des Ordners: {list_error}")
+            return jsonify({
+                'success': False,
+                'error': f'Kann Ordner nicht lesen: {list_error}'
+            }), 500
+        
+        if not json_files:
+            logger.warning("❌ Keine JSON-Dateien gefunden")
+            return jsonify({
+                'success': False,
+                'error': 'Keine Scraping-Daten verfügbar',
+                'debug_info': {
+                    'found_files': all_files,
+                    'scraping_dir': os.path.abspath(scraping_dir)
+                }
+            }), 404
+        
+        # Sortiere nach Dateiname (Timestamp)
+        json_files.sort(reverse=True)
+        latest_file = json_files[0]
+        filepath = os.path.join(scraping_dir, latest_file)
+        
+        logger.info(f"📂 Lade Datei: {filepath}")
+        
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        logger.info(f"✅ Letztes Scraping geladen: {latest_file} ({data.get('total_locations', 0)} Locations)")
+        
+        return jsonify({
+            'success': True,
+            'filename': latest_file,
+            'data': data,
+            'debug_info': {
+                'file_count': len(json_files),
+                'all_files': json_files[:5]  # Nur erste 5 für Debug
+            },
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Fehler beim Laden des letzten Scraping-Ergebnisses: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'debug_info': {
+                'working_dir': os.getcwd(),
+                'scraping_dir_exists': os.path.exists('popular-times-scrapings')
+            }
+        }), 500
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -2041,6 +2192,7 @@ def root():
         'endpoints': {
             '/scrape': 'POST - Scrape Google Maps locations',
             '/find-locations': 'POST - Find locations near address',
+            '/latest-scraping': 'GET - Get latest scraping result',
             '/health': 'GET - Health check'
         },
         'timestamp': datetime.now().isoformat()
