@@ -12,6 +12,12 @@ import urllib.parse
 from datetime import datetime
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
+import mysql.connector
+from mysql.connector import pooling
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Setup logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -1535,6 +1541,28 @@ async def scrape_live_occupancy_single(url, attempt_num, location_name_from_csv=
 app = Flask(__name__)
 CORS(app)
 
+# MySQL Connection Pool
+try:
+    db_config = {
+        'host': os.getenv('MYSQL_HOST', 'localhost'),
+        'user': os.getenv('MYSQL_USER', 'root'),
+        'password': os.getenv('MYSQL_PASSWORD', ''),
+        'database': os.getenv('MYSQL_DATABASE', 'popular_times_db'),
+        'port': int(os.getenv('MYSQL_PORT', '3306'))
+    }
+    
+    # Create connection pool
+    db_pool = pooling.MySQLConnectionPool(
+        pool_name="popular_times_pool",
+        pool_size=5,
+        pool_reset_session=True,
+        **db_config
+    )
+    logger.info("✅ MySQL connection pool created successfully")
+except Exception as e:
+    logger.error(f"❌ Failed to create MySQL connection pool: {e}")
+    db_pool = None
+
 def save_scraping_data(results, search_params=None):
     """
     Speichert Scraping-Ergebnisse als minified JSON-Datei
@@ -1571,6 +1599,109 @@ def save_scraping_data(results, search_params=None):
     except Exception as e:
         logger.error(f"❌ Fehler beim Speichern der Scraping-Daten: {e}")
         return None
+
+
+def save_to_database(result):
+    """
+    Speichert ein einzelnes Scraping-Ergebnis in der MySQL-Datenbank
+    """
+    if not db_pool:
+        logger.warning("❌ Keine Datenbankverbindung verfügbar")
+        return False
+    
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        # Extrahiere Prozentwerte aus dem Auslastungstext
+        occupancy_percent = None
+        usual_percent = None
+        
+        if result.get('live_occupancy'):
+            text = result['live_occupancy']
+            # Pattern: "Derzeit zu X % ausgelastet; normal sind Y %."
+            import re
+            current_match = re.search(r'derzeit\s+zu\s+(\d+)\s*%', text, re.IGNORECASE)
+            usual_match = re.search(r'normal\s+sind\s+(\d+)\s*%', text, re.IGNORECASE)
+            
+            if current_match:
+                occupancy_percent = int(current_match.group(1))
+            else:
+                # Fallback: Einzelner Prozent-Wert
+                single_match = re.search(r'(\d+)\s*%\s*ausgelastet', text, re.IGNORECASE)
+                if single_match:
+                    occupancy_percent = int(single_match.group(1))
+            
+            if usual_match:
+                usual_percent = int(usual_match.group(1))
+        
+        # Stored Procedure aufrufen
+        cursor.callproc('insert_occupancy_data', [
+            result.get('url', ''),
+            result.get('location_name', 'Unknown'),
+            result.get('address'),
+            occupancy_percent,
+            usual_percent,
+            result.get('is_live_data', False),
+            result.get('live_occupancy', '')
+        ])
+        
+        conn.commit()
+        logger.info(f"✅ Daten für {result.get('location_name')} in DB gespeichert")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Fehler beim Speichern in Datenbank: {e}")
+        return False
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
+
+
+def get_location_history(url, hours=12):
+    """
+    Holt die Auslastungs-Historie einer Location aus der Datenbank
+    """
+    if not db_pool:
+        return None
+    
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        query = """
+        SELECT 
+            oh.occupancy_percent,
+            oh.usual_percent,
+            oh.is_live_data,
+            oh.timestamp
+        FROM locations l
+        INNER JOIN occupancy_history oh ON l.id = oh.location_id
+        WHERE l.google_maps_url = %s
+        AND oh.timestamp >= DATE_SUB(NOW(), INTERVAL %s HOUR)
+        ORDER BY oh.timestamp ASC
+        """
+        
+        cursor.execute(query, (url, hours))
+        results = cursor.fetchall()
+        
+        # Konvertiere Timestamps zu ISO-Format
+        for row in results:
+            if row['timestamp']:
+                row['timestamp'] = row['timestamp'].isoformat()
+        
+        return results
+        
+    except Exception as e:
+        logger.error(f"❌ Fehler beim Abrufen der Historie: {e}")
+        return None
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
 
 
 def create_progress_response(current_index, total, location_name=None, batch_info=None):
@@ -1723,6 +1854,10 @@ async def process_urls_stream(urls):
                         all_results.append(result)
                         yield create_result_response(result)
                         processed_count += 1
+                        
+                        # Speichere in Datenbank
+                        if result.get('statistics', {}).get('success', False):
+                            save_to_database(result)
                         
                         # Progress update mit Batch-Info
                         batch_progress = int((result_idx + 1) / len(batch_result) * 100)
@@ -2173,13 +2308,47 @@ def get_latest_scraping():
             }
         }), 500
 
+@app.route('/location-history', methods=['POST'])
+def get_location_history_endpoint():
+    """Endpoint to get the occupancy history for a specific location"""
+    try:
+        data = request.get_json()
+        
+        if not data or 'url' not in data:
+            return jsonify({'error': 'URL is required'}), 400
+        
+        url = data['url']
+        hours = data.get('hours', 12)  # Default 12 Stunden
+        
+        history = get_location_history(url, hours)
+        
+        if history is None:
+            return jsonify({
+                'success': False,
+                'error': 'Datenbankfehler oder keine Verbindung'
+            }), 500
+        
+        return jsonify({
+            'success': True,
+            'url': url,
+            'hours': hours,
+            'data': history,
+            'count': len(history),
+            'timestamp': datetime.now().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"❌ Historie-Endpoint Fehler: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'service': 'Popular Times Scraper'
+        'service': 'Popular Times Scraper',
+        'database': 'connected' if db_pool else 'disconnected'
     })
 
 
