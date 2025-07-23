@@ -69,7 +69,10 @@ let segmentationResults = null;
 
 // Background presets
 const backgroundPresets = {
-    code: 'backgrounds/code.png'
+    code: 'backgrounds/code.png',
+    kitchen: 'backgrounds/ktichen.jpeg',
+    prison: 'backgrounds/prison.jpeg',
+    startrek: 'backgrounds/star-treck.jpeg'
 };
 
 // Initialize MediaPipe SelfieSegmentation
