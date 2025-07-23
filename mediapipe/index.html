@@ -3,84 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediaPipe Multi-Feature Demo - Hand Tracking, Gesichtserkennung, Pose Detection & mehr</title>
-    
+    <title>MediaPipe Multi-Feature Demo - Hand Tracking, Gesichtserkennung, Pose Detection &
+        mehr</title>
+
     <!-- Meta Information -->
-    <meta name="description" content="Umfassende MediaPipe Demo mit Hand Tracking (21 Landmarks), Gesichtserkennung (468 Punkte), Körper-Pose (33 Landmarks), Objekterkennung und Selfie-Segmentierung mit Echtzeit-Kamera-Verarbeitung.">
-    <meta name="keywords" content="MediaPipe, Computer Vision, Hand Tracking, Gesichtserkennung, Pose Detection, Objekterkennung, Selfie Segmentation, Machine Learning, WebRTC, Canvas, Real-time Processing">
+    <meta name="description"
+          content="Umfassende MediaPipe Demo mit Hand Tracking (21 Landmarks), Gesichtserkennung (468 Punkte), Körper-Pose (33 Landmarks), Objekterkennung und Selfie-Segmentierung mit Echtzeit-Kamera-Verarbeitung.">
+    <meta name="keywords"
+          content="MediaPipe, Computer Vision, Hand Tracking, Gesichtserkennung, Pose Detection, Objekterkennung, Selfie Segmentation, Machine Learning, WebRTC, Canvas, Real-time Processing">
     <meta name="author" content="mrx3k1">
     <meta name="robots" content="index, follow">
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mrx3k1.de/mediapipe/">
     <meta property="og:title" content="MediaPipe Multi-Feature Demo - Computer Vision im Browser">
-    <meta property="og:description" content="Erlebe die Kraft von MediaPipe: Hand Tracking, Gesichtserkennung mit 468 Landmarks, Ganzkörper-Pose Detection, Objekterkennung und Selfie-Segmentierung - alles in Echtzeit im Browser!">
+    <meta property="og:description"
+          content="Erlebe die Kraft von MediaPipe: Hand Tracking, Gesichtserkennung mit 468 Landmarks, Ganzkörper-Pose Detection, Objekterkennung und Selfie-Segmentierung - alles in Echtzeit im Browser!">
     <meta property="og:image" content="https://mrx3k1.de/mediapipe/preview.jpg">
     <meta property="og:site_name" content="mrx3k1.de">
     <meta property="og:locale" content="de_DE">
-    
+
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://mrx3k1.de/mediapipe/">
     <meta name="twitter:title" content="MediaPipe Multi-Feature Demo - Computer Vision Tools">
-    <meta name="twitter:description" content="Hand Tracking, Gesichtserkennung, Pose Detection und mehr - powered by Google MediaPipe">
+    <meta name="twitter:description"
+          content="Hand Tracking, Gesichtserkennung, Pose Detection und mehr - powered by Google MediaPipe">
     <meta name="twitter:image" content="https://mrx3k1.de/mediapipe/preview.jpg">
     <meta name="twitter:creator" content="@mrx3k1">
-    
+
     <!-- Technical Meta -->
     <meta name="theme-color" content="#2C2E3B">
     <meta name="color-scheme" content="dark">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
+
     <!-- Performance & Security -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://storage.googleapis.com; media-src 'self' blob:; camera; microphone;">
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://storage.googleapis.com; media-src 'self' blob:; camera; microphone;">
     <meta name="referrer" content="strict-origin-when-cross-origin">
-    
+
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
-    <link rel="manifest" href="../site.webmanifest">
-    
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="manifest" href="site.webmanifest">
+
     <!-- PWA Meta -->
     <meta name="application-name" content="MediaPipe Demo">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="MediaPipe Demo">
-    
+
     <!-- Structured Data -->
     <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "MediaPipe Multi-Feature Demo",
-        "description": "Umfassende Computer Vision Demo mit Google MediaPipe: Hand Tracking, Gesichtserkennung, Pose Detection, Objekterkennung und Selfie-Segmentierung",
-        "url": "https://mrx3k1.de/mediapipe/",
-        "applicationCategory": "MultimediaApplication",
-        "operatingSystem": "Any",
-        "browserRequirements": "Requires JavaScript, WebRTC, Canvas support",
-        "author": {
-            "@type": "Person",
-            "name": "mrx3k1"
-        },
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "EUR"
-        },
-        "featureList": [
-            "Hand Tracking mit 21 Landmarks",
-            "Gesichtserkennung mit 468 Punkten",
-            "Körper-Pose Detection mit 33 Landmarks", 
-            "Objekterkennung mit Bounding Boxes",
-            "Selfie-Segmentierung mit Hintergrund-Effekten",
-            "Echtzeit-Performance mit FPS-Counter",
-            "GPU-beschleunigte Verarbeitung"
-        ]
-    }
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "MediaPipe Multi-Feature Demo",
+            "description": "Umfassende Computer Vision Demo mit Google MediaPipe: Hand Tracking, Gesichtserkennung, Pose Detection, Objekterkennung und Selfie-Segmentierung",
+            "url": "https://mrx3k1.de/mediapipe/",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires JavaScript, WebRTC, Canvas support",
+            "author": {
+                "@type": "Person",
+                "name": "mrx3k1"
+            },
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "EUR"
+            },
+            "featureList": [
+                "Hand Tracking mit 21 Landmarks",
+                "Gesichtserkennung mit 468 Punkten",
+                "Körper-Pose Detection mit 33 Landmarks",
+                "Objekterkennung mit Bounding Boxes",
+                "Selfie-Segmentierung mit Hintergrund-Effekten",
+                "Echtzeit-Performance mit FPS-Counter",
+                "GPU-beschleunigte Verarbeitung"
+            ]
+        }
     </script>
     <style>
         * {
@@ -88,7 +94,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             background-color: #2C2E3B;
@@ -102,7 +108,7 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
         }
-        
+
         h1 {
             margin-bottom: 15px;
             font-weight: 300;
@@ -110,7 +116,7 @@
             font-size: clamp(1.5rem, 4vw, 2.5rem);
             line-height: 1.2;
         }
-        
+
         .container {
             position: relative;
             max-width: 900px;
@@ -121,7 +127,7 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             margin: 0 auto;
         }
-        
+
         /* Tab Navigation */
         .tabs {
             display: flex;
@@ -134,11 +140,11 @@
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
-        
+
         .tabs::-webkit-scrollbar {
             display: none;
         }
-        
+
         .tab {
             padding: clamp(8px, 2vw, 12px) clamp(10px, 3vw, 20px);
             background: rgba(255, 255, 255, 0.1);
@@ -154,25 +160,25 @@
             min-width: fit-content;
             touch-action: manipulation;
         }
-        
+
         .tab:hover {
             background: rgba(255, 255, 255, 0.15);
         }
-        
+
         .tab.active {
             background: #4CAF50;
             color: white;
         }
-        
+
         /* Tab Content */
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
         }
-        
+
         .video-container {
             position: relative;
             width: 100%;
@@ -183,7 +189,7 @@
             aspect-ratio: 16/9;
             max-height: 70vh;
         }
-        
+
         video, canvas {
             width: 100%;
             height: 100%;
@@ -191,13 +197,13 @@
             border-radius: 12px;
             object-fit: cover;
         }
-        
+
         canvas {
             position: absolute;
             top: 0;
             left: 0;
         }
-        
+
         .controls {
             display: flex;
             gap: clamp(8px, 2vw, 10px);
@@ -205,7 +211,7 @@
             justify-content: center;
             margin-bottom: 15px;
         }
-        
+
         button {
             background: #4CAF50;
             color: white;
@@ -220,19 +226,19 @@
             min-height: 44px;
             min-width: 44px;
         }
-        
+
         button:hover {
             background: #45a049;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
         }
-        
+
         button:disabled {
             background: #666;
             cursor: not-allowed;
             transform: none;
         }
-        
+
         .info {
             padding: clamp(12px, 3vw, 15px);
             background: rgba(255, 255, 255, 0.1);
@@ -241,12 +247,12 @@
             font-size: clamp(12px, 2.5vw, 14px);
             line-height: 1.6;
         }
-        
+
         .info .detected {
             color: #4CAF50;
             font-weight: bold;
         }
-        
+
         .loading {
             position: absolute;
             top: 50%;
@@ -255,7 +261,7 @@
             font-size: 18px;
             color: #888;
         }
-        
+
         /* Feature-specific styles */
         .options {
             display: flex;
@@ -264,7 +270,7 @@
             flex-wrap: wrap;
             justify-content: center;
         }
-        
+
         .option-group {
             display: flex;
             align-items: center;
@@ -274,20 +280,20 @@
             border-radius: 6px;
             min-height: 44px;
         }
-        
+
         .option-group label {
             font-size: clamp(12px, 2.5vw, 14px);
             cursor: pointer;
             user-select: none;
         }
-        
+
         input[type="checkbox"] {
             width: clamp(16px, 4vw, 18px);
             height: clamp(16px, 4vw, 18px);
             cursor: pointer;
             touch-action: manipulation;
         }
-        
+
         select {
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -299,11 +305,11 @@
             min-height: 44px;
             touch-action: manipulation;
         }
-        
+
         select option {
             background: #2C2E3B;
         }
-        
+
         .fps-counter {
             position: absolute;
             top: clamp(8px, 2vw, 10px);
@@ -316,71 +322,71 @@
             font-family: monospace;
             pointer-events: none;
         }
-        
+
         /* Mobile Optimizations */
         @media (max-width: 768px) {
             .tabs {
                 justify-content: flex-start;
                 padding-bottom: 5px;
             }
-            
+
             .tab {
                 flex: 1;
                 min-width: calc(33.333% - 5px);
                 text-align: center;
             }
-            
+
             .options {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .option-group {
                 justify-content: space-between;
                 width: 100%;
             }
-            
+
             .controls {
                 gap: 8px;
             }
-            
+
             button {
                 flex: 1;
                 min-width: calc(50% - 4px);
             }
         }
-        
+
         @media (max-width: 480px) {
             body {
                 padding: 5px;
             }
-            
+
             .container {
                 border-radius: 12px;
             }
-            
+
             .video-container {
                 max-height: 60vh;
             }
-            
+
             .tab {
                 font-size: 11px;
                 padding: 8px 12px;
             }
-            
+
             h1 {
                 font-size: 1.25rem;
                 margin-bottom: 10px;
             }
         }
-        
+
         /* Touch and Gesture Support */
         @media (hover: none) and (pointer: coarse) {
             .tab:hover {
                 background: rgba(255, 255, 255, 0.1);
                 transform: none;
             }
-            
+
             button:hover {
                 background: #4CAF50;
                 transform: none;
@@ -390,1090 +396,1090 @@
     </style>
 </head>
 <body>
-    <h1>MediaPipe Multi-Feature Demo</h1>
-    
-    <div class="container">
-        <!-- Tab Navigation -->
-        <div class="tabs">
-            <button class="tab active" data-tab="hands">Hand Tracking</button>
-            <button class="tab" data-tab="face">Gesichtserkennung</button>
-            <button class="tab" data-tab="pose">Körper-Pose</button>
-            <button class="tab" data-tab="objects">Objekterkennung</button>
-            <button class="tab" data-tab="selfie">Selfie-Segmentierung</button>
+<h1>MediaPipe Multi-Feature Demo</h1>
+
+<div class="container">
+    <!-- Tab Navigation -->
+    <div class="tabs">
+        <button class="tab active" data-tab="hands">Hand Tracking</button>
+        <button class="tab" data-tab="face">Gesichtserkennung</button>
+        <button class="tab" data-tab="pose">Körper-Pose</button>
+        <button class="tab" data-tab="objects">Objekterkennung</button>
+        <button class="tab" data-tab="selfie">Selfie-Segmentierung</button>
+    </div>
+
+    <!-- Hand Tracking Tab -->
+    <div class="tab-content active" id="hands-tab">
+        <div class="video-container">
+            <video id="hands-video" autoplay playsinline></video>
+            <canvas id="hands-canvas"></canvas>
+            <div id="hands-loading" class="loading">Lade Hand Tracking...</div>
+            <div class="fps-counter" id="hands-fps">FPS: 0</div>
         </div>
-        
-        <!-- Hand Tracking Tab -->
-        <div class="tab-content active" id="hands-tab">
-            <div class="video-container">
-                <video id="hands-video" autoplay playsinline></video>
-                <canvas id="hands-canvas"></canvas>
-                <div id="hands-loading" class="loading">Lade Hand Tracking...</div>
-                <div class="fps-counter" id="hands-fps">FPS: 0</div>
-            </div>
-            
-            <div class="controls">
-                <button id="hands-start" disabled>Start Tracking</button>
-                <button id="hands-stop" disabled>Stop Tracking</button>
-            </div>
-            
-            <div class="info">
-                <div id="hands-status">Warte auf Kamera-Zugriff...</div>
-                <div id="hands-count"></div>
-            </div>
+
+        <div class="controls">
+            <button id="hands-start" disabled>Start Tracking</button>
+            <button id="hands-stop" disabled>Stop Tracking</button>
         </div>
-        
-        <!-- Face Detection Tab -->
-        <div class="tab-content" id="face-tab">
-            <div class="video-container">
-                <video id="face-video" autoplay playsinline></video>
-                <canvas id="face-canvas"></canvas>
-                <div id="face-loading" class="loading">Lade Gesichtserkennung...</div>
-                <div class="fps-counter" id="face-fps">FPS: 0</div>
-            </div>
-            
-            <div class="options">
-                <div class="option-group">
-                    <input type="checkbox" id="show-landmarks" checked>
-                    <label for="show-landmarks">Landmarks zeigen</label>
-                </div>
-                <div class="option-group">
-                    <input type="checkbox" id="show-mesh" checked>
-                    <label for="show-mesh">Mesh zeigen</label>
-                </div>
-                <div class="option-group">
-                    <input type="checkbox" id="show-contours">
-                    <label for="show-contours">Konturen zeigen</label>
-                </div>
-            </div>
-            
-            <div class="controls">
-                <button id="face-start" disabled>Start Tracking</button>
-                <button id="face-stop" disabled>Stop Tracking</button>
-            </div>
-            
-            <div class="info">
-                <div id="face-status">Bereit für Gesichtserkennung</div>
-                <div id="face-count"></div>
-            </div>
-        </div>
-        
-        <!-- Pose Detection Tab -->
-        <div class="tab-content" id="pose-tab">
-            <div class="video-container">
-                <video id="pose-video" autoplay playsinline></video>
-                <canvas id="pose-canvas"></canvas>
-                <div id="pose-loading" class="loading">Lade Pose Detection...</div>
-                <div class="fps-counter" id="pose-fps">FPS: 0</div>
-            </div>
-            
-            <div class="controls">
-                <button id="pose-start" disabled>Start Tracking</button>
-                <button id="pose-stop" disabled>Stop Tracking</button>
-            </div>
-            
-            <div class="info">
-                <div id="pose-status">Bereit für Körper-Pose Tracking</div>
-                <div id="pose-count"></div>
-            </div>
-        </div>
-        
-        <!-- Object Detection Tab -->
-        <div class="tab-content" id="objects-tab">
-            <div class="video-container">
-                <video id="objects-video" autoplay playsinline></video>
-                <canvas id="objects-canvas"></canvas>
-                <div id="objects-loading" class="loading">Lade Objekterkennung...</div>
-                <div class="fps-counter" id="objects-fps">FPS: 0</div>
-            </div>
-            
-            <div class="options">
-                <div class="option-group">
-                    <label for="confidence-threshold">Min. Confidence:</label>
-                    <select id="confidence-threshold">
-                        <option value="0.3">30%</option>
-                        <option value="0.5" selected>50%</option>
-                        <option value="0.7">70%</option>
-                        <option value="0.9">90%</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="controls">
-                <button id="objects-start" disabled>Start Detection</button>
-                <button id="objects-stop" disabled>Stop Detection</button>
-            </div>
-            
-            <div class="info">
-                <div id="objects-status">Bereit für Objekterkennung</div>
-                <div id="objects-count"></div>
-            </div>
-        </div>
-        
-        <!-- Selfie Segmentation Tab -->
-        <div class="tab-content" id="selfie-tab">
-            <div class="video-container">
-                <video id="selfie-video" autoplay playsinline></video>
-                <canvas id="selfie-canvas"></canvas>
-                <div id="selfie-loading" class="loading">Lade Selfie-Segmentierung...</div>
-                <div class="fps-counter" id="selfie-fps">FPS: 0</div>
-            </div>
-            
-            <div class="options">
-                <div class="option-group">
-                    <label for="background-type">Hintergrund:</label>
-                    <select id="background-type">
-                        <option value="blur">Hintergrund Blur</option>
-                        <option value="virtual">Virtuell</option>
-                        <option value="remove">Entfernen</option>
-                        <option value="blur-person">Person Blur</option>
-                    </select>
-                </div>
-                <div class="option-group">
-                    <input type="checkbox" id="invert-mask">
-                    <label for="invert-mask">Mask invertieren</label>
-                </div>
-            </div>
-            
-            <div class="controls">
-                <button id="selfie-start" disabled>Start Segmentierung</button>
-                <button id="selfie-stop" disabled>Stop Segmentierung</button>
-            </div>
-            
-            <div class="info">
-                <div id="selfie-status">Bereit für Selfie-Segmentierung</div>
-            </div>
+
+        <div class="info">
+            <div id="hands-status">Warte auf Kamera-Zugriff...</div>
+            <div id="hands-count"></div>
         </div>
     </div>
 
-    <script type="module">
-        import {
-            HandLandmarker,
-            FaceLandmarker,
-            PoseLandmarker,
-            ObjectDetector,
-            ImageSegmenter,
-            FilesetResolver,
-            DrawingUtils
-        } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
-        
-        // Global variables
-        let currentTab = 'hands';
-        let camera = null;
-        let stream = null;
-        
-        // Tab switching
-        const tabs = document.querySelectorAll('.tab');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                // Update active states
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(tc => tc.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(`${tabName}-tab`).classList.add('active');
-                
-                // Stop current tracking
-                stopAllTracking();
-                currentTab = tabName;
-                
-                // Setup camera for new tab
-                setupCameraForTab(tabName);
-            });
+    <!-- Face Detection Tab -->
+    <div class="tab-content" id="face-tab">
+        <div class="video-container">
+            <video id="face-video" autoplay playsinline></video>
+            <canvas id="face-canvas"></canvas>
+            <div id="face-loading" class="loading">Lade Gesichtserkennung...</div>
+            <div class="fps-counter" id="face-fps">FPS: 0</div>
+        </div>
+
+        <div class="options">
+            <div class="option-group">
+                <input type="checkbox" id="show-landmarks" checked>
+                <label for="show-landmarks">Landmarks zeigen</label>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="show-mesh" checked>
+                <label for="show-mesh">Mesh zeigen</label>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="show-contours">
+                <label for="show-contours">Konturen zeigen</label>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="face-start" disabled>Start Tracking</button>
+            <button id="face-stop" disabled>Stop Tracking</button>
+        </div>
+
+        <div class="info">
+            <div id="face-status">Bereit für Gesichtserkennung</div>
+            <div id="face-count"></div>
+        </div>
+    </div>
+
+    <!-- Pose Detection Tab -->
+    <div class="tab-content" id="pose-tab">
+        <div class="video-container">
+            <video id="pose-video" autoplay playsinline></video>
+            <canvas id="pose-canvas"></canvas>
+            <div id="pose-loading" class="loading">Lade Pose Detection...</div>
+            <div class="fps-counter" id="pose-fps">FPS: 0</div>
+        </div>
+
+        <div class="controls">
+            <button id="pose-start" disabled>Start Tracking</button>
+            <button id="pose-stop" disabled>Stop Tracking</button>
+        </div>
+
+        <div class="info">
+            <div id="pose-status">Bereit für Körper-Pose Tracking</div>
+            <div id="pose-count"></div>
+        </div>
+    </div>
+
+    <!-- Object Detection Tab -->
+    <div class="tab-content" id="objects-tab">
+        <div class="video-container">
+            <video id="objects-video" autoplay playsinline></video>
+            <canvas id="objects-canvas"></canvas>
+            <div id="objects-loading" class="loading">Lade Objekterkennung...</div>
+            <div class="fps-counter" id="objects-fps">FPS: 0</div>
+        </div>
+
+        <div class="options">
+            <div class="option-group">
+                <label for="confidence-threshold">Min. Confidence:</label>
+                <select id="confidence-threshold">
+                    <option value="0.3">30%</option>
+                    <option value="0.5" selected>50%</option>
+                    <option value="0.7">70%</option>
+                    <option value="0.9">90%</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="objects-start" disabled>Start Detection</button>
+            <button id="objects-stop" disabled>Stop Detection</button>
+        </div>
+
+        <div class="info">
+            <div id="objects-status">Bereit für Objekterkennung</div>
+            <div id="objects-count"></div>
+        </div>
+    </div>
+
+    <!-- Selfie Segmentation Tab -->
+    <div class="tab-content" id="selfie-tab">
+        <div class="video-container">
+            <video id="selfie-video" autoplay playsinline></video>
+            <canvas id="selfie-canvas"></canvas>
+            <div id="selfie-loading" class="loading">Lade Selfie-Segmentierung...</div>
+            <div class="fps-counter" id="selfie-fps">FPS: 0</div>
+        </div>
+
+        <div class="options">
+            <div class="option-group">
+                <label for="background-type">Hintergrund:</label>
+                <select id="background-type">
+                    <option value="blur">Hintergrund Blur</option>
+                    <option value="virtual">Virtuell</option>
+                    <option value="remove">Entfernen</option>
+                    <option value="blur-person">Person Blur</option>
+                </select>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="invert-mask">
+                <label for="invert-mask">Mask invertieren</label>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="selfie-start" disabled>Start Segmentierung</button>
+            <button id="selfie-stop" disabled>Stop Segmentierung</button>
+        </div>
+
+        <div class="info">
+            <div id="selfie-status">Bereit für Selfie-Segmentierung</div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import {
+        HandLandmarker,
+        FaceLandmarker,
+        PoseLandmarker,
+        ObjectDetector,
+        ImageSegmenter,
+        FilesetResolver,
+        DrawingUtils
+    } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest";
+
+    // Global variables
+    let currentTab = 'hands';
+    let camera = null;
+    let stream = null;
+
+    // Tab switching
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+
+            // Update active states
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+
+            tab.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+
+            // Stop current tracking
+            stopAllTracking();
+            currentTab = tabName;
+
+            // Setup camera for new tab
+            setupCameraForTab(tabName);
         });
-        
-        // Stop all tracking
-        function stopAllTracking() {
-            // Stop all running detections
-            ['hands', 'face', 'pose', 'objects', 'selfie'].forEach(feature => {
-                const stopBtn = document.getElementById(`${feature}-stop`);
-                if (stopBtn && !stopBtn.disabled) {
-                    stopBtn.click();
+    });
+
+    // Stop all tracking
+    function stopAllTracking() {
+        // Stop all running detections
+        ['hands', 'face', 'pose', 'objects', 'selfie'].forEach(feature => {
+            const stopBtn = document.getElementById(`${feature}-stop`);
+            if (stopBtn && !stopBtn.disabled) {
+                stopBtn.click();
+            }
+        });
+    }
+
+    // Setup camera for specific tab
+    async function setupCameraForTab(tabName) {
+        const video = document.getElementById(`${tabName}-video`);
+        const canvas = document.getElementById(`${tabName}-canvas`);
+        const status = document.getElementById(`${tabName}-status`);
+        const startBtn = document.getElementById(`${tabName}-start`);
+
+        try {
+            if (!stream) {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: 1280,
+                        height: 720,
+                        facingMode: 'user'
+                    }
+                });
+            }
+
+            video.srcObject = stream;
+
+            video.addEventListener('loadeddata', () => {
+                // Ensure proper canvas sizing for mobile
+                const rect = video.getBoundingClientRect();
+                canvas.width = video.videoWidth || rect.width;
+                canvas.height = video.videoHeight || rect.height;
+                if (startBtn) startBtn.disabled = false;
+                status.textContent = "Kamera bereit! Klicke 'Start'";
+            });
+
+            // Handle orientation change
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    if (video.videoWidth && video.videoHeight) {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                    }
+                }, 100);
+            });
+        } catch (error) {
+            console.error("Kamera-Fehler:", error);
+            status.textContent = "Kein Kamera-Zugriff möglich!";
+        }
+    }
+
+    // FPS Counter
+    class FPSCounter {
+        constructor(elementId) {
+            this.element = document.getElementById(elementId);
+            this.lastTime = performance.now();
+            this.frames = 0;
+        }
+
+        update() {
+            this.frames++;
+            const currentTime = performance.now();
+            const delta = currentTime - this.lastTime;
+
+            if (delta >= 1000) {
+                const fps = Math.round((this.frames * 1000) / delta);
+                this.element.textContent = `FPS: ${fps}`;
+                this.frames = 0;
+                this.lastTime = currentTime;
+            }
+        }
+    }
+
+    // Hand Tracking Module
+    class HandTrackingModule {
+        constructor() {
+            this.landmarker = null;
+            this.video = document.getElementById('hands-video');
+            this.canvas = document.getElementById('hands-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.startBtn = document.getElementById('hands-start');
+            this.stopBtn = document.getElementById('hands-stop');
+            this.status = document.getElementById('hands-status');
+            this.count = document.getElementById('hands-count');
+            this.loading = document.getElementById('hands-loading');
+            this.fpsCounter = new FPSCounter('hands-fps');
+            this.isTracking = false;
+            this.animationId = null;
+
+            this.HAND_CONNECTIONS = [
+                [0, 1], [1, 2], [2, 3], [3, 4], // Daumen
+                [0, 5], [5, 6], [6, 7], [7, 8], // Zeigefinger
+                [5, 9], [9, 10], [10, 11], [11, 12], // Mittelfinger
+                [9, 13], [13, 14], [14, 15], [15, 16], // Ringfinger
+                [13, 17], [17, 18], [18, 19], [19, 20], // Kleiner Finger
+                [0, 17] // Handgelenk
+            ];
+
+            this.init();
+        }
+
+        async init() {
+            try {
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+                );
+
+                this.landmarker = await HandLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numHands: 2
+                });
+
+                this.loading.style.display = 'none';
+                this.setupEventListeners();
+            } catch (error) {
+                console.error("Fehler beim Laden von Hand Tracking:", error);
+                this.status.textContent = "Fehler beim Laden!";
+                this.loading.style.display = 'none';
+            }
+        }
+
+        setupEventListeners() {
+            this.startBtn.addEventListener('click', () => this.start());
+            this.stopBtn.addEventListener('click', () => this.stop());
+        }
+
+        start() {
+            if (!this.landmarker || this.isTracking) return;
+
+            this.isTracking = true;
+            this.startBtn.disabled = true;
+            this.stopBtn.disabled = false;
+            this.status.textContent = "Tracking läuft...";
+
+            this.detect();
+        }
+
+        stop() {
+            this.isTracking = false;
+            this.startBtn.disabled = false;
+            this.stopBtn.disabled = true;
+            this.status.textContent = "Tracking gestoppt";
+            this.count.textContent = "";
+
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+            }
+
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
+        async detect() {
+            if (!this.isTracking) return;
+
+            const startTimeMs = performance.now();
+
+            if (this.landmarker && this.video.readyState >= 2) {
+                const results = await this.landmarker.detectForVideo(this.video, startTimeMs);
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                if (results.landmarks && results.landmarks.length > 0) {
+                    this.count.innerHTML = `<span class="detected">${results.landmarks.length} Hand/Hände erkannt</span>`;
+
+                    results.landmarks.forEach((landmarks, index) => {
+                        this.drawHand(landmarks, results.handednesses[index]);
+                    });
+                } else {
+                    this.count.textContent = "Keine Hand erkannt";
                 }
+
+                this.fpsCounter.update();
+            }
+
+            this.animationId = requestAnimationFrame(() => this.detect());
+        }
+
+        drawHand(landmarks, handedness) {
+            const isLeftHand = handedness[0].categoryName === 'Left';
+            const color = isLeftHand ? '#4CAF50' : '#2196F3';
+
+            this.ctx.strokeStyle = color;
+            this.ctx.lineWidth = 3;
+
+            this.HAND_CONNECTIONS.forEach(connection => {
+                const [start, end] = connection;
+                const startPoint = landmarks[start];
+                const endPoint = landmarks[end];
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(startPoint.x * this.canvas.width, startPoint.y * this.canvas.height);
+                this.ctx.lineTo(endPoint.x * this.canvas.width, endPoint.y * this.canvas.height);
+                this.ctx.stroke();
+            });
+
+            landmarks.forEach((landmark, index) => {
+                const x = landmark.x * this.canvas.width;
+                const y = landmark.y * this.canvas.height;
+
+                this.ctx.fillStyle = index === 0 ? '#FF5722' : color;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, index === 0 ? 8 : 6, 0, 2 * Math.PI);
+                this.ctx.fill();
+
+                this.ctx.strokeStyle = 'white';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
             });
         }
-        
-        // Setup camera for specific tab
-        async function setupCameraForTab(tabName) {
-            const video = document.getElementById(`${tabName}-video`);
-            const canvas = document.getElementById(`${tabName}-canvas`);
-            const status = document.getElementById(`${tabName}-status`);
-            const startBtn = document.getElementById(`${tabName}-start`);
-            
+    }
+
+    // Face Detection Module
+    class FaceDetectionModule {
+        constructor() {
+            this.landmarker = null;
+            this.video = document.getElementById('face-video');
+            this.canvas = document.getElementById('face-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.startBtn = document.getElementById('face-start');
+            this.stopBtn = document.getElementById('face-stop');
+            this.status = document.getElementById('face-status');
+            this.count = document.getElementById('face-count');
+            this.loading = document.getElementById('face-loading');
+            this.fpsCounter = new FPSCounter('face-fps');
+            this.isTracking = false;
+            this.animationId = null;
+
+            // Options
+            this.showLandmarks = document.getElementById('show-landmarks');
+            this.showMesh = document.getElementById('show-mesh');
+            this.showContours = document.getElementById('show-contours');
+
+            this.init();
+        }
+
+        async init() {
             try {
-                if (!stream) {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: { 
-                            width: 1280, 
-                            height: 720,
-                            facingMode: 'user'
-                        }
-                    });
-                }
-                
-                video.srcObject = stream;
-                
-                video.addEventListener('loadeddata', () => {
-                    // Ensure proper canvas sizing for mobile
-                    const rect = video.getBoundingClientRect();
-                    canvas.width = video.videoWidth || rect.width;
-                    canvas.height = video.videoHeight || rect.height;
-                    if (startBtn) startBtn.disabled = false;
-                    status.textContent = "Kamera bereit! Klicke 'Start'";
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+                );
+
+                this.landmarker = await FaceLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numFaces: 2,
+                    outputFaceBlendshapes: true,
+                    outputFacialTransformationMatrixes: true
                 });
-                
-                // Handle orientation change
-                window.addEventListener('orientationchange', () => {
-                    setTimeout(() => {
-                        if (video.videoWidth && video.videoHeight) {
-                            canvas.width = video.videoWidth;
-                            canvas.height = video.videoHeight;
-                        }
-                    }, 100);
-                });
+
+                this.loading.style.display = 'none';
+                this.setupEventListeners();
             } catch (error) {
-                console.error("Kamera-Fehler:", error);
-                status.textContent = "Kein Kamera-Zugriff möglich!";
+                console.error("Fehler beim Laden von Face Detection:", error);
+                this.status.textContent = "Fehler beim Laden!";
+                this.loading.style.display = 'none';
             }
         }
-        
-        // FPS Counter
-        class FPSCounter {
-            constructor(elementId) {
-                this.element = document.getElementById(elementId);
-                this.lastTime = performance.now();
-                this.frames = 0;
-            }
-            
-            update() {
-                this.frames++;
-                const currentTime = performance.now();
-                const delta = currentTime - this.lastTime;
-                
-                if (delta >= 1000) {
-                    const fps = Math.round((this.frames * 1000) / delta);
-                    this.element.textContent = `FPS: ${fps}`;
-                    this.frames = 0;
-                    this.lastTime = currentTime;
-                }
-            }
+
+        setupEventListeners() {
+            this.startBtn.addEventListener('click', () => this.start());
+            this.stopBtn.addEventListener('click', () => this.stop());
         }
-        
-        // Hand Tracking Module
-        class HandTrackingModule {
-            constructor() {
-                this.landmarker = null;
-                this.video = document.getElementById('hands-video');
-                this.canvas = document.getElementById('hands-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.startBtn = document.getElementById('hands-start');
-                this.stopBtn = document.getElementById('hands-stop');
-                this.status = document.getElementById('hands-status');
-                this.count = document.getElementById('hands-count');
-                this.loading = document.getElementById('hands-loading');
-                this.fpsCounter = new FPSCounter('hands-fps');
-                this.isTracking = false;
-                this.animationId = null;
-                
-                this.HAND_CONNECTIONS = [
-                    [0, 1], [1, 2], [2, 3], [3, 4], // Daumen
-                    [0, 5], [5, 6], [6, 7], [7, 8], // Zeigefinger
-                    [5, 9], [9, 10], [10, 11], [11, 12], // Mittelfinger
-                    [9, 13], [13, 14], [14, 15], [15, 16], // Ringfinger
-                    [13, 17], [17, 18], [18, 19], [19, 20], // Kleiner Finger
-                    [0, 17] // Handgelenk
-                ];
-                
-                this.init();
+
+        start() {
+            if (!this.landmarker || this.isTracking) return;
+
+            this.isTracking = true;
+            this.startBtn.disabled = true;
+            this.stopBtn.disabled = false;
+            this.status.textContent = "Face Tracking läuft...";
+
+            this.detect();
+        }
+
+        stop() {
+            this.isTracking = false;
+            this.startBtn.disabled = false;
+            this.stopBtn.disabled = true;
+            this.status.textContent = "Face Tracking gestoppt";
+            this.count.textContent = "";
+
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
             }
-            
-            async init() {
-                try {
-                    const vision = await FilesetResolver.forVisionTasks(
-                        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-                    );
-                    
-                    this.landmarker = await HandLandmarker.createFromOptions(vision, {
-                        baseOptions: {
-                            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
-                            delegate: "GPU"
-                        },
-                        runningMode: "VIDEO",
-                        numHands: 2
-                    });
-                    
-                    this.loading.style.display = 'none';
-                    this.setupEventListeners();
-                } catch (error) {
-                    console.error("Fehler beim Laden von Hand Tracking:", error);
-                    this.status.textContent = "Fehler beim Laden!";
-                    this.loading.style.display = 'none';
-                }
-            }
-            
-            setupEventListeners() {
-                this.startBtn.addEventListener('click', () => this.start());
-                this.stopBtn.addEventListener('click', () => this.stop());
-            }
-            
-            start() {
-                if (!this.landmarker || this.isTracking) return;
-                
-                this.isTracking = true;
-                this.startBtn.disabled = true;
-                this.stopBtn.disabled = false;
-                this.status.textContent = "Tracking läuft...";
-                
-                this.detect();
-            }
-            
-            stop() {
-                this.isTracking = false;
-                this.startBtn.disabled = false;
-                this.stopBtn.disabled = true;
-                this.status.textContent = "Tracking gestoppt";
-                this.count.textContent = "";
-                
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                }
-                
+
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
+        async detect() {
+            if (!this.isTracking) return;
+
+            const startTimeMs = performance.now();
+
+            if (this.landmarker && this.video.readyState >= 2) {
+                const results = await this.landmarker.detectForVideo(this.video, startTimeMs);
+
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            }
-            
-            async detect() {
-                if (!this.isTracking) return;
-                
-                const startTimeMs = performance.now();
-                
-                if (this.landmarker && this.video.readyState >= 2) {
-                    const results = await this.landmarker.detectForVideo(this.video, startTimeMs);
-                    
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    
-                    if (results.landmarks && results.landmarks.length > 0) {
-                        this.count.innerHTML = `<span class="detected">${results.landmarks.length} Hand/Hände erkannt</span>`;
-                        
-                        results.landmarks.forEach((landmarks, index) => {
-                            this.drawHand(landmarks, results.handednesses[index]);
-                        });
-                    } else {
-                        this.count.textContent = "Keine Hand erkannt";
-                    }
-                    
-                    this.fpsCounter.update();
+
+                if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                    this.count.innerHTML = `<span class="detected">${results.faceLandmarks.length} Gesicht(er) erkannt - 468 Landmarks pro Gesicht</span>`;
+
+                    results.faceLandmarks.forEach((landmarks) => {
+                        this.drawFace(landmarks);
+                    });
+                } else {
+                    this.count.textContent = "Kein Gesicht erkannt";
                 }
-                
-                this.animationId = requestAnimationFrame(() => this.detect());
+
+                this.fpsCounter.update();
             }
-            
-            drawHand(landmarks, handedness) {
-                const isLeftHand = handedness[0].categoryName === 'Left';
-                const color = isLeftHand ? '#4CAF50' : '#2196F3';
-                
-                this.ctx.strokeStyle = color;
-                this.ctx.lineWidth = 3;
-                
-                this.HAND_CONNECTIONS.forEach(connection => {
-                    const [start, end] = connection;
-                    const startPoint = landmarks[start];
-                    const endPoint = landmarks[end];
-                    
+
+            this.animationId = requestAnimationFrame(() => this.detect());
+        }
+
+        drawFace(landmarks) {
+            // Draw mesh connections
+            if (this.showMesh.checked) {
+                this.ctx.strokeStyle = 'rgba(76, 175, 80, 0.3)';
+                this.ctx.lineWidth = 1;
+
+                // Face mesh connections (simplified)
+                const connections = [
+                    // Mouth
+                    [61, 84], [84, 17], [17, 314], [314, 405], [405, 320], [320, 307], [307, 375], [375, 308], [308, 324], [324, 318], [318, 402], [402, 317], [317, 14], [14, 87], [87, 178], [178, 88], [88, 95],
+                    // Eyes
+                    [33, 7], [7, 163], [163, 144], [144, 145], [145, 153], [153, 154], [154, 155], [155, 133],
+                    [362, 398], [398, 384], [384, 385], [385, 386], [386, 387], [387, 388], [388, 466], [466, 263],
+                    // Nose
+                    [1, 2], [2, 5], [5, 4], [4, 6], [6, 168], [168, 8], [8, 196], [196, 3], [3, 51], [51, 48], [48, 115]
+                ];
+
+                connections.forEach(([start, end]) => {
+                    if (landmarks[start] && landmarks[end]) {
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(landmarks[start].x * this.canvas.width, landmarks[start].y * this.canvas.height);
+                        this.ctx.lineTo(landmarks[end].x * this.canvas.width, landmarks[end].y * this.canvas.height);
+                        this.ctx.stroke();
+                    }
+                });
+            }
+
+            // Draw landmarks
+            if (this.showLandmarks.checked) {
+                landmarks.forEach((landmark, index) => {
+                    const x = landmark.x * this.canvas.width;
+                    const y = landmark.y * this.canvas.height;
+
+                    this.ctx.fillStyle = '#4CAF50';
+                    this.ctx.beginPath();
+                    this.ctx.arc(x, y, 2, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                });
+            }
+
+            // Draw contours
+            if (this.showContours.checked) {
+                this.ctx.strokeStyle = '#FF5722';
+                this.ctx.lineWidth = 2;
+
+                // Face contour
+                const faceContour = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 340, 346, 347, 348, 349, 350, 451, 452, 453, 464, 435, 410, 287, 273, 335, 406, 313, 18, 17, 16, 15, 14, 13, 12, 11, 10];
+                this.drawContour(landmarks, faceContour);
+            }
+        }
+
+        drawContour(landmarks, indices) {
+            this.ctx.beginPath();
+            indices.forEach((index, i) => {
+                const point = landmarks[index];
+                if (point) {
+                    const x = point.x * this.canvas.width;
+                    const y = point.y * this.canvas.height;
+
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+            });
+            this.ctx.stroke();
+        }
+    }
+
+    // Pose Detection Module
+    class PoseDetectionModule {
+        constructor() {
+            this.landmarker = null;
+            this.video = document.getElementById('pose-video');
+            this.canvas = document.getElementById('pose-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.startBtn = document.getElementById('pose-start');
+            this.stopBtn = document.getElementById('pose-stop');
+            this.status = document.getElementById('pose-status');
+            this.count = document.getElementById('pose-count');
+            this.loading = document.getElementById('pose-loading');
+            this.fpsCounter = new FPSCounter('pose-fps');
+            this.isTracking = false;
+            this.animationId = null;
+
+            // Pose connections
+            this.POSE_CONNECTIONS = [
+                [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8], [9, 10],
+                [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19],
+                [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20], [11, 23],
+                [12, 24], [23, 24], [23, 25], [24, 26], [25, 27], [26, 28], [27, 29],
+                [28, 30], [29, 31], [30, 32], [27, 31], [28, 32]
+            ];
+
+            this.init();
+        }
+
+        async init() {
+            try {
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+                );
+
+                this.landmarker = await PoseLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numPoses: 2
+                });
+
+                this.loading.style.display = 'none';
+                this.setupEventListeners();
+            } catch (error) {
+                console.error("Fehler beim Laden von Pose Detection:", error);
+                this.status.textContent = "Fehler beim Laden!";
+                this.loading.style.display = 'none';
+            }
+        }
+
+        setupEventListeners() {
+            this.startBtn.addEventListener('click', () => this.start());
+            this.stopBtn.addEventListener('click', () => this.stop());
+        }
+
+        start() {
+            if (!this.landmarker || this.isTracking) return;
+
+            this.isTracking = true;
+            this.startBtn.disabled = true;
+            this.stopBtn.disabled = false;
+            this.status.textContent = "Pose Tracking läuft...";
+
+            this.detect();
+        }
+
+        stop() {
+            this.isTracking = false;
+            this.startBtn.disabled = false;
+            this.stopBtn.disabled = true;
+            this.status.textContent = "Pose Tracking gestoppt";
+            this.count.textContent = "";
+
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+            }
+
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
+        async detect() {
+            if (!this.isTracking) return;
+
+            const startTimeMs = performance.now();
+
+            if (this.landmarker && this.video.readyState >= 2) {
+                const results = await this.landmarker.detectForVideo(this.video, startTimeMs);
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                if (results.landmarks && results.landmarks.length > 0) {
+                    this.count.innerHTML = `<span class="detected">${results.landmarks.length} Person(en) erkannt - 33 Landmarks pro Person</span>`;
+
+                    results.landmarks.forEach((landmarks) => {
+                        this.drawPose(landmarks);
+                    });
+                } else {
+                    this.count.textContent = "Keine Person erkannt";
+                }
+
+                this.fpsCounter.update();
+            }
+
+            this.animationId = requestAnimationFrame(() => this.detect());
+        }
+
+        drawPose(landmarks) {
+            // Draw connections
+            this.ctx.strokeStyle = '#4CAF50';
+            this.ctx.lineWidth = 3;
+
+            this.POSE_CONNECTIONS.forEach(([start, end]) => {
+                const startPoint = landmarks[start];
+                const endPoint = landmarks[end];
+
+                if (startPoint && endPoint) {
                     this.ctx.beginPath();
                     this.ctx.moveTo(startPoint.x * this.canvas.width, startPoint.y * this.canvas.height);
                     this.ctx.lineTo(endPoint.x * this.canvas.width, endPoint.y * this.canvas.height);
                     this.ctx.stroke();
-                });
-                
-                landmarks.forEach((landmark, index) => {
-                    const x = landmark.x * this.canvas.width;
-                    const y = landmark.y * this.canvas.height;
-                    
-                    this.ctx.fillStyle = index === 0 ? '#FF5722' : color;
-                    this.ctx.beginPath();
-                    this.ctx.arc(x, y, index === 0 ? 8 : 6, 0, 2 * Math.PI);
-                    this.ctx.fill();
-                    
-                    this.ctx.strokeStyle = 'white';
-                    this.ctx.lineWidth = 2;
-                    this.ctx.stroke();
-                });
-            }
-        }
-        
-        // Face Detection Module
-        class FaceDetectionModule {
-            constructor() {
-                this.landmarker = null;
-                this.video = document.getElementById('face-video');
-                this.canvas = document.getElementById('face-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.startBtn = document.getElementById('face-start');
-                this.stopBtn = document.getElementById('face-stop');
-                this.status = document.getElementById('face-status');
-                this.count = document.getElementById('face-count');
-                this.loading = document.getElementById('face-loading');
-                this.fpsCounter = new FPSCounter('face-fps');
-                this.isTracking = false;
-                this.animationId = null;
-                
-                // Options
-                this.showLandmarks = document.getElementById('show-landmarks');
-                this.showMesh = document.getElementById('show-mesh');
-                this.showContours = document.getElementById('show-contours');
-                
-                this.init();
-            }
-            
-            async init() {
-                try {
-                    const vision = await FilesetResolver.forVisionTasks(
-                        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-                    );
-                    
-                    this.landmarker = await FaceLandmarker.createFromOptions(vision, {
-                        baseOptions: {
-                            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-                            delegate: "GPU"
-                        },
-                        runningMode: "VIDEO",
-                        numFaces: 2,
-                        outputFaceBlendshapes: true,
-                        outputFacialTransformationMatrixes: true
-                    });
-                    
-                    this.loading.style.display = 'none';
-                    this.setupEventListeners();
-                } catch (error) {
-                    console.error("Fehler beim Laden von Face Detection:", error);
-                    this.status.textContent = "Fehler beim Laden!";
-                    this.loading.style.display = 'none';
                 }
-            }
-            
-            setupEventListeners() {
-                this.startBtn.addEventListener('click', () => this.start());
-                this.stopBtn.addEventListener('click', () => this.stop());
-            }
-            
-            start() {
-                if (!this.landmarker || this.isTracking) return;
-                
-                this.isTracking = true;
-                this.startBtn.disabled = true;
-                this.stopBtn.disabled = false;
-                this.status.textContent = "Face Tracking läuft...";
-                
-                this.detect();
-            }
-            
-            stop() {
-                this.isTracking = false;
-                this.startBtn.disabled = false;
-                this.stopBtn.disabled = true;
-                this.status.textContent = "Face Tracking gestoppt";
-                this.count.textContent = "";
-                
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
+            });
+
+            // Draw landmarks
+            landmarks.forEach((landmark, index) => {
+                const x = landmark.x * this.canvas.width;
+                const y = landmark.y * this.canvas.height;
+
+                // Different colors for different body parts
+                if (index < 11) {
+                    this.ctx.fillStyle = '#FF5722'; // Face/Head
+                } else if (index < 23) {
+                    this.ctx.fillStyle = '#2196F3'; // Body
+                } else {
+                    this.ctx.fillStyle = '#FFC107'; // Hands/Feet
                 }
-                
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            }
-            
-            async detect() {
-                if (!this.isTracking) return;
-                
-                const startTimeMs = performance.now();
-                
-                if (this.landmarker && this.video.readyState >= 2) {
-                    const results = await this.landmarker.detectForVideo(this.video, startTimeMs);
-                    
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    
-                    if (results.faceLandmarks && results.faceLandmarks.length > 0) {
-                        this.count.innerHTML = `<span class="detected">${results.faceLandmarks.length} Gesicht(er) erkannt - 468 Landmarks pro Gesicht</span>`;
-                        
-                        results.faceLandmarks.forEach((landmarks) => {
-                            this.drawFace(landmarks);
-                        });
-                    } else {
-                        this.count.textContent = "Kein Gesicht erkannt";
-                    }
-                    
-                    this.fpsCounter.update();
-                }
-                
-                this.animationId = requestAnimationFrame(() => this.detect());
-            }
-            
-            drawFace(landmarks) {
-                // Draw mesh connections
-                if (this.showMesh.checked) {
-                    this.ctx.strokeStyle = 'rgba(76, 175, 80, 0.3)';
-                    this.ctx.lineWidth = 1;
-                    
-                    // Face mesh connections (simplified)
-                    const connections = [
-                        // Mouth
-                        [61, 84], [84, 17], [17, 314], [314, 405], [405, 320], [320, 307], [307, 375], [375, 308], [308, 324], [324, 318], [318, 402], [402, 317], [317, 14], [14, 87], [87, 178], [178, 88], [88, 95],
-                        // Eyes
-                        [33, 7], [7, 163], [163, 144], [144, 145], [145, 153], [153, 154], [154, 155], [155, 133],
-                        [362, 398], [398, 384], [384, 385], [385, 386], [386, 387], [387, 388], [388, 466], [466, 263],
-                        // Nose
-                        [1, 2], [2, 5], [5, 4], [4, 6], [6, 168], [168, 8], [8, 196], [196, 3], [3, 51], [51, 48], [48, 115]
-                    ];
-                    
-                    connections.forEach(([start, end]) => {
-                        if (landmarks[start] && landmarks[end]) {
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(landmarks[start].x * this.canvas.width, landmarks[start].y * this.canvas.height);
-                            this.ctx.lineTo(landmarks[end].x * this.canvas.width, landmarks[end].y * this.canvas.height);
-                            this.ctx.stroke();
-                        }
-                    });
-                }
-                
-                // Draw landmarks
-                if (this.showLandmarks.checked) {
-                    landmarks.forEach((landmark, index) => {
-                        const x = landmark.x * this.canvas.width;
-                        const y = landmark.y * this.canvas.height;
-                        
-                        this.ctx.fillStyle = '#4CAF50';
-                        this.ctx.beginPath();
-                        this.ctx.arc(x, y, 2, 0, 2 * Math.PI);
-                        this.ctx.fill();
-                    });
-                }
-                
-                // Draw contours
-                if (this.showContours.checked) {
-                    this.ctx.strokeStyle = '#FF5722';
-                    this.ctx.lineWidth = 2;
-                    
-                    // Face contour
-                    const faceContour = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 340, 346, 347, 348, 349, 350, 451, 452, 453, 464, 435, 410, 287, 273, 335, 406, 313, 18, 17, 16, 15, 14, 13, 12, 11, 10];
-                    this.drawContour(landmarks, faceContour);
-                }
-            }
-            
-            drawContour(landmarks, indices) {
+
                 this.ctx.beginPath();
-                indices.forEach((index, i) => {
-                    const point = landmarks[index];
-                    if (point) {
-                        const x = point.x * this.canvas.width;
-                        const y = point.y * this.canvas.height;
-                        
-                        if (i === 0) {
-                            this.ctx.moveTo(x, y);
-                        } else {
-                            this.ctx.lineTo(x, y);
-                        }
-                    }
-                });
+                this.ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                this.ctx.fill();
+
+                this.ctx.strokeStyle = 'white';
+                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
-            }
+            });
         }
-        
-        // Pose Detection Module
-        class PoseDetectionModule {
-            constructor() {
-                this.landmarker = null;
-                this.video = document.getElementById('pose-video');
-                this.canvas = document.getElementById('pose-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.startBtn = document.getElementById('pose-start');
-                this.stopBtn = document.getElementById('pose-stop');
-                this.status = document.getElementById('pose-status');
-                this.count = document.getElementById('pose-count');
-                this.loading = document.getElementById('pose-loading');
-                this.fpsCounter = new FPSCounter('pose-fps');
-                this.isTracking = false;
-                this.animationId = null;
-                
-                // Pose connections
-                this.POSE_CONNECTIONS = [
-                    [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8], [9, 10],
-                    [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21], [17, 19],
-                    [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20], [11, 23],
-                    [12, 24], [23, 24], [23, 25], [24, 26], [25, 27], [26, 28], [27, 29],
-                    [28, 30], [29, 31], [30, 32], [27, 31], [28, 32]
-                ];
-                
-                this.init();
-            }
-            
-            async init() {
-                try {
-                    const vision = await FilesetResolver.forVisionTasks(
-                        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-                    );
-                    
-                    this.landmarker = await PoseLandmarker.createFromOptions(vision, {
-                        baseOptions: {
-                            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task",
-                            delegate: "GPU"
-                        },
-                        runningMode: "VIDEO",
-                        numPoses: 2
-                    });
-                    
-                    this.loading.style.display = 'none';
-                    this.setupEventListeners();
-                } catch (error) {
-                    console.error("Fehler beim Laden von Pose Detection:", error);
-                    this.status.textContent = "Fehler beim Laden!";
-                    this.loading.style.display = 'none';
-                }
-            }
-            
-            setupEventListeners() {
-                this.startBtn.addEventListener('click', () => this.start());
-                this.stopBtn.addEventListener('click', () => this.stop());
-            }
-            
-            start() {
-                if (!this.landmarker || this.isTracking) return;
-                
-                this.isTracking = true;
-                this.startBtn.disabled = true;
-                this.stopBtn.disabled = false;
-                this.status.textContent = "Pose Tracking läuft...";
-                
-                this.detect();
-            }
-            
-            stop() {
-                this.isTracking = false;
-                this.startBtn.disabled = false;
-                this.stopBtn.disabled = true;
-                this.status.textContent = "Pose Tracking gestoppt";
-                this.count.textContent = "";
-                
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                }
-                
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            }
-            
-            async detect() {
-                if (!this.isTracking) return;
-                
-                const startTimeMs = performance.now();
-                
-                if (this.landmarker && this.video.readyState >= 2) {
-                    const results = await this.landmarker.detectForVideo(this.video, startTimeMs);
-                    
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    
-                    if (results.landmarks && results.landmarks.length > 0) {
-                        this.count.innerHTML = `<span class="detected">${results.landmarks.length} Person(en) erkannt - 33 Landmarks pro Person</span>`;
-                        
-                        results.landmarks.forEach((landmarks) => {
-                            this.drawPose(landmarks);
-                        });
-                    } else {
-                        this.count.textContent = "Keine Person erkannt";
-                    }
-                    
-                    this.fpsCounter.update();
-                }
-                
-                this.animationId = requestAnimationFrame(() => this.detect());
-            }
-            
-            drawPose(landmarks) {
-                // Draw connections
-                this.ctx.strokeStyle = '#4CAF50';
-                this.ctx.lineWidth = 3;
-                
-                this.POSE_CONNECTIONS.forEach(([start, end]) => {
-                    const startPoint = landmarks[start];
-                    const endPoint = landmarks[end];
-                    
-                    if (startPoint && endPoint) {
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(startPoint.x * this.canvas.width, startPoint.y * this.canvas.height);
-                        this.ctx.lineTo(endPoint.x * this.canvas.width, endPoint.y * this.canvas.height);
-                        this.ctx.stroke();
-                    }
+    }
+
+    // Object Detection Module
+    class ObjectDetectionModule {
+        constructor() {
+            this.detector = null;
+            this.video = document.getElementById('objects-video');
+            this.canvas = document.getElementById('objects-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.startBtn = document.getElementById('objects-start');
+            this.stopBtn = document.getElementById('objects-stop');
+            this.status = document.getElementById('objects-status');
+            this.count = document.getElementById('objects-count');
+            this.loading = document.getElementById('objects-loading');
+            this.fpsCounter = new FPSCounter('objects-fps');
+            this.isDetecting = false;
+            this.animationId = null;
+
+            this.confidenceThreshold = document.getElementById('confidence-threshold');
+
+            this.init();
+        }
+
+        async init() {
+            try {
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+                );
+
+                this.detector = await ObjectDetector.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    scoreThreshold: 0.5,
+                    maxResults: 10
                 });
-                
-                // Draw landmarks
-                landmarks.forEach((landmark, index) => {
-                    const x = landmark.x * this.canvas.width;
-                    const y = landmark.y * this.canvas.height;
-                    
-                    // Different colors for different body parts
-                    if (index < 11) {
-                        this.ctx.fillStyle = '#FF5722'; // Face/Head
-                    } else if (index < 23) {
-                        this.ctx.fillStyle = '#2196F3'; // Body
-                    } else {
-                        this.ctx.fillStyle = '#FFC107'; // Hands/Feet
-                    }
-                    
-                    this.ctx.beginPath();
-                    this.ctx.arc(x, y, 6, 0, 2 * Math.PI);
-                    this.ctx.fill();
-                    
-                    this.ctx.strokeStyle = 'white';
-                    this.ctx.lineWidth = 2;
-                    this.ctx.stroke();
+
+                this.loading.style.display = 'none';
+                this.setupEventListeners();
+            } catch (error) {
+                console.error("Fehler beim Laden von Object Detection:", error);
+                this.status.textContent = "Fehler beim Laden!";
+                this.loading.style.display = 'none';
+            }
+        }
+
+        setupEventListeners() {
+            this.startBtn.addEventListener('click', () => this.start());
+            this.stopBtn.addEventListener('click', () => this.stop());
+        }
+
+        start() {
+            if (!this.detector || this.isDetecting) return;
+
+            this.isDetecting = true;
+            this.startBtn.disabled = true;
+            this.stopBtn.disabled = false;
+            this.status.textContent = "Objekterkennung läuft...";
+
+            this.detect();
+        }
+
+        stop() {
+            this.isDetecting = false;
+            this.startBtn.disabled = false;
+            this.stopBtn.disabled = true;
+            this.status.textContent = "Objekterkennung gestoppt";
+            this.count.textContent = "";
+
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
+            }
+
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
+        async detect() {
+            if (!this.isDetecting) return;
+
+            const startTimeMs = performance.now();
+
+            if (this.detector && this.video.readyState >= 2) {
+                const results = await this.detector.detectForVideo(this.video, startTimeMs);
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                const threshold = parseFloat(this.confidenceThreshold.value);
+                const filteredDetections = results.detections.filter(d => d.categories[0].score >= threshold);
+
+                if (filteredDetections.length > 0) {
+                    this.count.innerHTML = `<span class="detected">${filteredDetections.length} Objekt(e) erkannt</span>`;
+
+                    filteredDetections.forEach((detection) => {
+                        this.drawDetection(detection);
+                    });
+                } else {
+                    this.count.textContent = "Keine Objekte erkannt";
+                }
+
+                this.fpsCounter.update();
+            }
+
+            this.animationId = requestAnimationFrame(() => this.detect());
+        }
+
+        drawDetection(detection) {
+            const bbox = detection.boundingBox;
+            const category = detection.categories[0];
+
+            // Draw bounding box
+            this.ctx.strokeStyle = '#4CAF50';
+            this.ctx.lineWidth = 3;
+            this.ctx.strokeRect(
+                bbox.originX,
+                bbox.originY,
+                bbox.width,
+                bbox.height
+            );
+
+            // Draw label background
+            const label = `${category.categoryName} ${Math.round(category.score * 100)}%`;
+            this.ctx.font = '16px Arial';
+            const textWidth = this.ctx.measureText(label).width;
+
+            this.ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
+            this.ctx.fillRect(
+                bbox.originX,
+                bbox.originY - 25,
+                textWidth + 10,
+                25
+            );
+
+            // Draw label text
+            this.ctx.fillStyle = 'white';
+            this.ctx.fillText(
+                label,
+                bbox.originX + 5,
+                bbox.originY - 7
+            );
+        }
+    }
+
+    // Selfie Segmentation Module
+    class SelfieSegmentationModule {
+        constructor() {
+            this.segmenter = null;
+            this.video = document.getElementById('selfie-video');
+            this.canvas = document.getElementById('selfie-canvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.startBtn = document.getElementById('selfie-start');
+            this.stopBtn = document.getElementById('selfie-stop');
+            this.status = document.getElementById('selfie-status');
+            this.loading = document.getElementById('selfie-loading');
+            this.fpsCounter = new FPSCounter('selfie-fps');
+            this.isSegmenting = false;
+            this.animationId = null;
+
+            this.backgroundType = document.getElementById('background-type');
+            this.invertMask = document.getElementById('invert-mask');
+            this.virtualBg = null;
+
+            this.init();
+        }
+
+        async init() {
+            try {
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+                );
+
+                this.segmenter = await ImageSegmenter.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite",
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    outputCategoryMask: true,
+                    outputConfidenceMasks: false
                 });
+
+                // Create virtual background
+                this.createVirtualBackground();
+
+                this.loading.style.display = 'none';
+                this.setupEventListeners();
+            } catch (error) {
+                console.error("Fehler beim Laden von Selfie Segmentation:", error);
+                this.status.textContent = "Fehler beim Laden!";
+                this.loading.style.display = 'none';
             }
         }
-        
-        // Object Detection Module
-        class ObjectDetectionModule {
-            constructor() {
-                this.detector = null;
-                this.video = document.getElementById('objects-video');
-                this.canvas = document.getElementById('objects-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.startBtn = document.getElementById('objects-start');
-                this.stopBtn = document.getElementById('objects-stop');
-                this.status = document.getElementById('objects-status');
-                this.count = document.getElementById('objects-count');
-                this.loading = document.getElementById('objects-loading');
-                this.fpsCounter = new FPSCounter('objects-fps');
-                this.isDetecting = false;
-                this.animationId = null;
-                
-                this.confidenceThreshold = document.getElementById('confidence-threshold');
-                
-                this.init();
-            }
-            
-            async init() {
-                try {
-                    const vision = await FilesetResolver.forVisionTasks(
-                        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-                    );
-                    
-                    this.detector = await ObjectDetector.createFromOptions(vision, {
-                        baseOptions: {
-                            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
-                            delegate: "GPU"
-                        },
-                        runningMode: "VIDEO",
-                        scoreThreshold: 0.5,
-                        maxResults: 10
-                    });
-                    
-                    this.loading.style.display = 'none';
-                    this.setupEventListeners();
-                } catch (error) {
-                    console.error("Fehler beim Laden von Object Detection:", error);
-                    this.status.textContent = "Fehler beim Laden!";
-                    this.loading.style.display = 'none';
-                }
-            }
-            
-            setupEventListeners() {
-                this.startBtn.addEventListener('click', () => this.start());
-                this.stopBtn.addEventListener('click', () => this.stop());
-            }
-            
-            start() {
-                if (!this.detector || this.isDetecting) return;
-                
-                this.isDetecting = true;
-                this.startBtn.disabled = true;
-                this.stopBtn.disabled = false;
-                this.status.textContent = "Objekterkennung läuft...";
-                
-                this.detect();
-            }
-            
-            stop() {
-                this.isDetecting = false;
-                this.startBtn.disabled = false;
-                this.stopBtn.disabled = true;
-                this.status.textContent = "Objekterkennung gestoppt";
-                this.count.textContent = "";
-                
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                }
-                
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            }
-            
-            async detect() {
-                if (!this.isDetecting) return;
-                
-                const startTimeMs = performance.now();
-                
-                if (this.detector && this.video.readyState >= 2) {
-                    const results = await this.detector.detectForVideo(this.video, startTimeMs);
-                    
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    
-                    const threshold = parseFloat(this.confidenceThreshold.value);
-                    const filteredDetections = results.detections.filter(d => d.categories[0].score >= threshold);
-                    
-                    if (filteredDetections.length > 0) {
-                        this.count.innerHTML = `<span class="detected">${filteredDetections.length} Objekt(e) erkannt</span>`;
-                        
-                        filteredDetections.forEach((detection) => {
-                            this.drawDetection(detection);
-                        });
-                    } else {
-                        this.count.textContent = "Keine Objekte erkannt";
-                    }
-                    
-                    this.fpsCounter.update();
-                }
-                
-                this.animationId = requestAnimationFrame(() => this.detect());
-            }
-            
-            drawDetection(detection) {
-                const bbox = detection.boundingBox;
-                const category = detection.categories[0];
-                
-                // Draw bounding box
-                this.ctx.strokeStyle = '#4CAF50';
-                this.ctx.lineWidth = 3;
-                this.ctx.strokeRect(
-                    bbox.originX,
-                    bbox.originY,
-                    bbox.width,
-                    bbox.height
-                );
-                
-                // Draw label background
-                const label = `${category.categoryName} ${Math.round(category.score * 100)}%`;
-                this.ctx.font = '16px Arial';
-                const textWidth = this.ctx.measureText(label).width;
-                
-                this.ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
-                this.ctx.fillRect(
-                    bbox.originX,
-                    bbox.originY - 25,
-                    textWidth + 10,
-                    25
-                );
-                
-                // Draw label text
-                this.ctx.fillStyle = 'white';
-                this.ctx.fillText(
-                    label,
-                    bbox.originX + 5,
-                    bbox.originY - 7
-                );
-            }
+
+        createVirtualBackground() {
+            // Create gradient background
+            const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            this.virtualBg = gradient;
         }
-        
-        // Selfie Segmentation Module
-        class SelfieSegmentationModule {
-            constructor() {
-                this.segmenter = null;
-                this.video = document.getElementById('selfie-video');
-                this.canvas = document.getElementById('selfie-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.startBtn = document.getElementById('selfie-start');
-                this.stopBtn = document.getElementById('selfie-stop');
-                this.status = document.getElementById('selfie-status');
-                this.loading = document.getElementById('selfie-loading');
-                this.fpsCounter = new FPSCounter('selfie-fps');
-                this.isSegmenting = false;
-                this.animationId = null;
-                
-                this.backgroundType = document.getElementById('background-type');
-                this.invertMask = document.getElementById('invert-mask');
-                this.virtualBg = null;
-                
-                this.init();
+
+        setupEventListeners() {
+            this.startBtn.addEventListener('click', () => this.start());
+            this.stopBtn.addEventListener('click', () => this.stop());
+        }
+
+        start() {
+            if (!this.segmenter || this.isSegmenting) return;
+
+            this.isSegmenting = true;
+            this.startBtn.disabled = true;
+            this.stopBtn.disabled = false;
+            this.status.textContent = "Segmentierung läuft...";
+
+            this.segment();
+        }
+
+        stop() {
+            this.isSegmenting = false;
+            this.startBtn.disabled = false;
+            this.stopBtn.disabled = true;
+            this.status.textContent = "Segmentierung gestoppt";
+
+            if (this.animationId) {
+                cancelAnimationFrame(this.animationId);
             }
-            
-            async init() {
-                try {
-                    const vision = await FilesetResolver.forVisionTasks(
-                        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
-                    );
-                    
-                    this.segmenter = await ImageSegmenter.createFromOptions(vision, {
-                        baseOptions: {
-                            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/1/selfie_segmenter.tflite",
-                            delegate: "GPU"
-                        },
-                        runningMode: "VIDEO",
-                        outputCategoryMask: true,
-                        outputConfidenceMasks: false
-                    });
-                    
-                    // Create virtual background
-                    this.createVirtualBackground();
-                    
-                    this.loading.style.display = 'none';
-                    this.setupEventListeners();
-                } catch (error) {
-                    console.error("Fehler beim Laden von Selfie Segmentation:", error);
-                    this.status.textContent = "Fehler beim Laden!";
-                    this.loading.style.display = 'none';
+
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+
+        async segment() {
+            if (!this.isSegmenting) return;
+
+            const startTimeMs = performance.now();
+
+            if (this.segmenter && this.video.readyState >= 2) {
+                const results = await this.segmenter.segmentForVideo(this.video, startTimeMs);
+
+                if (results.categoryMask) {
+                    this.applySegmentation(results.categoryMask);
                 }
+
+                this.fpsCounter.update();
             }
-            
-            createVirtualBackground() {
-                // Create gradient background
-                const gradient = this.ctx.createLinearGradient(0, 0, this.canvas.width, this.canvas.height);
-                gradient.addColorStop(0, '#667eea');
-                gradient.addColorStop(1, '#764ba2');
-                this.virtualBg = gradient;
-            }
-            
-            setupEventListeners() {
-                this.startBtn.addEventListener('click', () => this.start());
-                this.stopBtn.addEventListener('click', () => this.stop());
-            }
-            
-            start() {
-                if (!this.segmenter || this.isSegmenting) return;
-                
-                this.isSegmenting = true;
-                this.startBtn.disabled = true;
-                this.stopBtn.disabled = false;
-                this.status.textContent = "Segmentierung läuft...";
-                
-                this.segment();
-            }
-            
-            stop() {
-                this.isSegmenting = false;
-                this.startBtn.disabled = false;
-                this.stopBtn.disabled = true;
-                this.status.textContent = "Segmentierung gestoppt";
-                
-                if (this.animationId) {
-                    cancelAnimationFrame(this.animationId);
-                }
-                
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            }
-            
-            async segment() {
-                if (!this.isSegmenting) return;
-                
-                const startTimeMs = performance.now();
-                
-                if (this.segmenter && this.video.readyState >= 2) {
-                    const results = await this.segmenter.segmentForVideo(this.video, startTimeMs);
-                    
-                    if (results.categoryMask) {
-                        this.applySegmentation(results.categoryMask);
-                    }
-                    
-                    this.fpsCounter.update();
-                }
-                
-                this.animationId = requestAnimationFrame(() => this.segment());
-            }
-            
-            applySegmentation(mask) {
-                const width = mask.width;
-                const height = mask.height;
-                
-                // Create temporary canvas for processing
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = width;
-                tempCanvas.height = height;
-                const tempCtx = tempCanvas.getContext('2d');
-                
-                // Draw video frame
+
+            this.animationId = requestAnimationFrame(() => this.segment());
+        }
+
+        applySegmentation(mask) {
+            const width = mask.width;
+            const height = mask.height;
+
+            // Create temporary canvas for processing
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // Draw video frame
+            tempCtx.drawImage(this.video, 0, 0, width, height);
+            const frameData = tempCtx.getImageData(0, 0, width, height);
+
+            // Get mask data and invert if needed
+            const maskData = mask.getAsFloat32Array();
+            const isInverted = this.invertMask.checked;
+
+            // Apply segmentation based on type
+            const bgType = this.backgroundType.value;
+
+            if (bgType === 'blur') {
+                // Apply blur to background
+                tempCtx.filter = 'blur(15px)';
                 tempCtx.drawImage(this.video, 0, 0, width, height);
-                const frameData = tempCtx.getImageData(0, 0, width, height);
-                
-                // Get mask data and invert if needed
-                const maskData = mask.getAsFloat32Array();
-                const isInverted = this.invertMask.checked;
-                
-                // Apply segmentation based on type
-                const bgType = this.backgroundType.value;
-                
-                if (bgType === 'blur') {
-                    // Apply blur to background
-                    tempCtx.filter = 'blur(15px)';
-                    tempCtx.drawImage(this.video, 0, 0, width, height);
-                    const blurData = tempCtx.getImageData(0, 0, width, height);
-                    
-                    // Combine based on mask (and inversion)
-                    for (let i = 0; i < maskData.length; i++) {
-                        const idx = i * 4;
-                        const isBackground = isInverted ? maskData[i] < 0.5 : maskData[i] >= 0.5;
-                        
-                        if (isBackground) {
-                            frameData.data[idx] = blurData.data[idx];
-                            frameData.data[idx + 1] = blurData.data[idx + 1];
-                            frameData.data[idx + 2] = blurData.data[idx + 2];
-                        }
-                    }
-                } else if (bgType === 'blur-person') {
-                    // Apply blur to person/foreground
-                    tempCtx.filter = 'blur(15px)';
-                    tempCtx.drawImage(this.video, 0, 0, width, height);
-                    const blurData = tempCtx.getImageData(0, 0, width, height);
-                    
-                    // Combine - blur the person, keep background sharp
-                    for (let i = 0; i < maskData.length; i++) {
-                        const idx = i * 4;
-                        const isPerson = isInverted ? maskData[i] >= 0.5 : maskData[i] < 0.5;
-                        
-                        if (isPerson) {
-                            frameData.data[idx] = blurData.data[idx];
-                            frameData.data[idx + 1] = blurData.data[idx + 1];
-                            frameData.data[idx + 2] = blurData.data[idx + 2];
-                        }
-                    }
-                } else if (bgType === 'virtual') {
-                    // Apply virtual background
-                    this.ctx.fillStyle = this.virtualBg;
-                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-                    
-                    for (let i = 0; i < maskData.length; i++) {
-                        const idx = i * 4;
-                        const shouldRemove = isInverted ? maskData[i] < 0.5 : maskData[i] >= 0.5;
-                        
-                        if (shouldRemove) {
-                            frameData.data[idx + 3] = 0; // Make transparent
-                        }
-                    }
-                } else if (bgType === 'remove') {
-                    // Remove background or person (transparent)
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    
-                    for (let i = 0; i < maskData.length; i++) {
-                        const idx = i * 4;
-                        const shouldRemove = isInverted ? maskData[i] < 0.5 : maskData[i] >= 0.5;
-                        
-                        if (shouldRemove) {
-                            frameData.data[idx + 3] = 0; // Make transparent
-                        }
+                const blurData = tempCtx.getImageData(0, 0, width, height);
+
+                // Combine based on mask (and inversion)
+                for (let i = 0; i < maskData.length; i++) {
+                    const idx = i * 4;
+                    const isBackground = isInverted ? maskData[i] < 0.5 : maskData[i] >= 0.5;
+
+                    if (isBackground) {
+                        frameData.data[idx] = blurData.data[idx];
+                        frameData.data[idx + 1] = blurData.data[idx + 1];
+                        frameData.data[idx + 2] = blurData.data[idx + 2];
                     }
                 }
-                
-                // Draw result
-                tempCtx.putImageData(frameData, 0, 0);
-                this.ctx.drawImage(tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
+            } else if (bgType === 'blur-person') {
+                // Apply blur to person/foreground
+                tempCtx.filter = 'blur(15px)';
+                tempCtx.drawImage(this.video, 0, 0, width, height);
+                const blurData = tempCtx.getImageData(0, 0, width, height);
+
+                // Combine - blur the person, keep background sharp
+                for (let i = 0; i < maskData.length; i++) {
+                    const idx = i * 4;
+                    const isPerson = isInverted ? maskData[i] >= 0.5 : maskData[i] < 0.5;
+
+                    if (isPerson) {
+                        frameData.data[idx] = blurData.data[idx];
+                        frameData.data[idx + 1] = blurData.data[idx + 1];
+                        frameData.data[idx + 2] = blurData.data[idx + 2];
+                    }
+                }
+            } else if (bgType === 'virtual') {
+                // Apply virtual background
+                this.ctx.fillStyle = this.virtualBg;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+                for (let i = 0; i < maskData.length; i++) {
+                    const idx = i * 4;
+                    const shouldRemove = isInverted ? maskData[i] < 0.5 : maskData[i] >= 0.5;
+
+                    if (shouldRemove) {
+                        frameData.data[idx + 3] = 0; // Make transparent
+                    }
+                }
+            } else if (bgType === 'remove') {
+                // Remove background or person (transparent)
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                for (let i = 0; i < maskData.length; i++) {
+                    const idx = i * 4;
+                    const shouldRemove = isInverted ? maskData[i] < 0.5 : maskData[i] >= 0.5;
+
+                    if (shouldRemove) {
+                        frameData.data[idx + 3] = 0; // Make transparent
+                    }
+                }
             }
+
+            // Draw result
+            tempCtx.putImageData(frameData, 0, 0);
+            this.ctx.drawImage(tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
         }
-        
-        // Initialize modules
-        const handTracking = new HandTrackingModule();
-        const faceDetection = new FaceDetectionModule();
-        const poseDetection = new PoseDetectionModule();
-        const objectDetection = new ObjectDetectionModule();
-        const selfieSegmentation = new SelfieSegmentationModule();
-        
-        // Setup initial camera
-        setupCameraForTab('hands');
-    </script>
+    }
+
+    // Initialize modules
+    const handTracking = new HandTrackingModule();
+    const faceDetection = new FaceDetectionModule();
+    const poseDetection = new PoseDetectionModule();
+    const objectDetection = new ObjectDetectionModule();
+    const selfieSegmentation = new SelfieSegmentationModule();
+
+    // Setup initial camera
+    setupCameraForTab('hands');
+</script>
 </body>
 </html>
