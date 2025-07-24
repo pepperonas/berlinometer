@@ -11,7 +11,7 @@ const startBtn = document.getElementById('startBtn');
 const photoBtn = document.getElementById('photoBtn');
 const stopBtn = document.getElementById('stopBtn');
 const switchCameraBtn = document.getElementById('switchCameraBtn');
-const status = document.getElementById('status');
+const toastContainer = document.getElementById('toastContainer');
 const photosSection = document.getElementById('photosSection');
 const photosGrid = document.getElementById('photosGrid');
 const filterSection = document.getElementById('filterSection');
@@ -37,9 +37,17 @@ const filterPresets = {
     normal: { blur: 0, brightness: 100, contrast: 100, saturate: 100, grayscale: 0, sepia: 0 },
     vintage: { blur: 0, brightness: 110, contrast: 90, saturate: 70, grayscale: 0, sepia: 40 },
     blackwhite: { blur: 0, brightness: 100, contrast: 120, saturate: 0, grayscale: 100, sepia: 0 },
+    sepia: { blur: 0, brightness: 105, contrast: 95, saturate: 80, grayscale: 0, sepia: 80 },
     warm: { blur: 0, brightness: 110, contrast: 100, saturate: 130, grayscale: 0, sepia: 20 },
     cold: { blur: 0, brightness: 100, contrast: 110, saturate: 80, grayscale: 10, sepia: 0 },
     dramatic: { blur: 0, brightness: 90, contrast: 140, saturate: 110, grayscale: 0, sepia: 0 },
+    popart: { blur: 0, brightness: 120, contrast: 160, saturate: 200, grayscale: 0, sepia: 0 },
+    retro: { blur: 0, brightness: 115, contrast: 85, saturate: 60, grayscale: 0, sepia: 60 },
+    cyberpunk: { blur: 0, brightness: 80, contrast: 130, saturate: 150, grayscale: 0, sepia: 0 },
+    pastel: { blur: 0, brightness: 130, contrast: 70, saturate: 70, grayscale: 0, sepia: 10 },
+    noir: { blur: 0, brightness: 70, contrast: 180, saturate: 20, grayscale: 80, sepia: 0 },
+    sunset: { blur: 0, brightness: 110, contrast: 95, saturate: 140, grayscale: 0, sepia: 30 },
+    arctic: { blur: 0, brightness: 120, contrast: 110, saturate: 60, grayscale: 20, sepia: 0 },
     blur: { blur: 8, brightness: 100, contrast: 100, saturate: 100, grayscale: 0, sepia: 0 },
     bokeh: { blur: 0, brightness: 105, contrast: 95, saturate: 110, grayscale: 0, sepia: 0 }
 };
@@ -70,13 +78,52 @@ let segmentationActive = false;
 let selfieSegmentation = null;
 let segmentationResults = null;
 
-// Background presets
+// Filter target state
+let applyFiltersToBackground = false;
+
+// Background presets - statically defined for reliability
 const backgroundPresets = {
     code: 'backgrounds/code.png',
-    kitchen: 'backgrounds/ktichen.jpeg',
+    ktichen: 'backgrounds/ktichen.jpeg',
     prison: 'backgrounds/prison.jpeg',
-    startrek: 'backgrounds/star-treck.jpeg'
+    startrek: 'backgrounds/star-treck.jpeg',
+    ovaloffice: 'backgrounds/oval-office.jpeg'
 };
+
+// Function to populate the preset gallery with loaded backgrounds
+function populatePresetGallery() {
+    const presetGallery = document.getElementById('presetGallery');
+    if (!presetGallery) return;
+    
+    // Clear existing presets
+    presetGallery.innerHTML = '';
+    
+    // Create preset items for each loaded background
+    Object.entries(backgroundPresets).forEach(([name, path]) => {
+        const presetItem = document.createElement('div');
+        presetItem.className = 'preset-item';
+        presetItem.setAttribute('data-preset', name);
+        
+        // Create readable display name
+        const displayName = name
+            .replace(/[-_]/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+        
+        presetItem.innerHTML = `
+            <img src="${path}" alt="${displayName} Hintergrund">
+            <span>${displayName}</span>
+        `;
+        
+        // Add click event listener
+        presetItem.addEventListener('click', () => {
+            selectBackgroundPreset(name);
+        });
+        
+        presetGallery.appendChild(presetItem);
+    });
+    
+    console.log(`Populated preset gallery with ${Object.keys(backgroundPresets).length} backgrounds`);
+}
 
 // Initialize MediaPipe SelfieSegmentation
 async function initializeMediaPipe() {
@@ -106,6 +153,18 @@ async function initializeMediaPipe() {
     }
 }
 
+// Get current filter string for applying to canvas
+function getCurrentFilterString() {
+    return `
+        blur(${currentFilters.blur}px)
+        brightness(${currentFilters.brightness}%)
+        contrast(${currentFilters.contrast}%)
+        saturate(${currentFilters.saturate}%)
+        grayscale(${currentFilters.grayscale}%)
+        sepia(${currentFilters.sepia}%)
+    `;
+}
+
 // Handle segmentation results from MediaPipe
 function onSegmentationResults(results) {
     if (!segmentationActive) return;
@@ -120,8 +179,8 @@ function onSegmentationResults(results) {
             blurCanvas.height = canvas.height;
             const blurCtx = blurCanvas.getContext('2d');
             
-            // Draw blurred background
-            blurCtx.filter = 'blur(20px)';
+            // Draw blurred background with color filters
+            blurCtx.filter = `blur(20px) ${getCurrentFilterString()}`;
             blurCtx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
             ctx.drawImage(blurCanvas, 0, 0);
             
@@ -142,26 +201,30 @@ function onSegmentationResults(results) {
                 offsetY = (canvas.height - drawHeight) / 2;
             }
             
-            // Draw the custom background
+            // Draw the custom background (no filters on background image itself)
             ctx.drawImage(customBackgroundImage, offsetX, offsetY, drawWidth, drawHeight);
             
         } else {
-            // No background effect, just draw the original video
+            // No background effect, just draw the original video with filters
+            ctx.filter = getCurrentFilterString();
             ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+            ctx.filter = 'none'; // Reset filter
             return; // No need for person mask overlay
         }
         
-        // Create mask canvas for person overlay
+        // Create mask canvas for person overlay with filters applied
         const maskCanvas = document.createElement('canvas');
         maskCanvas.width = canvas.width;
         maskCanvas.height = canvas.height;
         const maskCtx = maskCanvas.getContext('2d');
         
-        // Draw original image
+        // Draw original image with color filters applied to person
+        maskCtx.filter = getCurrentFilterString();
         maskCtx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
         
         // Apply segmentation mask
         maskCtx.globalCompositeOperation = 'destination-in';
+        maskCtx.filter = 'none'; // Don't apply filters to the mask
         maskCtx.drawImage(results.segmentationMask, 0, 0, canvas.width, canvas.height);
         
         // Draw person on top of background
@@ -169,8 +232,10 @@ function onSegmentationResults(results) {
         
     } catch (error) {
         console.error('Segmentation error:', error);
-        // Fallback: just draw the video
+        // Fallback: just draw the video with filters
+        ctx.filter = getCurrentFilterString();
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.filter = 'none';
     }
 }
 
@@ -363,14 +428,64 @@ function applySimpleBackgroundBlur() {
     }
 }
 
-function showStatus(message, type = 'success') {
-    status.textContent = message;
-    status.className = `status ${type}`;
-    status.classList.remove('hidden');
+// Toast system for better notifications
+let toastId = 0;
 
+function showToast(message, type = 'success', duration = 4000) {
+    const toast = document.createElement('div');
+    const currentToastId = ++toastId;
+    
+    toast.className = `toast ${type}`;
+    toast.setAttribute('data-toast-id', currentToastId);
+    
+    toast.innerHTML = `
+        <div class="toast-content">${message}</div>
+        <button class="toast-close" onclick="dismissToast(${currentToastId})">&times;</button>
+        <div class="toast-progress"></div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Trigger show animation
     setTimeout(() => {
-        status.classList.add('hidden');
-    }, 3000);
+        toast.classList.add('show');
+    }, 10);
+    
+    // Auto dismiss with progress bar
+    if (duration > 0) {
+        const progressBar = toast.querySelector('.toast-progress');
+        progressBar.style.width = '100%';
+        progressBar.style.transitionDuration = `${duration}ms`;
+        
+        setTimeout(() => {
+            progressBar.style.width = '0%';
+        }, 50);
+        
+        setTimeout(() => {
+            dismissToast(currentToastId);
+        }, duration);
+    }
+    
+    return currentToastId;
+}
+
+function dismissToast(toastId) {
+    const toast = document.querySelector(`[data-toast-id="${toastId}"]`);
+    if (toast) {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 400);
+    }
+}
+
+// Backward compatibility wrapper
+function showStatus(message, type = 'success') {
+    showToast(message, type);
 }
 
 async function startCamera() {
@@ -579,13 +694,13 @@ function fallbackToSimpleBlur() {
                 // Clear entire canvas first
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                // Step 1: Draw full blurred background
+                // Step 1: Draw full blurred background with color filters
                 ctx.save();
-                ctx.filter = 'blur(15px)';
+                ctx.filter = `blur(15px) ${getCurrentFilterString()}`;
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 ctx.restore();
                 
-                // Step 2: Draw sharp person area on top
+                // Step 2: Draw sharp person area on top with color filters
                 const centerX = canvas.width / 2;
                 const centerY = canvas.height / 2 - canvas.height * 0.05; // Slightly up for head
                 const personWidth = canvas.width * 0.4;
@@ -600,8 +715,8 @@ function fallbackToSimpleBlur() {
                 ctx.ellipse(centerX, centerY, personWidth/2, personHeight/2, 0, 0, 2 * Math.PI);
                 ctx.clip();
                 
-                // Draw sharp person
-                ctx.filter = 'none';
+                // Draw sharp person with color filters
+                ctx.filter = getCurrentFilterString();
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 ctx.restore();
                 
@@ -747,11 +862,8 @@ function applyPreset(presetName) {
     updateFilterValues();
     applyFiltersToVideo();
 
-    // Update active preset button
-    document.querySelectorAll('.filter-preset').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    document.querySelector(`[data-preset="${presetName}"]`).classList.add('active');
+    // Update dropdown selection
+    filterDropdown.value = presetName;
 }
 
 function resetFilters() {
@@ -813,7 +925,7 @@ function takePhoto() {
     photoCanvas.height = video.videoHeight;
     const photoCtx = photoCanvas.getContext('2d');
 
-    // If background processing is active, copy from main canvas
+    // If background processing is active, copy from main canvas (filters already applied)
     if (segmentationActive && backgroundMode !== 'none' && canvas.style.display !== 'none') {
         photoCtx.drawImage(canvas, 0, 0);
     } else {
@@ -828,14 +940,7 @@ function takePhoto() {
             applyBokehEffect(photoCtx, photoCanvas);
         } else {
             // Apply regular filters
-            photoCtx.filter = `
-                blur(${currentFilters.blur}px)
-                brightness(${currentFilters.brightness}%)
-                contrast(${currentFilters.contrast}%)
-                saturate(${currentFilters.saturate}%)
-                grayscale(${currentFilters.grayscale}%)
-                sepia(${currentFilters.sepia}%)
-            `;
+            photoCtx.filter = getCurrentFilterString();
             // Video-Frame auf Canvas zeichnen
             photoCtx.drawImage(video, 0, 0);
         }
@@ -993,12 +1098,11 @@ switchCameraBtn.addEventListener('click', switchCamera);
 resetFiltersBtn.addEventListener('click', resetFilters);
 backgroundUpload.addEventListener('change', handleBackgroundUpload);
 
-// Filter preset listeners
-document.querySelectorAll('.filter-preset').forEach(preset => {
-    preset.addEventListener('click', (e) => {
-        const presetName = e.target.dataset.preset;
-        applyPreset(presetName);
-    });
+// Filter dropdown listener
+const filterDropdown = document.getElementById('filterDropdown');
+filterDropdown.addEventListener('change', (e) => {
+    const presetName = e.target.value;
+    applyPreset(presetName);
 });
 
 // Filter slider listeners
@@ -1008,10 +1112,10 @@ Object.keys(filterSliders).forEach(key => {
         updateFilterValues();
         applyFiltersToVideo();
         
-        // Remove active state from presets when manually adjusting
-        document.querySelectorAll('.filter-preset').forEach(btn => {
-            btn.classList.remove('active');
-        });
+        // Reset dropdown to "normal" when manually adjusting
+        if (filterDropdown.value !== 'normal') {
+            filterDropdown.value = 'normal';
+        }
     });
 });
 
@@ -1023,12 +1127,12 @@ document.querySelectorAll('.background-option').forEach(option => {
     });
 });
 
-// Background preset gallery listeners
-document.querySelectorAll('.preset-item').forEach(preset => {
-    preset.addEventListener('click', (e) => {
-        const presetName = e.currentTarget.dataset.preset;
-        selectBackgroundPreset(presetName);
-    });
+// Background preset gallery listeners will be added dynamically in populatePresetGallery()
+
+// Initialize backgrounds on page load
+document.addEventListener('DOMContentLoaded', () => {
+    populatePresetGallery();
+    console.log('✅ Background system initialized successfully');
 });
 
 // Keyboard Shortcuts

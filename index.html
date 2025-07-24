@@ -589,6 +589,11 @@
                 Klicks.</p>
             <a href="https://mrx3k1.de/mockup/" target="_blank" class="btn-purple">Öffnen</a>
         </div>
+        <div class="card" data-keywords="macos fenster mockup screenshot mac terminal">
+            <h2>🎸 RockThaMock</h2>
+            <p>Erstelle authentische macOS Window-Mockups aus deinen Screenshots. Mit Drag & Drop, anpassbaren Fenstertiteln und Dark Mode.</p>
+            <a href="https://mrx3k1.de/rock-tha-mock/" target="_blank" class="btn-blue">Öffnen</a>
+        </div>
         <div class="card" data-keywords="speicher cloud upload dateien">
             <h2>☁️ xchange</h2>
             <p>Dein Online-Speicher für sicheren Dateiaustausch – einfach hochladen, verwalten und
@@ -705,11 +710,11 @@
                 Besucherzahlen von Orten - perfekt für die Planung von Besuchen zu weniger vollen Zeiten.</p>
             <a href="https://mrx3k1.de/popular-times/" target="_blank" class="btn-cyan">Öffnen</a>
         </div>
-        <div class="card secret-card" data-keywords="ticket generator qr code event support festival konzert" style="display: none;">
-            <h2>🎫 Ticket Generator</h2>
-            <p>Erstelle professionelle Event-Tickets mit QR-Codes, benutzerdefinierten Designs und 
-                automatischer Nummerierung - perfekt für Veranstaltungen, Konzerte und Festivals.</p>
-            <a href="ticket-generator/" target="_blank" class="btn-purple">Öffnen</a>
+        <div class="card" data-keywords="cicero server monitoring requests analytics logging dashboard real-time">
+            <h2>📈 Cicero</h2>
+            <p>Server Request Monitor mit Echtzeit-Dashboard: Überwache HTTP-Requests, analysiere 
+                Performance-Metriken und visualisiere Server-Aktivitäten mit detaillierten Analytics.</p>
+            <a href="https://mrx3k1.de/cicero/" target="_blank" class="btn-blue">Öffnen</a>
         </div>
 
     </div>
@@ -857,20 +862,6 @@
             <a href="https://mrx3k1.de/entlines/" target="_blank"
                class="btn-cyan">Spielen</a>
         </div>
-        <div class="card secret-card" data-keywords="billard pool 8-ball 3d physik kugeln queue snooker" style="display: none;">
-            <h2>🎱 3D Billard</h2>
-            <p>Realistisches 3D-Billardspiel mit physikalisch korrekten Kugelbewegungen. Spiele 8-Ball 
-                gegen einen Freund und zeige dein Können am virtuellen Billardtisch!</p>
-            <a href="billiard/" target="_blank"
-               class="btn-green">Spielen</a>
-        </div>
-        <div class="card secret-card" data-keywords="moto racer racing motorrad 3d rennen physik geschwindigkeit" style="display: none;">
-            <h2>🏍️ Moto Racer 2</h2>
-            <p>Rasante 3D-Motorradrennen mit realistischer Physik! Fahre durch anspruchsvolle Strecken, 
-                meistere enge Kurven und erlebe das ultimative Racing-Erlebnis im Browser.</p>
-            <a href="moto-racer-2/" target="_blank"
-               class="btn-orange">Spielen</a>
-        </div>
     </div>
 </section>
 
@@ -1014,6 +1005,19 @@
     </div>
 </section>
 
+<!-- Geheime Apps (Secret Apps) - Nur sichtbar wenn entsperrt -->
+<section class="category" id="secret" style="display: none;">
+    <h2 class="category-title">🔓 Geheime Apps</h2>
+    <div class="apps">
+        <div class="card secret-card" data-keywords="ticket generator qr code event support festival konzert">
+            <h2>🎫 Ticket Generator</h2>
+            <p>Erstelle professionelle Event-Tickets mit QR-Codes, benutzerdefinierten Designs und 
+                automatischer Nummerierung - perfekt für Veranstaltungen, Konzerte und Festivals.</p>
+            <a href="ticket-generator/" target="_blank" class="btn-purple">Öffnen</a>
+        </div>
+    </div>
+</section>
+
 <div class="footer-buttons">
     <p class="copyright">Made with <span id="heart-trigger" style="cursor: pointer; user-select: none;">❤️</span> by Martin Pfeffer</p>
     <div class="legal-links">
@@ -1113,11 +1117,10 @@
 
         // Funktion zum Anzeigen der Secret Cards
         function revealSecretCards() {
-            const secretCards = document.querySelectorAll('.secret-card');
-            secretCards.forEach(card => {
-                card.style.display = 'block';
-                card.style.animation = 'fadeInUp 0.5s ease-out';
-            });
+            // Zeige die geheime Sektion
+            const secretSection = document.getElementById('secret');
+            secretSection.style.display = 'block';
+            secretSection.style.animation = 'fadeInUp 0.5s ease-out';
             
             // Aktualisiere die App-Anzahl
             updateAppCount();

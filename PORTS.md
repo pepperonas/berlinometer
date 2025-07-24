@@ -28,6 +28,7 @@ This document lists all ports used by applications in this project.
 | 5050 | Photo Server          | photos             | `photos/server.js`                     |
 | 5060 | MRX Media Scraper     | xxxxxx             | `/xxxxx.js`                            |
 | 5063 | Medical AI Reports    | medical-ai-reports | `medical-ai-reports/backend/.env`      |
+| 5016 | Cicero Request Monitor| cicero             | `cicero/backend/server.js`             |
 | 5081 | PDF Converter         | web2pdf            | `web2pdf/app.js`                       |
 
 ## Frontend Applications

@@ -73,7 +73,8 @@
         <p class="subtitle">Nimm Fotos direkt im Browser auf</p>
     </div>
 
-    <div id="status" class="status hidden"></div>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <div class="camera-section">
         <div class="video-container">
@@ -94,15 +95,38 @@
     <div class="filter-section hidden" id="filterSection">
         <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">🎨 Filter & Effekte</h3>
         
-        <div class="filter-presets">
-            <div class="filter-preset active" data-preset="normal">Normal</div>
-            <div class="filter-preset" data-preset="vintage">Vintage</div>
-            <div class="filter-preset" data-preset="blackwhite">S/W</div>
-            <div class="filter-preset" data-preset="warm">Warm</div>
-            <div class="filter-preset" data-preset="cold">Kalt</div>
-            <div class="filter-preset" data-preset="dramatic">Dramatisch</div>
-            <div class="filter-preset" data-preset="blur">Blur</div>
-            <div class="filter-preset" data-preset="bokeh">Bokeh</div>
+        <div class="filter-dropdown-container">
+            <label for="filterDropdown">Filter-Preset:</label>
+            <select id="filterDropdown" class="filter-dropdown">
+                <option value="normal">🎭 Normal</option>
+                <option value="vintage">📻 Vintage</option>
+                <option value="blackwhite">⚫ Schwarz-Weiß</option>
+                <option value="sepia">🟤 Sepia</option>
+                <option value="warm">🌅 Warm</option>
+                <option value="cold">❄️ Kalt</option>
+                <option value="dramatic">⚡ Dramatisch</option>
+                <option value="popart">🎨 Pop-Art</option>
+                <option value="retro">📺 Retro</option>
+                <option value="cyberpunk">🤖 Cyberpunk</option>
+                <option value="pastel">🌸 Pastell</option>
+                <option value="noir">🕴️ Film Noir</option>
+                <option value="sunset">🌇 Sonnenuntergang</option>
+                <option value="arctic">🧊 Arktis</option>
+                <option value="blur">🌫️ Unschärfe</option>
+                <option value="bokeh">✨ Bokeh</option>
+            </select>
+        </div>
+
+        <div class="filter-target-container" id="filterTargetContainer">
+            <label class="filter-target-label">Filter anwenden auf:</label>
+            <div class="filter-target-toggle">
+                <input type="checkbox" id="applyToBackground" class="toggle-checkbox">
+                <label for="applyToBackground" class="toggle-label">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-text-person">👤 Person</span>
+                    <span class="toggle-text-all">🖼️ Ganzes Bild</span>
+                </label>
+            </div>
         </div>
 
         <div class="filter-controls">
@@ -166,7 +190,7 @@
                         <img src="backgrounds/code.png" alt="Code Hintergrund">
                         <span>Code</span>
                     </div>
-                    <div class="preset-item" data-preset="kitchen">
+                    <div class="preset-item" data-preset="ktichen">
                         <img src="backgrounds/ktichen.jpeg" alt="Küche Hintergrund">
                         <span>Küche</span>
                     </div>
@@ -177,6 +201,10 @@
                     <div class="preset-item" data-preset="startrek">
                         <img src="backgrounds/star-treck.jpeg" alt="Star Trek Hintergrund">
                         <span>Star Trek</span>
+                    </div>
+                    <div class="preset-item" data-preset="ovaloffice">
+                        <img src="backgrounds/oval-office.jpeg" alt="Oval Office Hintergrund">
+                        <span>Oval Office</span>
                     </div>
                 </div>
             </div>
@@ -201,7 +229,13 @@
         <h3 style="margin-bottom: 1rem; color: var(--accent-blue);">Aufgenommene Fotos</h3>
         <div id="photosGrid" class="photos-grid"></div>
     </div>
-</div>
+    
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Made with ❤️ by Martin Pfeffer</p>
+    </footer>
 
 <!-- External JavaScript -->
 <script src="script.js"></script>

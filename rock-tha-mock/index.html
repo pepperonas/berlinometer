@@ -74,12 +74,16 @@
             background: var(--background-dark);
             min-height: 100vh;
             padding: var(--spacing-6);
+            padding-bottom: 0;
             color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            flex: 1;
         }
 
         .header {
@@ -458,6 +462,10 @@
             </div>
         </div>
     </div>
+
+    <footer style="text-align: center; padding: var(--spacing-8); color: var(--text-secondary); border-top: 1px solid rgba(156, 163, 175, 0.2); margin-top: auto;">
+        <p>Made with ❤️ by Martin Pfeffer</p>
+    </footer>
 
     <script>
         const uploadArea = document.getElementById('uploadArea');
