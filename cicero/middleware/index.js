@@ -57,6 +57,14 @@ function ciceroMiddleware(options = {}) {
         delete filteredHeaders[header.toLowerCase()];
       });
 
+      // Get real client IP
+      const clientIP = req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+                      req.headers['x-real-ip'] ||
+                      req.connection.remoteAddress ||
+                      req.socket.remoteAddress ||
+                      (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
+                      req.ip;
+
       // Prepare request data
       const requestData = {
         method: req.method,
@@ -67,7 +75,7 @@ function ciceroMiddleware(options = {}) {
         query: req.query || {},
         body: req.body || {},
         userAgent: req.get('User-Agent') || '',
-        ip: req.ip || req.connection.remoteAddress || '',
+        ip: clientIP || '',
         server: config.serverName,
         contentLength: res.get('Content-Length') ? parseInt(res.get('Content-Length')) : null
       };

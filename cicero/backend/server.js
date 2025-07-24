@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
+const geoip = require('geoip-lite');
 require('dotenv').config();
 
 const app = express();
@@ -55,7 +56,14 @@ const requestSchema = new mongoose.Schema({
   ip: String,
   server: String,
   contentLength: Number,
-  error: String
+  error: String,
+  location: {
+    country: String,
+    region: String,
+    city: String,
+    timezone: String,
+    coordinates: [Number] // [lat, lon]
+  }
 });
 
 const Request = mongoose.model('Request', requestSchema);
@@ -81,10 +89,45 @@ io.on('connection', (socket) => {
 
 // API Routes
 
+// Helper function to get real client IP
+function getRealClientIP(req) {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+         req.headers['x-real-ip'] ||
+         req.connection.remoteAddress ||
+         req.socket.remoteAddress ||
+         (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
+         req.ip;
+}
+
 // Log a request
 app.post('/api/log', async (req, res) => {
   try {
-    const requestData = new Request(req.body);
+    const data = req.body;
+    
+    // Get real client IP (override if provided by middleware)
+    const clientIP = data.ip || getRealClientIP(req);
+    
+    // Get location data from IP
+    let locationData = null;
+    if (clientIP && clientIP !== '127.0.0.1' && clientIP !== '::1') {
+      const geo = geoip.lookup(clientIP);
+      if (geo) {
+        locationData = {
+          country: geo.country,
+          region: geo.region,
+          city: geo.city,
+          timezone: geo.timezone,
+          coordinates: [geo.ll[0], geo.ll[1]] // [lat, lon]
+        };
+      }
+    }
+    
+    const requestData = new Request({
+      ...data,
+      ip: clientIP,
+      location: locationData
+    });
+    
     await requestData.save();
     
     // Emit to all connected clients

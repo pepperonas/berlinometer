@@ -376,7 +376,7 @@ body {
 
 .table-header {
   display: grid;
-  grid-template-columns: 80px 1fr 80px 120px 120px 160px;
+  grid-template-columns: 80px 1fr 80px 120px 120px 150px 120px 160px;
   gap: var(--spacing-3);
   padding: var(--spacing-3) var(--spacing-6);
   background: var(--background-darker);
@@ -394,7 +394,7 @@ body {
 
 .table-row {
   display: grid;
-  grid-template-columns: 80px 1fr 80px 120px 120px 160px;
+  grid-template-columns: 80px 1fr 80px 120px 120px 150px 120px 160px;
   gap: var(--spacing-3);
   padding: var(--spacing-3) var(--spacing-6);
   border-bottom: 1px solid #374151;
@@ -456,6 +456,22 @@ body {
 .timestamp {
   color: var(--text-secondary);
   font-size: 0.75rem;
+}
+
+.ip-address {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-family: 'Courier New', monospace;
+}
+
+.location-info {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.location-info .no-location {
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 /* Request Details Modal */

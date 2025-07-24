@@ -15,7 +15,7 @@ module.exports = {
     env_production: {
       NODE_ENV: 'production',
       PORT: 5016,
-      MONGODB_URI: 'mongodb://localhost:27017/cicero',
+      MONGODB_URI: 'mongodb://mongoAdmin:%23QGwODkgI7fx@localhost:27017/cicero?authSource=admin',
       CORS_ORIGIN: 'https://mrx3k1.de'
     },
     error_file: './logs/cicero-error.log',

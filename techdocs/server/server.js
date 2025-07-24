@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
+const { ciceroMiddleware, registerServer } = require('../../cicero/middleware');
 
 // Umgebungsvariablen laden
 dotenv.config();
@@ -20,6 +21,15 @@ const PORT = process.env.PORT || 5007;
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cors());
+
+// Cicero Request Monitoring
+app.use(ciceroMiddleware({
+  serverName: 'techdocs',
+  serverUrl: `http://localhost:${PORT}`,
+  ciceroUrl: 'https://mrx3k1.de/cicero/api',
+  excludePaths: ['/health', '/favicon.ico', '/static/']
+}));
+
 app.use(morgan('dev'));
 app.use(helmet());
 app.use(compression());
@@ -71,4 +81,10 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/techdocs'
 // Server starten
 app.listen(PORT, () => {
     console.log(`Server läuft auf Port ${PORT}`);
+    
+    // Register with Cicero for monitoring
+    registerServer({
+        serverName: 'techdocs',
+        serverUrl: `http://localhost:${PORT}`
+    });
 });

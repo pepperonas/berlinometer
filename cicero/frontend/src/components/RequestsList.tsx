@@ -69,6 +69,8 @@ const RequestsList: React.FC<RequestsListProps> = ({ requests, onRequestSelect, 
           <div className="col-url">URL</div>
           <div className="col-status">Status</div>
           <div className="col-time">Response Time</div>
+          <div className="col-ip">IP Address</div>
+          <div className="col-location">Location</div>
           <div className="col-server">Server</div>
           <div className="col-timestamp">Timestamp</div>
         </div>
@@ -101,6 +103,24 @@ const RequestsList: React.FC<RequestsListProps> = ({ requests, onRequestSelect, 
               <div className="col-time">
                 <span className={`response-time ${request.responseTime > 1000 ? 'slow' : request.responseTime > 500 ? 'medium' : 'fast'}`}>
                   {formatResponseTime(request.responseTime)}
+                </span>
+              </div>
+              
+              <div className="col-ip">
+                <span className="ip-address" title={request.ip}>
+                  {request.ip || 'Unknown'}
+                </span>
+              </div>
+              
+              <div className="col-location">
+                <span className="location-info">
+                  {request.location ? (
+                    <span title={`${request.location.city}, ${request.location.region}, ${request.location.country}\nTimezone: ${request.location.timezone}\nCoordinates: ${request.location.coordinates[0]}, ${request.location.coordinates[1]}`}>
+                      🌍 {request.location.city}, {request.location.country}
+                    </span>
+                  ) : (
+                    <span className="no-location">🏠 Local</span>
+                  )}
                 </span>
               </div>
               

@@ -40,7 +40,7 @@
 
     <!-- Performance & Security -->
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://storage.googleapis.com data: blob:; media-src 'self' blob:; worker-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net;">
+          content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://storage.googleapis.com https://tessdata.projectnaptha.com data: blob:; media-src 'self' blob:; worker-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; connect-src 'self' https://cdn.jsdelivr.net https://storage.googleapis.com https://tessdata.projectnaptha.com data: blob:;">
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <!-- Favicon -->
@@ -85,7 +85,7 @@
         }
     </script>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/tesseract.min.js"></script>
 </head>
 <body>
 <h1>MediaPipe Multi-Feature Demo</h1>
@@ -199,6 +199,10 @@
                     <option value="0.7">70%</option>
                     <option value="0.9">90%</option>
                 </select>
+            </div>
+            <div class="option-group">
+                <input type="checkbox" id="enable-ocr" checked>
+                <label for="enable-ocr">Text Recognition (OCR)</label>
             </div>
         </div>
 

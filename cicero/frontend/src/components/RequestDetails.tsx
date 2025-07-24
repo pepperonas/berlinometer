@@ -64,6 +64,22 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ request, onClose }) => 
                 <label>IP Address:</label>
                 <span>{request.ip}</span>
               </div>
+              {request.location && (
+                <>
+                  <div className="info-item">
+                    <label>Location:</label>
+                    <span>🌍 {request.location.city}, {request.location.region}, {request.location.country}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Timezone:</label>
+                    <span>{request.location.timezone}</span>
+                  </div>
+                  <div className="info-item">
+                    <label>Coordinates:</label>
+                    <span>{request.location.coordinates[0]}, {request.location.coordinates[1]}</span>
+                  </div>
+                </>
+              )}
               {request.contentLength && (
                 <div className="info-item">
                   <label>Content Length:</label>

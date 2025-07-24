@@ -13,6 +13,13 @@ export interface RequestLog {
   server: string;
   contentLength?: number;
   error?: string;
+  location?: {
+    country: string;
+    region: string;
+    city: string;
+    timezone: string;
+    coordinates: [number, number]; // [lat, lon]
+  };
 }
 
 export interface Server {
