@@ -1,11 +1,12 @@
 :root {
-    --background-dark: #2B2E3B;
+    --background-dark: #2C2E3B;
     --background-darker: #252830;
-    --card-background: #343845;
-    --accent-blue: #688db1;
-    --accent-green: #9cb68f;
-    --accent-red: #e16162;
-    --text-primary: #d1d5db;
+    --card-background: rgba(255, 255, 255, 0.05);
+    --accent-blue: #3b82f6;
+    --accent-blue-light: #93c5fd;
+    --accent-blue-dark: #1e40af;
+    --accent-red: #ef4444;
+    --text-primary: #ffffff;
     --text-secondary: #9ca3af;
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -59,8 +60,9 @@ body {
 h1 {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--accent-blue);
+    color: var(--accent-blue-light);
     margin-bottom: var(--spacing-2);
+    letter-spacing: -0.025em;
 }
 
 .subtitle {
@@ -70,9 +72,10 @@ h1 {
 
 .camera-section {
     background: var(--card-background);
-    border-radius: var(--radius-lg);
+    border-radius: 16px;
     padding: var(--spacing-6);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: var(--spacing-6);
 }
 
@@ -137,20 +140,20 @@ h1 {
 }
 
 .btn-primary:hover {
-    background: #5a7a9a;
+    background: #2563eb;
     transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .btn-secondary {
-    background: var(--accent-green);
+    background: var(--accent-blue-dark);
     color: white;
 }
 
 .btn-secondary:hover {
-    background: #8ba580;
+    background: #1e3a8a;
     transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
 }
 
 .btn-danger {
@@ -159,9 +162,9 @@ h1 {
 }
 
 .btn-danger:hover {
-    background: #d14545;
+    background: #dc2626;
     transform: translateY(-1px);
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn:disabled {
@@ -254,7 +257,7 @@ h1 {
 }
 
 .toast.success {
-    border-left-color: var(--accent-green);
+    border-left-color: var(--accent-blue);
     color: var(--text-primary);
 }
 
@@ -322,7 +325,7 @@ h1 {
 }
 
 .toast.success .toast-progress {
-    background: var(--accent-green);
+    background: var(--accent-blue);
 }
 
 .toast.error .toast-progress {
@@ -354,9 +357,10 @@ h1 {
 
 .filter-section {
     background: var(--card-background);
-    border-radius: var(--radius-lg);
+    border-radius: 16px;
     padding: var(--spacing-6);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: var(--spacing-6);
 }
 
@@ -552,7 +556,7 @@ h1 {
     left: 4px;
     width: calc(33.33% - 4px);
     height: calc(100% - 8px);
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-light));
     border-radius: var(--radius);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: var(--shadow);
@@ -562,12 +566,12 @@ h1 {
 /* Active states for each radio button */
 .toggle-radio:nth-of-type(1):checked ~ .toggle-labels .toggle-slider {
     left: 4px;
-    background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-light));
 }
 
 .toggle-radio:nth-of-type(2):checked ~ .toggle-labels .toggle-slider {
     left: calc(33.33% + 2px);
-    background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+    background: linear-gradient(135deg, var(--accent-blue-dark), var(--accent-blue));
 }
 
 .toggle-radio:nth-of-type(3):checked ~ .toggle-labels .toggle-slider {
@@ -668,7 +672,7 @@ h1 {
 }
 
 .filter-slider::-webkit-slider-thumb:hover {
-    background: #5a7a9a;
+    background: #2563eb;
 }
 
 .filter-slider::-moz-range-thumb {
@@ -718,9 +722,10 @@ h1 {
 
 .background-section {
     background: var(--card-background);
-    border-radius: var(--radius-lg);
+    border-radius: 16px;
     padding: var(--spacing-6);
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: var(--spacing-6);
 }
 
@@ -755,8 +760,8 @@ h1 {
 }
 
 .background-option.active {
-    border-color: var(--accent-green);
-    background: rgba(156, 182, 143, 0.2);
+    border-color: var(--accent-blue);
+    background: rgba(59, 130, 246, 0.2);
 }
 
 .background-option-icon {
@@ -788,11 +793,13 @@ h1 {
     cursor: pointer;
     font-size: 0.9rem;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
 .upload-btn:hover {
-    background: #5a7a9a;
+    background: #2563eb;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .background-presets {

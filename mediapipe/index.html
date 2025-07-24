@@ -40,15 +40,11 @@
 
     <!-- Performance & Security -->
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://storage.googleapis.com; media-src 'self' blob:; camera; microphone;">
+          content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://storage.googleapis.com data: blob:; media-src 'self' blob:; worker-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net;">
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="manifest" href="site.webmanifest">
 
     <!-- PWA Meta -->
     <meta name="application-name" content="MediaPipe Demo">
@@ -89,6 +85,7 @@
         }
     </script>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
 <h1>MediaPipe Multi-Feature Demo</h1>
@@ -115,7 +112,8 @@
         <div class="controls">
             <button id="hands-start" disabled>Tracking starten</button>
             <button id="hands-stop" disabled>Tracking stoppen</button>
-            <button id="hands-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
+            <button id="hands-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln
+            </button>
         </div>
 
         <div class="info">
@@ -151,7 +149,8 @@
         <div class="controls">
             <button id="face-start" disabled>Tracking starten</button>
             <button id="face-stop" disabled>Tracking stoppen</button>
-            <button id="face-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
+            <button id="face-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln
+            </button>
         </div>
 
         <div class="info">
@@ -172,7 +171,8 @@
         <div class="controls">
             <button id="pose-start" disabled>Tracking starten</button>
             <button id="pose-stop" disabled>Tracking stoppen</button>
-            <button id="pose-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
+            <button id="pose-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln
+            </button>
         </div>
 
         <div class="info">
@@ -205,7 +205,8 @@
         <div class="controls">
             <button id="objects-start" disabled>Erkennung starten</button>
             <button id="objects-stop" disabled>Erkennung stoppen</button>
-            <button id="objects-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
+            <button id="objects-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln
+            </button>
         </div>
 
         <div class="info">
@@ -213,10 +214,19 @@
             <div id="objects-count"></div>
         </div>
 
-        <div class="detected-objects">
-            <h3>Erkannte Objekte</h3>
-            <div class="object-list" id="detected-objects-list">
-                <!-- Detected objects will be added here -->
+        <div class="results-container">
+            <div class="detected-objects">
+                <h3>Erkannte Objekte</h3>
+                <div class="object-list" id="detected-objects-list">
+                    <!-- Detected objects will be added here -->
+                </div>
+            </div>
+
+            <div class="detected-texts">
+                <h3>Erkannter Text (OCR)</h3>
+                <div class="text-list" id="detected-texts-list">
+                    <!-- Detected texts will be added here -->
+                </div>
             </div>
         </div>
     </div>
@@ -249,7 +259,8 @@
         <div class="controls">
             <button id="selfie-start" disabled>Segmentierung starten</button>
             <button id="selfie-stop" disabled>Segmentierung stoppen</button>
-            <button id="selfie-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
+            <button id="selfie-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln
+            </button>
         </div>
 
         <div class="info">

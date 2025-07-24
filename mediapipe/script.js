@@ -621,6 +621,12 @@ class ObjectDetectionModule {
         // For detected objects list
         this.detectedObjects = new Set();
         this.objectList = document.getElementById('detected-objects-list');
+        
+        // For OCR functionality
+        this.tesseractWorker = null;
+        this.detectedTexts = new Set();
+        this.textList = document.getElementById('detected-texts-list');
+        this.ocrFrameCount = 0; // To limit OCR frequency
 
         this.init();
     }
@@ -640,6 +646,11 @@ class ObjectDetectionModule {
                 scoreThreshold: 0.5,
                 maxResults: 10
             });
+
+            // Initialize Tesseract worker for OCR
+            this.tesseractWorker = await Tesseract.createWorker();
+            await this.tesseractWorker.loadLanguage('deu+eng');
+            await this.tesseractWorker.initialize('deu+eng');
 
             this.loading.style.display = 'none';
             this.setupEventListeners();
@@ -678,6 +689,13 @@ class ObjectDetectionModule {
         }
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Clear detected objects and texts lists
+        this.detectedObjects.clear();
+        this.detectedTexts.clear();
+        this.objectList.innerHTML = '';
+        this.textList.innerHTML = '';
+        this.ocrFrameCount = 0;
     }
 
     async detect() {
@@ -701,6 +719,13 @@ class ObjectDetectionModule {
                 });
             } else {
                 this.count.textContent = "Keine Objekte erkannt";
+            }
+
+            // Run OCR periodically (every 60 frames to avoid performance issues)
+            this.ocrFrameCount++;
+            if (this.ocrFrameCount >= 60 && this.tesseractWorker) {
+                this.ocrFrameCount = 0;
+                this.performOCR();
             }
 
             this.fpsCounter.update();
@@ -760,6 +785,82 @@ class ObjectDetectionModule {
             `;
             
             this.objectList.appendChild(objectItem);
+        }
+    }
+
+    async performOCR() {
+        try {
+            // Create a temporary canvas to capture current video frame
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = this.video.videoWidth;
+            tempCanvas.height = this.video.videoHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // Draw current video frame
+            tempCtx.drawImage(this.video, 0, 0, tempCanvas.width, tempCanvas.height);
+            
+            // Enhance image for better OCR
+            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            this.enhanceImageForOCR(imageData);
+            tempCtx.putImageData(imageData, 0, 0);
+            
+            // Convert to image data for Tesseract with optimized settings
+            const { data: { text } } = await this.tesseractWorker.recognize(tempCanvas, {
+                logger: m => {}, // Disable logging for performance
+                tessedit_pageseg_mode: '6', // Assume uniform block of text
+                tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÄÖÜß0123456789 .,!?-()[]{}":;',
+                tessedit_ocr_engine_mode: '2' // Use LSTM OCR engine
+            });
+            
+            // Clean and process the detected text
+            const cleanText = text.trim()
+                .replace(/\s+/g, ' ')
+                .replace(/[^\w\säöüÄÖÜß.,!?\-()[\]{}":;]/g, '')
+                .trim();
+            
+            // Only add meaningful text (length > 3 characters and contains letters)
+            if (cleanText.length > 3 && /[a-zA-ZäöüÄÖÜß]/.test(cleanText)) {
+                this.addToTextList(cleanText);
+            }
+        } catch (error) {
+            console.error('OCR Fehler:', error);
+        }
+    }
+
+    enhanceImageForOCR(imageData) {
+        const data = imageData.data;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            // Convert to grayscale using luminance formula
+            const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+            
+            // Apply contrast enhancement and thresholding
+            const enhanced = gray > 128 ? 255 : 0; // Binary threshold
+            
+            data[i] = enhanced;     // R
+            data[i + 1] = enhanced; // G
+            data[i + 2] = enhanced; // B
+            // Alpha stays the same
+        }
+    }
+
+    addToTextList(text) {
+        if (!this.detectedTexts.has(text)) {
+            this.detectedTexts.add(text);
+            
+            const textItem = document.createElement('div');
+            textItem.className = 'text-item';
+            textItem.innerHTML = `
+                <div>${text}</div>
+                <small style="opacity: 0.7; font-size: 12px;">
+                    ${new Date().toLocaleTimeString('de-DE')}
+                </small>
+            `;
+            
+            this.textList.appendChild(textItem);
+            
+            // Scroll to show new text
+            this.textList.scrollTop = this.textList.scrollHeight;
         }
     }
 }
