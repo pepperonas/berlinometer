@@ -505,37 +505,52 @@ h1 {
     position: relative;
 }
 
-.toggle-checkbox {
+.toggle-radio {
     display: none;
 }
 
-.toggle-label {
+.toggle-labels {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-3) var(--spacing-4);
     background: var(--background-darker);
     border-radius: var(--radius-lg);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 4px;
     position: relative;
-    overflow: hidden;
-    user-select: none;
     border: 2px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.toggle-label:hover {
+.toggle-labels:hover {
     background: var(--card-background);
     border-color: var(--accent-blue);
     transform: translateY(-1px);
     box-shadow: var(--shadow);
 }
 
+.toggle-option {
+    flex: 1;
+    text-align: center;
+    padding: var(--spacing-3) var(--spacing-2);
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: var(--radius);
+    user-select: none;
+}
+
+.toggle-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: block;
+}
+
 .toggle-slider {
     position: absolute;
     top: 4px;
     left: 4px;
-    width: calc(50% - 4px);
+    width: calc(33.33% - 4px);
     height: calc(100% - 8px);
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
     border-radius: var(--radius);
@@ -544,41 +559,41 @@ h1 {
     z-index: 1;
 }
 
-.toggle-checkbox:checked + .toggle-label .toggle-slider {
-    left: calc(50% + 2px);
+/* Active states for each radio button */
+.toggle-radio:nth-of-type(1):checked ~ .toggle-labels .toggle-slider {
+    left: 4px;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+}
+
+.toggle-radio:nth-of-type(2):checked ~ .toggle-labels .toggle-slider {
+    left: calc(33.33% + 2px);
     background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
 }
 
-.toggle-text-person,
-.toggle-text-all {
-    flex: 1;
-    text-align: center;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    z-index: 2;
-    padding: var(--spacing-2);
+.toggle-radio:nth-of-type(3):checked ~ .toggle-labels .toggle-slider {
+    left: calc(66.66% + 2px);
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-red));
 }
 
-.toggle-checkbox:not(:checked) + .toggle-label .toggle-text-person {
+/* Text color changes for active states */
+.toggle-radio:nth-of-type(1):checked ~ .toggle-labels .toggle-option[data-target="person"] .toggle-text,
+.toggle-radio:nth-of-type(2):checked ~ .toggle-labels .toggle-option[data-target="background"] .toggle-text,
+.toggle-radio:nth-of-type(3):checked ~ .toggle-labels .toggle-option[data-target="whole"] .toggle-text {
     color: white;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.toggle-checkbox:checked + .toggle-label .toggle-text-all {
-    color: white;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+/* Glowing effect based on active state */
+.toggle-radio:nth-of-type(1):checked ~ .toggle-labels {
+    box-shadow: 0 0 20px rgba(104, 141, 177, 0.3);
 }
 
-/* Glowing effect when active */
-.toggle-checkbox:checked + .toggle-label {
+.toggle-radio:nth-of-type(2):checked ~ .toggle-labels {
     box-shadow: 0 0 20px rgba(156, 182, 143, 0.3);
 }
 
-.toggle-checkbox:not(:checked) + .toggle-label {
-    box-shadow: 0 0 20px rgba(104, 141, 177, 0.3);
+.toggle-radio:nth-of-type(3):checked ~ .toggle-labels {
+    box-shadow: 0 0 20px rgba(225, 97, 98, 0.3);
 }
 
 /* Mobile optimization */

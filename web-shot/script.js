@@ -78,8 +78,8 @@ let segmentationActive = false;
 let selfieSegmentation = null;
 let segmentationResults = null;
 
-// Filter target state
-let applyFiltersToBackground = false;
+// Filter target state - 'person', 'background', or 'whole'
+let filterTarget = 'person';
 
 // Background presets - statically defined for reliability
 const backgroundPresets = {
@@ -165,6 +165,30 @@ function getCurrentFilterString() {
     `;
 }
 
+// Check if current background mode and filter preset supports filter targeting
+function isFilterTargetingAvailable() {
+    const hasBackgroundProcessing = backgroundMode !== 'none';
+    const hasActiveFilters = document.getElementById('filterDropdown').value !== 'normal';
+    return hasBackgroundProcessing && hasActiveFilters;
+}
+
+// Update filter target toggle visibility
+function updateFilterTargetToggle() {
+    const container = document.getElementById('filterTargetContainer');
+    const radios = document.querySelectorAll('input[name="filterTarget"]');
+    
+    if (isFilterTargetingAvailable()) {
+        container.classList.remove('disabled');
+        radios.forEach(radio => radio.disabled = false);
+    } else {
+        container.classList.add('disabled');
+        radios.forEach(radio => radio.disabled = true);
+        // Reset to default (person) when disabled
+        document.getElementById('filterTargetPerson').checked = true;
+        filterTarget = 'person';
+    }
+}
+
 // Handle segmentation results from MediaPipe
 function onSegmentationResults(results) {
     if (!segmentationActive) return;
@@ -179,8 +203,12 @@ function onSegmentationResults(results) {
             blurCanvas.height = canvas.height;
             const blurCtx = blurCanvas.getContext('2d');
             
-            // Draw blurred background with color filters
-            blurCtx.filter = `blur(20px) ${getCurrentFilterString()}`;
+            // Draw blurred background - apply color filters based on target
+            let backgroundFilter = 'blur(20px)';
+            if (filterTarget === 'background' || filterTarget === 'whole') {
+                backgroundFilter += ` ${getCurrentFilterString()}`;
+            }
+            blurCtx.filter = backgroundFilter;
             blurCtx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
             ctx.drawImage(blurCanvas, 0, 0);
             
@@ -201,8 +229,12 @@ function onSegmentationResults(results) {
                 offsetY = (canvas.height - drawHeight) / 2;
             }
             
-            // Draw the custom background (no filters on background image itself)
+            // Draw the custom background - apply filters based on target
+            if (filterTarget === 'background' || filterTarget === 'whole') {
+                ctx.filter = getCurrentFilterString();
+            }
             ctx.drawImage(customBackgroundImage, offsetX, offsetY, drawWidth, drawHeight);
+            ctx.filter = 'none'; // Reset filter
             
         } else {
             // No background effect, just draw the original video with filters
@@ -212,14 +244,20 @@ function onSegmentationResults(results) {
             return; // No need for person mask overlay
         }
         
-        // Create mask canvas for person overlay with filters applied
+        // Create mask canvas for person overlay
         const maskCanvas = document.createElement('canvas');
         maskCanvas.width = canvas.width;
         maskCanvas.height = canvas.height;
         const maskCtx = maskCanvas.getContext('2d');
         
-        // Draw original image with color filters applied to person
-        maskCtx.filter = getCurrentFilterString();
+        // Draw original image - apply filters based on target setting
+        if (filterTarget === 'person' || filterTarget === 'whole') {
+            // Person gets filters
+            maskCtx.filter = getCurrentFilterString();
+        } else {
+            // Background-only mode: person gets no filters
+            maskCtx.filter = 'none';
+        }
         maskCtx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
         
         // Apply segmentation mask
@@ -681,64 +719,15 @@ function stopBackgroundProcessing() {
 
 // Fallback function for simple blur without segmentation
 function fallbackToSimpleBlur() {
-    console.log('Starting continuous background blur rendering...');
+    console.log('MediaPipe failed, using simple fallback blur...');
     
-    if (backgroundMode === 'blur') {
-        showStatus('Hintergrund-Blur aktiv (Live-Video)', 'success');
-        
-        // Ensure we have a fresh animation loop
-        let animationId = null;
-        
-        const renderLiveBlurFrame = () => {
-            if (segmentationActive && backgroundMode === 'blur') {
-                // Clear entire canvas first
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Step 1: Draw full blurred background with color filters
-                ctx.save();
-                ctx.filter = `blur(15px) ${getCurrentFilterString()}`;
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                ctx.restore();
-                
-                // Step 2: Draw sharp person area on top with color filters
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2 - canvas.height * 0.05; // Slightly up for head
-                const personWidth = canvas.width * 0.4;
-                const personHeight = canvas.height * 0.8;
-                
-                // Create smooth mask for person area
-                ctx.save();
-                ctx.globalCompositeOperation = 'source-over';
-                
-                // Create elliptical clipping path for person
-                ctx.beginPath();
-                ctx.ellipse(centerX, centerY, personWidth/2, personHeight/2, 0, 0, 2 * Math.PI);
-                ctx.clip();
-                
-                // Draw sharp person with color filters
-                ctx.filter = getCurrentFilterString();
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                ctx.restore();
-                
-                // Continue animation
-                animationId = requestAnimationFrame(renderLiveBlurFrame);
-            }
-        };
-        
-        // Cancel any existing animation
-        if (animationId) {
-            cancelAnimationFrame(animationId);
-        }
-        
-        console.log('✅ Starting live blur rendering...');
-        renderLiveBlurFrame();
-        
-    } else {
-        // Not blur mode, hide canvas and show video
-        segmentationActive = false;
-        canvas.classList.add('hidden');
-        video.classList.remove('hidden');
-    }
+    showStatus('Einfacher Hintergrund-Blur (Fallback)', 'error');
+    
+    // Simple fallback: just apply blur to entire video without person segmentation
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.filter = `blur(10px) ${getCurrentFilterString()}`;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.filter = 'none';
 }
 
 function setBackgroundMode(mode) {
@@ -750,6 +739,9 @@ function setBackgroundMode(mode) {
         option.classList.remove('active');
     });
     document.querySelector(`[data-background="${mode}"]`).classList.add('active');
+
+    // Update filter target toggle availability
+    updateFilterTargetToggle();
 
     if (mode === 'none') {
         stopBackgroundProcessing();
@@ -1103,6 +1095,8 @@ const filterDropdown = document.getElementById('filterDropdown');
 filterDropdown.addEventListener('change', (e) => {
     const presetName = e.target.value;
     applyPreset(presetName);
+    // Update toggle availability when filter changes
+    updateFilterTargetToggle();
 });
 
 // Filter slider listeners
@@ -1115,6 +1109,8 @@ Object.keys(filterSliders).forEach(key => {
         // Reset dropdown to "normal" when manually adjusting
         if (filterDropdown.value !== 'normal') {
             filterDropdown.value = 'normal';
+            // Update toggle availability when switching to manual mode
+            updateFilterTargetToggle();
         }
     });
 });
@@ -1129,9 +1125,29 @@ document.querySelectorAll('.background-option').forEach(option => {
 
 // Background preset gallery listeners will be added dynamically in populatePresetGallery()
 
+// Filter target radio button listeners
+document.querySelectorAll('input[name="filterTarget"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            filterTarget = e.target.value;
+            console.log('Filter targeting changed to:', filterTarget);
+            
+            const statusMessages = {
+                'person': 'Filter nur auf Person angewendet',
+                'background': 'Filter nur auf Hintergrund angewendet', 
+                'whole': 'Filter auf ganzes Bild angewendet'
+            };
+            
+            showStatus(statusMessages[filterTarget], 'success', 2000);
+        }
+    });
+});
+
 // Initialize backgrounds on page load
 document.addEventListener('DOMContentLoaded', () => {
     populatePresetGallery();
+    // Initialize toggle state on page load
+    updateFilterTargetToggle();
     console.log('✅ Background system initialized successfully');
 });
 

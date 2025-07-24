@@ -120,12 +120,22 @@
         <div class="filter-target-container" id="filterTargetContainer">
             <label class="filter-target-label">Filter anwenden auf:</label>
             <div class="filter-target-toggle">
-                <input type="checkbox" id="applyToBackground" class="toggle-checkbox">
-                <label for="applyToBackground" class="toggle-label">
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-text-person">👤 Person</span>
-                    <span class="toggle-text-all">🖼️ Ganzes Bild</span>
-                </label>
+                <input type="radio" id="filterTargetPerson" name="filterTarget" value="person" class="toggle-radio" checked>
+                <input type="radio" id="filterTargetBackground" name="filterTarget" value="background" class="toggle-radio">
+                <input type="radio" id="filterTargetWhole" name="filterTarget" value="whole" class="toggle-radio">
+                
+                <div class="toggle-labels">
+                    <label for="filterTargetPerson" class="toggle-option" data-target="person">
+                        <span class="toggle-text">👤 Person</span>
+                    </label>
+                    <label for="filterTargetBackground" class="toggle-option" data-target="background">
+                        <span class="toggle-text">🖼️ Hintergrund</span>
+                    </label>
+                    <label for="filterTargetWhole" class="toggle-option" data-target="whole">
+                        <span class="toggle-text">🌟 Ganzes Bild</span>
+                    </label>
+                    <div class="toggle-slider"></div>
+                </div>
             </div>
         </div>
 
