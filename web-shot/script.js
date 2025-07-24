@@ -1,5 +1,7 @@
 let stream = null;
 let photos = [];
+let currentFacingMode = 'user'; // 'user' for front camera, 'environment' for back camera
+let supportsCameraSwitch = false;
 
 const video = document.getElementById('video');
 const hiddenVideo = document.getElementById('hiddenVideo');
@@ -8,6 +10,7 @@ const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const photoBtn = document.getElementById('photoBtn');
 const stopBtn = document.getElementById('stopBtn');
+const switchCameraBtn = document.getElementById('switchCameraBtn');
 const status = document.getElementById('status');
 const photosSection = document.getElementById('photosSection');
 const photosGrid = document.getElementById('photosGrid');
@@ -372,10 +375,16 @@ function showStatus(message, type = 'success') {
 
 async function startCamera() {
     try {
+        // Check if device has multiple cameras
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        supportsCameraSwitch = videoDevices.length > 1;
+
         stream = await navigator.mediaDevices.getUserMedia({
             video: {
                 width: {ideal: 1280},
-                height: {ideal: 720}
+                height: {ideal: 720},
+                facingMode: currentFacingMode
             },
             audio: false
         });
@@ -389,6 +398,11 @@ async function startCamera() {
         photoBtn.disabled = false;
         filterSection.classList.remove('hidden');
         backgroundSection.classList.remove('hidden');
+        
+        // Show camera switch button only if multiple cameras are available
+        if (supportsCameraSwitch) {
+            switchCameraBtn.classList.remove('hidden');
+        }
 
         // Always initialize MediaPipe fresh for each camera start
         console.log('Initializing MediaPipe for new camera session...');
@@ -421,6 +435,7 @@ function stopCamera() {
     startBtn.classList.remove('hidden');
     photoBtn.classList.add('hidden');
     stopBtn.classList.add('hidden');
+    switchCameraBtn.classList.add('hidden');
     photoBtn.disabled = true;
 
     showStatus('Kamera gestoppt');
@@ -873,6 +888,57 @@ function downloadPhoto(dataUrl, timestamp) {
     link.click();
 }
 
+// Function to switch between front and back camera
+async function switchCamera() {
+    console.log('Switching camera...');
+    
+    // Toggle facing mode
+    currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+    
+    // Stop current stream
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    
+    try {
+        // Get new stream with opposite camera
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: {ideal: 1280},
+                height: {ideal: 720},
+                facingMode: currentFacingMode
+            },
+            audio: false
+        });
+        
+        // Update video elements
+        video.srcObject = stream;
+        hiddenVideo.srcObject = stream;
+        
+        // Re-initialize MediaPipe if background processing is active
+        if (segmentationActive) {
+            console.log('Re-initializing MediaPipe for new camera...');
+            await initializeMediaPipe();
+            
+            // Restart background processing
+            if (backgroundMode !== 'none') {
+                startBackgroundProcessing();
+            }
+        }
+        
+        showStatus(`Kamera gewechselt: ${currentFacingMode === 'user' ? 'Frontkamera' : 'Rückkamera'}`);
+        
+    } catch (error) {
+        console.error('Error switching camera:', error);
+        showStatus('Fehler beim Wechseln der Kamera', 'error');
+        
+        // Try to revert back to previous camera
+        currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        startCamera();
+    }
+}
+
 // Function to select a background preset
 function selectBackgroundPreset(presetName) {
     console.log(`Selecting background preset: ${presetName}`);
@@ -923,6 +989,7 @@ function showBackgroundPreview(imageSrc) {
 startBtn.addEventListener('click', startCamera);
 stopBtn.addEventListener('click', stopCamera);
 photoBtn.addEventListener('click', takePhoto);
+switchCameraBtn.addEventListener('click', switchCamera);
 resetFiltersBtn.addEventListener('click', resetFilters);
 backgroundUpload.addEventListener('change', handleBackgroundUpload);
 

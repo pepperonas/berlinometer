@@ -5,12 +5,22 @@ function OccupancyChart({ url, isExpanded }) {
   const [chartData, setChartData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640)
 
   useEffect(() => {
     if (isExpanded && url) {
       fetchHistoryData()
     }
   }, [isExpanded, url])
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const fetchHistoryData = async () => {
     try {
@@ -85,53 +95,72 @@ function OccupancyChart({ url, isExpanded }) {
     <div className="p-4" style={{ backgroundColor: 'var(--background-darker)', borderRadius: 'var(--radius)' }}>
       <h5 className="text-sm font-semibold mb-3">Auslastung der letzten 12 Stunden</h5>
       
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+      <ResponsiveContainer width="100%" height={isMobile ? 300 : 250}>
+        <LineChart 
+          data={chartData} 
+          margin={{ 
+            top: 5, 
+            right: isMobile ? 5 : 30, 
+            left: isMobile ? -10 : 20, 
+            bottom: isMobile ? 40 : 5 
+          }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-3)" />
           <XAxis 
             dataKey="time" 
             stroke="var(--text-secondary)"
-            style={{ fontSize: '0.75rem' }}
+            tick={{ fontSize: isMobile ? 10 : 12 }}
+            interval={isMobile ? 'preserveStartEnd' : 0}
+            angle={isMobile ? -45 : 0}
+            textAnchor={isMobile ? 'end' : 'middle'}
+            height={isMobile ? 60 : 30}
           />
           <YAxis 
             stroke="var(--text-secondary)"
-            style={{ fontSize: '0.75rem' }}
+            tick={{ fontSize: isMobile ? 10 : 12 }}
             domain={[0, 100]}
             ticks={[0, 25, 50, 75, 100]}
+            width={isMobile ? 35 : 60}
           />
           <Tooltip 
             contentStyle={{
               backgroundColor: 'var(--card-background)',
               border: '1px solid var(--gray-3)',
               borderRadius: 'var(--radius)',
-              fontSize: '0.875rem'
+              fontSize: isMobile ? '0.75rem' : '0.875rem',
+              padding: isMobile ? '4px 8px' : '8px 12px'
             }}
             labelStyle={{ color: 'var(--text-primary)' }}
             itemStyle={{ color: 'var(--text-primary)' }}
             formatter={(value) => `${value}%`}
           />
           <Legend 
-            wrapperStyle={{ fontSize: '0.875rem' }}
+            wrapperStyle={{ 
+              fontSize: isMobile ? '0.625rem' : '0.875rem',
+              paddingTop: isMobile ? '8px' : '0px'
+            }}
             iconType="line"
+            verticalAlign={isMobile ? 'bottom' : 'top'}
+            align="center"
           />
           <Line 
             type="monotone" 
             dataKey="auslastung" 
             stroke="#e16162" 
-            strokeWidth={2}
+            strokeWidth={isMobile ? 1.5 : 2}
             name="Aktuelle Auslastung"
-            dot={{ fill: '#e16162', r: 3 }}
-            activeDot={{ r: 5 }}
+            dot={{ fill: '#e16162', r: isMobile ? 2 : 3 }}
+            activeDot={{ r: isMobile ? 4 : 5 }}
           />
           <Line 
             type="monotone" 
             dataKey="normal" 
             stroke="#688db1" 
-            strokeWidth={2}
+            strokeWidth={isMobile ? 1.5 : 2}
             name="Normale Auslastung"
             strokeDasharray="5 5"
-            dot={{ fill: '#688db1', r: 3 }}
-            activeDot={{ r: 5 }}
+            dot={{ fill: '#688db1', r: isMobile ? 2 : 3 }}
+            activeDot={{ r: isMobile ? 4 : 5 }}
           />
         </LineChart>
       </ResponsiveContainer>

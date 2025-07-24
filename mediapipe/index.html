@@ -227,6 +227,15 @@
             min-width: 44px;
         }
 
+        button.camera-switch {
+            background: #2196F3;
+            position: relative;
+        }
+
+        button.camera-switch:hover {
+            background: #1976D2;
+        }
+
         button:hover {
             background: #45a049;
             transform: translateY(-2px);
@@ -420,6 +429,7 @@
         <div class="controls">
             <button id="hands-start" disabled>Start Tracking</button>
             <button id="hands-stop" disabled>Stop Tracking</button>
+            <button id="hands-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
         </div>
 
         <div class="info">
@@ -455,6 +465,7 @@
         <div class="controls">
             <button id="face-start" disabled>Start Tracking</button>
             <button id="face-stop" disabled>Stop Tracking</button>
+            <button id="face-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
         </div>
 
         <div class="info">
@@ -475,6 +486,7 @@
         <div class="controls">
             <button id="pose-start" disabled>Start Tracking</button>
             <button id="pose-stop" disabled>Stop Tracking</button>
+            <button id="pose-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
         </div>
 
         <div class="info">
@@ -507,6 +519,7 @@
         <div class="controls">
             <button id="objects-start" disabled>Start Detection</button>
             <button id="objects-stop" disabled>Stop Detection</button>
+            <button id="objects-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
         </div>
 
         <div class="info">
@@ -543,6 +556,7 @@
         <div class="controls">
             <button id="selfie-start" disabled>Start Segmentierung</button>
             <button id="selfie-stop" disabled>Stop Segmentierung</button>
+            <button id="selfie-camera-switch" class="camera-switch" disabled>📷 Kamera wechseln</button>
         </div>
 
         <div class="info">
@@ -566,6 +580,7 @@
     let currentTab = 'hands';
     let camera = null;
     let stream = null;
+    let currentFacingMode = 'user'; // 'user' for front camera, 'environment' for rear
 
     // Tab switching
     const tabs = document.querySelectorAll('.tab');
@@ -603,21 +618,36 @@
     }
 
     // Setup camera for specific tab
-    async function setupCameraForTab(tabName) {
+    async function setupCameraForTab(tabName, forceFacingMode = null) {
         const video = document.getElementById(`${tabName}-video`);
         const canvas = document.getElementById(`${tabName}-canvas`);
         const status = document.getElementById(`${tabName}-status`);
         const startBtn = document.getElementById(`${tabName}-start`);
+        const cameraSwitchBtn = document.getElementById(`${tabName}-camera-switch`);
 
         try {
-            if (!stream) {
+            // If forcing a new facing mode or no stream exists
+            if (forceFacingMode !== null || !stream) {
+                // Stop existing stream if switching cameras
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Use the forced facing mode or current setting
+                const facingMode = forceFacingMode !== null ? forceFacingMode : currentFacingMode;
+                
                 stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         width: 1280,
                         height: 720,
-                        facingMode: 'user'
+                        facingMode: facingMode
                     }
                 });
+                
+                // Update current facing mode if forced
+                if (forceFacingMode !== null) {
+                    currentFacingMode = forceFacingMode;
+                }
             }
 
             video.srcObject = stream;
@@ -628,6 +658,7 @@
                 canvas.width = video.videoWidth || rect.width;
                 canvas.height = video.videoHeight || rect.height;
                 if (startBtn) startBtn.disabled = false;
+                if (cameraSwitchBtn) cameraSwitchBtn.disabled = false;
                 status.textContent = "Kamera bereit! Klicke 'Start'";
             });
 
@@ -643,6 +674,7 @@
         } catch (error) {
             console.error("Kamera-Fehler:", error);
             status.textContent = "Kein Kamera-Zugriff möglich!";
+            if (cameraSwitchBtn) cameraSwitchBtn.disabled = true;
         }
     }
 
@@ -1470,6 +1502,34 @@
             this.ctx.drawImage(tempCanvas, 0, 0, this.canvas.width, this.canvas.height);
         }
     }
+
+    // Camera switching function
+    async function switchCamera() {
+        const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+        await setupCameraForTab(currentTab, newFacingMode);
+    }
+
+    // Setup camera switch buttons for all tabs
+    ['hands', 'face', 'pose', 'objects', 'selfie'].forEach(tabName => {
+        const switchBtn = document.getElementById(`${tabName}-camera-switch`);
+        if (switchBtn) {
+            switchBtn.addEventListener('click', async () => {
+                // Disable button during switch
+                switchBtn.disabled = true;
+                switchBtn.textContent = '🔄 Wechsle...';
+                
+                try {
+                    await switchCamera();
+                    switchBtn.textContent = '📷 Kamera wechseln';
+                } catch (error) {
+                    console.error('Fehler beim Kamera-Wechsel:', error);
+                    switchBtn.textContent = '📷 Kamera wechseln';
+                }
+                
+                switchBtn.disabled = false;
+            });
+        }
+    });
 
     // Initialize modules
     const handTracking = new HandTrackingModule();
