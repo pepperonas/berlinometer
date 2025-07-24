@@ -1289,15 +1289,15 @@
 
             // Draw label background
             const label = `${category.categoryName} ${Math.round(category.score * 100)}%`;
-            this.ctx.font = '16px Arial';
+            this.ctx.font = '24px Arial';
             const textWidth = this.ctx.measureText(label).width;
 
             this.ctx.fillStyle = 'rgba(76, 175, 80, 0.8)';
             this.ctx.fillRect(
                 bbox.originX,
-                bbox.originY - 25,
+                bbox.originY - 35,
                 textWidth + 10,
-                25
+                35
             );
 
             // Draw label text
@@ -1305,7 +1305,7 @@
             this.ctx.fillText(
                 label,
                 bbox.originX + 5,
-                bbox.originY - 7
+                bbox.originY - 10
             );
         }
     }

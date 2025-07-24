@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RockThaMock - macOS Mockup Generator</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.ico">
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Erstelle professionelle macOS Window-Mockups aus deinen Screenshots. Drag & Drop Upload, anpassbare Fenstertitel und Dark Mode Support.">
+    <meta name="keywords" content="mockup, macos, fenster, screenshot, design, tool, generator, window, dark mode">
+    <meta name="author" content="mrx3k1.de">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mrx3k1.de/rock-tha-mock/">
+    <meta property="og:title" content="RockThaMock - macOS Mockup Generator">
+    <meta property="og:description" content="Erstelle professionelle macOS Window-Mockups aus deinen Screenshots. Drag & Drop Upload, anpassbare Fenstertitel und Dark Mode Support.">
+    <meta property="og:site_name" content="mrx3k1.de">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://mrx3k1.de/rock-tha-mock/">
+    <meta property="twitter:title" content="RockThaMock - macOS Mockup Generator">
+    <meta property="twitter:description" content="Erstelle professionelle macOS Window-Mockups aus deinen Screenshots. Drag & Drop Upload, anpassbare Fenstertitel und Dark Mode Support.">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#2B2E3B">
+    <meta name="msapplication-TileColor" content="#2B2E3B">
+    <style>
+        :root {
+            --background-dark: #2B2E3B;
+            --background-darker: #252830;
+            --card-background: #343845;
+            --accent-blue: #688db1;
+            --accent-green: #9cb68f;
+            --accent-red: #e16162;
+            --text-primary: #d1d5db;
+            --text-secondary: #9ca3af;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --radius-sm: 0.5rem;
+            --radius: 1rem;
+            --radius-lg: 1.5rem;
+            --radius-xl: 2rem;
+            --spacing-1: 0.25rem;
+            --spacing-2: 0.5rem;
+            --spacing-3: 0.75rem;
+            --spacing-4: 1rem;
+            --spacing-5: 1.25rem;
+            --spacing-6: 1.5rem;
+            --spacing-8: 2rem;
+            --spacing-10: 2.5rem;
+            --spacing-12: 3rem;
+            --spacing-16: 4rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                         'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+                         sans-serif;
+            background: var(--background-dark);
+            min-height: 100vh;
+            padding: var(--spacing-6);
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--spacing-10);
+            color: var(--text-primary);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-3);
+            color: var(--accent-blue);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .upload-section {
+            background: var(--card-background);
+            border-radius: var(--radius);
+            padding: var(--spacing-10);
+            margin-bottom: var(--spacing-10);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .upload-area {
+            border: 3px dashed var(--text-secondary);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-16) var(--spacing-6);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(104, 141, 177, 0.1);
+        }
+
+        .upload-area h3 {
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-3);
+            color: var(--text-primary);
+        }
+
+        .upload-area p {
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-6);
+        }
+
+        .upload-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: var(--spacing-3) var(--spacing-6);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .upload-btn:hover {
+            background: #5a7ca1;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .mockup-section {
+            background: var(--card-background);
+            border-radius: var(--radius);
+            padding: var(--spacing-10);
+            box-shadow: var(--shadow-lg);
+            display: none;
+        }
+
+        .mockup-section.active {
+            display: block;
+        }
+
+        .macos-window {
+            background: #f6f6f6;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.1);
+            overflow: hidden;
+            width: 100%;
+            margin: 0 auto var(--spacing-8);
+            border: 1px solid rgba(0,0,0,0.15);
+        }
+
+        .macos-window.dark {
+            background: #2d2d2d;
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+        }
+
+        .window-header {
+            background: linear-gradient(180deg, #ececec 0%, #d6d6d6 100%);
+            height: 36px;
+            display: flex;
+            align-items: center;
+            padding: 0 var(--spacing-6);
+            border-bottom: 1px solid #c0c0c0;
+        }
+
+        .macos-window.dark .window-header {
+            background: linear-gradient(180deg, #434343 0%, #383838 100%);
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            border: 0.5px solid rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        .control-btn.close {
+            background: radial-gradient(circle, #ff605c 0%, #ff5f57 100%);
+            box-shadow: inset 0 1px rgba(255,255,255,0.3);
+        }
+
+        .control-btn.minimize {
+            background: radial-gradient(circle, #ffbd30 0%, #ffbd2e 100%);
+            box-shadow: inset 0 1px rgba(255,255,255,0.3);
+        }
+
+        .control-btn.maximize {
+            background: radial-gradient(circle, #28ca42 0%, #27c93f 100%);
+            box-shadow: inset 0 1px rgba(255,255,255,0.3);
+        }
+
+        .window-title {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .macos-window.dark .window-title {
+            color: #ddd;
+        }
+
+        .window-content {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            padding: 0;
+        }
+
+        .macos-window.dark .window-content {
+            background: #1e1e1e;
+        }
+
+        .screenshot-preview {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .download-section {
+            text-align: center;
+            margin-top: var(--spacing-8);
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-6);
+            margin-bottom: var(--spacing-8);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-2);
+        }
+
+        .control-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .control-group input {
+            background: var(--background-darker);
+            border: 1px solid rgba(156, 163, 175, 0.3);
+            border-radius: var(--radius-sm);
+            padding: var(--spacing-3);
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-group input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(104, 141, 177, 0.1);
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-3);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: var(--background-darker);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-blue);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .download-btn {
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            padding: var(--spacing-3) var(--spacing-8);
+            border-radius: var(--radius-sm);
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: var(--spacing-3);
+        }
+
+        .download-btn:hover {
+            background: #8ca47f;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .reset-btn {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: var(--spacing-3) var(--spacing-8);
+            border-radius: var(--radius-sm);
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #c54a4b;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-4);
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-section, .mockup-section {
+                padding: var(--spacing-6);
+            }
+            
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .download-section {
+                display: flex;
+                flex-direction: column;
+                gap: var(--spacing-3);
+            }
+            
+            .download-btn, .reset-btn {
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎸 RockThaMock</h1>
+            <p>Erstelle professionelle macOS Mockups aus deinen Screenshots</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <h3>📸 Screenshot hochladen</h3>
+                <p>Ziehe dein Bild hierher oder klicke zum Auswählen</p>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Datei auswählen
+                </button>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+        </div>
+
+        <div class="mockup-section" id="mockupSection">
+            <div class="controls-section">
+                <div class="control-group">
+                    <label for="windowTitleInput">Fenstertitel:</label>
+                    <input type="text" id="windowTitleInput" placeholder="Screenshot Preview" value="Screenshot Preview">
+                </div>
+                <div class="control-group">
+                    <label>Theme:</label>
+                    <div class="theme-toggle">
+                        <span>Hell</span>
+                        <div class="toggle-switch" id="themeToggle">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span>Dunkel</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="macos-window" id="macosWindow">
+                <div class="window-header">
+                    <div class="window-controls">
+                        <div class="control-btn close"></div>
+                        <div class="control-btn minimize"></div>
+                        <div class="control-btn maximize"></div>
+                    </div>
+                    <div class="window-title" id="windowTitle">Screenshot Preview</div>
+                    <div style="width: 60px;"></div>
+                </div>
+                <div class="window-content" id="windowContent">
+                    <img id="screenshotPreview" class="screenshot-preview" alt="Screenshot Preview">
+                </div>
+            </div>
+            
+            <div class="download-section">
+                <button class="download-btn" id="downloadBtn">
+                    💾 Mockup herunterladen
+                </button>
+                <button class="reset-btn" id="resetBtn">
+                    🔄 Zurücksetzen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const mockupSection = document.getElementById('mockupSection');
+        const screenshotPreview = document.getElementById('screenshotPreview');
+        const windowTitle = document.getElementById('windowTitle');
+        const windowTitleInput = document.getElementById('windowTitleInput');
+        const themeToggle = document.getElementById('themeToggle');
+        const macosWindow = document.getElementById('macosWindow');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        
+        let isDarkTheme = false;
+        let currentFileName = '';
+
+        // Drag & Drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                handleImageUpload(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleImageUpload(e.target.files[0]);
+            }
+        });
+
+        // Handle image upload
+        function removeFileExtension(filename) {
+            return filename.replace(/\.[^/.]+$/, '');
+        }
+        
+        function handleImageUpload(file) {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                screenshotPreview.src = e.target.result;
+                currentFileName = removeFileExtension(file.name);
+                windowTitle.textContent = currentFileName;
+                windowTitleInput.value = currentFileName;
+                mockupSection.classList.add('active');
+                
+                // Smooth scroll to mockup
+                mockupSection.scrollIntoView({ behavior: 'smooth' });
+            };
+            
+            reader.readAsDataURL(file);
+        }
+        
+        // Window title input handler
+        windowTitleInput.addEventListener('input', (e) => {
+            windowTitle.textContent = e.target.value || 'Screenshot Preview';
+        });
+        
+        // Theme toggle handler
+        themeToggle.addEventListener('click', () => {
+            isDarkTheme = !isDarkTheme;
+            themeToggle.classList.toggle('active', isDarkTheme);
+            macosWindow.classList.toggle('dark', isDarkTheme);
+        });
+
+        // Download functionality
+        downloadBtn.addEventListener('click', () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Get the actual displayed window dimensions from DOM
+            const windowRect = macosWindow.getBoundingClientRect();
+            const imgRect = screenshotPreview.getBoundingClientRect();
+            const headerHeight = 36;
+            const borderRadius = 12;
+            
+            // Set canvas size to match the actual displayed window size
+            canvas.width = Math.max(600, windowRect.width);
+            canvas.height = headerHeight + imgRect.height;
+            
+            // Create rounded rectangle path for transparency
+            function roundedRect(x, y, width, height, radius) {
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                ctx.lineTo(x + radius, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+            }
+            
+            // Clear canvas and create rounded window background
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw rounded background
+            roundedRect(0, 0, canvas.width, canvas.height, borderRadius);
+            if (isDarkTheme) {
+                ctx.fillStyle = '#2d2d2d';
+            } else {
+                ctx.fillStyle = '#f6f6f6';
+            }
+            ctx.fill();
+            
+            // Set clipping path for rounded corners
+            roundedRect(0, 0, canvas.width, canvas.height, borderRadius);
+            ctx.clip();
+            
+            // Draw window header based on theme
+            const gradient = ctx.createLinearGradient(0, 0, 0, headerHeight);
+            if (isDarkTheme) {
+                gradient.addColorStop(0, '#434343');
+                gradient.addColorStop(1, '#383838');
+            } else {
+                gradient.addColorStop(0, '#ececec');
+                gradient.addColorStop(1, '#d6d6d6');
+            }
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, headerHeight);
+            
+            // Draw window controls with better positioning
+            const controlY = headerHeight / 2;
+            
+            // Close button
+            ctx.fillStyle = '#ff5f57';
+            ctx.beginPath();
+            ctx.arc(20, controlY, 6.5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Minimize button
+            ctx.fillStyle = '#ffbd2e';
+            ctx.beginPath();
+            ctx.arc(41, controlY, 6.5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Maximize button
+            ctx.fillStyle = '#28ca42';
+            ctx.beginPath();
+            ctx.arc(62, controlY, 6.5, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw title based on theme
+            ctx.fillStyle = isDarkTheme ? '#ddd' : '#333';
+            ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(windowTitle.textContent, canvas.width / 2, controlY + 4);
+            
+            // Draw separator line based on theme
+            ctx.strokeStyle = isDarkTheme ? '#2a2a2a' : '#c0c0c0';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, headerHeight);
+            ctx.lineTo(canvas.width, headerHeight);
+            ctx.stroke();
+            
+            // Draw content area based on theme
+            ctx.fillStyle = isDarkTheme ? '#1e1e1e' : 'white';
+            ctx.fillRect(0, headerHeight, canvas.width, canvas.height - headerHeight);
+            
+            // Draw the screenshot matching the preview size
+            const downloadImg = new Image();
+            downloadImg.onload = () => {
+                // Calculate image dimensions to match preview exactly
+                const contentHeight = canvas.height - headerHeight;
+                const imgAspectRatio = downloadImg.width / downloadImg.height;
+                const contentAspectRatio = canvas.width / contentHeight;
+                
+                let drawWidth, drawHeight, drawX, drawY;
+                
+                if (imgAspectRatio > contentAspectRatio) {
+                    // Image is wider, fit to width
+                    drawWidth = canvas.width;
+                    drawHeight = drawWidth / imgAspectRatio;
+                } else {
+                    // Image is taller, fit to height
+                    drawHeight = contentHeight;
+                    drawWidth = drawHeight * imgAspectRatio;
+                }
+                
+                drawX = (canvas.width - drawWidth) / 2;
+                drawY = headerHeight + (contentHeight - drawHeight) / 2;
+                
+                ctx.drawImage(downloadImg, drawX, drawY, drawWidth, drawHeight);
+                
+                // Download the canvas as image
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `mockup-${windowTitle.textContent || 'screenshot'}.png`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            };
+            
+            downloadImg.src = screenshotPreview.src;
+        });
+
+        // Reset functionality
+        resetBtn.addEventListener('click', () => {
+            mockupSection.classList.remove('active');
+            screenshotPreview.src = '';
+            windowTitle.textContent = 'Screenshot Preview';
+            windowTitleInput.value = 'Screenshot Preview';
+            fileInput.value = '';
+            currentFileName = '';
+            
+            // Reset theme
+            isDarkTheme = false;
+            themeToggle.classList.remove('active');
+            macosWindow.classList.remove('dark');
+            
+            // Smooth scroll back to upload
+            document.querySelector('.upload-section').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
