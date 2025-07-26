@@ -1,12 +1,14 @@
-# Cicero - Server Request Monitor
+# Cicero - VPS-Wide Request Monitor
 
-Cicero is a comprehensive server request monitoring and analytics platform designed for the mrx3k1 ecosystem. It provides real-time tracking, detailed analytics, and beautiful visualizations of HTTP requests across multiple servers.
+Cicero is a comprehensive server request monitoring and analytics platform designed for the mrx3k1 ecosystem. It provides real-time tracking, detailed analytics, and beautiful visualizations of HTTP requests across the entire VPS infrastructure with IP geolocation support.
 
 ## Features
 
 ### 🔍 Real-time Monitoring
 - **Live Request Tracking**: See requests as they happen with WebSocket updates
-- **Multi-server Support**: Monitor multiple applications simultaneously
+- **VPS-Wide Coverage**: Monitor ALL traffic to https://mrx3k1.de via Nginx log parsing
+- **Multi-server Support**: Monitor individual applications with dedicated middleware
+- **IP Geolocation**: Real-time location tracking for all client requests
 - **Request Details**: Comprehensive view of headers, body, query parameters, and more
 
 ### 📊 Analytics Dashboard
@@ -14,27 +16,37 @@ Cicero is a comprehensive server request monitoring and analytics platform desig
 - **Response Time Analysis**: Monitor performance trends and identify bottlenecks
 - **Status Code Distribution**: Visualize success rates and error patterns
 - **Top Endpoints**: Identify most-used and slowest endpoints
+- **Geographic Analytics**: See where your visitors are coming from worldwide
+- **Server Health Monitoring**: Track individual server performance and activity
 
 ### 🔧 Easy Integration
-- **Lightweight Middleware**: Simple Express middleware for easy integration
+- **Nginx Log Parser**: Automatically captures ALL VPS traffic without code changes
+- **Lightweight Middleware**: Simple Express middleware for detailed application monitoring
 - **Zero Configuration**: Works out of the box with sensible defaults
 - **Flexible Filtering**: Exclude sensitive paths and headers
 - **Production Ready**: Optimized for performance and reliability
+- **Auto-Restart Protection**: Health checks and cron monitoring ensure 100% uptime
 
 ### 🎨 Modern Interface
 - **Dark Theme**: Beautiful dark cards theme matching the mrx3k1 portfolio
 - **Responsive Design**: Works perfectly on desktop and mobile devices
 - **Real-time Updates**: Dashboard updates live as new requests come in
 - **Interactive Charts**: Detailed analytics with Recharts visualizations
+- **Geographic Visualization**: 🌍 See visitor locations with country flags and city names
+- **Request Details Modal**: Click any request to see full headers, body, and metadata
 
 ## Architecture
 
 ```
 cicero/
-├── frontend/          # React TypeScript dashboard
-├── backend/           # Express server with MongoDB and WebSocket
-├── middleware/        # Lightweight logging middleware for integration
-├── ecosystem.config.js # PM2 configuration for deployment
+├── frontend/          # React TypeScript dashboard with IP geolocation
+├── backend/           # Express server with MongoDB, WebSocket & GeoIP
+├── middleware/        # Lightweight logging middleware for applications
+├── log-parser/        # Nginx log parser for VPS-wide monitoring
+│   ├── nginx-parser.js    # Real-time log parsing service
+│   ├── health-check.sh    # Auto-restart monitoring script
+│   └── ecosystem.config.js # PM2 configuration with cron restart
+├── ecosystem.config.js # Main PM2 configuration for deployment
 └── README.md
 ```
 

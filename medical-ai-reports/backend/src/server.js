@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { ciceroMiddleware, registerServer } = require('../../../cicero/middleware');
 
 const app = express();
 
@@ -28,6 +29,14 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Cicero Request Monitoring
+app.use(ciceroMiddleware({
+  serverName: 'medical-ai-reports',
+  serverUrl: `http://localhost:${process.env.PORT || 5063}`,
+  ciceroUrl: 'https://mrx3k1.de/cicero/api',
+  excludePaths: ['/health', '/favicon.ico']
+}));
 
 // Health Check
 app.get('/api/health', (req, res) => {
@@ -65,4 +74,10 @@ const PORT = process.env.PORT || 5063;
 app.listen(PORT, () => {
   console.log(`🚀 Server läuft auf Port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  
+  // Register with Cicero for monitoring
+  registerServer({
+    serverName: 'medical-ai-reports',
+    serverUrl: `http://localhost:${PORT}`
+  });
 });

@@ -1,0 +1,20 @@
+[Unit]
+Description=Cicero Nginx Log Parser
+After=network.target nginx.service mongodb.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/html/cicero/log-parser
+ExecStart=/usr/bin/node /var/www/html/cicero/log-parser/nginx-parser.js
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/www/html/cicero/log-parser/logs/systemd-out.log
+StandardError=append:/var/www/html/cicero/log-parser/logs/systemd-error.log
+
+# Watchdog monitoring
+WatchdogSec=30s
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

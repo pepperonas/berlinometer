@@ -80,7 +80,11 @@ const RequestsList: React.FC<RequestsListProps> = ({ requests, onRequestSelect, 
             <div
               key={request._id}
               className="table-row"
-              onClick={() => onRequestSelect(request)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onRequestSelect(request);
+              }}
             >
               <div className="col-method">
                 <span className={`method-badge ${getMethodColor(request.method)}`}>

@@ -68,6 +68,7 @@ const App: React.FC = () => {
   };
 
   const handleRequestSelect = (request: RequestLog) => {
+    console.log('Request selected:', request);
     setSelectedRequest(request);
   };
 

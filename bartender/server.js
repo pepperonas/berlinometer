@@ -9,6 +9,7 @@ const fs = require('fs');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./server/config/db');
+const { ciceroMiddleware, registerServer } = require('../cicero/middleware');
 require('dotenv').config();
 
 // Temporäres Verzeichnis erstellen, falls es nicht existiert
@@ -48,6 +49,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Cookie-Parser hinzufügen
+
+// Cicero Request Monitoring
+app.use(ciceroMiddleware({
+  serverName: 'bartender',
+  serverUrl: `http://localhost:${PORT}`,
+  ciceroUrl: 'https://mrx3k1.de/cicero/api',
+  excludePaths: ['/health', '/favicon.ico', '/static/']
+}));
+
 app.use(morgan('dev')); // Logging middleware
 
 // In Production brauchen wir beide Varianten der Routen, um flexibel zu sein
@@ -146,4 +156,10 @@ if (process.env.NODE_ENV === 'production') {
 // Start the server
 app.listen(PORT, () => {
   console.log(`Bartender API server running on port ${PORT}`);
+  
+  // Register with Cicero for monitoring
+  registerServer({
+    serverName: 'bartender',
+    serverUrl: `http://localhost:${PORT}`
+  });
 });

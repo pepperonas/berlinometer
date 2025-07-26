@@ -105,7 +105,7 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ request, onClose }) => 
             </div>
           )}
 
-          {Object.keys(request.query).length > 0 && (
+          {request.query && Object.keys(request.query).length > 0 && (
             <div className="details-section">
               <h4>Query Parameters</h4>
               <div className="code-block">
@@ -126,12 +126,13 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ request, onClose }) => 
           <div className="details-section">
             <h4>Headers</h4>
             <div className="headers-grid">
-              {Object.entries(request.headers).map(([key, value]) => (
+              {request.headers && Object.entries(request.headers).map(([key, value]) => (
                 <div key={key} className="header-item">
                   <span className="header-key">{key}:</span>
                   <span className="header-value">{value}</span>
                 </div>
               ))}
+              {!request.headers && <p>No headers available</p>}
             </div>
           </div>
 
