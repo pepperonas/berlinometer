@@ -147,25 +147,33 @@ const Dashboard: React.FC<DashboardProps> = ({ analytics, timeframe }) => {
         </div>
 
         <div className="chart-card">
-          <h3>Top Endpoints</h3>
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={300}>
+          <h3>Top 10 Endpoints</h3>
+          <div className="chart-container" style={{ overflowX: 'auto', overflowY: 'hidden' }}>
+            <ResponsiveContainer width="100%" height={400} minHeight={400}>
               <BarChart 
-                data={topEndpoints.map(endpoint => ({
-                  name: `${endpoint._id.method} ${endpoint._id.url}`,
+                data={topEndpoints.map((endpoint, index) => ({
+                  position: `#${index + 1}`,
+                  name: endpoint._id.url.length > 40 
+                    ? `${endpoint._id.url.substring(0, 40)}...`
+                    : endpoint._id.url,
+                  method: endpoint._id.method,
+                  fullName: `${endpoint._id.method} ${endpoint._id.url}`,
                   count: endpoint.count,
                   avgResponseTime: endpoint.avgResponseTime
                 }))}
-                layout="horizontal"
+                layout="vertical"
+                margin={{ top: 20, right: 30, left: 50, bottom: 20 }}
+                barGap={5}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#343845" />
                 <XAxis type="number" stroke="#9ca3af" />
                 <YAxis 
-                  dataKey="name" 
+                  dataKey="position" 
                   type="category" 
-                  width={200} 
+                  width={35} 
                   stroke="#9ca3af"
-                  fontSize={12}
+                  fontSize={11}
+                  tick={{ fill: '#9ca3af' }}
                 />
                 <Tooltip 
                   contentStyle={{ 
@@ -173,9 +181,60 @@ const Dashboard: React.FC<DashboardProps> = ({ analytics, timeframe }) => {
                     border: 'none', 
                     borderRadius: '8px',
                     color: '#d1d5db'
-                  }} 
+                  }}
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload || !payload.length) return null;
+                    const data = payload[0].payload;
+                    return (
+                      <div style={{ 
+                        backgroundColor: '#343845', 
+                        border: 'none', 
+                        borderRadius: '8px',
+                        color: '#d1d5db',
+                        padding: '12px',
+                        minWidth: '200px'
+                      }}>
+                        <div style={{ marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>
+                          {data.position}
+                        </div>
+                        <div style={{ marginBottom: '8px', wordBreak: 'break-all' }}>
+                          <span style={{ color: '#688db1', fontWeight: 'bold' }}>{data.method}</span>
+                          <span style={{ marginLeft: '8px' }}>{data.fullName.substring(data.method.length + 1)}</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
+                          <div>
+                            <span style={{ color: '#9ca3af', fontSize: '12px' }}>Requests: </span>
+                            <span style={{ color: '#688db1', fontWeight: 'bold' }}>{data.count}</span>
+                          </div>
+                          <div>
+                            <span style={{ color: '#9ca3af', fontSize: '12px' }}>Avg Time: </span>
+                            <span style={{ color: '#9cb68f', fontWeight: 'bold' }}>{Math.round(data.avgResponseTime)}ms</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }}
                 />
-                <Bar dataKey="count" fill="#688db1" />
+                <Bar 
+                  dataKey="count" 
+                  fill="#688db1" 
+                  radius={[0, 4, 4, 0]}
+                  label={(props: any) => {
+                    const { x, y, width, height, payload } = props;
+                    return (
+                      <text 
+                        x={x + width + 10} 
+                        y={y + height / 2} 
+                        fill="#9ca3af" 
+                        fontSize={11}
+                        textAnchor="start"
+                        dominantBaseline="middle"
+                      >
+                        {`${payload.method} ${payload.name}`}
+                      </text>
+                    );
+                  }}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
