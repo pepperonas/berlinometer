@@ -13,8 +13,6 @@ function App() {
   const [results, setResults] = useState([])
   const [showAboutDialog, setShowAboutDialog] = useState(false)
   const [unsortedResults, setUnsortedResults] = useState([])
-  const [dataTimestamp, setDataTimestamp] = useState(null)
-  const [isLoadingInitialData, setIsLoadingInitialData] = useState(true)
 
   // Funktion zum Extrahieren der Auslastung in Prozent
   const extractOccupancyPercentage = (occupancyText) => {
@@ -57,11 +55,6 @@ function App() {
     })
   }
 
-  // Lade automatisch die letzten Scraping-Daten beim Start
-  useEffect(() => {
-    loadLatestScrapingData()
-  }, [])
-
   // Sortiere Ergebnisse wenn Scraping abgeschlossen ist
   useEffect(() => {
     if (!isScrapingActive && unsortedResults.length > 0) {
@@ -69,30 +62,6 @@ function App() {
       setResults(sorted)
     }
   }, [isScrapingActive, unsortedResults])
-
-  const loadLatestScrapingData = async () => {
-    try {
-      setIsLoadingInitialData(true)
-      const response = await fetch(`https://mrx3k1.de/api/popular-times/latest-scraping`)
-      
-      if (response.ok) {
-        const data = await response.json()
-        
-        if (data.success && data.data && data.data.results) {
-          const sortedResults = sortResultsByOccupancy(data.data.results)
-          setResults(sortedResults)
-          setUnsortedResults(data.data.results)
-          setDataTimestamp(data.data.timestamp)
-          console.log(`✅ Initial data loaded: ${data.data.total_locations} Locations`)
-        }
-      }
-    } catch (error) {
-      console.log('Keine vorherigen Scraping-Daten verfügbar')
-    } finally {
-      setIsLoadingInitialData(false)
-    }
-  }
-
 
 
   const handleStartScraping = async (urls) => {
@@ -145,7 +114,6 @@ function App() {
                 setProgress(100)
                 setCurrentLocation('')
                 setBatchInfo(null)
-                setDataTimestamp(new Date().toISOString())
               }
             } catch (e) {
               console.warn('Failed to parse JSON:', line)
@@ -190,59 +158,25 @@ function App() {
           margin: '0 auto',
           padding: '0'
         }}>
-          {/* Zeitstempel-Überschrift */}
-          {results.length > 0 && dataTimestamp && !isScrapingActive && (
-            <div className="text-center" style={{
-              padding: '1rem 0',
-              borderBottom: '1px solid var(--gray-3)',
-              marginBottom: '0.5rem'
-            }}>
-              <h3 style={{ 
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                color: 'var(--text-primary)',
-                marginBottom: '0.25rem'
-              }}>
-                Aktuelle Auslastungsdaten
-              </h3>
-              <p style={{
-                fontSize: '0.875rem',
-                color: 'var(--text-secondary)'
-              }}>
-                Stand: {new Date(dataTimestamp).toLocaleString('de-DE', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  second: '2-digit'
-                })}
-              </p>
-            </div>
-          )}
-          
-          {/* Stimmungsbarometer und Ergebnisse (oben) */}
-          {results.length > 0 && (
-            <>
-              <MoodBarometer results={results} />
-              <ResultsDisplay results={results} />
-            </>
-          )}
-          
-          {/* Scraping Section (unten) */}
           <DefaultLocations 
             onStartScraping={handleStartScraping}
             isScrapingActive={isScrapingActive}
             onShowAbout={() => setShowAboutDialog(true)}
           />
           
-          {/* Progress Bar beim aktiven Scraping */}
           {isScrapingActive && (
             <ProgressBar 
               progress={progress}
               currentLocation={currentLocation}
               batchInfo={batchInfo}
             />
+          )}
+          
+          {results.length > 0 && (
+            <>
+              <MoodBarometer results={results} />
+              <ResultsDisplay results={results} />
+            </>
           )}
         </div>
 

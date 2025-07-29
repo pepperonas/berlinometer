@@ -1,15 +1,4 @@
-import { useState } from 'react'
-import OccupancyChart from './OccupancyChart'
-
 function ResultsDisplay({ results }) {
-  const [expandedItems, setExpandedItems] = useState({})
-  
-  const toggleExpanded = (index) => {
-    setExpandedItems(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }))
-  }
   const formatTimestamp = (timestamp) => {
     return new Date(timestamp).toLocaleString('de-DE', {
       year: 'numeric',
@@ -746,48 +735,6 @@ function ResultsDisplay({ results }) {
                 <span>🔗</span>
                 <span>Google Maps öffnen</span>
               </a>
-              
-              {/* Historie aufklappen Button */}
-              <button
-                onClick={() => toggleExpanded(index)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  padding: '0.5rem',
-                  backgroundColor: 'transparent',
-                  border: '1px solid var(--gray-3)',
-                  borderRadius: 'var(--radius)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  fontSize: '0.75rem',
-                  color: 'var(--text-secondary)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'var(--gray-2)'
-                  e.target.style.borderColor = 'var(--gray-4)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent'
-                  e.target.style.borderColor = 'var(--gray-3)'
-                }}
-              >
-                <span>{expandedItems[index] ? '📈' : '📊'}</span>
-                <span>{expandedItems[index] ? 'Historie ausblenden' : 'Historie der letzten 12h anzeigen'}</span>
-                <span style={{
-                  transform: expandedItems[index] ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s ease'
-                }}>
-                  ⌄
-                </span>
-              </button>
-              
-              {/* Chart Bereich */}
-              <OccupancyChart 
-                url={result.url} 
-                isExpanded={expandedItems[index]}
-              />
               
               <div className="text-xs text-secondary text-center" style={{ opacity: '0.7' }}>
                 ID: {index + 1}
