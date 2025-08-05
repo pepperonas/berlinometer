@@ -111,7 +111,8 @@ function watchNginxLogs() {
               if (!logData.url.includes('/favicon.ico') && 
                   !logData.url.includes('/.well-known/') &&
                   !logData.url.includes('/robots.txt') &&
-                  !logData.url.includes('/cicero/api/log')) {
+                  !logData.url.includes('/cicero/') &&
+                  !logData.url.includes('/socket.io/')) {
                 sendToCicero(logData);
               }
             }

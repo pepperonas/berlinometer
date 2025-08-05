@@ -74,6 +74,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filters, servers, onFilterCha
           <option value="50">50 requests</option>
           <option value="100">100 requests</option>
           <option value="200">200 requests</option>
+          <option value="300">300 requests</option>
+          <option value="500">500 requests</option>
         </select>
       </div>
 

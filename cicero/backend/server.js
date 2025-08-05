@@ -149,10 +149,13 @@ app.get('/api/requests', async (req, res) => {
     if (server) filter.server = server;
     if (status) filter.status = parseInt(status);
     
+    // Limit maximum to 500 for performance
+    const requestLimit = Math.min(parseInt(limit) || 50, 500);
+    
     const requests = await Request
       .find(filter)
       .sort({ timestamp: -1 })
-      .limit(parseInt(limit));
+      .limit(requestLimit);
       
     res.json(requests);
   } catch (error) {

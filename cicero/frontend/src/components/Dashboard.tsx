@@ -221,6 +221,9 @@ const Dashboard: React.FC<DashboardProps> = ({ analytics, timeframe }) => {
                   radius={[0, 4, 4, 0]}
                   label={(props: any) => {
                     const { x, y, width, height, payload } = props;
+                    if (!payload || !payload.method || !payload.name) {
+                      return <text />;
+                    }
                     return (
                       <text 
                         x={x + width + 10} 
