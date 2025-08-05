@@ -1,0 +1,114 @@
+ Deployment-Anleitung für deinen VPS (mrx3k1.de)
+
+  1. Nginx-Konfiguration erweitern
+
+  ssh root@mrx3k1.de
+  nano /etc/nginx/sites-enabled/default
+
+  Füge einen neuen Location-Block hinzu:
+  location /deine-neue-app/ {
+      alias /var/www/html/deine-neue-app/;
+      try_files $uri $uri/ /deine-neue-app/index.html;
+      index index.html;
+  }
+
+  # Falls die App ein Backend hat:
+  location /deine-neue-app/api/ {
+      proxy_pass http://localhost:PORT/;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_set_header Host $host;
+  }
+
+  2. Frontend Deployment (React/Static)
+
+  # Lokal: Build erstellen
+  cd deine-app
+  npm run build
+
+  # Homepage in package.json anpassen:
+  # "homepage": "/deine-neue-app"
+
+  # Deployment
+  rsync -avz --delete ./build/ root@mrx3k1.de:/var/www/html/deine-neue-app/
+
+  # Oder bei static HTML:
+  rsync -avz ./ root@mrx3k1.de:/var/www/html/deine-neue-app/
+
+  3. Backend Deployment (Node.js)
+
+  # Verzeichnis auf Server erstellen
+  ssh root@mrx3k1.de "mkdir -p /home/mrx3k1/mrx3k1/deine-neue-app"
+
+  # Code hochladen (ohne node_modules)
+  rsync -avz --exclude 'node_modules' --exclude '.env' ./ root@mrx3k1.de:/home/mrx3k1/mrx3k1/deine-neue-app/
+
+  # Auf Server: Dependencies installieren & PM2 starten
+  ssh root@mrx3k1.de
+  cd /home/mrx3k1/mrx3k1/deine-neue-app
+  npm install --production
+  pm2 start server.js --name "deine-neue-app"
+  pm2 save
+
+  4. Port-Management
+
+  Deine belegten Ports (siehe PORTS.md):
+  - 3000-3003: Verschiedene Apps
+  - 4000-5081: Backend-Services
+  - Wähle einen freien Port für neue Apps!
+
+  5. Deployment-Script Template
+
+  Erstelle ein deploy.sh:
+  #!/bin/bash
+  APP_NAME="deine-neue-app"
+  LOCAL_PATH="./build"
+  REMOTE_PATH="/var/www/html/$APP_NAME/"
+
+  echo "🚀 Deploying $APP_NAME..."
+
+  # Frontend build
+  npm run build
+
+  # Deploy
+  rsync -avz --delete $LOCAL_PATH/ root@mrx3k1.de:$REMOTE_PATH
+
+  # Backend restart (falls vorhanden)
+  ssh root@mrx3k1.de "pm2 restart $APP_NAME"
+
+  echo "✅ Deployment complete!"
+  echo "📍 Access at: https://mrx3k1.de/$APP_NAME/"
+
+  6. Nach dem Deployment
+
+  # Nginx neu laden
+  ssh root@mrx3k1.de "nginx -s reload"
+
+  # PM2 Status prüfen
+  ssh root@mrx3k1.de "pm2 list"
+
+  # Logs anschauen
+  ssh root@mrx3k1.de "pm2 logs deine-neue-app"
+
+  7. Cicero Integration (optional)
+
+  Wenn die neue App Monitoring braucht:
+  // In deiner Express-App
+  const { ciceroMiddleware, registerServer } = require('../cicero/middleware');
+
+  app.use(ciceroMiddleware({
+    serverName: 'deine-neue-app',
+    serverUrl: 'http://localhost:PORT'
+  }));
+
+  registerServer({
+    serverName: 'deine-neue-app',
+    serverUrl: 'http://localhost:PORT'
+  });
+
+  Wichtig:
+  - Immer in /var/www/html/app-name/ deployen
+  - Ports in PORTS.md dokumentieren
+  - PM2 für Node.js-Services nutzen
+  - Nginx-Config nach Änderungen neu laden
