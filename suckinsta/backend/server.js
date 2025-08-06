@@ -3,30 +3,255 @@ const cors = require('cors');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = 5080;
 
-// CORS configuration for mrx3k1.de
+// API Keys for external access
+const API_KEYS = new Set([
+    'sk_live_51234567890abcdef1234567890abcdef',  // Production key
+    'sk_test_abcdef1234567890abcdef1234567890',   // Test key
+    'sk_mrx3k1_dev_1234567890abcdefghijklmnop'    // Development key
+]);
+
+// Rate limiting storage (in-memory for simplicity)
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per minute per API key
+const FRONTEND_RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute for frontend
+
+// CORS configuration - allow all origins for API access
 app.use(cors({
-    origin: ['https://mrx3k1.de', 'http://localhost:3000', 'http://localhost:3001'],
+    origin: true, // Allow all origins for API access
     credentials: true
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint
+// API Authentication Middleware
+const authenticateAPI = (req, res, next) => {
+    // Skip auth for health check and documentation
+    if (req.path === '/api/health' || req.path === '/api/docs') {
+        return next();
+    }
+
+    // Skip auth for requests from the frontend (same origin or allowed origins)
+    const origin = req.headers.origin || req.headers.referer;
+    const allowedFrontendOrigins = [
+        'https://mrx3k1.de',
+        'http://localhost:3000',
+        'http://localhost:3001'
+    ];
+    
+    if (origin) {
+        const isFromFrontend = allowedFrontendOrigins.some(allowed => 
+            origin.startsWith(allowed)
+        );
+        
+        if (isFromFrontend) {
+            // For frontend requests, use a default internal API key for rate limiting
+            req.apiKey = 'internal_frontend_key';
+            return next();
+        }
+    }
+
+    const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
+    
+    if (!apiKey) {
+        return res.status(401).json({
+            error: 'Authentication required',
+            message: 'API key is required. Include it in the X-API-Key header or Authorization header as Bearer token.',
+            code: 'MISSING_API_KEY'
+        });
+    }
+
+    if (!API_KEYS.has(apiKey)) {
+        return res.status(401).json({
+            error: 'Invalid API key',
+            message: 'The provided API key is not valid.',
+            code: 'INVALID_API_KEY'
+        });
+    }
+
+    // Add API key to request for rate limiting
+    req.apiKey = apiKey;
+    next();
+};
+
+// Rate Limiting Middleware
+const rateLimit = (req, res, next) => {
+    const key = req.apiKey;
+    const now = Date.now();
+    
+    // Determine the rate limit based on whether it's a frontend request
+    const maxRequests = key === 'internal_frontend_key' 
+        ? FRONTEND_RATE_LIMIT_MAX_REQUESTS 
+        : RATE_LIMIT_MAX_REQUESTS;
+    
+    if (!rateLimitStore.has(key)) {
+        rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+        return next();
+    }
+    
+    const limit = rateLimitStore.get(key);
+    
+    if (now > limit.resetTime) {
+        // Reset the limit
+        rateLimitStore.set(key, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+        return next();
+    }
+    
+    if (limit.count >= maxRequests) {
+        return res.status(429).json({
+            error: 'Rate limit exceeded',
+            message: `Too many requests. Limit is ${maxRequests} requests per minute.`,
+            retryAfter: Math.ceil((limit.resetTime - now) / 1000),
+            code: 'RATE_LIMIT_EXCEEDED'
+        });
+    }
+    
+    limit.count++;
+    next();
+};
+
+// Health check endpoint (public)
 app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'OK', 
+        service: 'Suckinsta API',
         message: 'Instagram Video Downloader API is running',
-        timestamp: new Date().toISOString()
+        version: '2.0.0',
+        timestamp: new Date().toISOString(),
+        endpoints: {
+            health: 'GET /api/health',
+            docs: 'GET /api/docs',
+            download: 'POST /api/download'
+        }
     });
 });
 
-// Download endpoint
-app.post('/api/download', async (req, res) => {
+// API Documentation endpoint (public)
+app.get('/api/docs', (req, res) => {
+    res.json({
+        name: 'Suckinsta API',
+        version: '2.0.0',
+        description: 'Instagram Video Downloader API with authentication',
+        baseUrl: 'https://mrx3k1.de/api',
+        authentication: {
+            type: 'API Key',
+            methods: [
+                'Include X-API-Key header',
+                'Include Authorization header with Bearer token'
+            ],
+            example: 'X-API-Key: sk_live_your_api_key_here'
+        },
+        rateLimit: {
+            window: '1 minute',
+            maxRequests: 10,
+            policy: 'per API key'
+        },
+        endpoints: [
+            {
+                method: 'GET',
+                path: '/api/health',
+                description: 'Health check endpoint',
+                authentication: 'None required',
+                response: {
+                    status: 'string',
+                    message: 'string',
+                    timestamp: 'ISO 8601 datetime'
+                }
+            },
+            {
+                method: 'GET',
+                path: '/api/docs',
+                description: 'API documentation',
+                authentication: 'None required',
+                response: 'API documentation object'
+            },
+            {
+                method: 'POST',
+                path: '/api/download',
+                description: 'Download Instagram video',
+                authentication: 'Required',
+                requestBody: {
+                    url: 'string (required) - Instagram video URL'
+                },
+                responses: {
+                    200: 'Video file download',
+                    400: 'Bad request - invalid URL',
+                    401: 'Authentication error',
+                    429: 'Rate limit exceeded',
+                    500: 'Download failed'
+                },
+                example: {
+                    request: {
+                        url: 'https://www.instagram.com/p/ABC123/',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-Key': 'sk_live_your_api_key_here'
+                        }
+                    }
+                }
+            }
+        ],
+        errorCodes: {
+            MISSING_API_KEY: 'API key not provided',
+            INVALID_API_KEY: 'API key is not valid',
+            RATE_LIMIT_EXCEEDED: 'Too many requests per minute'
+        },
+        examples: {
+            curl: {
+                download: `curl -X POST https://mrx3k1.de/api/download \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: sk_live_your_api_key_here" \\
+  -d '{"url": "https://www.instagram.com/p/ABC123/"}' \\
+  --output video.mp4`
+            },
+            javascript: {
+                download: `fetch('https://mrx3k1.de/api/download', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'sk_live_your_api_key_here'
+  },
+  body: JSON.stringify({
+    url: 'https://www.instagram.com/p/ABC123/'
+  })
+}).then(response => response.blob())
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'video.mp4';
+    a.click();
+  });`
+            },
+            python: {
+                download: `import requests
+
+response = requests.post('https://mrx3k1.de/api/download', 
+    headers={
+        'Content-Type': 'application/json',
+        'X-API-Key': 'sk_live_your_api_key_here'
+    },
+    json={'url': 'https://www.instagram.com/p/ABC123/'}
+)
+
+if response.status_code == 200:
+    with open('video.mp4', 'wb') as f:
+        f.write(response.content)
+else:
+    print('Error:', response.json())`
+            }
+        }
+    });
+});
+
+// Download endpoint (requires authentication and rate limiting)
+app.post('/api/download', authenticateAPI, rateLimit, async (req, res) => {
     const { url } = req.body;
 
     if (!url) {
@@ -277,9 +502,12 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Instagram Video Downloader API server running on port ${PORT}`);
-    console.log(`Health check: http://localhost:${PORT}/api/health`);
-    console.log(`Download endpoint: POST http://localhost:${PORT}/api/download`);
+    console.log(`🚀 Suckinsta API server running on port ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`📖 API docs: http://localhost:${PORT}/api/docs`);
+    console.log(`⬇️  Download endpoint: POST http://localhost:${PORT}/api/download (requires API key)`);
+    console.log(`🔑 Available API keys: ${API_KEYS.size} configured`);
+    console.log(`🛡️  Rate limit: ${RATE_LIMIT_MAX_REQUESTS} requests per ${RATE_LIMIT_WINDOW/1000}s per API key`);
 });
 
 module.exports = app;
