@@ -1,0 +1,41 @@
+    # Suckinsta Frontend
+    location /suckinsta/ {
+        alias /var/www/html/suckinsta/;
+        try_files $uri $uri/ /suckinsta/index.html;
+        index index.html;
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+    }
+
+    # Suckinsta API
+    location /suckinsta/api/ {
+        proxy_pass http://localhost:5080/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+    }
+
+    # Suckyt Frontend
+    location /suckyt/ {
+        alias /var/www/html/suckyt/;
+        try_files $uri $uri/ /suckyt/index.html;
+        index index.html;
+        add_header Cache-Control "no-store, no-cache, must-revalidate";
+    }
+
+    # Suckyt API
+    location /suckyt/api/ {
+        proxy_pass http://localhost:5081/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+    }
