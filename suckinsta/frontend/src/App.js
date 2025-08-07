@@ -111,7 +111,7 @@ function App() {
     setSuccess('');
 
     try {
-      const response = await fetch('/api/download', {
+      const response = await fetch('/api/suckinsta/download', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

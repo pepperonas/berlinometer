@@ -4,9 +4,10 @@ Diese Datei dokumentiert alle Datenbankverbindungen und -konfigurationen des mrx
 
 ## 📊 Übersicht
 
-**Gesamt:** 8 Anwendungen mit Datenbankverbindungen
+**Gesamt:** 9 Anwendungen mit Datenbankverbindungen
 - **MongoDB:** 7 Anwendungen (localhost:27017, eine auf 27018)
 - **MySQL:** 1 Anwendung (localhost:3306)
+- **SQLite:** 1 Anwendung (lokale DB-Datei)
 
 ---
 
@@ -141,6 +142,33 @@ Diese Datei dokumentiert alle Datenbankverbindungen und -konfigurationen des mrx
 
 ---
 
+## 🗄️ SQLite Datenbanken
+
+### 1. Free-WiFi Phishing Demo
+- **Verzeichnis:** `free-wifi/`
+- **Datenbank:** `credentials.db`
+- **Pfad:** `/var/www/html/free-wifi/data/credentials.db`
+- **App Port:** 4800
+- **Datei-Format:** SQLite3
+
+**Schema/Tabellen:**
+- **credentials** (Erfasste Login-Versuche)
+  - id (INTEGER PRIMARY KEY)
+  - type (TEXT) - Login-Typ (google, email, etc.)
+  - email (TEXT) - Eingegebene E-Mail
+  - password (TEXT) - Eingegebenes Passwort
+  - ipAddress (TEXT) - IP-Adresse des Nutzers
+  - userAgent (TEXT) - Browser/Device Info
+  - timestamp (TEXT) - Zeitstempel der Erfassung
+
+**Besonderheiten:**
+- Bildungszweck-Demo für Phishing-Awareness
+- JSON-Backup in `data/credentials.json`
+- Lokale node_modules erforderlich (path-to-regexp Konflikt)
+- 13 Demo-Einträge auf VPS vorhanden
+
+---
+
 ## 🐬 MySQL Datenbanken
 
 ### 1. Weather Tracker API
@@ -204,7 +232,8 @@ Diese Datei dokumentiert alle Datenbankverbindungen und -konfigurationen des mrx
 | GlitterHue | 5001 | 27017 | MongoDB |
 | Endeavour | 5000 | 27017 | MongoDB |
 | Secure Marketplace | 5005 | 27018 | MongoDB |
-| Weather Tracker | - | 3306 | MySQL |
+| Weather Tracker | 5033 | 3306 | MySQL |
+| Free-WiFi | 4800 | - | SQLite |
 
 ---
 
