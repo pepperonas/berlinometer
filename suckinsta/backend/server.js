@@ -18,8 +18,8 @@ const API_KEYS = new Set([
 // Rate limiting storage (in-memory for simplicity)
 const rateLimitStore = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 10; // 10 requests per minute per API key
-const FRONTEND_RATE_LIMIT_MAX_REQUESTS = 30; // 30 requests per minute for frontend
+const RATE_LIMIT_MAX_REQUESTS = 3; // 3 requests per minute per API key (reduced to avoid detection)
+const FRONTEND_RATE_LIMIT_MAX_REQUESTS = 5; // 5 requests per minute for frontend (reduced)
 
 // CORS configuration - allow all origins for API access
 app.use(cors({
@@ -379,21 +379,42 @@ app.post('/api/download', authenticateAPI, rateLimit, async (req, res) => {
     }
     
     try {
-        // Build yt-dlp arguments
+        // Random delay between requests (1-5 seconds)
+        const delay = Math.floor(Math.random() * 4000) + 1000;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        // Array of different user agents to rotate
+        const userAgents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:122.0) Gecko/20100101 Firefox/122.0',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
+        ];
+        
+        // Pick random user agent
+        const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+        
+        // Build yt-dlp arguments with anti-detection measures
         const ytDlpArgs = [
             '--no-playlist',
             '--format', 'best[ext=mp4]/best',
             '--output', outputTemplate,
             '--no-check-certificate',
             '--ignore-errors',
-            '--socket-timeout', '30',
-            '--retries', '3',
-            '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            '--add-header', 'Accept-Language:en-US,en;q=0.9',
-            '--add-header', 'Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            '--socket-timeout', '60',
+            '--retries', '2',
+            '--sleep-interval', '1',
+            '--max-sleep-interval', '3',
+            '--user-agent', randomUserAgent,
+            '--add-header', 'Accept-Language:en-US,en;q=0.9,de;q=0.8',
+            '--add-header', 'Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             '--add-header', 'Accept-Encoding:gzip, deflate, br',
             '--add-header', 'DNT:1',
-            '--add-header', 'Upgrade-Insecure-Requests:1'
+            '--add-header', 'Upgrade-Insecure-Requests:1',
+            '--add-header', 'Sec-Fetch-Dest:document',
+            '--add-header', 'Sec-Fetch-Mode:navigate',
+            '--add-header', 'Sec-Fetch-Site:none'
         ];
         
         // Add cookie file if it exists
