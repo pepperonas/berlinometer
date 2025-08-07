@@ -17,7 +17,7 @@ This document lists all ports used by applications in this project.
 | 5000 | Challenge Platform    | endeavour          | `endeavour/backend/server.js`          |
 | 5005 | Secure Marketplace    | secure-marketplace | `secure-marketplace/backend/server.js` |
 | 5007 | Tech Documentation    | techdocs           | `techdocs/server/server.js`            |
-| 5030 | File Sharing          | xchange            | `xchange/server.js`                    |
+| 5009 | File Sharing          | xchange            | `xchange/server.js`                    |
 | 5010 | SEO Analytics         | seolytix           | `seolytix/backend/server.js`           |
 | 5012 | Security App          | mpsec              | `mpsec/server/.env`                    |
 | 5012 | Icon AI Server        | iconif-ai          | `iconif-ai/server/Dockerfile`          |
