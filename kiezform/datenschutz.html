@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datenschutzerklärung - KiezForm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #000;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(255, 255, 255, 0.01) 2px,
+                    rgba(255, 255, 255, 0.01) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            color: #fff;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 3rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #808080;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: #fff;
+            transition: width 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #fff;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        main {
+            margin-top: 100px;
+            padding: 3rem 0;
+        }
+
+        .content {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 100;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 3rem;
+            color: #fff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        h3 {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: #a0a0a0;
+        }
+
+        p, ul, li {
+            color: #808080;
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        li:before {
+            content: "–";
+            position: absolute;
+            left: -1rem;
+        }
+
+        a {
+            color: #a0a0a0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        a:hover {
+            color: #fff;
+        }
+
+        .last-updated {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: #606060;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            background: #000;
+            padding: 2rem 0;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .footer-content {
+            color: #404040;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+                letter-spacing: 0.1em;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .content {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav>
+        <a href="/" class="logo">KIEZFORM</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/impressum.html">Impressum</a></li>
+            <li><a href="/datenschutz.html">Datenschutz</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main class="container">
+    <div class="content">
+        <h1>Datenschutzerklärung</h1>
+
+        <h2>1. Datenschutz auf einen Blick</h2>
+
+        <h3>Allgemeine Hinweise</h3>
+        <p>
+            Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren
+            personenbezogenen Daten passiert, wenn Sie diese Website besuchen. Personenbezogene
+            Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.
+        </p>
+
+        <h3>Datenerfassung auf dieser Website</h3>
+        <p>
+            <strong>Wer ist verantwortlich für die Datenerfassung auf dieser Website?</strong><br>
+            Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber. Dessen
+            Kontaktdaten können Sie dem Impressum dieser Website entnehmen.
+        </p>
+        <p>
+            <strong>Wie erfassen wir Ihre Daten?</strong><br>
+            Ihre Daten werden zum einen dadurch erhoben, dass Sie uns diese mitteilen. Hierbei kann
+            es sich z.B. um Daten handeln, die Sie in ein Kontaktformular eingeben. Andere Daten
+            werden automatisch oder nach Ihrer Einwilligung beim Besuch der Website durch unsere
+            IT-Systeme erfasst. Das sind vor allem technische Daten (z.B. Internetbrowser,
+            Betriebssystem oder Uhrzeit des Seitenaufrufs).
+        </p>
+        <p>
+            <strong>Wofür nutzen wir Ihre Daten?</strong><br>
+            Ein Teil der Daten wird erhoben, um eine fehlerfreie Bereitstellung der Website zu
+            gewährleisten. Andere Daten können zur Analyse Ihres Nutzerverhaltens verwendet werden.
+        </p>
+
+        <h2>2. Hosting</h2>
+        <p>
+            Die Inhalte unserer Website werden bei folgendem Anbieter gehostet:
+        </p>
+        <h3>Externes Hosting</h3>
+        <p>
+            Diese Website wird extern gehostet. Die personenbezogenen Daten, die auf dieser Website
+            erfasst werden, werden auf den Servern des Hosters gespeichert. Hierbei kann es sich v.
+            a. um IP-Adressen, Kontaktanfragen, Meta- und Kommunikationsdaten, Vertragsdaten,
+            Kontaktdaten, Namen, Websitezugriffe und sonstige Daten, die über eine Website generiert
+            werden, handeln.
+        </p>
+        <p>
+            Das externe Hosting erfolgt zum Zwecke der Vertragserfüllung gegenüber unseren
+            potenziellen und bestehenden Kunden (Art. 6 Abs. 1 lit. b DSGVO) und im Interesse einer
+            sicheren, schnellen und effizienten Bereitstellung unseres Online-Angebots durch einen
+            professionellen Anbieter (Art. 6 Abs. 1 lit. f DSGVO).
+        </p>
+
+        <h2>3. Allgemeine Hinweise und Pflichtinformationen</h2>
+
+        <h3>Datenschutz</h3>
+        <p>
+            Der Betreiber dieser Seiten nimmt den Schutz Ihrer persönlichen Daten sehr ernst. Wir
+            behandeln Ihre personenbezogenen Daten vertraulich und entsprechend den gesetzlichen
+            Datenschutzvorschriften sowie dieser Datenschutzerklärung.
+        </p>
+
+        <h3>Hinweis zur verantwortlichen Stelle</h3>
+        <p>
+            Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:
+        </p>
+        <p>
+            Martin Pfeffer<br>
+            Flughafenstraße 24<br>
+            12053 Berlin<br>
+            E-Mail: martin.pfeffer@celox.io
+        </p>
+
+        <h3>Speicherdauer</h3>
+        <p>
+            Soweit innerhalb dieser Datenschutzerklärung keine speziellere Speicherdauer genannt
+            wurde, verbleiben Ihre personenbezogenen Daten bei uns, bis der Zweck für die
+            Datenverarbeitung entfällt. Wenn Sie ein berechtigtes Löschungsbegehren geltend machen
+            oder eine Einwilligung zur Datenverarbeitung widerrufen, werden Ihre Daten gelöscht.
+        </p>
+
+        <h3>Widerruf Ihrer Einwilligung zur Datenverarbeitung</h3>
+        <p>
+            Viele Datenverarbeitungsvorgänge sind nur mit Ihrer ausdrücklichen Einwilligung möglich.
+            Sie können eine bereits erteilte Einwilligung jederzeit widerrufen. Die Rechtmäßigkeit
+            der bis zum Widerruf erfolgten Datenverarbeitung bleibt vom Widerruf unberührt.
+        </p>
+
+        <h3>Beschwerderecht bei der zuständigen Aufsichtsbehörde</h3>
+        <p>
+            Im Falle von Verstößen gegen die DSGVO steht den Betroffenen ein Beschwerderecht bei
+            einer Aufsichtsbehörde, insbesondere in dem Mitgliedstaat ihres gewöhnlichen
+            Aufenthalts, ihres Arbeitsplatzes oder des Orts des mutmaßlichen Verstoßes zu.
+        </p>
+
+        <h3>SSL- bzw. TLS-Verschlüsselung</h3>
+        <p>
+            Diese Seite nutzt aus Sicherheitsgründen und zum Schutz der Übertragung vertraulicher
+            Inhalte, wie zum Beispiel Bestellungen oder Anfragen, die Sie an uns als Seitenbetreiber
+            senden, eine SSL- bzw. TLS-Verschlüsselung. Eine verschlüsselte Verbindung erkennen Sie
+            daran, dass die Adresszeile des Browsers von „http://" auf „https://" wechselt und an
+            dem Schloss-Symbol in Ihrer Browserzeile.
+        </p>
+
+        <h2>4. Datenerfassung auf dieser Website</h2>
+
+        <h3>Server-Log-Dateien</h3>
+        <p>
+            Der Provider der Seiten erhebt und speichert automatisch Informationen in so genannten
+            Server-Log-Dateien, die Ihr Browser automatisch an uns übermittelt. Dies sind:
+        </p>
+        <ul>
+            <li>Browsertyp und Browserversion</li>
+            <li>Verwendetes Betriebssystem</li>
+            <li>Referrer URL</li>
+            <li>Hostname des zugreifenden Rechners</li>
+            <li>Uhrzeit der Serveranfrage</li>
+            <li>IP-Adresse</li>
+        </ul>
+        <p>
+            Eine Zusammenführung dieser Daten mit anderen Datenquellen wird nicht vorgenommen. Die
+            Erfassung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.
+        </p>
+
+        <h2>5. Analyse-Tools und Werbung</h2>
+
+        <h3>Google Analytics</h3>
+        <p>
+            Diese Website nutzt Funktionen des Webanalysedienstes Google Analytics. Anbieter ist die
+            Google Ireland Limited („Google"), Gordon House, Barrow Street, Dublin 4, Irland.
+        </p>
+        <p>
+            Google Analytics ermöglicht es dem Websitebetreiber, das Verhalten der Websitebesucher
+            zu analysieren. Hierbei erhält der Websitebetreiber verschiedene Nutzungsdaten, wie z.B.
+            Seitenaufrufe, Verweildauer, verwendete Betriebssysteme und Herkunft des Nutzers.
+        </p>
+        <p>
+            Google Analytics verwendet Technologien, die die Wiedererkennung des Nutzers zum Zwecke
+            der Analyse des Nutzerverhaltens ermöglichen (z.B. Cookies oder Device-Fingerprinting).
+            Die von Google erfassten Informationen über die Benutzung dieser Website werden in der
+            Regel an einen Server von Google in den USA übertragen und dort gespeichert.
+        </p>
+        <p>
+            Die Nutzung dieses Dienstes erfolgt auf Grundlage Ihrer Einwilligung nach Art. 6 Abs. 1
+            lit. a DSGVO und § 25 Abs. 1 TTDSG. Die Einwilligung ist jederzeit widerrufbar.
+        </p>
+        <p>
+            Die Datenübertragung in die USA wird auf die Standardvertragsklauseln der EU-Kommission
+            gestützt. Details finden Sie hier: <a
+                href="https://privacy.google.com/businesses/controllerterms/mccs/" target="_blank"
+                rel="noopener noreferrer">https://privacy.google.com/businesses/controllerterms/mccs/</a>
+        </p>
+
+        <h3>IP-Anonymisierung</h3>
+        <p>
+            Wir haben auf dieser Website die Funktion IP-Anonymisierung aktiviert. Dadurch wird Ihre
+            IP-Adresse von Google innerhalb von Mitgliedstaaten der Europäischen Union oder in
+            anderen Vertragsstaaten des Abkommens über den Europäischen Wirtschaftsraum vor der
+            Übermittlung in die USA gekürzt.
+        </p>
+
+        <h2>6. Soziale Medien</h2>
+
+        <h3>Social Media Profile</h3>
+        <p>
+            Wir unterhalten Onlinepräsenzen innerhalb sozialer Netzwerke und Plattformen, um mit den
+            dort aktiven Kunden, Interessenten und Nutzern kommunizieren und sie dort über unsere
+            Leistungen informieren zu können.
+        </p>
+        <p>
+            Wir weisen darauf hin, dass dabei Daten der Nutzer außerhalb des Raumes der Europäischen
+            Union verarbeitet werden können. Hierdurch können sich für die Nutzer Risiken ergeben,
+            weil so z.B. die Durchsetzung der Rechte der Nutzer erschwert werden könnte.
+        </p>
+        <p>
+            Ferner werden die Daten der Nutzer innerhalb sozialer Netzwerke im Regelfall für
+            Marktforschungs- und Werbezwecke verarbeitet. So können z.B. anhand des
+            Nutzungsverhaltens und sich daraus ergebender Interessen der Nutzer Nutzungsprofile
+            erstellt werden.
+        </p>
+        <p>
+            Die Rechtsgrundlage für diese Verarbeitungen ist Art. 6 Abs. 1 lit. f DSGVO. Unser
+            berechtigtes Interesse liegt in der effektiven Information der Nutzer und Kommunikation
+            mit den Nutzern.
+        </p>
+        <p>
+            Die jeweiligen Datenverarbeitungen und Opt-Out-Möglichkeiten werden in den nachfolgend
+            verlinkten Datenschutzerklärungen der jeweiligen Anbieter näher beschrieben:
+        </p>
+        <ul>
+            <li>Facebook: <a href="https://www.facebook.com/about/privacy/" target="_blank"
+                             rel="noopener noreferrer">https://www.facebook.com/about/privacy/</a>
+            </li>
+            <li>Instagram: <a href="https://help.instagram.com/519522125107875" target="_blank"
+                              rel="noopener noreferrer">https://help.instagram.com/519522125107875</a>
+            </li>
+            <li>Twitter/X: <a href="https://twitter.com/de/privacy" target="_blank"
+                              rel="noopener noreferrer">https://twitter.com/de/privacy</a></li>
+            <li>LinkedIn: <a href="https://www.linkedin.com/legal/privacy-policy" target="_blank"
+                             rel="noopener noreferrer">https://www.linkedin.com/legal/privacy-policy</a>
+            </li>
+        </ul>
+
+        <h2>7. Plugins und Tools</h2>
+
+        <h3>Google Fonts (lokales Hosting)</h3>
+        <p>
+            Diese Seite nutzt zur einheitlichen Darstellung von Schriftarten so genannte Google
+            Fonts, die von Google bereitgestellt werden. Die Google Fonts sind lokal installiert.
+            Eine Verbindung zu Servern von Google findet dabei nicht statt.
+        </p>
+
+        <div class="last-updated">
+            <p>Stand: Dezember 2024</p>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <div class="footer-content">
+        <p>&copy; 2025 KIEZFORM. All rights reserved.</p>
+    </div>
+</footer>
+</body>
+</html>
