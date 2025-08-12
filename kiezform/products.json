@@ -1,0 +1,163 @@
+{
+  "products": [
+    {
+      "id": "ring-001",
+      "name": "BRUTALIST RING",
+      "category": "rings",
+      "price": 89,
+      "material": "Recycled PLA - Matte Black",
+      "sizes": ["S", "M", "L", "XL"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/1a1a1a/808080?text=RING+001",
+        "full": [
+          "https://via.placeholder.com/800x800/1a1a1a/808080?text=RING+001",
+          "https://via.placeholder.com/800x800/2a2a2a/808080?text=RING+001+SIDE",
+          "https://via.placeholder.com/800x800/2a2a2a/808080?text=RING+001+SIDE",
+          "https://via.placeholder.com/800x800/2a2a2a/808080?text=RING+001+SIDE"
+        ]
+      },
+      "description": "Inspiriert von der brutalistischen Architektur Berlins. Kantige Geometrie trifft auf moderne 3D-Druck-Technologie.",
+      "featured": true,
+      "new": true
+    },
+    {
+      "id": "ring-002",
+      "name": "GRID RING",
+      "category": "rings",
+      "price": 69,
+      "material": "Recycled PLA - Raw Industrial",
+      "sizes": ["XS", "S", "M", "L"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/1a1a1a/909090?text=RING+002",
+        "full": [
+          "https://via.placeholder.com/800x800/1a1a1a/909090?text=RING+002",
+          "https://via.placeholder.com/800x800/2a2a2a/909090?text=RING+DETAIL"
+        ]
+      },
+      "description": "Geometrisches Gittermuster. Ultraleicht und dennoch robust.",
+      "featured": false
+    },
+    {
+      "id": "ring-003",
+      "name": "WAVE RING",
+      "category": "rings",
+      "price": 99,
+      "material": "Flexible Resin - Smoke",
+      "sizes": ["S", "M", "L"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/3a3a3a/b0b0b0?text=RING+003",
+        "full": [
+          "https://via.placeholder.com/800x800/3a3a3a/b0b0b0?text=RING+003",
+          "https://via.placeholder.com/800x800/4a4a4a/b0b0b0?text=RING+PROFILE"
+        ]
+      },
+      "description": "Organische Form trifft auf digitale Präzision. Wie Schallwellen in Material gegossen.",
+      "featured": false,
+      "new": true
+    },
+    {
+      "id": "ring-004",
+      "name": "VOID RING",
+      "category": "rings",
+      "price": 79,
+      "material": "Bio-Resin - Obsidian Black",
+      "sizes": ["S", "M", "L", "XL"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/000000/505050?text=RING+004",
+        "full": [
+          "https://via.placeholder.com/800x800/000000/505050?text=RING+004",
+          "https://via.placeholder.com/800x800/0a0a0a/505050?text=RING+DETAIL"
+        ]
+      },
+      "description": "Die Leere als Statement. Minimalistisches Design mit maximaler Wirkung.",
+      "featured": true
+    },
+    {
+      "id": "chain-001",
+      "name": "TECHNO CHAIN",
+      "category": "chains",
+      "price": 149,
+      "material": "Bio-Resin - Silver Coated",
+      "sizes": ["45cm", "50cm", "60cm"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/0a0a0a/606060?text=CHAIN+001",
+        "full": [
+          "https://via.placeholder.com/800x800/0a0a0a/606060?text=CHAIN+001",
+          "https://via.placeholder.com/800x800/1a1a1a/606060?text=CHAIN+DETAIL"
+        ]
+      },
+      "description": "Minimalistisches Statement-Piece. Jedes Glied einzeln gedruckt und von Hand assembliert.",
+      "featured": true
+    },
+    {
+      "id": "chain-002",
+      "name": "FRAGMENT NECKLACE",
+      "category": "chains",
+      "price": 179,
+      "material": "Multi-Material Fusion",
+      "sizes": ["50cm", "60cm", "70cm"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/1a1a1a/a0a0a0?text=CHAIN+002",
+        "full": [
+          "https://via.placeholder.com/800x800/1a1a1a/a0a0a0?text=CHAIN+002",
+          "https://via.placeholder.com/800x800/2a2a2a/a0a0a0?text=CHAIN+CLOSE"
+        ]
+      },
+      "description": "Dekonstruierte Eleganz. Verschiedene Texturen und Dichten in einem Stück vereint.",
+      "featured": true,
+      "new": true
+    },
+    {
+      "id": "chain-003",
+      "name": "ORBITAL CHAIN",
+      "category": "chains",
+      "price": 129,
+      "material": "Flexible TPU - Gunmetal",
+      "sizes": ["45cm", "55cm", "65cm"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/2a2a2a/707070?text=CHAIN+003",
+        "full": [
+          "https://via.placeholder.com/800x800/2a2a2a/707070?text=CHAIN+003",
+          "https://via.placeholder.com/800x800/3a3a3a/707070?text=CHAIN+WORN"
+        ]
+      },
+      "description": "Futuristische Kettenstruktur. Flexibel und dennoch formstabil.",
+      "featured": false
+    },
+    {
+      "id": "chain-004",
+      "name": "BINARY CHAIN",
+      "category": "chains",
+      "price": 159,
+      "material": "Dual-Tone PLA",
+      "sizes": ["50cm", "60cm", "70cm"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/0a0a0a/808080?text=CHAIN+004",
+        "full": [
+          "https://via.placeholder.com/800x800/0a0a0a/808080?text=CHAIN+004",
+          "https://via.placeholder.com/800x800/1a1a1a/808080?text=CHAIN+PATTERN"
+        ]
+      },
+      "description": "Binärcode als tragbare Kunst. Dein persönlicher digitaler Fingerabdruck.",
+      "featured": false,
+      "new": true
+    }
+  ],
+  "categories": [
+    {
+      "id": "all",
+      "name": "Alle",
+      "displayName": "ALL"
+    },
+    {
+      "id": "rings",
+      "name": "Ringe",
+      "displayName": "RINGS"
+    },
+    {
+      "id": "chains",
+      "name": "Ketten",
+      "displayName": "CHAINS"
+    }
+  ]
+}

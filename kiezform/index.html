@@ -310,6 +310,367 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Product Gallery Styles */
+        .products-section {
+            margin: 4rem 0;
+            min-height: 60vh;
+        }
+
+        .category-filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #808080;
+            padding: 0.8rem 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #fff;
+        }
+
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .product-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px;
+        }
+
+        .product-card {
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+
+        .product-card.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .product-card:hover .product-overlay {
+            opacity: 1;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            z-index: 2;
+            font-weight: 500;
+        }
+
+        .product-image {
+            position: relative;
+            padding-bottom: 100%;
+            overflow: hidden;
+        }
+
+        .product-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+
+        .product-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 1rem 2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .view-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .product-name {
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-material {
+            font-size: 0.8rem;
+            color: #606060;
+            margin-bottom: 0.8rem;
+        }
+
+        .product-price {
+            font-size: 1.1rem;
+            color: #a0a0a0;
+            font-weight: 300;
+        }
+
+        /* Modal Styles */
+        .product-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            padding: 2rem;
+        }
+
+        .product-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #0a0a0a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 1200px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            color: #808080;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: color 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            padding: 3rem;
+        }
+
+        .modal-images {
+            position: sticky;
+            top: 0;
+        }
+
+        .image-main img {
+            width: 100%;
+            height: auto;
+        }
+
+        .image-thumbs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .image-thumbs .thumb {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .image-thumbs .thumb.active,
+        .image-thumbs .thumb:hover {
+            opacity: 1;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 100;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .modal-price {
+            font-size: 1.5rem;
+            color: #a0a0a0;
+            margin-bottom: 1rem;
+        }
+
+        .modal-material {
+            color: #606060;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+        }
+
+        .modal-description {
+            color: #808080;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .modal-sizes {
+            margin-bottom: 2rem;
+        }
+
+        .modal-sizes h4 {
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            color: #a0a0a0;
+            margin-bottom: 1rem;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .size-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #808080;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .size-btn:hover {
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .contact-btn {
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 1rem 3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .contact-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .no-products,
+        .error-message {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #606060;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .product-gallery {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .modal-body {
+                grid-template-columns: 1fr;
+                padding: 2rem 1rem;
+            }
+
+            .modal-close {
+                background: rgba(0, 0, 0, 0.8);
+                border-radius: 50%;
+            }
+
+            .category-filters {
+                gap: 0.5rem;
+            }
+
+            .filter-btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -328,8 +689,15 @@
         <section class="hero">
             <h1>KIEZFORM</h1>
             <p class="subtitle">3D PRINTED JEWELRY × BERLIN UNDERGROUND</p>
-            <a href="#" class="cta-button">Enter</a>
+            <a href="#products" class="cta-button">Enter</a>
         </section>
+
+        <section id="products" class="products-section">
+            <div id="category-filters" class="category-filters"></div>
+            <div id="product-gallery" class="product-gallery"></div>
+        </section>
+
+        <div id="product-modal" class="product-modal"></div>
 
         <section id="features" class="features">
             <div class="feature-card">
@@ -386,6 +754,7 @@
         </div>
     </footer>
 
+    <script src="/js/products.js"></script>
     <script>
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
