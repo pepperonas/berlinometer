@@ -5,13 +5,17 @@
       "name": "TECHNO CHAIN",
       "category": "chains",
       "price": 149,
-      "material": "Bio-Resin - Silver Coated",
-      "sizes": ["45cm", "50cm", "60cm"],
+      "material": "Premium-Quality PLA+",
+      "sizes": [
+        "45cm",
+        "50cm",
+        "60cm"
+      ],
       "images": {
-        "thumb": "https://via.placeholder.com/400x400/0a0a0a/606060?text=CHAIN+001",
+        "thumb": "https://kiezform.de/images/products/techno-chain-1.jpg?text=CHAIN+001",
         "full": [
-          "https://via.placeholder.com/800x800/0a0a0a/606060?text=CHAIN+001",
-          "https://via.placeholder.com/800x800/1a1a1a/606060?text=CHAIN+DETAIL"
+          "https://kiezform.de/images/products/techno-chain-1.jpg?text=CHAIN+001",
+          "https://kiezform.de/images/products/techno-chain-2.jpg?text=CHAIN+DETAIL"
         ]
       },
       "description": "Minimalistisches Statement-Piece. Jedes Glied einzeln gedruckt und von Hand assembliert.",
@@ -23,7 +27,11 @@
       "category": "chains",
       "price": 179,
       "material": "Multi-Material Fusion",
-      "sizes": ["50cm", "60cm", "70cm"],
+      "sizes": [
+        "50cm",
+        "60cm",
+        "70cm"
+      ],
       "images": {
         "thumb": "https://via.placeholder.com/400x400/1a1a1a/a0a0a0?text=CHAIN+002",
         "full": [
@@ -41,7 +49,11 @@
       "category": "chains",
       "price": 129,
       "material": "Flexible TPU - Gunmetal",
-      "sizes": ["45cm", "55cm", "65cm"],
+      "sizes": [
+        "45cm",
+        "55cm",
+        "65cm"
+      ],
       "images": {
         "thumb": "https://via.placeholder.com/400x400/2a2a2a/707070?text=CHAIN+003",
         "full": [
@@ -58,7 +70,11 @@
       "category": "chains",
       "price": 159,
       "material": "Dual-Tone PLA",
-      "sizes": ["50cm", "60cm", "70cm"],
+      "sizes": [
+        "50cm",
+        "60cm",
+        "70cm"
+      ],
       "images": {
         "thumb": "https://via.placeholder.com/400x400/0a0a0a/808080?text=CHAIN+004",
         "full": [
@@ -76,14 +92,17 @@
       "category": "rings",
       "price": 89,
       "material": "Recycled PLA - Matte Black",
-      "sizes": ["S", "M", "L", "XL"],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
       "images": {
-        "thumb": "https://via.placeholder.com/400x400/1a1a1a/808080?text=RING+001",
+        "thumb": "https://kiezform.de/images/products/brutalist-ring-1.jpg?text=RING+001",
         "full": [
-          "https://via.placeholder.com/800x800/1a1a1a/808080?text=RING+001",
-          "https://via.placeholder.com/800x800/2a2a2a/808080?text=RING+001+SIDE",
-          "https://via.placeholder.com/800x800/2a2a2a/808080?text=RING+001+SIDE",
-          "https://via.placeholder.com/800x800/2a2a2a/808080?text=RING+001+SIDE"
+          "https://kiezform.de/images/products/brutalist-ring-1.jpg?text=RING+001",
+          "https://kiezform.de/images/products/brutalist-ring-2.jpg?text=RING+001+SIDE"
         ]
       },
       "description": "Inspiriert von der brutalistischen Architektur Berlins. Kantige Geometrie trifft auf moderne 3D-Druck-Technologie.",
@@ -96,7 +115,12 @@
       "category": "rings",
       "price": 69,
       "material": "Recycled PLA - Raw Industrial",
-      "sizes": ["XS", "S", "M", "L"],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L"
+      ],
       "images": {
         "thumb": "https://via.placeholder.com/400x400/1a1a1a/909090?text=RING+002",
         "full": [
@@ -113,7 +137,11 @@
       "category": "rings",
       "price": 99,
       "material": "Flexible Resin - Smoke",
-      "sizes": ["S", "M", "L"],
+      "sizes": [
+        "S",
+        "M",
+        "L"
+      ],
       "images": {
         "thumb": "https://via.placeholder.com/400x400/3a3a3a/b0b0b0?text=RING+003",
         "full": [
@@ -131,7 +159,12 @@
       "category": "rings",
       "price": 79,
       "material": "Bio-Resin - Obsidian Black",
-      "sizes": ["S", "M", "L", "XL"],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
       "images": {
         "thumb": "https://via.placeholder.com/400x400/000000/505050?text=RING+004",
         "full": [

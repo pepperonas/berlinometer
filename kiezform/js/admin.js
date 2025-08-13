@@ -31,7 +31,16 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             showMessage('loginMessage', data.error, 'error');
         }
     } catch (error) {
-        showMessage('loginMessage', 'Connection error', 'error');
+        console.error('API login failed, trying demo mode', error);
+        // Fallback for demo - check hardcoded credentials
+        if (loginData.username === 'admin' && loginData.password === 'admin123') {
+            authToken = 'demo-token-' + Date.now();
+            localStorage.setItem('authToken', authToken);
+            showMessage('loginMessage', 'Demo mode activated - API not available', 'success');
+            setTimeout(showDashboard, 1500);
+        } else {
+            showMessage('loginMessage', 'Invalid credentials for demo mode', 'error');
+        }
     }
 });
 
@@ -78,7 +87,8 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
             showMessage('productMessage', data.error, 'error');
         }
     } catch (error) {
-        showMessage('productMessage', 'Connection error', 'error');
+        console.error('Product creation failed:', error);
+        showMessage('productMessage', 'Demo mode: Product creation not available (API not connected)', 'error');
     }
 });
 
@@ -122,9 +132,18 @@ async function loadStats() {
             document.getElementById('totalProducts').textContent = stats.totalProducts || 0;
             document.getElementById('validProducts').textContent = stats.validProducts || 0;
             document.getElementById('verifications').textContent = stats.verificationsToday || 0;
+        } else {
+            // Fallback for demo - show placeholder stats
+            document.getElementById('totalProducts').textContent = 'N/A';
+            document.getElementById('validProducts').textContent = 'N/A';
+            document.getElementById('verifications').textContent = 'N/A';
         }
     } catch (error) {
         console.error('Error loading stats:', error);
+        // Fallback for demo - show placeholder stats
+        document.getElementById('totalProducts').textContent = 'N/A';
+        document.getElementById('validProducts').textContent = 'N/A';
+        document.getElementById('verifications').textContent = 'N/A';
     }
 }
 
@@ -138,17 +157,26 @@ async function loadProducts() {
 
         if (response.ok) {
             const products = await response.json();
-            displayProducts(products);
+            if (Array.isArray(products)) {
+                displayProducts(products);
+            } else {
+                displayProducts([]);
+            }
+        } else {
+            // Fallback for demo - show message that API is not available
+            displayNoApiMessage();
         }
     } catch (error) {
         console.error('Error loading products:', error);
+        // Fallback for demo - show message that API is not available
+        displayNoApiMessage();
     }
 }
 
 function displayProducts(products) {
     const container = document.getElementById('productsList');
     
-    if (products.length === 0) {
+    if (!Array.isArray(products) || products.length === 0) {
         container.innerHTML = '<div style="text-align: center; color: #808080; padding: 2rem;">No products found</div>';
         return;
     }
@@ -214,6 +242,20 @@ function showMessage(elementId, message, type) {
     setTimeout(() => {
         element.innerHTML = '';
     }, 5000);
+}
+
+function displayNoApiMessage() {
+    const container = document.getElementById('productsList');
+    container.innerHTML = `
+        <div style="text-align: center; color: #808080; padding: 3rem;">
+            <h3 style="color: #a0a0a0; margin-bottom: 1rem;">DEMO MODE</h3>
+            <p>This admin interface is a prototype demonstration.</p>
+            <p>Backend API endpoints are not implemented in this static version.</p>
+            <p style="margin-top: 2rem; font-size: 0.9rem; opacity: 0.7;">
+                In a production environment, this would connect to a real database and API.
+            </p>
+        </div>
+    `;
 }
 
 function escapeHtml(unsafe) {
