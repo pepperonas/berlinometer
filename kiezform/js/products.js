@@ -202,7 +202,7 @@ class ProductGallery {
             if (e.target.classList.contains('contact-btn')) {
                 const subject = `Anfrage: ${this.selectedProduct.name}`;
                 const body = `Ich interessiere mich für ${this.selectedProduct.name} (${this.selectedProduct.id}).`;
-                window.location.href = `mailto:info@kiezform.de?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                window.location.href = `mailto:martin.pfeffer@celox.io?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
             }
         });
     }
