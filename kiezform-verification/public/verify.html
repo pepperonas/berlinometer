@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIEZFORM - Authentifizierung</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #000;
+            color: #e0e0e0;
+            line-height: 1.4;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 255, 255, 0.01) 2px,
+                rgba(255, 255, 255, 0.01) 4px
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 100;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #808080;
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .main {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 0;
+        }
+
+        .card {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            border-radius: 0;
+            font-weight: 300;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .status-valid {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+        }
+
+        .status-invalid {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff4444;
+        }
+
+        .product-title {
+            font-size: 2.5rem;
+            font-weight: 100;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .product-serial {
+            color: #606060;
+            font-size: 1rem;
+            margin-bottom: 3rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .info-item {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            color: #606060;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.8rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #a0a0a0;
+            font-weight: 300;
+        }
+
+        .verification-info {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.1);
+            padding: 2rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .verification-info.invalid {
+            background: rgba(255, 0, 0, 0.05);
+            border: 1px solid rgba(255, 0, 0, 0.1);
+        }
+
+        .verification-info h3 {
+            color: #00ff00;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .verification-info.invalid h3 {
+            color: #ff4444;
+        }
+
+        .verification-info p {
+            color: #808080;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
+        }
+
+        .qr-code {
+            display: inline-block;
+            background: #fff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .qr-id {
+            color: #404040;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .error-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            color: #ff4444;
+            margin-bottom: 1rem;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 1rem;
+            font-weight: 100;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .error-message {
+            color: #808080;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 2rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            color: #404040;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+
+        @media (max-width: 768px) {
+            .product-title {
+                font-size: 1.8rem;
+                letter-spacing: 0.1em;
+            }
+
+            .card {
+                padding: 2rem 1.5rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">KIEZFORM</div>
+            <div class="subtitle">Product Authentication</div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div id="content" class="loading">
+                <div class="spinner"></div>
+                <p>Verifizierung läuft...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2024 KIEZFORM. All rights reserved.</p>
+                <p style="margin-top: 0.5rem;">Made in Berlin</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Produkt-ID aus URL extrahieren
+        const urlPath = window.location.pathname;
+        const productId = urlPath.split('/verify/')[1] || urlPath.split('/')[1];
+        const contentDiv = document.getElementById('content');
+
+        if (!productId) {
+            showError('KEINE PRODUKT-ID', 'Bitte verwende einen gültigen Verifizierungslink.');
+        } else {
+            verifyProduct(productId);
+        }
+
+        async function verifyProduct(id) {
+            try {
+                const response = await fetch(`/api/verify/${id}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        showError('NICHT GEFUNDEN', 'Das gesuchte Produkt existiert nicht in unserer Datenbank.');
+                    } else if (response.status === 403) {
+                        showInvalidProduct(data.product);
+                    } else {
+                        showError('FEHLER', data.error || 'Ein unerwarteter Fehler ist aufgetreten.');
+                    }
+                    return;
+                }
+
+                showProduct(data);
+            } catch (error) {
+                showError('VERBINDUNGSFEHLER', 'Konnte keine Verbindung zum Server herstellen.');
+            }
+        }
+
+        function showProduct(product) {
+            const manufacturingDate = new Date(product.manufacturingDate).toLocaleDateString('de-DE');
+            const registrationDate = product.owner?.registrationDate 
+                ? new Date(product.owner.registrationDate).toLocaleDateString('de-DE')
+                : null;
+
+            contentDiv.innerHTML = `
+                <div class="card">
+                    <span class="status-badge status-valid">✓ AUTHENTISCH</span>
+                    <h2 class="product-title">${escapeHtml(product.productName)}</h2>
+                    <p class="product-serial">SN: ${escapeHtml(product.serialNumber)}</p>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Kategorie</div>
+                            <div class="info-value">${escapeHtml(product.category.toUpperCase())}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Herstellung</div>
+                            <div class="info-value">${manufacturingDate}</div>
+                        </div>
+                        ${product.metadata?.material ? `
+                        <div class="info-item">
+                            <div class="info-label">Material</div>
+                            <div class="info-value">${escapeHtml(product.metadata.material)}</div>
+                        </div>
+                        ` : ''}
+                        ${product.metadata?.size ? `
+                        <div class="info-item">
+                            <div class="info-label">Größe</div>
+                            <div class="info-value">${escapeHtml(product.metadata.size)}</div>
+                        </div>
+                        ` : ''}
+                        ${product.owner?.name ? `
+                        <div class="info-item">
+                            <div class="info-label">Besitzer</div>
+                            <div class="info-value">${escapeHtml(product.owner.name)}</div>
+                        </div>
+                        ` : ''}
+                        ${registrationDate ? `
+                        <div class="info-item">
+                            <div class="info-label">Registriert</div>
+                            <div class="info-value">${registrationDate}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="verification-info">
+                        <h3>✓ ECHTHEIT BESTÄTIGT</h3>
+                        <p>Dieses Produkt wurde erfolgreich verifiziert. Es handelt sich um ein authentisches KIEZFORM-Originalprodukt aus Berlin. Die Verifizierung erfolgte am ${new Date(product.verifiedAt).toLocaleString('de-DE')}.</p>
+                    </div>
+
+                    <div class="qr-section">
+                        <div class="qr-id">
+                            ID: ${escapeHtml(product.id)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showInvalidProduct(product) {
+            contentDiv.innerHTML = `
+                <div class="card">
+                    <span class="status-badge status-invalid">✗ UNGÜLTIG</span>
+                    <h2 class="product-title">${product ? escapeHtml(product.productName) : 'UNBEKANNTES PRODUKT'}</h2>
+                    ${product ? `<p class="product-serial">SN: ${escapeHtml(product.serialNumber)}</p>` : ''}
+                    
+                    <div class="verification-info invalid">
+                        <h3>✗ PRODUKT UNGÜLTIG</h3>
+                        <p>Dieses Produkt wurde als ungültig markiert oder zurückgerufen. Bitte kontaktiere unseren Kundenservice unter info@kiezform.de für weitere Informationen.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showError(title, message) {
+            contentDiv.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">⚠</div>
+                    <h2 class="error-title">${escapeHtml(title)}</h2>
+                    <p class="error-message">${escapeHtml(message)}</p>
+                </div>
+            `;
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIEZFORM - Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #000;
+            color: #e0e0e0;
+            line-height: 1.4;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 100;
+            letter-spacing: 0.5em;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #808080;
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto 3rem;
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #808080;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff4444;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: #00ff00;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #808080;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .product-form {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .form-title {
+            font-size: 1.2rem;
+            color: #fff;
+            margin-bottom: 2rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            color: #ff4444;
+            width: auto;
+            padding: 0.5rem 2rem;
+            margin-left: auto;
+            display: block;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: transparent;
+            border: none;
+            color: #808080;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: #fff;
+            border-bottom-color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">KIEZFORM</div>
+            <div class="subtitle">Admin Dashboard</div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Login Form -->
+        <div id="loginSection">
+            <form id="loginForm" class="login-form">
+                <div id="loginMessage"></div>
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" id="loginBtn">Login</button>
+            </form>
+
+            <!-- Registration Form -->
+            <form id="registerForm" class="login-form" style="display: none;">
+                <div class="form-title">Create Admin Account</div>
+                <div id="registerMessage"></div>
+                <div class="form-group">
+                    <label for="regUsername">Username</label>
+                    <input type="text" id="regUsername" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" name="password" required>
+                </div>
+                <button type="submit" id="registerBtn">Create Account</button>
+                <button type="button" onclick="showLogin()" style="margin-top: 1rem; background: rgba(0,0,0,0.5);">Back to Login</button>
+            </form>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button type="button" onclick="showRegister()" style="background: rgba(0,0,0,0.5); width: auto; padding: 0.5rem 2rem;">Create First Admin Account</button>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboardSection" class="dashboard">
+            <button class="logout-btn" onclick="logout()">Logout</button>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalProducts">-</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="validProducts">-</div>
+                    <div class="stat-label">Valid Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="verifications">-</div>
+                    <div class="stat-label">Verifications Today</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('products')">Products</button>
+                <button class="tab" onclick="showTab('addProduct')">Add Product</button>
+            </div>
+
+            <!-- Products Tab -->
+            <div id="productsTab" class="tab-content active">
+                <div id="productsList"></div>
+            </div>
+
+            <!-- Add Product Tab -->
+            <div id="addProductTab" class="tab-content">
+                <form id="productForm" class="product-form">
+                    <div class="form-title">Add New Product</div>
+                    <div id="productMessage"></div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="serialNumber">Serial Number</label>
+                            <input type="text" id="serialNumber" name="serialNumber" required placeholder="KIEZFORM-2024-001">
+                        </div>
+                        <div class="form-group">
+                            <label for="productName">Product Name</label>
+                            <input type="text" id="productName" name="productName" required placeholder="BRUTALIST RING">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" name="category" required style="width: 100%; padding: 1rem; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff;">
+                                <option value="rings">Rings</option>
+                                <option value="chains">Chains</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="material">Material</label>
+                            <input type="text" id="material" name="material" placeholder="Recycled PLA">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="size">Size</label>
+                            <input type="text" id="size" name="size" placeholder="M">
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Price (€)</label>
+                            <input type="number" id="price" name="price" placeholder="89">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notes</label>
+                        <input type="text" id="notes" name="notes" placeholder="Additional product information">
+                    </div>
+
+                    <button type="submit" id="productBtn">Create Product</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let authToken = localStorage.getItem('authToken');
+        let currentTab = 'products';
+
+        // Check if already logged in
+        if (authToken) {
+            showDashboard();
+        }
+
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const loginData = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    showDashboard();
+                } else {
+                    showMessage('loginMessage', data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('loginMessage', 'Connection error', 'error');
+            }
+        });
+
+        // Register form handler
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const registerData = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/api/admin/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(registerData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('registerMessage', 'Account created successfully! You can now login.', 'success');
+                    setTimeout(() => showLogin(), 2000);
+                } else {
+                    showMessage('registerMessage', data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('registerMessage', 'Connection error', 'error');
+            }
+        });
+
+        // Product form handler
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const productData = Object.fromEntries(formData);
+
+            // Prepare metadata
+            const metadata = {};
+            if (productData.material) metadata.material = productData.material;
+            if (productData.size) metadata.size = productData.size;
+            if (productData.price) metadata.price = parseFloat(productData.price);
+            if (productData.notes) metadata.notes = productData.notes;
+
+            const finalData = {
+                serialNumber: productData.serialNumber,
+                productName: productData.productName,
+                category: productData.category,
+                metadata: metadata
+            };
+
+            try {
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(finalData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('productMessage', 'Product created successfully!', 'success');
+                    document.getElementById('productForm').reset();
+                    loadStats();
+                    if (currentTab === 'products') {
+                        loadProducts();
+                    }
+                } else {
+                    showMessage('productMessage', data.error, 'error');
+                }
+            } catch (error) {
+                showMessage('productMessage', 'Connection error', 'error');
+            }
+        });
+
+        function showLogin() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function showDashboard() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').classList.add('active');
+            loadStats();
+            loadProducts();
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            authToken = null;
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('dashboardSection').classList.remove('active');
+            showLogin();
+        }
+
+        function showTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+
+            if (tab === 'products') {
+                loadProducts();
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('totalProducts').textContent = stats.totalProducts || 0;
+                    document.getElementById('validProducts').textContent = stats.validProducts || 0;
+                    document.getElementById('verifications').textContent = stats.verificationsToday || 0;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const products = await response.json();
+                    displayProducts(products);
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        function displayProducts(products) {
+            const container = document.getElementById('productsList');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #808080; padding: 2rem;">No products found</div>';
+                return;
+            }
+
+            container.innerHTML = products.map(product => `
+                <div style="background: rgba(10, 10, 10, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); padding: 2rem; margin-bottom: 2rem;">
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: start;">
+                        <div>
+                            <h3 style="color: #fff; margin-bottom: 0.5rem;">${escapeHtml(product.productName)}</h3>
+                            <p style="color: #808080; margin-bottom: 1rem;">SN: ${escapeHtml(product.serialNumber)}</p>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                                <div>
+                                    <div style="color: #606060; font-size: 0.8rem;">Category</div>
+                                    <div style="color: #a0a0a0;">${escapeHtml(product.category)}</div>
+                                </div>
+                                ${product.metadata?.material ? `
+                                <div>
+                                    <div style="color: #606060; font-size: 0.8rem;">Material</div>
+                                    <div style="color: #a0a0a0;">${escapeHtml(product.metadata.material)}</div>
+                                </div>
+                                ` : ''}
+                                ${product.metadata?.size ? `
+                                <div>
+                                    <div style="color: #606060; font-size: 0.8rem;">Size</div>
+                                    <div style="color: #a0a0a0;">${escapeHtml(product.metadata.size)}</div>
+                                </div>
+                                ` : ''}
+                                <div>
+                                    <div style="color: #606060; font-size: 0.8rem;">Status</div>
+                                    <div style="color: ${product.isValid ? '#00ff00' : '#ff4444'};">${product.isValid ? 'Valid' : 'Invalid'}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #606060; font-size: 0.8rem; margin-bottom: 0.5rem;">Verification Link</div>
+                            <a href="/verify/${product.id}" target="_blank" style="color: #fff; text-decoration: none; padding: 0.5rem 1rem; border: 1px solid rgba(255, 255, 255, 0.2); display: inline-block; margin-bottom: 1rem;">View</a>
+                            <br>
+                            <button onclick="generateQR('${product.id}')" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 0.5rem 1rem; cursor: pointer;">QR Code</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function generateQR(productId) {
+            try {
+                const response = await fetch(`/api/qrcode/${productId}`);
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `kiezform-qr-${productId}.png`;
+                link.click();
+                
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+            }
+        }
+
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${type}">${escapeHtml(message)}</div>`;
+            setTimeout(() => {
+                element.innerHTML = '';
+            }, 5000);
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
