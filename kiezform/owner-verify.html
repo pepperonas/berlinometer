@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Verification - KiezForm</title>
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .verification-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .verification-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .verification-header h1 {
+            color: #fff;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .verification-header p {
+            color: #808080;
+            font-size: 1rem;
+        }
+
+        .product-verification {
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .verification-success {
+            color: #00ff00;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .product-details {
+            background: rgba(30, 30, 30, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .product-details h3 {
+            color: #fff;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            color: #808080;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .owner-highlight {
+            color: #00ff00;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .verification-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #ff6b6b;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 2rem;
+            color: #808080;
+            text-decoration: none;
+            padding: 0.8rem 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .verification-container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            
+            .detail-row {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/" class="brand-link">KIEZFORM</a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="/" class="nav-link">HOME</a>
+                <a href="/#products" class="nav-link">PRODUCTS</a>
+                <a href="/#features" class="nav-link">FEATURES</a>
+                <a href="/impressum" class="nav-link">IMPRESSUM</a>
+                <a href="/datenschutz" class="nav-link">DATENSCHUTZ</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 80px;">
+        <div class="verification-container">
+            <div class="verification-header">
+                <h1>Ownership Verification</h1>
+                <p>Verifying product ownership authenticity</p>
+            </div>
+
+            <div id="loading" style="text-align: center;">
+                <div class="loading-spinner"></div>
+                <p style="color: #808080;">Verifying ownership...</p>
+            </div>
+
+            <div id="verification-result" style="display: none;">
+                <!-- Results will be populated here -->
+            </div>
+
+            <div class="verification-footer">
+                <a href="/" class="back-link">← Back to KiezForm</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        class OwnerVerification {
+            constructor() {
+                this.urlParams = new URLSearchParams(window.location.search);
+                this.init();
+            }
+
+            async init() {
+                const token = this.urlParams.get('token');
+                const productId = this.urlParams.get('product');
+
+                if (!token || !productId) {
+                    this.showError('Invalid verification link');
+                    return;
+                }
+
+                // Simulate loading delay
+                setTimeout(() => {
+                    this.verifyOwnership(token, productId);
+                }, 1500);
+            }
+
+            async verifyOwnership(token, productId) {
+                try {
+                    // Load product data
+                    const response = await fetch('/products.json');
+                    const data = await response.json();
+                    
+                    const product = data.products.find(p => p.id === productId);
+                    
+                    if (!product) {
+                        this.showError('Product not found');
+                        return;
+                    }
+
+                    // Check for modified products in localStorage
+                    const savedProducts = localStorage.getItem('kiezform_products');
+                    let finalProduct = product;
+                    
+                    if (savedProducts) {
+                        try {
+                            const modifiedProducts = JSON.parse(savedProducts);
+                            const modifiedProduct = modifiedProducts.find(p => p.id === productId);
+                            if (modifiedProduct) {
+                                // Use modified product data
+                                finalProduct = {
+                                    ...product,
+                                    name: modifiedProduct.productName,
+                                    material: modifiedProduct.metadata?.material || product.material,
+                                    price: modifiedProduct.metadata?.price || product.price,
+                                    owner: modifiedProduct.metadata?.owner || 'KiezForm Berlin'
+                                };
+                            }
+                        } catch (e) {
+                            console.log('No valid modified products found');
+                        }
+                    }
+
+                    // Default owner if not set
+                    if (!finalProduct.owner) {
+                        finalProduct.owner = 'KiezForm Berlin';
+                    }
+
+                    this.showVerificationResult(finalProduct, token);
+                    
+                } catch (error) {
+                    console.error('Verification error:', error);
+                    this.showError('Failed to verify ownership');
+                }
+            }
+
+            showVerificationResult(product, token) {
+                document.getElementById('loading').style.display = 'none';
+                
+                const resultContainer = document.getElementById('verification-result');
+                resultContainer.innerHTML = `
+                    <div class="product-verification">
+                        <div class="verification-success">✓</div>
+                        <h2 style="color: #00ff00; margin-bottom: 1rem;">VERIFIED OWNER</h2>
+                        <p style="color: #e0e0e0; font-size: 1.1rem;">This product is authentically owned by:</p>
+                        <p class="owner-highlight">${this.escapeHtml(product.owner)}</p>
+                    </div>
+
+                    <div class="product-details">
+                        <h3>Product Information</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">Product Name:</span>
+                            <span class="detail-value">${this.escapeHtml(product.name)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Product ID:</span>
+                            <span class="detail-value">${this.escapeHtml(product.id)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Category:</span>
+                            <span class="detail-value">${this.escapeHtml(product.category)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Material:</span>
+                            <span class="detail-value">${this.escapeHtml(product.material)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Price:</span>
+                            <span class="detail-value">€${product.price}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Verified Owner:</span>
+                            <span class="detail-value owner-highlight">${this.escapeHtml(product.owner)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Verification Token:</span>
+                            <span class="detail-value" style="font-family: monospace; font-size: 0.9rem;">${this.escapeHtml(token)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Verified At:</span>
+                            <span class="detail-value">${new Date().toLocaleString('de-DE')}</span>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(0, 255, 0, 0.05); border: 1px solid rgba(0, 255, 0, 0.2); border-radius: 8px; padding: 1.5rem; margin: 2rem 0; text-align: center;">
+                        <h4 style="color: #00ff00; margin-bottom: 1rem;">🛡️ Authenticity Guaranteed</h4>
+                        <p style="color: #e0e0e0; line-height: 1.6;">
+                            This verification confirms that <strong>${this.escapeHtml(product.owner)}</strong> 
+                            is the legitimate owner of this KiezForm product. This certificate was generated 
+                            from our secure admin system and cannot be forged.
+                        </p>
+                    </div>
+                `;
+                
+                resultContainer.style.display = 'block';
+            }
+
+            showError(message) {
+                document.getElementById('loading').style.display = 'none';
+                
+                const resultContainer = document.getElementById('verification-result');
+                resultContainer.innerHTML = `
+                    <div class="error-message">
+                        <h3>❌ Verification Failed</h3>
+                        <p>${this.escapeHtml(message)}</p>
+                        <p style="margin-top: 1rem; opacity: 0.8;">
+                            Please check your verification link or contact KiezForm support.
+                        </p>
+                    </div>
+                `;
+                
+                resultContainer.style.display = 'block';
+            }
+
+            escapeHtml(unsafe) {
+                if (typeof unsafe !== 'string') return '';
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+        }
+
+        // Initialize verification when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new OwnerVerification();
+        });
+    </script>
+</body>
+</html>

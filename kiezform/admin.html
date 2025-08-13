@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KIEZFORM - Admin Dashboard</title>
+    
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="stylesheet" href="/css/admin.css">
 </head>
@@ -17,8 +24,8 @@
                 <a href="/" class="nav-link">HOME</a>
                 <a href="/#products" class="nav-link">PRODUCTS</a>
                 <a href="/#features" class="nav-link">FEATURES</a>
-                <a href="/admin.html" class="nav-link active">ADMIN</a>
-                <a href="/impressum.html" class="nav-link">IMPRESSUM</a>
+                <a href="/admin" class="nav-link active">ADMIN</a>
+                <a href="/impressum" class="nav-link">IMPRESSUM</a>
             </div>
             <div class="nav-toggle" id="nav-toggle">
                 <span class="bar"></span>
@@ -124,9 +131,15 @@
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="notes">Notes</label>
-                        <input type="text" id="notes" name="notes" placeholder="Additional product information">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="notes">Notes</label>
+                            <input type="text" id="notes" name="notes" placeholder="Additional product information">
+                        </div>
+                        <div class="form-group">
+                            <label for="owner">Owner</label>
+                            <input type="text" id="owner" name="owner" placeholder="Product owner/creator">
+                        </div>
                     </div>
 
                     <button type="submit" id="productBtn">Create Product</button>
@@ -136,6 +149,6 @@
     </main>
 
     <script src="/js/main.js"></script>
-    <script src="/js/admin.js"></script>
+    <script src="/js/admin.js?v=2025"></script>
 </body>
 </html>
