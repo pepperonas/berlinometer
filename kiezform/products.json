@@ -1,6 +1,76 @@
 {
   "products": [
     {
+      "id": "chain-001",
+      "name": "TECHNO CHAIN",
+      "category": "chains",
+      "price": 149,
+      "material": "Bio-Resin - Silver Coated",
+      "sizes": ["45cm", "50cm", "60cm"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/0a0a0a/606060?text=CHAIN+001",
+        "full": [
+          "https://via.placeholder.com/800x800/0a0a0a/606060?text=CHAIN+001",
+          "https://via.placeholder.com/800x800/1a1a1a/606060?text=CHAIN+DETAIL"
+        ]
+      },
+      "description": "Minimalistisches Statement-Piece. Jedes Glied einzeln gedruckt und von Hand assembliert.",
+      "featured": true
+    },
+    {
+      "id": "chain-002",
+      "name": "FRAGMENT NECKLACE",
+      "category": "chains",
+      "price": 179,
+      "material": "Multi-Material Fusion",
+      "sizes": ["50cm", "60cm", "70cm"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/1a1a1a/a0a0a0?text=CHAIN+002",
+        "full": [
+          "https://via.placeholder.com/800x800/1a1a1a/a0a0a0?text=CHAIN+002",
+          "https://via.placeholder.com/800x800/2a2a2a/a0a0a0?text=CHAIN+CLOSE"
+        ]
+      },
+      "description": "Dekonstruierte Eleganz. Verschiedene Texturen und Dichten in einem Stück vereint.",
+      "featured": true,
+      "new": true
+    },
+    {
+      "id": "chain-003",
+      "name": "ORBITAL CHAIN",
+      "category": "chains",
+      "price": 129,
+      "material": "Flexible TPU - Gunmetal",
+      "sizes": ["45cm", "55cm", "65cm"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/2a2a2a/707070?text=CHAIN+003",
+        "full": [
+          "https://via.placeholder.com/800x800/2a2a2a/707070?text=CHAIN+003",
+          "https://via.placeholder.com/800x800/3a3a3a/707070?text=CHAIN+WORN"
+        ]
+      },
+      "description": "Futuristische Kettenstruktur. Flexibel und dennoch formstabil.",
+      "featured": false
+    },
+    {
+      "id": "chain-004",
+      "name": "BINARY CHAIN",
+      "category": "chains",
+      "price": 159,
+      "material": "Dual-Tone PLA",
+      "sizes": ["50cm", "60cm", "70cm"],
+      "images": {
+        "thumb": "https://via.placeholder.com/400x400/0a0a0a/808080?text=CHAIN+004",
+        "full": [
+          "https://via.placeholder.com/800x800/0a0a0a/808080?text=CHAIN+004",
+          "https://via.placeholder.com/800x800/1a1a1a/808080?text=CHAIN+PATTERN"
+        ]
+      },
+      "description": "Binärcode als tragbare Kunst. Dein persönlicher digitaler Fingerabdruck.",
+      "featured": false,
+      "new": true
+    },
+    {
       "id": "ring-001",
       "name": "BRUTALIST RING",
       "category": "rings",
@@ -71,76 +141,6 @@
       },
       "description": "Die Leere als Statement. Minimalistisches Design mit maximaler Wirkung.",
       "featured": true
-    },
-    {
-      "id": "chain-001",
-      "name": "TECHNO CHAIN",
-      "category": "chains",
-      "price": 149,
-      "material": "Bio-Resin - Silver Coated",
-      "sizes": ["45cm", "50cm", "60cm"],
-      "images": {
-        "thumb": "https://via.placeholder.com/400x400/0a0a0a/606060?text=CHAIN+001",
-        "full": [
-          "https://via.placeholder.com/800x800/0a0a0a/606060?text=CHAIN+001",
-          "https://via.placeholder.com/800x800/1a1a1a/606060?text=CHAIN+DETAIL"
-        ]
-      },
-      "description": "Minimalistisches Statement-Piece. Jedes Glied einzeln gedruckt und von Hand assembliert.",
-      "featured": true
-    },
-    {
-      "id": "chain-002",
-      "name": "FRAGMENT NECKLACE",
-      "category": "chains",
-      "price": 179,
-      "material": "Multi-Material Fusion",
-      "sizes": ["50cm", "60cm", "70cm"],
-      "images": {
-        "thumb": "https://via.placeholder.com/400x400/1a1a1a/a0a0a0?text=CHAIN+002",
-        "full": [
-          "https://via.placeholder.com/800x800/1a1a1a/a0a0a0?text=CHAIN+002",
-          "https://via.placeholder.com/800x800/2a2a2a/a0a0a0?text=CHAIN+CLOSE"
-        ]
-      },
-      "description": "Dekonstruierte Eleganz. Verschiedene Texturen und Dichten in einem Stück vereint.",
-      "featured": true,
-      "new": true
-    },
-    {
-      "id": "chain-003",
-      "name": "ORBITAL CHAIN",
-      "category": "chains",
-      "price": 129,
-      "material": "Flexible TPU - Gunmetal",
-      "sizes": ["45cm", "55cm", "65cm"],
-      "images": {
-        "thumb": "https://via.placeholder.com/400x400/2a2a2a/707070?text=CHAIN+003",
-        "full": [
-          "https://via.placeholder.com/800x800/2a2a2a/707070?text=CHAIN+003",
-          "https://via.placeholder.com/800x800/3a3a3a/707070?text=CHAIN+WORN"
-        ]
-      },
-      "description": "Futuristische Kettenstruktur. Flexibel und dennoch formstabil.",
-      "featured": false
-    },
-    {
-      "id": "chain-004",
-      "name": "BINARY CHAIN",
-      "category": "chains",
-      "price": 159,
-      "material": "Dual-Tone PLA",
-      "sizes": ["50cm", "60cm", "70cm"],
-      "images": {
-        "thumb": "https://via.placeholder.com/400x400/0a0a0a/808080?text=CHAIN+004",
-        "full": [
-          "https://via.placeholder.com/800x800/0a0a0a/808080?text=CHAIN+004",
-          "https://via.placeholder.com/800x800/1a1a1a/808080?text=CHAIN+PATTERN"
-        ]
-      },
-      "description": "Binärcode als tragbare Kunst. Dein persönlicher digitaler Fingerabdruck.",
-      "featured": false,
-      "new": true
     }
   ],
   "categories": [
@@ -150,14 +150,14 @@
       "displayName": "ALL"
     },
     {
-      "id": "rings",
-      "name": "Ringe",
-      "displayName": "RINGS"
-    },
-    {
       "id": "chains",
       "name": "Ketten",
       "displayName": "CHAINS"
+    },
+    {
+      "id": "rings",
+      "name": "Ringe",
+      "displayName": "RINGS"
     }
   ]
 }

@@ -4,212 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Impressum - KiezForm</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: #e0e0e0;
-            background: #000;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(255, 255, 255, 0.01) 2px,
-                    rgba(255, 255, 255, 0.01) 4px
-            );
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        header {
-            background: rgba(0, 0, 0, 0.95);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(10px);
-        }
-
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem 0;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding-left: 20px;
-            padding-right: 20px;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 300;
-            letter-spacing: 0.3em;
-            color: #fff;
-            text-transform: uppercase;
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 3rem;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            color: #808080;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            transition: color 0.3s;
-            position: relative;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 1px;
-            background: #fff;
-            transition: width 0.3s;
-        }
-
-        .nav-links a:hover {
-            color: #fff;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        main {
-            margin-top: 100px;
-            padding: 3rem 0;
-        }
-
-        .content {
-            background: rgba(10, 10, 10, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 3rem;
-            margin-bottom: 2rem;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 100;
-            letter-spacing: 0.3em;
-            text-transform: uppercase;
-            margin-bottom: 3rem;
-            color: #fff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: 1rem;
-        }
-
-        h2 {
-            font-size: 1.2rem;
-            font-weight: 300;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            color: #fff;
-        }
-
-        p, ul, li {
-            color: #808080;
-            margin-bottom: 1rem;
-        }
-
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        li {
-            margin-bottom: 0.5rem;
-        }
-
-        a {
-            color: #a0a0a0;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        a:hover {
-            color: #fff;
-        }
-
-        footer {
-            background: #000;
-            padding: 2rem 0;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .footer-content {
-            color: #404040;
-            font-size: 0.9rem;
-            letter-spacing: 0.1em;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 1.8rem;
-                letter-spacing: 0.1em;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .content {
-                padding: 2rem 1.5rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/legal.css">
 </head>
 <body>
-<header>
-    <nav>
-        <a href="/" class="logo">KIEZFORM</a>
-        <ul class="nav-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/impressum.html">Impressum</a></li>
-            <li><a href="/datenschutz.html">Datenschutz</a></li>
-        </ul>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="/" class="brand-link">KIEZFORM</a>
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="/" class="nav-link">HOME</a>
+                <a href="/#products" class="nav-link">PRODUCTS</a>
+                <a href="/#features" class="nav-link">FEATURES</a>
+                <a href="/impressum.html" class="nav-link active">IMPRESSUM</a>
+                <a href="/datenschutz.html" class="nav-link">DATENSCHUTZ</a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
     </nav>
-</header>
 
-<main class="container">
+<main class="container" style="padding-top: 80px;">
     <div class="content">
         <h1>Impressum</h1>
 
@@ -301,5 +120,7 @@
         <p>&copy; 2025 KIEZFORM. All rights reserved.</p>
     </div>
 </footer>
+    <!-- JavaScript -->
+    <script src="/js/main.js"></script>
 </body>
 </html>
