@@ -5,9 +5,12 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 ## 🌟 Features
 
 - **Product Gallery**: Dynamic showcase of chains and rings with category filtering
+- **Blockchain System**: SHA-256 hash-based blockchain for certificate ownership tracking
+- **Blockchain Explorer**: Visual blockchain interface with search and block navigation
 - **Admin Dashboard**: Secure product management with MongoDB integration
 - **Backend API**: Full Express.js REST API with JWT authentication
 - **Verification System**: QR codes and secure share links for ownership verification  
+- **Transfer System**: QR-based ownership transfers with 24-hour expiration
 - **Product Database**: MongoDB with comprehensive product and user management
 - **VALUE Section**: Comprehensive dual QR code verification system explanation
 - **SHARE Section**: Interactive QR code for site sharing with Web Share API
@@ -30,6 +33,8 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 kiezform/
 ├── index.html              # Main landing page
 ├── admin.html              # Admin dashboard
+├── blockchain.html         # Blockchain explorer interface
+├── transfer.html           # Ownership transfer acceptance page
 ├── owner-verify.html       # Ownership verification page
 ├── impressum.html          # Legal imprint (German)
 ├── datenschutz.html        # Privacy policy (German)
@@ -43,12 +48,14 @@ kiezform/
 ├── public/                 # Static assets for verification
 ├── admin/                  # Additional admin resources
 ├── css/
-│   ├── styles.css          # Main site styles with VALUE/SHARE sections
+│   ├── styles.css          # Main site styles with section title styling
 │   ├── admin.css           # Admin interface styles
+│   ├── blockchain.css      # Blockchain explorer styles
 │   └── legal.css           # Legal pages styles
 ├── js/
 │   ├── main.js             # General functionality + QR generation/sharing
 │   ├── products.js         # Product gallery system
+│   ├── blockchain.js       # Blockchain explorer functionality
 │   └── admin.js            # Secure admin functionality
 └── images/                 # Static assets and favicons
 ```
@@ -118,7 +125,9 @@ Navigate to `/admin` and login with:
 - **Connection String**: `mongodb://kiezform_user:KiezForm2024!SecureDB#MongoDB@localhost:27017/kiezform`
 
 **Collections:**
-- `products`: Product catalog with metadata
+- `products`: Product catalog with blockchain integration
+- `blocks`: Blockchain transactions (MINT/TRANSFER)
+- `transferrequests`: Pending ownership transfers
 - `users`: Admin user management
 - `verifications`: Ownership verification logs
 
@@ -145,12 +154,26 @@ Navigate to `/admin` and login with:
 - Real-time statistics dashboard
 - Fallback to localStorage for offline mode
 
+### Blockchain Explorer (`js/blockchain.js`)
+- Visual blockchain interface with grid and chain views
+- Real-time search across blocks, products, and owners
+- Pagination and infinite scroll support
+- Red highlighting for search results
+- Block detail modals with transaction information
+- Mobile-responsive design with KiezForm industrial styling
+
 ### Ownership Verification (`owner-verify.html`)
 - Token-based verification system
 - Product authenticity confirmation
 - **Product Image Display**: Shows product thumbnails with error handling
 - Owner badge display
 - Integration with admin-generated links
+
+### Transfer System (`transfer.html`)
+- QR-based ownership transfer acceptance
+- 24-hour expiration system with countdown timer
+- Blockchain integration for permanent ownership records
+- Pseudonym-based privacy protection
 
 ## 🛡️ Security Features
 
@@ -291,6 +314,13 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 - `GET /api/verify/:id` - Product verification
 - `GET /api/qrcode/:id` - QR code generation
 
+### Blockchain Endpoints
+- `GET /api/blockchain/blocks` - Get blockchain blocks
+- `GET /api/blockchain/search/:query` - Search blockchain
+- `GET /api/blockchain/stats` - Blockchain statistics
+- `GET /api/transfer/:token` - Get transfer request
+- `POST /api/transfer/:token/accept` - Accept ownership transfer
+
 ### Admin Endpoints (Authentication required)
 - `POST /api/admin/login` - Admin login
 - `GET /api/products` - Get all products
@@ -307,6 +337,12 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 - JWT tokens with 24h validity
 - bcrypt server-side password hashing (12 salt rounds)
 - Secure HTTP headers and HTTPS enforcement
+
+### Blockchain Security
+- SHA-256 hash-based chain integrity
+- Pseudonym system (USR-XXXXXXXX) for privacy
+- Immutable transaction records
+- Hash validation for block authenticity
 
 ### Product Verification
 - Unique serial numbers for each product
@@ -355,7 +391,30 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.3 (Latest)
+### v0.0.4 (Latest)
+- ✅ **Blockchain System**: Complete SHA-256 hash-based blockchain implementation
+  - MongoDB schemas for blocks, products, and transfer requests
+  - Pseudonym system (USR-XXXXXXXX) for privacy protection
+  - MINT and TRANSFER transaction types with hash validation
+  - Genesis block initialization with chain integrity
+- ✅ **Blockchain Explorer**: Visual blockchain interface (/blockchain)
+  - Grid and chain view modes with pagination
+  - Real-time search across blocks, products, and owners
+  - Red highlighting for search results
+  - Block detail modals with transaction information
+  - Mobile-responsive with industrial KiezForm styling
+- ✅ **Transfer System**: QR-based ownership transfers (/transfer)
+  - 24-hour expiration with countdown timer
+  - Transfer acceptance workflow with blockchain integration
+  - Automatic pseudonym generation for new owners
+  - Secure token-based transfer links
+- ✅ **Section Title Styling**: Industrial theme for all page headlines
+  - Ultra-thin typography (font-weight: 100)
+  - Wide letter-spacing (0.3em) for technical aesthetic
+  - Gradient underline effects with subtle glow
+  - Mobile-responsive with consistent spacing
+
+### v0.0.3
 - ✅ **VALUE Section**: Comprehensive dual QR code verification system explanation
   - Physical 3D-printed QR code for authenticity verification
   - Red QR code for secure ownership transfer

@@ -9,26 +9,31 @@ KiezForm is a comprehensive e-commerce and product verification system for a Ber
 ## Architecture
 
 ### File Structure
-- `index.html` - Main landing page and product showcase
+- `index.html` - Main landing page and product showcase with section titles
 - `admin.html` - Admin dashboard for product management 
+- `blockchain.html` - Blockchain explorer interface with visual block representation
+- `transfer.html` - Ownership transfer acceptance page with countdown timer
 - `owner-verify.html` - Product ownership verification page
 - `products.json` - Product catalog data source
 - `js/main.js` - General site functionality (smooth scrolling, animations, QR generation, sharing)
 - `js/products.js` - Product gallery and modal system
+- `js/blockchain.js` - Blockchain explorer with search and pagination
 - `js/admin.js` - Admin interface with secure authentication
-- `css/styles.css` - Main site styles with dark industrial theme
+- `css/styles.css` - Main site styles with industrial section title styling
+- `css/blockchain.css` - Blockchain explorer styles with KiezForm industrial theme
 - `css/admin.css` - Admin dashboard styles  
 - `css/legal.css` - Legal pages (impressum/datenschutz) styles
-- `backend/` - Node.js/Express backend API
+- `backend/` - Node.js/Express backend API with blockchain functionality
 - `public/` - Static assets for verification system
 - `admin/` - Additional admin resources
 
 ### Technology Stack
 - **Frontend**: Vanilla JavaScript (ES6+), CSS3, HTML5
 - **Backend**: Node.js/Express, MongoDB, JWT Authentication
-- **Data**: JSON file-based product catalog + MongoDB for verification
+- **Blockchain**: SHA-256 hash-based blockchain simulation with MongoDB storage
+- **Data**: JSON file-based product catalog + MongoDB for verification and blockchain
 - **Styling**: Custom CSS with CSS Grid/Flexbox, dark theme with scanline effects
-- **Security**: SHA-256 password hashing, JWT tokens, bcrypt
+- **Security**: SHA-256 password hashing, JWT tokens, bcrypt, blockchain integrity
 - **Deployment**: PM2 process management, Nginx reverse proxy
 
 ### Core Components
@@ -41,6 +46,24 @@ Central component managing the product catalog interface:
 - Implements keyboard navigation (ESC to close modal)
 - Generates mailto links for product inquiries
 
+#### Blockchain Explorer (js/blockchain.js)
+Visual blockchain interface with comprehensive functionality:
+- **Multiple Views**: Grid and chain view modes for different perspectives
+- **Real-time Search**: Search across blocks, products, owners, and transaction types
+- **Visual Highlighting**: Red highlighting for search results with subtle glow effects
+- **Block Details**: Modal system showing complete transaction information
+- **Pagination**: Efficient loading with page-based navigation
+- **Mobile Responsive**: Optimized for all screen sizes with KiezForm industrial styling
+- **Live Updates**: Real-time blockchain statistics and block counting
+
+#### Transfer System (transfer.html)
+QR-based ownership transfer workflow:
+- **24-Hour Expiration**: Secure time-limited transfer links with countdown timer
+- **Token Validation**: Server-side verification of transfer tokens
+- **Blockchain Integration**: Automatic TRANSFER transaction creation upon acceptance
+- **Pseudonym Generation**: Privacy-protected ownership with USR-XXXXXXXX codes
+- **Error Handling**: Comprehensive validation and user feedback
+
 #### Admin Dashboard System (js/admin.js)
 Comprehensive admin interface with smart features:
 - **Smart Template System**: Cascade dropdowns loading from products.json
@@ -52,22 +75,59 @@ Comprehensive admin interface with smart features:
 - **Real-time Stats**: Dashboard with live product statistics
 - **Offline Fallback**: localStorage support when API unavailable
 
-#### Product Data Structure (products.json)
+#### Blockchain Data Structures
+
+**Block Schema (MongoDB):**
+```javascript
+{
+  blockId: "BLK-001",           // Unique block identifier
+  blockNumber: 1,               // Sequential block number
+  previousHash: "sha256-hash",  // Hash of previous block
+  currentHash: "sha256-hash",   // Hash of current block
+  productId: "uuid",            // Associated product ID
+  transactionType: "MINT|TRANSFER", // Transaction type
+  fromOwner: "USR-XXXXXXXX",    // Previous owner (null for MINT)
+  toOwner: "USR-XXXXXXXX",      // New owner pseudonym
+  timestamp: Date,              // Transaction timestamp
+  metadata: {                   // Additional transaction data
+    productName: "Product Name",
+    serialNumber: "TC-2024-001",
+    transferMethod: "QR_CODE|ADMIN_MINT"
+  },
+  isValid: true                 // Blockchain validation status
+}
+```
+
+**Product Data Structure (MongoDB + JSON):**
 ```json
 {
-  "id": "unique-identifier",
-  "name": "PRODUCT NAME",
+  "_id": "uuid",                // MongoDB product ID
+  "serialNumber": "TC-2024-001", // Unique product serial
+  "productName": "PRODUCT NAME",
   "category": "chains|rings", 
-  "price": 149,
-  "material": "Bio-Resin - Silver Coated",
-  "sizes": ["45cm", "50cm", "60cm"],
-  "images": {
-    "thumb": "thumbnail-url",
-    "full": ["full-image-urls"]
+  "imageUrl": "thumbnail-url",
+  "manufacturingDate": "Date",
+  "owner": {
+    "name": "Owner Name",
+    "email": "owner@email.com",
+    "registrationDate": "Date"
   },
-  "description": "Product description",
-  "featured": true|false,
-  "new": true|false
+  "metadata": {
+    "material": "Bio-Resin - Silver Coated",
+    "size": "50cm",
+    "color": "Black",
+    "price": 149,
+    "notes": "Product notes"
+  },
+  "blockchainInfo": {
+    "currentOwner": "USR-XXXXXXXX", // Current owner pseudonym
+    "mintBlock": "BLK-001",         // Initial mint block
+    "lastBlock": "BLK-003",         // Latest transaction block
+    "transferCount": 2              // Number of transfers
+  },
+  "isValid": true,
+  "createdAt": "Date",
+  "lastVerified": "Date"
 }
 ```
 
@@ -245,7 +305,30 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.3 (Current)
+### v0.0.4 (Current)
+- **Blockchain System**: Complete SHA-256 hash-based blockchain implementation
+  - MongoDB schemas for blocks, products, and transfer requests
+  - Pseudonym system (USR-XXXXXXXX) for privacy protection
+  - MINT and TRANSFER transaction types with hash validation
+  - Genesis block initialization with chain integrity
+- **Blockchain Explorer**: Visual blockchain interface (/blockchain)
+  - Grid and chain view modes with pagination
+  - Real-time search across blocks, products, and owners
+  - Red highlighting for search results with subtle glow effects
+  - Block detail modals with complete transaction information
+  - Mobile-responsive with industrial KiezForm styling
+- **Transfer System**: QR-based ownership transfers (/transfer)
+  - 24-hour expiration with countdown timer
+  - Transfer acceptance workflow with blockchain integration
+  - Automatic pseudonym generation for new owners
+  - Secure token-based transfer links
+- **Section Title Styling**: Industrial theme for all page headlines
+  - Ultra-thin typography (font-weight: 100) with wide letter-spacing (0.3em)
+  - Gradient underline effects with subtle glow
+  - Mobile-responsive with consistent spacing
+  - Matches existing VALUE and SHARE section styling
+
+### v0.0.3
 - **VALUE Section**: Comprehensive dual QR code verification system explanation
   - Physical 3D-printed QR code for authenticity verification
   - Red QR code for secure ownership transfer

@@ -40,6 +40,41 @@ body::before {
     z-index: 2;
 }
 
+/* Section Title Styling */
+.section-title {
+    font-size: 2rem;
+    font-weight: 100;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #e0e0e0;
+    margin-bottom: 3rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 1rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.section-description {
+    color: #808080;
+    text-align: center;
+    margin-bottom: 3rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* Navigation Bar */
 .navbar {
     position: fixed;
@@ -171,6 +206,22 @@ body::before {
     .nav-link {
         font-size: 1.1rem;
         padding: 1rem 0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        letter-spacing: 0.2em;
+        margin-bottom: 2rem;
+        padding-bottom: 0.8rem;
+    }
+    
+    .section-title::after {
+        width: 60px;
+    }
+    
+    .section-description {
+        margin-bottom: 2rem;
+        padding: 0 1rem;
     }
 }
 
