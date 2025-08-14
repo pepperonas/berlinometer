@@ -13,7 +13,7 @@ KiezForm is a comprehensive e-commerce and product verification system for a Ber
 - `admin.html` - Admin dashboard for product management 
 - `owner-verify.html` - Product ownership verification page
 - `products.json` - Product catalog data source
-- `js/main.js` - General site functionality (smooth scrolling, animations)
+- `js/main.js` - General site functionality (smooth scrolling, animations, QR generation, sharing)
 - `js/products.js` - Product gallery and modal system
 - `js/admin.js` - Admin interface with secure authentication
 - `css/styles.css` - Main site styles with dark industrial theme
@@ -40,6 +40,17 @@ Central component managing the product catalog interface:
 - Manages product modal with image gallery
 - Implements keyboard navigation (ESC to close modal)
 - Generates mailto links for product inquiries
+
+#### Admin Dashboard System (js/admin.js)
+Comprehensive admin interface with smart features:
+- **Smart Template System**: Cascade dropdowns loading from products.json
+- **Auto-Fill Forms**: Template-based form population with full editability
+- **Product Management**: CRUD operations with MongoDB integration
+- **Image URL Support**: Product thumbnail management and display
+- **Verification Links**: QR code and share link generation
+- **Security**: SHA-256 authentication with salt and JWT tokens
+- **Real-time Stats**: Dashboard with live product statistics
+- **Offline Fallback**: localStorage support when API unavailable
 
 #### Product Data Structure (products.json)
 ```json
@@ -127,6 +138,51 @@ python -m http.server 8000
 
 ## Key Features
 
+### Smart Product Template System
+The admin interface includes an intelligent template system for rapid product creation:
+
+#### Workflow:
+1. **Category Selection**: Admin selects product category from dropdown (loads from products.json)
+2. **Product Template**: Second dropdown shows all products in selected category
+3. **Auto-Fill**: Selecting a product auto-fills form fields (name, category, material, price, size, imageUrl)
+4. **Manual Override**: All fields remain fully editable after template loading
+5. **Notes Field**: Stays empty for manual input (no template auto-fill)
+
+#### Technical Implementation:
+```javascript
+// Template loading from products.json
+async function loadProductTemplates() {
+    const response = await fetch('/products.json');
+    productTemplates = await response.json();
+    populateCategoryDropdown();
+}
+
+// Auto-fill form fields with template data
+function loadProductData() {
+    const selectedProduct = productTemplates.products.find(p => p.id === selectedProductId);
+    document.getElementById('productName').value = selectedProduct.name;
+    document.getElementById('imageUrl').value = selectedProduct.images?.thumb || '';
+    // Notes field deliberately left empty for manual input
+}
+```
+
+### VALUE Section - Verification System
+- Comprehensive explanation of dual QR code verification mechanism
+- **3D-Printed QR Code**: Physical authenticity proof integrated into jewelry design
+- **Red QR Code**: Secure ownership transfer system for gifts and resale
+- **Verification Workflow**: Step-by-step process from scanning to certificate
+- **Security Features**: Blockchain-based authentication, unique 3D structures
+- **Complete Integration**: Matches KiezForm industrial aesthetic with grid system
+- **Mobile Responsive**: Optimized layouts for all screen sizes
+
+### SHARE Section - Site Promotion
+- **Interactive QR Code**: Generates QR code linking to main site (https://kiezform.de)
+- **Web Share API**: Native sharing with fallback to clipboard
+- **Toast Notifications**: User feedback for copy and share actions
+- **QR Server Integration**: Uses QR Server API for reliable code generation
+- **Consistent Theming**: Industrial dark aesthetic with hover effects
+- **Social Sharing**: Copy-to-clipboard and native share functionality
+
 ### Product Gallery System
 - Dynamic loading from JSON data
 - Category-based filtering
@@ -135,8 +191,18 @@ python -m http.server 8000
 - Mobile-responsive grid layout
 - Contact system via mailto links for product inquiries
 
+### Navigation Structure
+- **Restructured Navbar**: Removed legal links (Impressum/Datenschutz) from main navigation
+- **Legal Footer Links**: Preserved legal compliance links in footer section
+- **New Sections**: Added VALUE and SHARE links to main navigation
+- **Smooth Scrolling**: Enhanced navigation with proper navbar offset calculation
+
 ### Admin Interface
 - **Version Display**: Shows current version (v0.0.2) in green below header
+- **Smart Product Templates**: Cascade dropdown system for quick product creation
+- **Auto-Fill Forms**: Load product data from templates with full editability
+- **Image URL Support**: Product thumbnail management and verification display
+- **Enhanced Edit Modal**: Consistent field structure with add product form
 - Secure SHA-256 authentication with salted password hashing
 - Product creation and management with MongoDB integration
 - Statistics dashboard with real-time data
@@ -146,11 +212,15 @@ python -m http.server 8000
 - **Credentials**: Username: admin, Password: F3antai.led-Armari#a-Redeliv+ery
 
 ### Design System
-- Dark industrial aesthetic with subtle scanline effects
-- Consistent typography using Helvetica Neue
+- **Industrial Aesthetic**: Dark theme with subtle scanline overlay effects
+- **Grid System**: 1px white line separators for consistent visual structure
+- **Typography**: Helvetica Neue with uppercase styling and letter-spacing
+- **Color Scheme**: Dark overlays (rgba(10, 10, 10, 0.8)) with white borders (rgba(255, 255, 255, 0.05))
+- **Hover Effects**: Gradient overlays and border color transitions
+- **Animations**: Intersection Observer for scroll-triggered animations
+- **Icon Treatment**: Grayscale filters for consistent monochrome appearance
 - **Version Badge Styling**: Green (#00ff00) with 80% opacity, positioned below subtitle
-- Smooth scroll navigation
-- Intersection Observer animations for feature cards
+- **Mobile Optimization**: Responsive grid layouts and touch-friendly navigation
 
 ## Important Notes
 
@@ -175,7 +245,29 @@ python -m http.server 8000
 
 ## Version History
 
-### v0.0.2 (Current)
+### v0.0.3 (Current)
+- **VALUE Section**: Comprehensive dual QR code verification system explanation
+  - Physical 3D-printed QR code for authenticity verification
+  - Red QR code for secure ownership transfer
+  - Step-by-step verification workflow
+  - Security features with blockchain-based authentication
+- **SHARE Section**: Interactive site sharing functionality
+  - QR code generation linking to main site (kiezform.de)
+  - Web Share API integration with clipboard fallback
+  - Toast notification system for user feedback
+- **Navigation Restructure**: Removed legal links from navbar, added VALUE/SHARE
+- **Complete Theme Integration**: Industrial KiezForm aesthetic across all sections
+  - Grid system with 1px white separators
+  - Dark overlays and hover effects
+  - Consistent typography and animations
+  - Mobile-responsive design
+
+### v0.0.2
+- **Smart Product Template System**: Cascade dropdowns for quick product creation
+- **Auto-Fill Forms**: Template-based form population with full editability
+- **Image URL Support**: Product thumbnail management and verification display
+- **Enhanced Edit Modal**: Consistent field structure with add product form
+- **Improved Styling**: Consistent input field styling across all types
 - Admin panel displays version number in header
 - Unified project structure (merged kiezform-verification)
 - Complete backend API with MongoDB integration

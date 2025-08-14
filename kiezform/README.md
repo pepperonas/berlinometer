@@ -9,6 +9,8 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 - **Backend API**: Full Express.js REST API with JWT authentication
 - **Verification System**: QR codes and secure share links for ownership verification  
 - **Product Database**: MongoDB with comprehensive product and user management
+- **VALUE Section**: Comprehensive dual QR code verification system explanation
+- **SHARE Section**: Interactive QR code for site sharing with Web Share API
 - **Mobile-First**: Responsive design with hamburger navigation
 - **Clean URLs**: No .html extensions with automatic redirects
 - **Dark Theme**: Industrial aesthetic with subtle scanline effects
@@ -41,11 +43,11 @@ kiezform/
 ├── public/                 # Static assets for verification
 ├── admin/                  # Additional admin resources
 ├── css/
-│   ├── styles.css          # Main site styles
+│   ├── styles.css          # Main site styles with VALUE/SHARE sections
 │   ├── admin.css           # Admin interface styles
 │   └── legal.css           # Legal pages styles
 ├── js/
-│   ├── main.js             # General functionality
+│   ├── main.js             # General functionality + QR generation/sharing
 │   ├── products.js         # Product gallery system
 │   └── admin.js            # Secure admin functionality
 └── images/                 # Static assets and favicons
@@ -131,6 +133,9 @@ Navigate to `/admin` and login with:
 
 ### Admin Dashboard (`js/admin.js`)  
 - **Version Display**: Shows current version (v0.0.2) in header
+- **Smart Product Templates**: Cascade dropdown system for quick product creation
+- **Auto-Fill Forms**: Load product data from templates with full editability
+- **Image URL Support**: Product thumbnail management and display
 - Secure SHA-256 authentication with salt
 - Product CRUD operations with MongoDB integration
 - Owner management and editing
@@ -143,6 +148,7 @@ Navigate to `/admin` and login with:
 ### Ownership Verification (`owner-verify.html`)
 - Token-based verification system
 - Product authenticity confirmation
+- **Product Image Display**: Shows product thumbnails with error handling
 - Owner badge display
 - Integration with admin-generated links
 
@@ -349,7 +355,29 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.2 (Latest)
+### v0.0.3 (Latest)
+- ✅ **VALUE Section**: Comprehensive dual QR code verification system explanation
+  - Physical 3D-printed QR code for authenticity verification
+  - Red QR code for secure ownership transfer
+  - Step-by-step verification workflow
+  - Security features with blockchain-based authentication
+- ✅ **SHARE Section**: Interactive site sharing functionality
+  - QR code generation linking to main site (kiezform.de)
+  - Web Share API integration with fallback
+  - Copy-to-clipboard functionality with toast notifications
+- ✅ **Navigation Restructure**: Removed legal links from navbar (kept in footer)
+- ✅ **Complete Theme Integration**: Industrial KiezForm aesthetic across all sections
+  - Grid system with 1px white separators
+  - Dark overlays and hover effects
+  - Consistent typography and animations
+  - Mobile-responsive design
+
+### v0.0.2
+- ✅ **Smart Product Template System**: Cascade dropdowns for quick product creation
+- ✅ **Auto-Fill Forms**: Template-based form population with full editability
+- ✅ **Image URL Support**: Product thumbnail management and verification display
+- ✅ **Enhanced Edit Modal**: Consistent field structure with add product form
+- ✅ **Improved Styling**: Consistent input field styling across all types
 - ✅ Admin panel version display with v0.0.2 badge
 - ✅ Unified project structure (merged kiezform-verification)
 - ✅ Complete backend API with MongoDB integration

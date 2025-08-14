@@ -640,12 +640,22 @@ async function editProduct(productId) {
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="editSizes">Sizes (comma separated)</label>
-                        <input type="text" id="editSizes" value="${product.metadata?.size || ''}" placeholder="S, M, L, XL">
+                        <label for="editSize">Size</label>
+                        <input type="text" id="editSize" value="${escapeHtml(product.metadata?.size || '')}" placeholder="M">
                     </div>
                     <div class="form-group">
                         <label for="editOwner">Owner</label>
                         <input type="text" id="editOwner" value="${escapeHtml(product.owner?.name || product.metadata?.owner || '')}" placeholder="Product owner/creator">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editImageUrl">Product Image URL</label>
+                        <input type="url" id="editImageUrl" value="${escapeHtml(product.imageUrl || '')}" placeholder="https://kiezform.de/images/products/...">
+                    </div>
+                    <div class="form-group">
+                        <label for="editNotes">Notes</label>
+                        <input type="text" id="editNotes" value="${escapeHtml(product.metadata?.notes || '')}" placeholder="Additional product information">
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -682,8 +692,10 @@ async function saveProductChanges(productId) {
             material: document.getElementById('editMaterial').value,
             price: parseFloat(document.getElementById('editPrice').value) || 0,
             description: document.getElementById('editDescription').value,
-            size: document.getElementById('editSizes').value
-        }
+            size: document.getElementById('editSize').value,
+            notes: document.getElementById('editNotes').value
+        },
+        imageUrl: document.getElementById('editImageUrl').value
     };
 
     // Add owner as separate object if provided

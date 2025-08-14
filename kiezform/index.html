@@ -55,8 +55,8 @@
             <a href="#hero" class="nav-link">HOME</a>
             <a href="#products" class="nav-link">PRODUCTS</a>
             <a href="#features" class="nav-link">FEATURES</a>
-            <a href="/impressum" class="nav-link">IMPRESSUM</a>
-            <a href="/datenschutz" class="nav-link">DATENSCHUTZ</a>
+            <a href="#value" class="nav-link">VALUE</a>
+            <a href="#share" class="nav-link">SHARE</a>
         </div>
         <div class="nav-toggle" id="nav-toggle">
             <span class="bar"></span>
@@ -121,6 +121,113 @@
             <h3 class="feature-title">Echtheitsprüfung</h3>
             <p class="feature-description">Jedes KiezForm-Produkt verfügt über eine digitale 
                 Authentifizierung zur Verifikation der Echtheit und Eigentümerschaft.</p>
+        </div>
+    </section>
+
+    <section id="value" class="value-section">
+        <div class="container">
+            <h2 class="section-title">AUTHENTICITY & OWNERSHIP VERIFICATION</h2>
+            <div class="value-content">
+                <div class="verification-process">
+                    <h3 class="subsection-title">🔐 DUAL QR CODE SYSTEM</h3>
+                    <div class="verification-grid">
+                        <div class="verification-item">
+                            <div class="verification-icon">🎯</div>
+                            <h4>3D-GEDRUCKTER QR CODE</h4>
+                            <p>Jedes KiezForm-Schmuckstück wird mit einem einzigartigen, 3D-gedruckten QR Code geliefert. Dieser physische Code ist fest in das Design integriert und kann nicht kopiert oder gefälscht werden. Er dient als unumstößlicher Beweis für die Authentizität Ihres Schmuckstücks.</p>
+                        </div>
+                        <div class="verification-item">
+                            <div class="verification-icon">🔴</div>
+                            <h4>ROTER EIGENTÜMER-QR CODE</h4>
+                            <p>Ein separater roter QR Code ermöglicht die sichere Übertragung der Eigentumsverhältnisse. Mit diesem Code können Sie das digitale Eigentumszertifikat an eine andere Person übertragen - ideal für Geschenke oder Weiterverkauf.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="verification-workflow">
+                    <h3 class="subsection-title">⚡ VERIFIKATIONSPROZESS</h3>
+                    <div class="workflow-steps">
+                        <div class="workflow-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>QR CODE SCANNEN</h4>
+                                <p>Scannen Sie den 3D-gedruckten QR Code mit Ihrem Smartphone</p>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>INSTANT VERIFIKATION</h4>
+                                <p>Erhalten Sie sofort eine Bestätigung der Echtheit und Produktdetails</p>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>DIGITALES ZERTIFIKAT</h4>
+                                <p>Zugriff auf Ihr persönliches Eigentumszertifikat mit allen Produktinformationen</p>
+                            </div>
+                        </div>
+                        <div class="workflow-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h4>ÜBERTRAGUNG (OPTIONAL)</h4>
+                                <p>Nutzen Sie den roten QR Code für sichere Eigentumsübertragungen</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="security-features">
+                    <h3 class="subsection-title">🛡️ SICHERHEITSMERKMALE</h3>
+                    <div class="security-grid">
+                        <div class="security-item">
+                            <span class="security-icon">🔒</span>
+                            <span>Blockchain-basierte Authentifizierung</span>
+                        </div>
+                        <div class="security-item">
+                            <span class="security-icon">🎯</span>
+                            <span>Einzigartige 3D-Struktur pro Produkt</span>
+                        </div>
+                        <div class="security-item">
+                            <span class="security-icon">⚡</span>
+                            <span>Sofortige Echtheitsprüfung</span>
+                        </div>
+                        <div class="security-item">
+                            <span class="security-icon">🔄</span>
+                            <span>Sichere Eigentumsübertragung</span>
+                        </div>
+                        <div class="security-item">
+                            <span class="security-icon">🌐</span>
+                            <span>Globale Verifikation möglich</span>
+                        </div>
+                        <div class="security-item">
+                            <span class="security-icon">🔐</span>
+                            <span>Fälschungssicher durch 3D-Integration</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="share" class="share-section">
+        <div class="container">
+            <h2 class="section-title">SHARE KIEZFORM</h2>
+            <div class="share-content">
+                <div class="share-description">
+                    <h3>Teile die Zukunft des Schmucks</h3>
+                    <p>Lade Freunde ein, die einzigartige Welt von KiezForm zu entdecken. Scanne den QR Code oder teile den Link zu unserem 3D-gedruckten Schmuck aus Berlin.</p>
+                </div>
+                <div class="share-qr-container">
+                    <div id="share-qr-code" class="share-qr"></div>
+                    <p class="share-url">kiezform.de</p>
+                </div>
+                <div class="share-actions">
+                    <button class="share-button" onclick="copyToClipboard('https://kiezform.de')">📋 Link kopieren</button>
+                    <button class="share-button" onclick="shareViaWeb()">📤 Teilen</button>
+                </div>
+            </div>
         </div>
     </section>
 </main>

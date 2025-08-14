@@ -732,3 +732,507 @@ body.modal-open {
         padding: 2rem 1.5rem;
     }
 }
+
+/* Value Section - KiezForm Aesthetic */
+.value-section {
+    margin-bottom: 4rem;
+    position: relative;
+}
+
+.value-section .section-title {
+    font-size: 2rem;
+    font-weight: 100;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 3rem;
+    color: #fff;
+    opacity: 0.9;
+}
+
+.value-content {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+    margin-bottom: 4rem;
+}
+
+.verification-process,
+.verification-workflow,
+.security-features {
+    background: #000;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.verification-process {
+    padding: 4rem 3rem 3rem;
+}
+
+.verification-workflow {
+    padding: 4rem 3rem 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.security-features {
+    padding: 4rem 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.verification-process::before,
+.verification-workflow::before,
+.security-features::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.verification-process:hover::before,
+.verification-workflow:hover::before,
+.security-features:hover::before {
+    opacity: 1;
+}
+
+.verification-process:hover,
+.verification-workflow:hover,
+.security-features:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.subsection-title {
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    color: #fff;
+    opacity: 0.8;
+    position: relative;
+    z-index: 1;
+}
+
+.verification-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+    margin-bottom: 2rem;
+}
+
+.verification-item {
+    background: #000;
+    padding: 3rem 2rem;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+}
+
+.verification-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.verification-item:hover::before {
+    opacity: 1;
+}
+
+.verification-item:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.verification-icon {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+    filter: grayscale(100%);
+}
+
+.verification-item h4 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 300;
+}
+
+.verification-item p {
+    color: #808080;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.workflow-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+    margin-bottom: 2rem;
+}
+
+.workflow-step {
+    background: #000;
+    padding: 2rem;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.workflow-step::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.workflow-step:hover::before {
+    opacity: 1;
+}
+
+.workflow-step:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.step-number {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 300;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0.8;
+}
+
+.step-content h4 {
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    color: #fff;
+    opacity: 0.9;
+}
+
+.step-content p {
+    color: #808080;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+.security-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+}
+
+.security-item {
+    background: #000;
+    padding: 2rem;
+    transition: all 0.3s;
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.security-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.security-item:hover::before {
+    opacity: 1;
+}
+
+.security-item:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.security-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    opacity: 0.8;
+    filter: grayscale(100%);
+}
+
+.security-item span:last-child {
+    color: #808080;
+    font-size: 0.9rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Share Section - KiezForm Aesthetic */
+.share-section {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 6rem 3rem;
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.share-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
+    animation: pulse 15s ease-in-out infinite;
+}
+
+.share-section .section-title {
+    font-size: 2rem;
+    font-weight: 100;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+    opacity: 0.9;
+}
+
+.share-content {
+    position: relative;
+    z-index: 1;
+}
+
+.share-description {
+    margin-bottom: 4rem;
+}
+
+.share-description h3 {
+    font-size: 1.1rem;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    color: #fff;
+    opacity: 0.8;
+}
+
+.share-description p {
+    color: #808080;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.share-qr-container {
+    margin-bottom: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.share-qr {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    display: inline-block;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.share-qr::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.share-qr:hover::before {
+    opacity: 1;
+}
+
+.share-qr:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.share-url {
+    font-size: 0.9rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    color: #fff;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.share-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.share-button {
+    background: #000;
+    border: 1px solid transparent;
+    color: #808080;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    position: relative;
+    overflow: hidden;
+}
+
+.share-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.share-button:hover::before {
+    opacity: 1;
+}
+
+.share-button:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.share-button:active {
+    transform: none;
+}
+
+/* Mobile Responsiveness for New Sections */
+@media (max-width: 768px) {
+    .value-section .section-title,
+    .share-section .section-title {
+        font-size: 1.5rem;
+        letter-spacing: 0.1em;
+        margin-bottom: 2rem;
+    }
+
+    .subsection-title {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .verification-process,
+    .verification-workflow,
+    .security-features {
+        padding: 3rem 1.5rem 2rem;
+    }
+
+    .verification-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .verification-item {
+        padding: 2rem 1.5rem;
+    }
+
+    .verification-icon {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .workflow-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .workflow-step {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+        padding: 1.5rem;
+    }
+
+    .security-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .security-item {
+        padding: 1.5rem;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .share-section {
+        padding: 4rem 1.5rem;
+    }
+
+    .share-actions {
+        grid-template-columns: 1fr;
+        max-width: 300px;
+    }
+
+    .share-button {
+        padding: 1.2rem;
+        font-size: 0.8rem;
+    }
+
+    .share-qr {
+        padding: 1.5rem;
+    }
+}

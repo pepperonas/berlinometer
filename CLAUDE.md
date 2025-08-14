@@ -117,6 +117,17 @@ The `PORTS.md` file documents all port assignments across the ecosystem. Key con
 - **popular-times/**: Google Maps foot traffic analyzer
 - **ticket-generator/**: Event ticket creator with QR codes (secret app)
 
+### E-Commerce Applications
+- **kiezform/**: Complete jewelry e-commerce platform with smart admin system
+  - Static product showcase with dynamic filtering
+  - Admin dashboard with smart product template system
+  - MongoDB integration for product verification
+  - QR code generation for ownership verification
+  - Cascade dropdown system for rapid product creation
+  - Auto-fill forms with template data (fully editable)
+  - Product image URL management and display
+  - Dark industrial design aesthetic
+
 ### Security Applications
 - **mpsec/**: 2FA token manager with TOTP implementation
 - **zipzap/**: Educational zip bomb demonstration tool
