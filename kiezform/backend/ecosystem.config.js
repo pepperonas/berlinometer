@@ -1,21 +1,21 @@
 module.exports = {
   apps: [{
-    name: 'kiezform-verification-api',
+    name: 'kiezform-api',
     script: './server.js',
-    cwd: '/var/www/kiezform-verification/backend',
+    cwd: '/var/www/html/kiezform/backend',
     instances: 1,
     exec_mode: 'fork',
     
     // Environment
     env: {
       NODE_ENV: 'production',
-      PORT: 5090
+      PORT: 3000
     },
     
     // Logging
-    log_file: '/var/log/pm2/kiezform-verification.log',
-    out_file: '/var/log/pm2/kiezform-verification-out.log',
-    error_file: '/var/log/pm2/kiezform-verification-error.log',
+    log_file: '/var/log/pm2/kiezform-api.log',
+    out_file: '/var/log/pm2/kiezform-api-out.log',
+    error_file: '/var/log/pm2/kiezform-api-error.log',
     log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     
     // Process management
@@ -48,6 +48,6 @@ module.exports = {
     time: true,
     
     // Custom settings
-    env_file: '/var/www/kiezform-verification/backend/.env'
+    env_file: '/var/www/html/kiezform/backend/.env'
   }]
 };

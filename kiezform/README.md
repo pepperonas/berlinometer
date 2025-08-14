@@ -17,11 +17,11 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 
 ### Technology Stack
 - **Frontend**: Vanilla JavaScript (ES6+), CSS3, HTML5
-- **Backend**: Node.js/Express, MongoDB, JWT Authentication
+- **Backend**: Node.js/Express (Port 3000), MongoDB, JWT Authentication
 - **Data**: JSON file-based product catalog + MongoDB for verification
 - **Styling**: Custom CSS with Grid/Flexbox, dark industrial theme
 - **Security**: SHA-256 password hashing, bcrypt, constant-time comparison
-- **Deployment**: PM2 process management, Nginx reverse proxy
+- **Deployment**: PM2 process management, Nginx static serving + API proxy
 
 ### File Structure
 ```
@@ -211,19 +211,46 @@ Compatible with any static hosting service:
 - GitHub Pages
 - Traditional web hosting
 
-### Nginx Configuration
-For clean URLs without .html extensions:
+### Production Deployment (VPS)
 
+**Unified Directory Structure:**
+```
+/var/www/html/kiezform/
+├── Frontend files (HTML, CSS, JS)
+└── backend/
+    ├── server.js (Port 3000)
+    ├── ecosystem.config.js (PM2)
+    └── .env (Environment)
+```
+
+**Nginx Configuration:**
 ```nginx
-# Remove .html extensions
-if ($request_uri ~ ^/(.*)\.html(\?.*)?$) {
-    return 301 /$1$2;
+server {
+    listen 80;
+    server_name kiezform.de;
+    root /var/www/html/kiezform;
+    
+    # API Routes - Direct backend proxy
+    location /api/ {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+    
+    # Clean URLs without .html extensions
+    if ($request_uri ~ ^/(.*)\.html(\?.*)?$) {
+        return 301 /$1$2;
+    }
+    location / {
+        try_files $uri $uri.html $uri/ =404;
+    }
 }
+```
 
-# Serve files with .html extension
-location / {
-    try_files $uri $uri.html $uri/ =404;
-}
+**PM2 Process:**
+```bash
+pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
+# Process: kiezform-api (Port 3000)
 ```
 
 ## 📱 Mobile Optimization

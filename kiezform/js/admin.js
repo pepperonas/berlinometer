@@ -53,32 +53,70 @@ if (authToken) {
     showDashboard();
 }
 
-// Login form handler - Using secure local validation only
+// Login form handler - MongoDB API Integration
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const loginData = Object.fromEntries(formData);
 
     try {
-        // Use only local secure validation (bypass API)
-        const isValid = await validateCredentials(loginData.username, loginData.password);
-        
-        if (isValid) {
-            // Generate a simple local token for session management
-            authToken = btoa(JSON.stringify({
-                username: loginData.username,
-                timestamp: Date.now(),
-                expires: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
-            }));
+        // First try API authentication
+        const response = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(loginData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // API authentication successful
+            authToken = data.token;
             localStorage.setItem('authToken', authToken);
-            showMessage('loginMessage', 'Login successful!', 'success');
+            showToast('Login successful!', 'success');
             setTimeout(showDashboard, 1000);
         } else {
-            showMessage('loginMessage', 'Invalid credentials', 'error');
+            // API failed, try local validation as fallback
+            console.warn('API authentication failed, trying local validation:', data.error);
+            const isValid = await validateCredentials(loginData.username, loginData.password);
+            
+            if (isValid) {
+                // Generate local token for session management
+                authToken = btoa(JSON.stringify({
+                    username: loginData.username,
+                    timestamp: Date.now(),
+                    expires: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+                }));
+                localStorage.setItem('authToken', authToken);
+                showToast('Login successful (offline mode)', 'success');
+                setTimeout(showDashboard, 1000);
+            } else {
+                showMessage('loginMessage', 'Invalid credentials', 'error');
+            }
         }
     } catch (error) {
-        console.error('Local validation failed:', error);
-        showMessage('loginMessage', 'Authentication error - please try again', 'error');
+        console.error('Connection error, using local validation:', error);
+        // Connection failed, use local validation as fallback
+        try {
+            const isValid = await validateCredentials(loginData.username, loginData.password);
+            
+            if (isValid) {
+                authToken = btoa(JSON.stringify({
+                    username: loginData.username,
+                    timestamp: Date.now(),
+                    expires: Date.now() + (24 * 60 * 60 * 1000)
+                }));
+                localStorage.setItem('authToken', authToken);
+                showToast('Login successful (offline mode)', 'success');
+                setTimeout(showDashboard, 1000);
+            } else {
+                showMessage('loginMessage', 'Invalid credentials', 'error');
+            }
+        } catch (localError) {
+            showMessage('loginMessage', 'Authentication error - please try again', 'error');
+        }
     }
 });
 
@@ -116,18 +154,39 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (response.ok) {
-            showMessage('productMessage', 'Product created successfully!', 'success');
+            showToast('Product created successfully in database!', 'success');
             document.getElementById('productForm').reset();
+            console.log('✅ Product created in MongoDB:', data._id || data.id);
+            
+            // Reload products and stats from database
             loadStats();
             if (currentTab === 'products') {
                 loadProducts();
             }
         } else {
-            showMessage('productMessage', data.error, 'error');
+            showMessage('productMessage', data.error || 'Failed to create product', 'error');
         }
     } catch (error) {
         console.error('Product creation failed:', error);
-        showMessage('productMessage', 'Demo mode: Product creation not available (API not connected)', 'error');
+        
+        // Fallback: Create product locally
+        const localProduct = {
+            id: Date.now().toString(), // Generate temporary ID
+            productName: finalData.productName,
+            serialNumber: finalData.serialNumber,
+            category: finalData.category,
+            isValid: true,
+            metadata: finalData.metadata
+        };
+        
+        cachedProducts.push(localProduct);
+        localStorage.setItem('kiezform_products', JSON.stringify(cachedProducts));
+        
+        displayProducts(cachedProducts);
+        updateStatsFromCache();
+        
+        document.getElementById('productForm').reset();
+        showToast('Product created locally (offline mode)', 'success');
     }
 });
 
@@ -172,14 +231,14 @@ async function loadStats() {
             const stats = await response.json();
             document.getElementById('totalProducts').textContent = stats.totalProducts || 0;
             document.getElementById('validProducts').textContent = stats.validProducts || 0;
-            document.getElementById('verifications').textContent = stats.verificationsToday || 0;
+            document.getElementById('verifications').textContent = stats.recentVerifications || stats.verificationsToday || 0;
+            console.log('✅ Stats loaded from database:', stats);
         } else {
-            // Fallback for demo - calculate stats from cached products
+            console.warn('API stats failed, using cached data');
             updateStatsFromCache();
         }
     } catch (error) {
-        console.error('Error loading stats:', error);
-        // Fallback for demo - calculate stats from cached products
+        console.warn('Error loading stats from API, using cached data:', error);
         updateStatsFromCache();
     }
 }
@@ -196,7 +255,7 @@ function updateStatsFromCache() {
 
 async function loadProducts() {
     try {
-        // First try API
+        // Try API first - prioritize database data
         const apiResponse = await fetch('/api/products', {
             headers: {
                 'Authorization': `Bearer ${authToken}`
@@ -204,17 +263,44 @@ async function loadProducts() {
         });
 
         if (apiResponse.ok) {
-            const products = await apiResponse.json();
-            if (Array.isArray(products)) {
-                displayProducts(products);
+            const data = await apiResponse.json();
+            let products = [];
+            
+            // Handle different API response formats
+            if (Array.isArray(data)) {
+                products = data;
+            } else if (data.products && Array.isArray(data.products)) {
+                products = data.products;
+            }
+            
+            if (products.length > 0) {
+                // Convert API products to admin format
+                cachedProducts = products.map(product => ({
+                    id: product._id || product.id,
+                    productName: product.productName || product.name,
+                    serialNumber: product.serialNumber || (product.id && product.id.toUpperCase()) || 'N/A',
+                    category: product.category,
+                    isValid: product.isValid !== undefined ? product.isValid : true,
+                    metadata: {
+                        material: product.metadata?.material || product.material,
+                        size: product.metadata?.size || (product.sizes ? product.sizes.join(', ') : 'N/A'),
+                        price: product.metadata?.price || product.price,
+                        description: product.metadata?.description || product.description,
+                        notes: product.metadata?.notes,
+                        owner: product.metadata?.owner || product.owner?.name || 'KiezForm Berlin'
+                    }
+                }));
+                
+                displayProducts(cachedProducts);
+                console.log('✅ Products loaded from database:', cachedProducts.length);
                 return;
             }
         }
     } catch (error) {
-        console.log('API not available, loading from products.json');
+        console.warn('API not available, loading from products.json:', error);
     }
 
-    // Fallback: Load from products.json
+    // Fallback: Load from products.json only if API fails
     try {
         const response = await fetch('/products.json');
         if (response.ok) {
@@ -237,19 +323,22 @@ async function loadProducts() {
                     }
                 }));
                 
-                // Check for saved changes in localStorage
+                // Only check localStorage if API is completely unavailable
                 const savedProducts = localStorage.getItem('kiezform_products');
                 if (savedProducts) {
                     try {
                         cachedProducts = JSON.parse(savedProducts);
                         displayProducts(cachedProducts);
+                        console.log('📦 Products loaded from localStorage (offline mode)');
                     } catch (e) {
                         cachedProducts = adminProducts;
                         displayProducts(adminProducts);
+                        console.log('📄 Products loaded from products.json');
                     }
                 } else {
                     cachedProducts = adminProducts;
                     displayProducts(adminProducts);
+                    console.log('📄 Products loaded from products.json');
                 }
                 
                 // Update stats after loading products
@@ -445,9 +534,8 @@ function closeEditModal() {
     }
 }
 
-function saveProductChanges(productId) {
+async function saveProductChanges(productId) {
     const updatedProduct = {
-        id: productId,
         productName: document.getElementById('editName').value,
         category: document.getElementById('editCategory').value,
         metadata: {
@@ -459,40 +547,106 @@ function saveProductChanges(productId) {
         }
     };
 
-    // Update cached products
-    const index = cachedProducts.findIndex(p => p.id === productId);
-    if (index !== -1) {
-        cachedProducts[index] = { ...cachedProducts[index], ...updatedProduct };
+    try {
+        // Try to update via API first
+        const response = await fetch(`/api/products/${productId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify(updatedProduct)
+        });
+
+        if (response.ok) {
+            const apiProduct = await response.json();
+            // Update cached products with API response
+            const index = cachedProducts.findIndex(p => p.id === productId);
+            if (index !== -1) {
+                cachedProducts[index] = {
+                    id: apiProduct._id || apiProduct.id,
+                    productName: apiProduct.productName,
+                    serialNumber: apiProduct.serialNumber,
+                    category: apiProduct.category,
+                    isValid: apiProduct.isValid,
+                    metadata: apiProduct.metadata
+                };
+            }
+            
+            // Refresh display
+            displayProducts(cachedProducts);
+            closeEditModal();
+            loadStats(); // Reload stats from API
+            
+            showToast('Product updated successfully in database!', 'success');
+            console.log('✅ Product updated in MongoDB:', productId);
+        } else {
+            throw new Error('API update failed');
+        }
+    } catch (error) {
+        console.warn('Database update failed, saving locally:', error);
         
-        // Save to localStorage for persistence
-        localStorage.setItem('kiezform_products', JSON.stringify(cachedProducts));
-        
-        // Refresh display
-        displayProducts(cachedProducts);
-        closeEditModal();
-        
-        // Update stats
-        updateStatsFromCache();
-        
-        showMessage('productMessage', 'Product updated successfully! (Changes saved locally for demo)', 'success');
+        // Fallback: Update cached products locally
+        const index = cachedProducts.findIndex(p => p.id === productId);
+        if (index !== -1) {
+            cachedProducts[index] = { ...cachedProducts[index], ...updatedProduct, id: productId };
+            
+            // Save to localStorage as backup
+            localStorage.setItem('kiezform_products', JSON.stringify(cachedProducts));
+            
+            // Refresh display
+            displayProducts(cachedProducts);
+            closeEditModal();
+            
+            // Update stats
+            updateStatsFromCache();
+            
+            showToast('Product updated locally (offline mode)', 'success');
+        }
     }
 }
 
-function deleteProduct(productId) {
+async function deleteProduct(productId) {
     if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
-        // Remove from cached products
-        cachedProducts = cachedProducts.filter(p => p.id !== productId);
-        
-        // Save to localStorage
-        localStorage.setItem('kiezform_products', JSON.stringify(cachedProducts));
-        
-        // Refresh display
-        displayProducts(cachedProducts);
-        
-        // Update stats
-        updateStatsFromCache();
-        
-        showMessage('productMessage', 'Product deleted successfully!', 'success');
+        try {
+            // Try to delete via API first
+            const response = await fetch(`/api/products/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            });
+
+            if (response.ok) {
+                // Remove from cached products
+                cachedProducts = cachedProducts.filter(p => p.id !== productId);
+                
+                // Refresh display
+                displayProducts(cachedProducts);
+                loadStats(); // Reload stats from API
+                
+                showToast('Product deleted successfully from database!', 'success');
+                console.log('✅ Product deleted from MongoDB:', productId);
+            } else {
+                throw new Error('API delete failed');
+            }
+        } catch (error) {
+            console.warn('Database delete failed, removing locally:', error);
+            
+            // Fallback: Remove from cached products locally
+            cachedProducts = cachedProducts.filter(p => p.id !== productId);
+            
+            // Save to localStorage
+            localStorage.setItem('kiezform_products', JSON.stringify(cachedProducts));
+            
+            // Refresh display
+            displayProducts(cachedProducts);
+            
+            // Update stats
+            updateStatsFromCache();
+            
+            showToast('Product deleted locally (offline mode)', 'success');
+        }
     }
 }
 
