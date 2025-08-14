@@ -175,6 +175,22 @@ button:disabled {
     margin-bottom: 3rem;
 }
 
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(30, 30, 30, 0.6);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.form-section h4 {
+    color: #00ff00;
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
 .form-title {
     font-size: 1.2rem;
     color: #fff;

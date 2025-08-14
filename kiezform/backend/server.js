@@ -34,6 +34,7 @@ const productSchema = new mongoose.Schema({
   serialNumber: { type: String, required: true, unique: true },
   productName: { type: String, required: true },
   category: { type: String, required: true }, // rings, chains
+  imageUrl: { type: String }, // Product thumbnail image URL
   manufacturingDate: { type: Date, default: Date.now },
   owner: {
     name: { type: String },
@@ -272,6 +273,7 @@ app.get('/api/verify/:id', async (req, res) => {
       serialNumber: product.serialNumber,
       productName: product.productName,
       category: product.category,
+      imageUrl: product.imageUrl,
       manufacturingDate: product.manufacturingDate,
       owner: product.owner,
       metadata: product.metadata,

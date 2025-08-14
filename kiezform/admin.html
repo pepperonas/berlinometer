@@ -108,50 +108,82 @@
                     <div class="form-title">Add New Product</div>
                     <div id="productMessage"></div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="serialNumber">Serial Number</label>
-                            <input type="text" id="serialNumber" name="serialNumber" required placeholder="KIEZFORM-2024-001">
-                        </div>
-                        <div class="form-group">
-                            <label for="productName">Product Name</label>
-                            <input type="text" id="productName" name="productName" required placeholder="BRUTALIST RING">
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="category">Category</label>
-                            <select id="category" name="category" required>
-                                <option value="rings">Rings</option>
-                                <option value="chains">Chains</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="material">Material</label>
-                            <input type="text" id="material" name="material" placeholder="Recycled PLA">
+                    <!-- Product Template Selection -->
+                    <div class="form-section">
+                        <h4>Product Template (Optional)</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="templateCategory">Category Template</label>
+                                <select id="templateCategory" onchange="loadProductsForCategory()">
+                                    <option value="">Select Category...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="templateProduct">Product Template</label>
+                                <select id="templateProduct" onchange="loadProductData()" disabled>
+                                    <option value="">Select Product...</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="size">Size</label>
-                            <input type="text" id="size" name="size" placeholder="M">
+                    <!-- Manual Product Data -->
+                    <div class="form-section">
+                        <h4>Product Information</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="serialNumber">Serial Number</label>
+                                <input type="text" id="serialNumber" name="serialNumber" required placeholder="KIEZFORM-2024-001">
+                            </div>
+                            <div class="form-group">
+                                <label for="productName">Product Name</label>
+                                <input type="text" id="productName" name="productName" required placeholder="BRUTALIST RING">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="price">Price (€)</label>
-                            <input type="number" id="price" name="price" placeholder="89">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select id="category" name="category" required>
+                                    <option value="">Select Category...</option>
+                                    <option value="rings">Rings</option>
+                                    <option value="chains">Chains</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="material">Material</label>
+                                <input type="text" id="material" name="material" placeholder="Recycled PLA">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="notes">Notes</label>
-                            <input type="text" id="notes" name="notes" placeholder="Additional product information">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="size">Size</label>
+                                <input type="text" id="size" name="size" placeholder="M">
+                            </div>
+                            <div class="form-group">
+                                <label for="price">Price (€)</label>
+                                <input type="number" id="price" name="price" placeholder="89">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="owner">Owner</label>
-                            <input type="text" id="owner" name="owner" placeholder="Product owner/creator">
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="imageUrl">Product Image URL</label>
+                                <input type="url" id="imageUrl" name="imageUrl" placeholder="https://kiezform.de/images/products/...">
+                            </div>
+                            <div class="form-group">
+                                <label for="owner">Owner</label>
+                                <input type="text" id="owner" name="owner" placeholder="Product owner/creator">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="notes">Notes</label>
+                                <input type="text" id="notes" name="notes" placeholder="Additional product information">
+                            </div>
                         </div>
                     </div>
 

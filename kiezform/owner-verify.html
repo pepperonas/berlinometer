@@ -424,7 +424,8 @@
                                 material: apiData.metadata?.material || 'Premium Materials',
                                 price: apiData.metadata?.price || 0,
                                 owner: apiData.owner?.name || 'KiezForm Berlin',
-                                sizes: apiData.metadata?.size || 'Standard'
+                                sizes: apiData.metadata?.size || 'Standard',
+                                imageUrl: apiData.imageUrl
                             };
                         }
                     } catch (apiError) {
@@ -445,7 +446,8 @@
                                 material: jsonProduct.material,
                                 price: jsonProduct.price,
                                 owner: 'KiezForm Berlin',
-                                sizes: jsonProduct.sizes ? jsonProduct.sizes.join(', ') : 'Standard'
+                                sizes: jsonProduct.sizes ? jsonProduct.sizes.join(', ') : 'Standard',
+                                imageUrl: jsonProduct.images?.thumb
                             };
                         }
                     }
@@ -470,7 +472,8 @@
                                     name: modifiedProduct.productName,
                                     material: modifiedProduct.metadata?.material || product.material,
                                     price: modifiedProduct.metadata?.price || product.price,
-                                    owner: modifiedProduct.owner?.name || modifiedProduct.metadata?.owner || 'KiezForm Berlin'
+                                    owner: modifiedProduct.owner?.name || modifiedProduct.metadata?.owner || 'KiezForm Berlin',
+                                    imageUrl: modifiedProduct.imageUrl || product.imageUrl
                                 };
                             }
                         } catch (e) {
@@ -538,6 +541,23 @@
                             <span class="detail-value">${new Date().toLocaleString('de-DE')}</span>
                         </div>
                     </div>
+
+                    ${product.imageUrl ? `
+                    <div class="product-details" style="text-align: center;">
+                        <h3>Product Image</h3>
+                        <div style="margin: 1rem 0;">
+                            <img src="${this.escapeHtml(product.imageUrl)}" 
+                                 alt="${this.escapeHtml(product.name)}" 
+                                 class="verification-product-image"
+                                 style="max-width: 300px; max-height: 300px; width: 100%; height: auto; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(20, 20, 20, 0.8);"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display: none; color: #808080; padding: 2rem; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; background: rgba(20, 20, 20, 0.5);">
+                                <p>🖼️ Product image not available</p>
+                                <p style="font-size: 0.8rem; opacity: 0.7;">Image URL: ${this.escapeHtml(product.imageUrl)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
 
                     <div style="background: rgba(0, 255, 0, 0.05); border: 1px solid rgba(0, 255, 0, 0.2); border-radius: 8px; padding: 1.5rem; margin: 2rem 0; text-align: center;">
                         <h4 style="color: #00ff00; margin-bottom: 1rem;">🛡️ Authenticity Guaranteed</h4>

@@ -1,5 +1,6 @@
 let authToken = localStorage.getItem('authToken');
 let currentTab = 'products';
+let productTemplates = null;
 
 // Sichere Credential-Validierung mit SHA-256
 async function validateCredentials(username, password) {
@@ -48,9 +49,30 @@ async function constantTimeCompare(a, b) {
 }
 
 
-// Check if already logged in
+// Check if already logged in and token is valid
 if (authToken) {
-    showDashboard();
+    validateTokenAndShowDashboard();
+}
+
+async function validateTokenAndShowDashboard() {
+    try {
+        // Test token validity with a simple API call
+        const response = await fetch('/api/stats', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            showDashboard();
+        } else {
+            console.log('Token expired or invalid, requiring re-login');
+            logout();
+        }
+    } catch (error) {
+        console.log('API not available, showing dashboard in offline mode');
+        showDashboard();
+    }
 }
 
 // Login form handler - MongoDB API Integration
@@ -143,6 +165,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
         serialNumber: productData.serialNumber,
         productName: productData.productName,
         category: productData.category,
+        imageUrl: productData.imageUrl || null,
         metadata: metadata
     };
 
@@ -206,14 +229,109 @@ function showDashboard() {
     document.getElementById('navLogoutBtn').style.display = 'block';
     loadStats();
     loadProducts();
+    loadProductTemplates();
 }
 
 function logout() {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('kiezform_products'); // Clear cached products on logout
     authToken = null;
+    cachedProducts = []; // Clear memory cache
     document.getElementById('loginSection').style.display = 'block';
     document.getElementById('dashboardSection').classList.remove('active');
     document.getElementById('navLogoutBtn').style.display = 'none';
+    console.log('🚪 Logged out and cleared all cached data');
+}
+
+// Product Template System
+async function loadProductTemplates() {
+    try {
+        const response = await fetch('/products.json');
+        if (response.ok) {
+            productTemplates = await response.json();
+            populateCategoryDropdown();
+            console.log('✅ Product templates loaded:', productTemplates.products.length);
+        }
+    } catch (error) {
+        console.warn('Could not load product templates:', error);
+    }
+}
+
+function populateCategoryDropdown() {
+    const categorySelect = document.getElementById('templateCategory');
+    if (!categorySelect || !productTemplates) return;
+    
+    // Clear existing options
+    categorySelect.innerHTML = '<option value="">Select Category...</option>';
+    
+    // Add categories from JSON
+    productTemplates.categories.forEach(category => {
+        if (category.id !== 'all') { // Skip "all" category
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.displayName;
+            categorySelect.appendChild(option);
+        }
+    });
+}
+
+function loadProductsForCategory() {
+    const categorySelect = document.getElementById('templateCategory');
+    const productSelect = document.getElementById('templateProduct');
+    
+    if (!categorySelect || !productSelect || !productTemplates) return;
+    
+    const selectedCategory = categorySelect.value;
+    
+    // Clear product dropdown
+    productSelect.innerHTML = '<option value="">Select Product...</option>';
+    
+    if (!selectedCategory) {
+        productSelect.disabled = true;
+        return;
+    }
+    
+    // Filter products by category
+    const categoryProducts = productTemplates.products.filter(
+        product => product.category === selectedCategory
+    );
+    
+    // Populate product dropdown
+    categoryProducts.forEach(product => {
+        const option = document.createElement('option');
+        option.value = product.id;
+        option.textContent = product.name;
+        productSelect.appendChild(option);
+    });
+    
+    productSelect.disabled = false;
+}
+
+function loadProductData() {
+    const productSelect = document.getElementById('templateProduct');
+    if (!productSelect || !productTemplates) return;
+    
+    const selectedProductId = productSelect.value;
+    if (!selectedProductId) return;
+    
+    // Find selected product
+    const selectedProduct = productTemplates.products.find(
+        product => product.id === selectedProductId
+    );
+    
+    if (!selectedProduct) return;
+    
+    // Auto-fill form fields (but keep them editable)
+    document.getElementById('productName').value = selectedProduct.name;
+    document.getElementById('category').value = selectedProduct.category;
+    document.getElementById('material').value = selectedProduct.material || '';
+    document.getElementById('price').value = selectedProduct.price || '';
+    document.getElementById('size').value = selectedProduct.sizes ? selectedProduct.sizes.join(', ') : '';
+    document.getElementById('imageUrl').value = selectedProduct.images?.thumb || '';
+    
+    // Don't auto-fill notes field - leave it for manual input
+    
+    showToast(`Template "${selectedProduct.name}" loaded - all fields are editable`, 'success');
 }
 
 function showTab(tab) {
@@ -243,6 +361,11 @@ async function loadStats() {
             document.getElementById('validProducts').textContent = stats.validProducts || 0;
             document.getElementById('verifications').textContent = stats.recentVerifications || stats.verificationsToday || 0;
             console.log('✅ Stats loaded from database:', stats);
+        } else if (response.status === 401) {
+            console.warn('Token expired, logging out');
+            showToast('Session expired, please login again', 'error');
+            logout();
+            return;
         } else {
             console.warn('API stats failed, using cached data');
             updateStatsFromCache();
@@ -289,6 +412,7 @@ async function loadProducts() {
                 productName: product.productName || product.name,
                 serialNumber: product.serialNumber || (product.id && product.id.toUpperCase()) || 'N/A',
                 category: product.category,
+                imageUrl: product.imageUrl || null,
                 isValid: product.isValid !== undefined ? product.isValid : true,
                 owner: product.owner, // Keep the full owner object
                 metadata: {
@@ -303,6 +427,11 @@ async function loadProducts() {
             
             displayProducts(cachedProducts);
             console.log('✅ Products loaded from database:', cachedProducts.length);
+            return;
+        } else if (apiResponse.status === 401) {
+            console.warn('Token expired, logging out');
+            showToast('Session expired, please login again', 'error');
+            logout();
             return;
         }
     } catch (error) {
