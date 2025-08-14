@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="KiezForm Blockchain Explorer - Transparente Nachverfolgung aller Schmuckstück-Eigentumsverhältnisse">
+    <title>Blockchain Explorer - KiezForm</title>
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="KiezForm Blockchain Explorer">
+    <meta property="og:description" content="Transparente Blockchain-Visualisierung für KiezForm Schmuckstücke">
+    <meta property="og:image" content="https://kiezform.de/images/kiezform-blockchain.jpg">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kiezform.de/blockchain">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="KiezForm Blockchain Explorer">
+    <meta name="twitter:description" content="Transparente Blockchain-Visualisierung für KiezForm Schmuckstücke">
+    <meta name="twitter:image" content="https://kiezform.de/images/kiezform-blockchain.jpg">
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/blockchain.css">
+</head>
+<body>
+<nav class="navbar">
+    <div class="container">
+        <div class="nav-brand">
+            <a href="/" class="brand-link">KIEZFORM</a>
+        </div>
+        <div class="nav-menu" id="nav-menu">
+            <a href="/" class="nav-link">HOME</a>
+            <a href="/#products" class="nav-link">PRODUCTS</a>
+            <a href="/#features" class="nav-link">FEATURES</a>
+            <a href="/#value" class="nav-link">VALUE</a>
+            <a href="/#share" class="nav-link">SHARE</a>
+            <a href="/blockchain" class="nav-link active">BLOCKCHAIN</a>
+        </div>
+        <div class="nav-toggle" id="nav-toggle">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
+    </div>
+</nav>
+
+<main class="container" style="padding-top: 80px;">
+    <!-- Blockchain Header -->
+    <section class="blockchain-header">
+        <h1>BLOCKCHAIN EXPLORER</h1>
+        <p class="subtitle">TRANSPARENTE EIGENTUMSVERIFIZIERUNG</p>
+        <div class="chain-info">
+            <div class="info-item">
+                <span class="info-label">CHAIN NAME</span>
+                <span class="info-value" id="chain-name">KiezForm Chain</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">TOTAL BLOCKS</span>
+                <span class="info-value" id="total-blocks">Loading...</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">TOTAL TRANSFERS</span>
+                <span class="info-value" id="total-transfers">Loading...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="search-container">
+            <h2>FINDE DEIN ZERTIFIKAT</h2>
+            <p class="search-description">
+                Gib deine Produkt-ID, Block-ID oder Eigentümer-Code ein, um dein Schmuckstück in der Blockchain zu finden.
+            </p>
+            <div class="search-input-container">
+                <input type="text" 
+                       id="search-input" 
+                       placeholder="z.B. chain-001, BLK-005, USR-A1B2"
+                       class="search-input">
+                <button id="search-button" class="search-button">SUCHEN</button>
+            </div>
+            <div id="search-results" class="search-results"></div>
+        </div>
+    </section>
+
+    <!-- Blockchain Visualization -->
+    <section class="blockchain-section">
+        <h2 class="section-title">LIVE BLOCKCHAIN</h2>
+        <p class="section-description">
+            Jeder Block repräsentiert ein KiezForm-Schmuckstück. Graue Blöcke zeigen alle Transaktionen, 
+            rote Blöcke markieren deine Suchergebnisse.
+        </p>
+        
+        <div class="blockchain-controls">
+            <div class="view-controls">
+                <button class="control-btn active" data-view="grid">GRID VIEW</button>
+                <button class="control-btn" data-view="chain">CHAIN VIEW</button>
+            </div>
+            <div class="filter-controls">
+                <select id="transaction-filter" class="filter-select">
+                    <option value="all">Alle Transaktionen</option>
+                    <option value="MINT">Nur Herstellung</option>
+                    <option value="TRANSFER">Nur Übertragungen</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="blockchain-container" class="blockchain-container">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Blockchain wird geladen...</p>
+            </div>
+        </div>
+
+        <div class="pagination-controls">
+            <button id="prev-page" class="pagination-btn" disabled>← VORHERIGE</button>
+            <span id="page-info" class="page-info">Seite 1 von 1</span>
+            <button id="next-page" class="pagination-btn" disabled>NÄCHSTE →</button>
+        </div>
+    </section>
+
+    <!-- Block Details Modal -->
+    <div id="block-modal" class="block-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="close-modal">×</button>
+            <div class="modal-body">
+                <h3 class="modal-title">BLOCK DETAILS</h3>
+                <div id="block-details" class="block-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <section class="legend-section">
+        <h3>LEGENDE</h3>
+        <div class="legend-items">
+            <div class="legend-item">
+                <div class="legend-color mint"></div>
+                <span>Herstellung (MINT)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color transfer"></div>
+                <span>Übertragung (TRANSFER)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color highlighted"></div>
+                <span>Dein Suchergebnis</span>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="container footer-content">
+        <p>&copy; 2025 KIEZFORM. All rights reserved.</p>
+        <p>Blockchain Explorer - Made in Berlin</p>
+        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+            <a href="/impressum"
+               style="color: #606060; margin: 0 1rem; text-decoration: none; transition: color 0.3s;">Impressum</a>
+            <a href="/datenschutz"
+               style="color: #606060; margin: 0 1rem; text-decoration: none; transition: color 0.3s;">Datenschutz</a>
+        </div>
+        <div style="margin-top: 2rem;">
+            <a href="https://instagram.com/kiezform" target="_blank" rel="noopener noreferrer"
+               style="color: #606060; margin: 0 0.5rem; text-decoration: none; font-size: 1.2rem; transition: color 0.3s;">📷</a>
+            <a href="https://facebook.com/kiezform" target="_blank" rel="noopener noreferrer"
+               style="color: #606060; margin: 0 0.5rem; text-decoration: none; font-size: 1.2rem; transition: color 0.3s;">📘</a>
+            <a href="https://twitter.com/kiezform" target="_blank" rel="noopener noreferrer"
+               style="color: #606060; margin: 0 0.5rem; text-decoration: none; font-size: 1.2rem; transition: color 0.3s;">🐦</a>
+        </div>
+    </div>
+</footer>
+
+<!-- JavaScript -->
+<script src="/js/main.js"></script>
+<script src="/js/blockchain.js"></script>
+</body>
+</html>

@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const QRCode = require('qrcode');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
@@ -48,6 +49,12 @@ const productSchema = new mongoose.Schema({
     price: { type: Number },
     notes: { type: String }
   },
+  blockchainInfo: {
+    currentOwner: { type: String }, // Current pseudonym
+    mintBlock: { type: String }, // Initial block ID
+    lastBlock: { type: String }, // Latest block ID
+    transferCount: { type: Number, default: 0 }
+  },
   isValid: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
   lastVerified: { type: Date }
@@ -62,11 +69,158 @@ const adminSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Blockchain Block Schema
+const blockSchema = new mongoose.Schema({
+  blockId: { type: String, required: true, unique: true },
+  blockNumber: { type: Number, required: true },
+  previousHash: { type: String, required: true },
+  currentHash: { type: String, required: true },
+  productId: { type: String, required: true },
+  transactionType: { 
+    type: String, 
+    enum: ['MINT', 'TRANSFER'], 
+    required: true 
+  },
+  fromOwner: { type: String }, // Pseudonym or null for MINT
+  toOwner: { type: String, required: true }, // Pseudonym
+  timestamp: { type: Date, default: Date.now },
+  metadata: {
+    productName: { type: String },
+    serialNumber: { type: String },
+    transferMethod: { type: String } // 'QR_CODE', 'ADMIN', etc.
+  },
+  isValid: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Transfer Request Schema (for pending transfers)
+const transferRequestSchema = new mongoose.Schema({
+  transferId: { type: String, required: true, unique: true },
+  productId: { type: String, required: true },
+  fromOwner: { type: String, required: true },
+  toOwner: { type: String }, // Will be set when transfer is accepted
+  transferToken: { type: String, required: true }, // For QR code
+  status: { 
+    type: String, 
+    enum: ['PENDING', 'COMPLETED', 'EXPIRED', 'CANCELLED'], 
+    default: 'PENDING' 
+  },
+  expiresAt: { type: Date, required: true },
+  createdAt: { type: Date, default: Date.now },
+  completedAt: { type: Date }
+});
+
 const Product = mongoose.model('Product', productSchema);
 const Admin = mongoose.model('Admin', adminSchema);
+const Block = mongoose.model('Block', blockSchema);
+const TransferRequest = mongoose.model('TransferRequest', transferRequestSchema);
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET;
+
+// Blockchain Helper Functions
+function generateHash(data) {
+  return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex');
+}
+
+function generatePseudonym() {
+  // Generate anonymous but consistent pseudonym
+  return 'USR-' + crypto.randomBytes(4).toString('hex').toUpperCase();
+}
+
+async function getLastBlock() {
+  return await Block.findOne().sort({ blockNumber: -1 });
+}
+
+async function createGenesisBlock() {
+  const genesisBlock = new Block({
+    blockId: 'BLK-000',
+    blockNumber: 0,
+    previousHash: '0000000000000000000000000000000000000000000000000000000000000000',
+    currentHash: generateHash({
+      blockNumber: 0,
+      previousHash: '0000000000000000000000000000000000000000000000000000000000000000',
+      data: 'GENESIS_BLOCK'
+    }),
+    productId: 'GENESIS',
+    transactionType: 'MINT',
+    fromOwner: null,
+    toOwner: 'KIEZFORM-GENESIS',
+    metadata: {
+      productName: 'Genesis Block',
+      serialNumber: 'GENESIS-000',
+      transferMethod: 'SYSTEM'
+    }
+  });
+  
+  return await genesisBlock.save();
+}
+
+async function createMintBlock(productId, productData, ownerPseudonym) {
+  const lastBlock = await getLastBlock();
+  
+  if (!lastBlock) {
+    await createGenesisBlock();
+    return await createMintBlock(productId, productData, ownerPseudonym);
+  }
+  
+  const blockNumber = lastBlock.blockNumber + 1;
+  const blockId = `BLK-${blockNumber.toString().padStart(3, '0')}`;
+  
+  const blockData = {
+    blockNumber,
+    previousHash: lastBlock.currentHash,
+    productId,
+    transactionType: 'MINT',
+    toOwner: ownerPseudonym,
+    timestamp: new Date(),
+    metadata: productData
+  };
+  
+  const currentHash = generateHash(blockData);
+  
+  const newBlock = new Block({
+    blockId,
+    ...blockData,
+    currentHash
+  });
+  
+  return await newBlock.save();
+}
+
+async function createTransferBlock(productId, fromOwner, toOwner, transferMethod = 'QR_CODE') {
+  const lastBlock = await getLastBlock();
+  const blockNumber = lastBlock.blockNumber + 1;
+  const blockId = `BLK-${blockNumber.toString().padStart(3, '0')}`;
+  
+  // Get product details
+  const product = await Product.findById(productId);
+  
+  const blockData = {
+    blockNumber,
+    previousHash: lastBlock.currentHash,
+    productId,
+    transactionType: 'TRANSFER',
+    fromOwner,
+    toOwner,
+    timestamp: new Date(),
+    metadata: {
+      productName: product?.productName || 'Unknown Product',
+      serialNumber: product?.serialNumber || 'Unknown',
+      transferMethod
+    }
+  };
+  
+  const currentHash = generateHash(blockData);
+  
+  const newBlock = new Block({
+    blockId,
+    ...blockData,
+    currentHash
+  });
+  
+  return await newBlock.save();
+}
 
 // Middleware für Admin-Authentifizierung
 const authenticateAdmin = (req, res, next) => {
@@ -159,7 +313,31 @@ app.post('/api/products', authenticateAdmin, async (req, res) => {
     const product = new Product(productData);
     await product.save();
     
-    res.status(201).json(product);
+    // Create initial blockchain MINT block
+    const ownerPseudonym = generatePseudonym();
+    const blockData = {
+      productName: product.productName,
+      serialNumber: product.serialNumber,
+      transferMethod: 'ADMIN_MINT'
+    };
+    
+    const mintBlock = await createMintBlock(product._id, blockData, ownerPseudonym);
+    
+    // Update product with blockchain info
+    product.blockchainInfo = {
+      currentOwner: ownerPseudonym,
+      mintBlock: mintBlock.blockId,
+      lastBlock: mintBlock.blockId
+    };
+    await product.save();
+    
+    res.status(201).json({
+      ...product.toObject(),
+      blockchainInfo: {
+        mintBlock: mintBlock.blockId,
+        currentOwner: ownerPseudonym
+      }
+    });
   } catch (error) {
     console.error('Product creation error:', error);
     if (error.code === 11000) {
@@ -319,6 +497,231 @@ app.get('/api/qrcode/:id', async (req, res) => {
   }
 });
 
+// Blockchain API Routes (Public)
+app.get('/api/blockchain', async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    
+    const blocks = await Block.find({ isValid: true })
+      .sort({ blockNumber: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .select('-__v');
+      
+    const totalBlocks = await Block.countDocuments({ isValid: true });
+    
+    res.json({
+      blocks,
+      totalPages: Math.ceil(totalBlocks / limit),
+      currentPage: parseInt(page),
+      totalBlocks,
+      chainInfo: {
+        name: 'KiezForm Chain',
+        symbol: 'KZF',
+        description: 'Blockchain for KiezForm jewelry authenticity and ownership verification'
+      }
+    });
+  } catch (error) {
+    console.error('Blockchain fetch error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.get('/api/blockchain/product/:productId', async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    
+    const blocks = await Block.find({ 
+      productId: productId,
+      isValid: true 
+    }).sort({ blockNumber: 1 }).select('-__v');
+    
+    if (blocks.length === 0) {
+      return res.status(404).json({ error: 'No blockchain history found for this product' });
+    }
+    
+    const currentOwner = blocks[blocks.length - 1].toOwner;
+    
+    res.json({
+      productId,
+      currentOwner,
+      totalTransactions: blocks.length,
+      history: blocks
+    });
+  } catch (error) {
+    console.error('Product blockchain history error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.get('/api/blockchain/search/:query', async (req, res) => {
+  try {
+    const query = req.params.query.toUpperCase();
+    
+    // Search by product ID, block ID, or pseudonym
+    const blocks = await Block.find({
+      $or: [
+        { productId: { $regex: query, $options: 'i' } },
+        { blockId: { $regex: query, $options: 'i' } },
+        { toOwner: { $regex: query, $options: 'i' } },
+        { fromOwner: { $regex: query, $options: 'i' } },
+        { 'metadata.serialNumber': { $regex: query, $options: 'i' } }
+      ],
+      isValid: true
+    }).sort({ blockNumber: -1 }).select('-__v');
+    
+    res.json({
+      query,
+      matches: blocks.length,
+      blocks
+    });
+  } catch (error) {
+    console.error('Blockchain search error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Transfer API Routes
+app.post('/api/transfer/initiate', async (req, res) => {
+  try {
+    const { productId, fromPseudonym } = req.body;
+    
+    // Verify current ownership
+    const latestBlock = await Block.findOne({ 
+      productId, 
+      isValid: true 
+    }).sort({ blockNumber: -1 });
+    
+    if (!latestBlock || latestBlock.toOwner !== fromPseudonym) {
+      return res.status(403).json({ error: 'Not the current owner of this product' });
+    }
+    
+    // Check for existing pending transfers
+    const existingTransfer = await TransferRequest.findOne({
+      productId,
+      status: 'PENDING'
+    });
+    
+    if (existingTransfer) {
+      return res.status(400).json({ error: 'Transfer already pending for this product' });
+    }
+    
+    const transferId = uuidv4();
+    const transferToken = crypto.randomBytes(32).toString('hex');
+    
+    const transferRequest = new TransferRequest({
+      transferId,
+      productId,
+      fromOwner: fromPseudonym,
+      transferToken,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    });
+    
+    await transferRequest.save();
+    
+    // Generate transfer QR code
+    const transferUrl = `${process.env.BASE_URL}/transfer/${transferToken}`;
+    const transferQR = await QRCode.toDataURL(transferUrl, {
+      width: 300,
+      margin: 2,
+      color: {
+        dark: '#ff0000', // Red QR code for transfers
+        light: '#FFFFFF'
+      },
+      errorCorrectionLevel: 'M'
+    });
+    
+    res.json({
+      transferId,
+      transferToken,
+      transferUrl,
+      transferQR,
+      expiresAt: transferRequest.expiresAt,
+      message: 'Transfer initiated. Share the red QR code with the new owner.'
+    });
+  } catch (error) {
+    console.error('Transfer initiation error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/transfer/complete', async (req, res) => {
+  try {
+    const { transferToken, newOwnerName } = req.body;
+    
+    const transferRequest = await TransferRequest.findOne({
+      transferToken,
+      status: 'PENDING',
+      expiresAt: { $gt: new Date() }
+    });
+    
+    if (!transferRequest) {
+      return res.status(404).json({ error: 'Transfer not found or expired' });
+    }
+    
+    // Generate pseudonym for new owner
+    const newOwnerPseudonym = generatePseudonym();
+    
+    // Create transfer block
+    const transferBlock = await createTransferBlock(
+      transferRequest.productId,
+      transferRequest.fromOwner,
+      newOwnerPseudonym,
+      'QR_CODE'
+    );
+    
+    // Update transfer request
+    transferRequest.status = 'COMPLETED';
+    transferRequest.toOwner = newOwnerPseudonym;
+    transferRequest.completedAt = new Date();
+    await transferRequest.save();
+    
+    res.json({
+      success: true,
+      newOwner: newOwnerPseudonym,
+      blockId: transferBlock.blockId,
+      message: 'Ownership transferred successfully!'
+    });
+  } catch (error) {
+    console.error('Transfer completion error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.get('/api/transfer/:token', async (req, res) => {
+  try {
+    const transferRequest = await TransferRequest.findOne({
+      transferToken: req.params.token,
+      status: 'PENDING'
+    });
+    
+    if (!transferRequest) {
+      return res.status(404).json({ error: 'Transfer not found' });
+    }
+    
+    if (transferRequest.expiresAt < new Date()) {
+      transferRequest.status = 'EXPIRED';
+      await transferRequest.save();
+      return res.status(410).json({ error: 'Transfer expired' });
+    }
+    
+    // Get product details
+    const product = await Product.findById(transferRequest.productId);
+    
+    res.json({
+      transferId: transferRequest.transferId,
+      productId: transferRequest.productId,
+      productName: product?.productName || 'Unknown Product',
+      fromOwner: transferRequest.fromOwner,
+      expiresAt: transferRequest.expiresAt,
+      message: 'Ready to complete transfer'
+    });
+  } catch (error) {
+    console.error('Transfer info error:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // Statistics
 app.get('/api/stats', authenticateAdmin, async (req, res) => {
   try {
@@ -336,6 +739,11 @@ app.get('/api/stats', authenticateAdmin, async (req, res) => {
       }
     });
     
+    // Blockchain stats
+    const totalBlocks = await Block.countDocuments();
+    const totalTransfers = await Block.countDocuments({ transactionType: 'TRANSFER' });
+    const pendingTransfers = await TransferRequest.countDocuments({ status: 'PENDING' });
+    
     res.json({
       totalProducts,
       validProducts,
@@ -343,7 +751,12 @@ app.get('/api/stats', authenticateAdmin, async (req, res) => {
       invalidProducts: totalProducts - validProducts,
       ringProducts,
       chainProducts,
-      recentVerifications
+      recentVerifications,
+      blockchain: {
+        totalBlocks,
+        totalTransfers,
+        pendingTransfers
+      }
     });
   } catch (error) {
     console.error('Stats error:', error);

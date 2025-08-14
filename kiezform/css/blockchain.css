@@ -1,0 +1,741 @@
+/* Blockchain Explorer Specific Styles */
+/* Extends the main KiezForm aesthetic for blockchain visualization */
+
+/* Blockchain Header */
+.blockchain-header {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 4rem 3rem;
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.blockchain-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(0, 255, 0, 0.02) 0%, transparent 70%);
+    animation: pulse 15s ease-in-out infinite;
+}
+
+.blockchain-header h1 {
+    font-size: 3rem;
+    font-weight: 100;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+.blockchain-header .subtitle {
+    font-size: 1rem;
+    color: #808080;
+    margin-bottom: 3rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+}
+
+.chain-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+    position: relative;
+    z-index: 1;
+}
+
+.info-item {
+    background: #000;
+    padding: 2rem 1rem;
+    text-align: center;
+    border: 1px solid transparent;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.info-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(0, 255, 0, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.info-item:hover::before {
+    opacity: 1;
+}
+
+.info-item:hover {
+    border-color: rgba(0, 255, 0, 0.3);
+}
+
+.info-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #606060;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    display: block;
+    font-size: 1.2rem;
+    color: #00ff00;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+}
+
+/* Search Section */
+.search-section {
+    margin-bottom: 4rem;
+}
+
+.search-container {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 0, 0, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.search-container:hover::before {
+    opacity: 1;
+}
+
+.search-container h2 {
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    color: #fff;
+    position: relative;
+    z-index: 1;
+}
+
+.search-description {
+    color: #808080;
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+.search-input-container {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.search-input {
+    background: #000;
+    border: 1px solid transparent;
+    color: #fff;
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: all 0.3s;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: rgba(255, 0, 0, 0.5);
+    background: rgba(10, 10, 10, 0.9);
+}
+
+.search-input::placeholder {
+    color: #606060;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.search-button {
+    background: #000;
+    border: 1px solid transparent;
+    color: #808080;
+    padding: 1rem 2rem;
+    font-size: 0.9rem;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 0, 0, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.search-button:hover::before {
+    opacity: 1;
+}
+
+.search-button:hover {
+    border-color: rgba(255, 0, 0, 0.3);
+    color: #fff;
+}
+
+.search-results {
+    margin-top: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Blockchain Section */
+.blockchain-section {
+    margin-bottom: 4rem;
+}
+
+.blockchain-section .section-title {
+    font-size: 2rem;
+    font-weight: 100;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #fff;
+}
+
+.section-description {
+    text-align: center;
+    color: #808080;
+    margin-bottom: 3rem;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+.blockchain-controls {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.view-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+}
+
+.control-btn {
+    background: #000;
+    border: 1px solid transparent;
+    color: #808080;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    position: relative;
+    overflow: hidden;
+}
+
+.control-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(0, 255, 0, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.control-btn:hover::before,
+.control-btn.active::before {
+    opacity: 1;
+}
+
+.control-btn:hover,
+.control-btn.active {
+    border-color: rgba(0, 255, 0, 0.3);
+    color: #00ff00;
+}
+
+.filter-select {
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #808080;
+    padding: 0.8rem 1rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.3s;
+    outline: none;
+}
+
+.filter-select:focus {
+    border-color: rgba(0, 255, 0, 0.3);
+    color: #fff;
+}
+
+/* Blockchain Container */
+.blockchain-container {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 3rem;
+    min-height: 600px;
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+/* Grid View */
+.blockchain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+}
+
+/* Chain View */
+.blockchain-chain {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1px;
+}
+
+/* Block Styles */
+.block {
+    background: #000;
+    border: 1px solid transparent;
+    padding: 1.5rem 1rem;
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.block:hover::before {
+    opacity: 1;
+}
+
+.block:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Block Types */
+.block.mint {
+    border-left: 3px solid #00ff00;
+}
+
+.block.transfer {
+    border-left: 3px solid #0088ff;
+}
+
+.block.highlighted {
+    border: 2px solid #ff0000 !important;
+    background: rgba(255, 0, 0, 0.05);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+.block.highlighted::before {
+    background: linear-gradient(135deg, transparent, rgba(255, 0, 0, 0.1));
+    opacity: 1;
+}
+
+/* Block Content */
+.block-header {
+    margin-bottom: 1rem;
+}
+
+.block-id {
+    font-size: 0.8rem;
+    color: #00ff00;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.3rem;
+}
+
+.block-type {
+    font-size: 0.7rem;
+    color: #606060;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.block-content {
+    flex-grow: 1;
+}
+
+.block-product {
+    font-size: 0.8rem;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.block-owner {
+    font-size: 0.7rem;
+    color: #808080;
+    font-family: monospace;
+}
+
+.block-timestamp {
+    font-size: 0.6rem;
+    color: #606060;
+    margin-top: 0.5rem;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top: 3px solid #00ff00;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+    color: #808080;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.9rem;
+}
+
+/* Pagination */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.pagination-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #808080;
+    padding: 0.8rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    border-color: rgba(0, 255, 0, 0.5);
+    color: #00ff00;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.page-info {
+    color: #808080;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Block Modal */
+.block-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    padding: 2rem;
+}
+
+.block-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.block-modal .modal-content {
+    background: #0a0a0a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.block-modal .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: #808080;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.3s;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.block-modal .modal-close:hover {
+    color: #fff;
+}
+
+.block-modal .modal-body {
+    padding: 3rem;
+}
+
+.block-modal .modal-title {
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    color: #fff;
+}
+
+.block-details {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.detail-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 1rem;
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    color: #606060;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+}
+
+.detail-value {
+    color: #fff;
+    font-family: monospace;
+    word-break: break-all;
+}
+
+.detail-value.hash {
+    font-size: 0.8rem;
+    color: #00ff00;
+}
+
+.detail-value.owner {
+    color: #0088ff;
+}
+
+/* Legend */
+.legend-section {
+    background: rgba(10, 10, 10, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    margin-bottom: 4rem;
+}
+
+.legend-section h3 {
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    color: #fff;
+    text-align: center;
+}
+
+.legend-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    justify-items: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #808080;
+    font-size: 0.9rem;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-color.mint {
+    border-left: 3px solid #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.legend-color.transfer {
+    border-left: 3px solid #0088ff;
+    background: rgba(0, 136, 255, 0.1);
+}
+
+.legend-color.highlighted {
+    border: 2px solid #ff0000;
+    background: rgba(255, 0, 0, 0.1);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .blockchain-header h1 {
+        font-size: 2rem;
+        letter-spacing: 0.2em;
+    }
+    
+    .blockchain-header,
+    .search-container,
+    .blockchain-container {
+        padding: 2rem 1rem;
+    }
+    
+    .chain-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-input-container {
+        grid-template-columns: 1fr;
+        max-width: none;
+    }
+    
+    .blockchain-controls {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .blockchain-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .pagination-controls {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .legend-items {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    
+    .block-modal .modal-body {
+        padding: 2rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .blockchain-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .view-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .block {
+        min-height: 100px;
+    }
+}
