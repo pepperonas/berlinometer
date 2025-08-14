@@ -4,6 +4,28 @@
     box-sizing: border-box;
 }
 
+/* Mobile-optimized touch targets */
+*:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.5);
+    outline-offset: 2px;
+}
+
+/* Prevent text selection on buttons and UI elements */
+button, .nav-link, .filter-btn, .view-btn, .cta-button {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Smooth scrolling for better mobile experience */
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.4;
@@ -193,6 +215,7 @@ body::before {
         border-top: 1px solid rgba(255, 255, 255, 0.1);
         padding: 2rem 0;
         gap: 1.5rem;
+        z-index: 999;
     }
 
     .nav-menu.active {
@@ -201,27 +224,51 @@ body::before {
 
     .nav-toggle {
         display: flex;
+        padding: 8px;
+        min-height: 44px;
+        min-width: 44px;
+        justify-content: center;
+        align-items: center;
     }
 
     .nav-link {
-        font-size: 1.1rem;
-        padding: 1rem 0;
+        font-size: 1.2rem;
+        padding: 1.2rem 0;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     
     .section-title {
-        font-size: 1.5rem;
-        letter-spacing: 0.2em;
-        margin-bottom: 2rem;
-        padding-bottom: 0.8rem;
+        font-size: 1.8rem;
+        letter-spacing: 0.15em;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1rem;
+        padding: 0 1rem 1rem;
     }
     
     .section-title::after {
-        width: 60px;
+        width: 80px;
     }
     
     .section-description {
-        margin-bottom: 2rem;
-        padding: 0 1rem;
+        margin-bottom: 2.5rem;
+        padding: 0 1.5rem;
+        font-size: 1rem;
+        line-height: 1.7;
+    }
+}
+
+/* Enhanced Mobile Support for larger screens */
+@media screen and (max-width: 1024px) and (min-width: 769px) {
+    .section-title {
+        font-size: 1.7rem;
+        margin-bottom: 2.5rem;
+    }
+    
+    .container {
+        padding: 0 2rem;
     }
 }
 
@@ -463,10 +510,19 @@ footer {
     margin: 0.5rem 0;
 }
 
+/* Core Mobile Styles */
 @media (max-width: 768px) {
     h1 {
-        font-size: 2.5rem;
-        letter-spacing: 0.2em;
+        font-size: 2.2rem;
+        letter-spacing: 0.15em;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 2.5rem;
+        letter-spacing: 0.08em;
     }
 
     .nav-links {
@@ -474,11 +530,45 @@ footer {
     }
 
     .hero {
-        padding: 3rem 1.5rem;
+        padding: 4rem 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .cta-button {
+        padding: 1.2rem 2.5rem;
+        font-size: 1rem;
+        min-height: 44px;
+        letter-spacing: 0.15em;
     }
 
     .features {
         grid-template-columns: 1fr;
+        gap: 1px;
+        margin-bottom: 3rem;
+    }
+
+    .feature-card {
+        padding: 2.5rem 2rem;
+        text-align: center;
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .feature-title {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .feature-description {
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    .container {
+        padding: 0 1.5rem;
     }
 }
 
@@ -818,32 +908,139 @@ body.modal-open {
     font-size: 1.1rem;
 }
 
+/* Product Gallery Mobile Optimizations */
 @media (max-width: 768px) {
+    .products-section {
+        margin: 3rem 0;
+    }
+
     .product-gallery {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1px;
+        padding: 1px;
+    }
+
+    .product-card {
+        min-height: 280px;
+    }
+
+    .product-info {
+        padding: 1.2rem;
+    }
+
+    .product-name {
+        font-size: 0.9rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .product-material {
+        font-size: 0.75rem;
+        margin-bottom: 0.6rem;
+    }
+
+    .product-price {
+        font-size: 1rem;
+    }
+
+    .view-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.75rem;
+        min-height: 44px;
+    }
+
+    /* Modal Mobile Optimizations */
+    .product-modal {
+        padding: 1rem;
+        align-items: flex-start;
+        padding-top: 2rem;
+    }
+
+    .modal-content {
+        max-height: 95vh;
+        width: 100%;
+        margin: 0;
     }
 
     .modal-body {
         grid-template-columns: 1fr;
-        padding: 2rem 1rem;
+        padding: 1.5rem 1rem;
+        gap: 2rem;
     }
 
     .modal-close {
-        background: rgba(0, 0, 0, 0.8);
+        background: rgba(0, 0, 0, 0.9);
         border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        font-size: 1.5rem;
+        top: 0.5rem;
+        right: 0.5rem;
+        z-index: 10;
     }
 
+    .modal-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        letter-spacing: 0.15em;
+    }
+
+    .modal-price {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+
+    .modal-material {
+        font-size: 0.85rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-description {
+        font-size: 0.95rem;
+        line-height: 1.7;
+        margin-bottom: 2rem;
+    }
+
+    .image-thumbs {
+        justify-content: center;
+        gap: 0.3rem;
+    }
+
+    .image-thumbs .thumb {
+        width: 60px;
+        height: 60px;
+    }
+
+    .size-options {
+        justify-content: center;
+        gap: 0.3rem;
+    }
+
+    .size-btn {
+        padding: 0.7rem 1rem;
+        font-size: 0.85rem;
+        min-height: 44px;
+    }
+
+    .contact-btn {
+        padding: 1.2rem 2rem;
+        font-size: 0.9rem;
+        min-height: 48px;
+        letter-spacing: 0.1em;
+    }
+
+    /* Category Filters Mobile */
     .category-filters {
-        gap: 0.5rem;
+        gap: 0.3rem;
+        margin-bottom: 2rem;
+        padding: 0 0.5rem;
     }
 
     .filter-btn {
-        padding: 0.6rem 1rem;
+        padding: 0.8rem 1.2rem;
         font-size: 0.8rem;
-    }
-
-    .feature-card {
-        padding: 2rem 1.5rem;
+        min-height: 44px;
+        flex: 1;
+        min-width: 0;
     }
 }
 
@@ -1278,75 +1475,168 @@ body.modal-open {
     transform: none;
 }
 
-/* Mobile Responsiveness for New Sections */
+/* Mobile Responsiveness for VALUE and SHARE Sections */
 @media (max-width: 768px) {
     .value-section .section-title,
     .share-section .section-title {
-        font-size: 1.5rem;
-        letter-spacing: 0.1em;
-        margin-bottom: 2rem;
+        font-size: 1.6rem;
+        letter-spacing: 0.12em;
+        margin-bottom: 2.5rem;
+        padding: 0 1rem 1rem;
     }
 
     .subsection-title {
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+        text-align: center;
     }
 
     .verification-process,
     .verification-workflow,
     .security-features {
-        padding: 3rem 1.5rem 2rem;
+        padding: 2.5rem 1rem 2rem;
     }
 
     .verification-grid {
         grid-template-columns: 1fr;
+        gap: 1px;
     }
 
     .verification-item {
-        padding: 2rem 1.5rem;
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+    }
+
+    .verification-item h4 {
+        font-size: 1rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .verification-item p {
+        font-size: 0.9rem;
+        line-height: 1.6;
     }
 
     .verification-icon {
-        font-size: 1.8rem;
-        margin-bottom: 1rem;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
     }
 
     .workflow-steps {
         grid-template-columns: 1fr;
+        gap: 1px;
     }
 
     .workflow-step {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-        padding: 1.5rem;
+        flex-direction: row;
+        text-align: left;
+        gap: 1.5rem;
+        padding: 2rem 1.5rem;
+        align-items: flex-start;
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .step-content h4 {
+        font-size: 0.95rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .step-content p {
+        font-size: 0.85rem;
+        line-height: 1.5;
     }
 
     .security-grid {
         grid-template-columns: 1fr;
+        gap: 1px;
     }
 
     .security-item {
-        padding: 1.5rem;
-        justify-content: center;
-        text-align: center;
+        padding: 1.8rem 1.5rem;
+        justify-content: flex-start;
+        text-align: left;
+        gap: 1.5rem;
+    }
+
+    .security-item span:last-child {
+        font-size: 0.85rem;
+    }
+
+    .security-icon {
+        font-size: 1.3rem;
     }
 
     .share-section {
-        padding: 4rem 1.5rem;
+        padding: 3rem 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .share-description {
+        margin-bottom: 3rem;
+        padding: 0 1rem;
+    }
+
+    .share-description h3 {
+        font-size: 1rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .share-description p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .share-qr-container {
+        margin-bottom: 3rem;
+        gap: 1.5rem;
+    }
+
+    .share-qr {
+        padding: 2rem;
+        max-width: 200px;
+        margin: 0 auto;
+    }
+
+    .share-url {
+        font-size: 0.85rem;
+        letter-spacing: 0.15em;
     }
 
     .share-actions {
         grid-template-columns: 1fr;
-        max-width: 300px;
+        max-width: 280px;
+        gap: 1px;
     }
 
     .share-button {
-        padding: 1.2rem;
-        font-size: 0.8rem;
+        padding: 1.3rem 1.5rem;
+        font-size: 0.85rem;
+        min-height: 48px;
+        letter-spacing: 0.08em;
     }
 
-    .share-qr {
-        padding: 1.5rem;
+    .blockchain-preview {
+        padding: 0 1rem;
+        text-align: center;
+    }
+
+    .blockchain-preview p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+    }
+
+    .blockchain-preview .cta-button {
+        padding: 1rem 2rem;
+        font-size: 0.85rem;
+        min-height: 44px;
     }
 }

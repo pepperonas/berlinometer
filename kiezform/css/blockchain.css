@@ -679,63 +679,299 @@
     background: rgba(255, 0, 0, 0.1);
 }
 
-/* Mobile Responsiveness */
+/* Enhanced Mobile Responsiveness */
 @media (max-width: 768px) {
+    .blockchain-header {
+        padding: 3rem 1.5rem;
+        margin-bottom: 3rem;
+    }
+
     .blockchain-header h1 {
-        font-size: 2rem;
-        letter-spacing: 0.2em;
+        font-size: 2.2rem;
+        letter-spacing: 0.15em;
+        margin-bottom: 1.5rem;
     }
     
-    .blockchain-header,
-    .search-container,
-    .blockchain-container {
-        padding: 2rem 1rem;
+    .blockchain-header .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 2.5rem;
+        letter-spacing: 0.08em;
     }
     
     .chain-info {
         grid-template-columns: 1fr;
+        gap: 1px;
+        margin-top: 2rem;
+    }
+
+    .info-item {
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .info-label {
+        font-size: 0.8rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .info-value {
+        font-size: 1.1rem;
+    }
+    
+    .search-section {
+        padding: 2rem 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .search-section h2 {
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+        letter-spacing: 0.12em;
+    }
+
+    .search-description {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
     }
     
     .search-input-container {
         grid-template-columns: 1fr;
         max-width: none;
+        gap: 0.8rem;
+    }
+
+    .search-input {
+        padding: 1rem 1.2rem;
+        font-size: 1rem;
+        min-height: 48px;
+    }
+
+    .search-button {
+        padding: 1rem 2rem;
+        font-size: 0.9rem;
+        min-height: 48px;
+        letter-spacing: 0.1em;
+    }
+    
+    .blockchain-section {
+        padding: 2rem 1.5rem;
+    }
+
+    .blockchain-section h2 {
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .blockchain-section .section-description {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
     }
     
     .blockchain-controls {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 1.5rem;
         text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .view-controls {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .control-btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.8rem;
+        min-height: 44px;
+        flex: 1;
+        max-width: 120px;
+    }
+
+    .filter-controls {
+        display: flex;
+        justify-content: center;
+    }
+
+    .filter-select {
+        padding: 0.8rem 1rem;
+        font-size: 0.85rem;
+        min-height: 44px;
+        min-width: 200px;
     }
     
     .blockchain-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1px;
+    }
+
+    .block {
+        min-height: 120px;
+        padding: 1rem;
+    }
+
+    .block-header {
+        margin-bottom: 1rem;
+    }
+
+    .block-id {
+        font-size: 0.7rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .block-type {
+        font-size: 0.65rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .block-content {
+        margin-bottom: 1rem;
+    }
+
+    .block-product {
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .block-owner {
+        font-size: 0.7rem;
+    }
+
+    .block-timestamp {
+        font-size: 0.65rem;
     }
     
     .pagination-controls {
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        padding: 0 1rem;
+    }
+
+    .pagination-btn {
+        padding: 1rem 2rem;
+        font-size: 0.85rem;
+        min-height: 44px;
+        letter-spacing: 0.1em;
+    }
+
+    .page-info {
+        font-size: 0.9rem;
+        order: -1;
     }
     
+    .legend-section {
+        padding: 2rem 1.5rem;
+        margin-top: 3rem;
+    }
+
+    .legend-section h3 {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
     .legend-items {
         grid-template-columns: 1fr;
-        gap: 0.8rem;
+        gap: 1rem;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
+    .legend-item {
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+        text-align: center;
     }
     
+    .block-modal {
+        padding: 1rem;
+        align-items: flex-start;
+        padding-top: 2rem;
+    }
+
+    .block-modal .modal-content {
+        max-height: 95vh;
+        width: 100%;
+        margin: 0;
+    }
+
     .block-modal .modal-body {
-        padding: 2rem 1rem;
+        padding: 1.5rem 1rem;
+    }
+
+    .block-modal .modal-title {
+        font-size: 1.4rem;
+        margin-bottom: 2rem;
+        text-align: center;
+        letter-spacing: 0.1em;
+    }
+
+    .block-details {
+        gap: 1rem;
+    }
+
+    .detail-item {
+        padding: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .detail-label {
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .detail-value {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .detail-value.hash {
+        word-break: break-all;
+        font-size: 0.75rem;
+        line-height: 1.3;
     }
 }
 
 @media (max-width: 480px) {
+    .blockchain-header h1 {
+        font-size: 1.8rem;
+        letter-spacing: 0.1em;
+    }
+
     .blockchain-grid {
         grid-template-columns: 1fr;
     }
     
     .view-controls {
-        grid-template-columns: 1fr;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .control-btn {
+        max-width: none;
     }
     
     .block {
         min-height: 100px;
+        padding: 0.8rem;
+    }
+
+    .search-input-container {
+        gap: 1rem;
+    }
+
+    .pagination-controls {
+        gap: 1rem;
+    }
+
+    .legend-items {
+        max-width: 250px;
     }
 }
