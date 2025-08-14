@@ -132,7 +132,12 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     if (productData.size) metadata.size = productData.size;
     if (productData.price) metadata.price = parseFloat(productData.price);
     if (productData.notes) metadata.notes = productData.notes;
-    if (productData.owner) metadata.owner = productData.owner;
+
+    // Prepare owner object (separate from metadata)
+    const owner = productData.owner ? {
+        name: productData.owner,
+        registrationDate: new Date()
+    } : undefined;
 
     const finalData = {
         serialNumber: productData.serialNumber,
@@ -140,6 +145,11 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
         category: productData.category,
         metadata: metadata
     };
+
+    // Add owner if provided
+    if (owner) {
+        finalData.owner = owner;
+    }
 
     try {
         const response = await fetch('/api/products', {
@@ -273,28 +283,27 @@ async function loadProducts() {
                 products = data.products;
             }
             
-            if (products.length > 0) {
-                // Convert API products to admin format
-                cachedProducts = products.map(product => ({
-                    id: product._id || product.id,
-                    productName: product.productName || product.name,
-                    serialNumber: product.serialNumber || (product.id && product.id.toUpperCase()) || 'N/A',
-                    category: product.category,
-                    isValid: product.isValid !== undefined ? product.isValid : true,
-                    metadata: {
-                        material: product.metadata?.material || product.material,
-                        size: product.metadata?.size || (product.sizes ? product.sizes.join(', ') : 'N/A'),
-                        price: product.metadata?.price || product.price,
-                        description: product.metadata?.description || product.description,
-                        notes: product.metadata?.notes,
-                        owner: product.metadata?.owner || product.owner?.name || 'KiezForm Berlin'
-                    }
-                }));
-                
-                displayProducts(cachedProducts);
-                console.log('✅ Products loaded from database:', cachedProducts.length);
-                return;
-            }
+            // Convert API products to admin format (even if empty array)
+            cachedProducts = products.map(product => ({
+                id: product._id || product.id,
+                productName: product.productName || product.name,
+                serialNumber: product.serialNumber || (product.id && product.id.toUpperCase()) || 'N/A',
+                category: product.category,
+                isValid: product.isValid !== undefined ? product.isValid : true,
+                owner: product.owner, // Keep the full owner object
+                metadata: {
+                    material: product.metadata?.material || product.material,
+                    size: product.metadata?.size || (product.sizes ? product.sizes.join(', ') : 'N/A'),
+                    price: product.metadata?.price || product.price,
+                    description: product.metadata?.description || product.description,
+                    notes: product.metadata?.notes,
+                    owner: product.metadata?.owner || product.owner?.name || 'KiezForm Berlin' // Legacy support
+                }
+            }));
+            
+            displayProducts(cachedProducts);
+            console.log('✅ Products loaded from database:', cachedProducts.length);
+            return;
         }
     } catch (error) {
         console.warn('API not available, loading from products.json:', error);
@@ -393,10 +402,10 @@ function displayProducts(products) {
                             <div class="meta-value">${escapeHtml(product.metadata.size)}</div>
                         </div>
                         ` : ''}
-                        ${product.metadata?.owner ? `
+                        ${(product.owner?.name || product.metadata?.owner) ? `
                         <div class="meta-item">
                             <div>Owner</div>
-                            <div class="meta-value">${escapeHtml(product.metadata.owner)}</div>
+                            <div class="meta-value">${escapeHtml(product.owner?.name || product.metadata.owner)}</div>
                         </div>
                         ` : ''}
                         <div class="meta-item">
@@ -507,7 +516,7 @@ async function editProduct(productId) {
                     </div>
                     <div class="form-group">
                         <label for="editOwner">Owner</label>
-                        <input type="text" id="editOwner" value="${escapeHtml(product.metadata?.owner || '')}" placeholder="Product owner/creator">
+                        <input type="text" id="editOwner" value="${escapeHtml(product.owner?.name || product.metadata?.owner || '')}" placeholder="Product owner/creator">
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -657,10 +666,13 @@ function generateShareLink(productId) {
         return;
     }
 
+    // Extract owner name properly - prioritize owner.name, then fallback to metadata.owner
+    const ownerName = product.owner?.name || product.metadata?.owner || 'KiezForm Berlin';
+    
     // Generate secure token for the product
     const token = btoa(JSON.stringify({
         productId: product.id,
-        owner: product.metadata?.owner || 'Unknown',
+        owner: ownerName,
         timestamp: Date.now()
     })).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
 
@@ -675,7 +687,7 @@ function generateShareLink(productId) {
             <h2>Share Owner Verification Link</h2>
             <div class="share-info">
                 <p><strong>Product:</strong> ${escapeHtml(product.productName)}</p>
-                <p><strong>Owner:</strong> ${escapeHtml(product.metadata?.owner || 'Not set')}</p>
+                <p><strong>Owner:</strong> ${escapeHtml(product.owner?.name || product.metadata?.owner || 'Not set')}</p>
             </div>
             <div class="form-group">
                 <label for="shareUrl">Owner Verification URL:</label>
@@ -698,10 +710,13 @@ function generateOwnerQR(productId) {
         return;
     }
 
+    // Extract owner name properly - prioritize owner.name, then fallback to metadata.owner
+    const ownerName = product.owner?.name || product.metadata?.owner || 'KiezForm Berlin';
+    
     // Generate secure token for the product
     const token = btoa(JSON.stringify({
         productId: product.id,
-        owner: product.metadata?.owner || 'Unknown',
+        owner: ownerName,
         timestamp: Date.now()
     })).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
 
@@ -719,7 +734,7 @@ function generateOwnerQR(productId) {
             <h2>Owner Verification QR Code</h2>
             <div class="share-info">
                 <p><strong>Product:</strong> ${escapeHtml(product.productName)}</p>
-                <p><strong>Owner:</strong> ${escapeHtml(product.metadata?.owner || 'Not set')}</p>
+                <p><strong>Owner:</strong> ${escapeHtml(product.owner?.name || product.metadata?.owner || 'Not set')}</p>
             </div>
             <div class="qr-container">
                 <img src="${qrUrl}" alt="Owner Verification QR Code" class="qr-image">

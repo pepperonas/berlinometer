@@ -225,16 +225,33 @@ Compatible with any static hosting service:
 
 **Nginx Configuration:**
 ```nginx
+# HTTP to HTTPS redirect
 server {
     listen 80;
-    server_name kiezform.de;
+    server_name kiezform.de www.kiezform.de;
+    return 301 https://$server_name$request_uri;
+}
+
+# HTTPS server
+server {
+    listen 443 ssl http2;
+    server_name kiezform.de www.kiezform.de;
     root /var/www/html/kiezform;
+    
+    # SSL Configuration
+    ssl_certificate /etc/letsencrypt/live/kiezform.de/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/kiezform.de/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    
+    # Security headers
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
     
     # API Routes - Direct backend proxy
     location /api/ {
         proxy_pass http://localhost:3000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
     
     # Clean URLs without .html extensions
@@ -261,7 +278,63 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 - No horizontal scrolling
 - Hamburger menu for small screens
 
+## 📊 API Endpoints
+
+### Public Endpoints
+- `GET /api/health` - Health check
+- `GET /api/verify/:id` - Product verification
+- `GET /api/qrcode/:id` - QR code generation
+
+### Admin Endpoints (Authentication required)
+- `POST /api/admin/login` - Admin login
+- `GET /api/products` - Get all products
+- `POST /api/products` - Create new product
+- `PUT /api/products/:id` - Update product
+- `DELETE /api/products/:id` - Delete product
+- `GET /api/stats` - Get statistics
+
+## 🔐 Security & Authentication
+
+### Admin Security
+- SHA-256 password hashing with salt (`kiezform-admin-salt-2024`)
+- Constant-time comparison to prevent timing attacks
+- JWT tokens with 24h validity
+- bcrypt server-side password hashing (12 salt rounds)
+- Secure HTTP headers and HTTPS enforcement
+
+### Product Verification
+- Unique serial numbers for each product
+- QR codes linking to verification pages
+- Base64 encoded tokens with timestamps
+- Input sanitization and schema validation
+
+## 🎨 Product Verification Workflow
+
+1. **Production**: Jewelry piece is 3D-printed
+2. **Registration**: Admin creates product entry in system
+3. **QR Code**: System generates unique QR code
+4. **Packaging**: QR code is printed on packaging/card
+5. **Sale**: Customer receives product with QR code
+6. **Verification**: Customer scans code → authenticity certificate
+
+## 📱 QR Code Integration
+
+QR codes contain links to verification page:
+- Format: `https://kiezform.de/owner-verify?token={token}&product={productId}`
+- Error correction: Medium (M) level
+- Size: 300x300px via QR Server API
+- High contrast black/white for maximum readability
+
 ## 🔧 Configuration
+
+### Environment Variables (.env)
+```bash
+PORT=3000
+JWT_SECRET=kiezform-jwt-secret-2024-very-secure-random-string-for-production
+MONGODB_URI=mongodb://localhost:27017/kiezform
+BASE_URL=https://kiezform.de
+NODE_ENV=production
+```
 
 ### Google Analytics
 Update the tracking ID in `index.html`:
@@ -274,9 +347,6 @@ Update email addresses in:
 - Product inquiry mailto links (`js/products.js`)
 - Legal pages contact details
 
-### Product Images
-Replace placeholder URLs in `products.json` with actual image paths.
-
 ## 🏷️ Version History
 
 ### v0.0.2 (Latest)
@@ -288,6 +358,8 @@ Replace placeholder URLs in `products.json` with actual image paths.
 - ✅ Toast notifications replacing alert dialogs
 - ✅ PM2 process management for production
 - ✅ Enhanced admin dashboard with real-time statistics
+- ✅ HTTPS/SSL security with Let's Encrypt certificates
+- ✅ Product verification workflow with QR codes
 
 ### v3.0
 - ✅ Complete backend API with MongoDB

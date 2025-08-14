@@ -408,11 +408,47 @@
 
             async verifyOwnership(token, productId) {
                 try {
-                    // Load product data
-                    const response = await fetch('/products.json');
-                    const data = await response.json();
+                    // First try to load from API
+                    let product = null;
                     
-                    const product = data.products.find(p => p.id === productId);
+                    try {
+                        // Try API endpoint for product verification
+                        const apiResponse = await fetch(`/api/verify/${productId}`);
+                        if (apiResponse.ok) {
+                            const apiData = await apiResponse.json();
+                            // Convert API format to display format
+                            product = {
+                                id: apiData._id || apiData.id,
+                                name: apiData.productName,
+                                category: apiData.category,
+                                material: apiData.metadata?.material || 'Premium Materials',
+                                price: apiData.metadata?.price || 0,
+                                owner: apiData.owner?.name || 'KiezForm Berlin',
+                                sizes: apiData.metadata?.size || 'Standard'
+                            };
+                        }
+                    } catch (apiError) {
+                        console.log('API not available, falling back to products.json');
+                    }
+                    
+                    // Fallback to products.json if API fails
+                    if (!product) {
+                        const response = await fetch('/products.json');
+                        const data = await response.json();
+                        const jsonProduct = data.products.find(p => p.id === productId);
+                        
+                        if (jsonProduct) {
+                            product = {
+                                id: jsonProduct.id,
+                                name: jsonProduct.name,
+                                category: jsonProduct.category,
+                                material: jsonProduct.material,
+                                price: jsonProduct.price,
+                                owner: 'KiezForm Berlin',
+                                sizes: jsonProduct.sizes ? jsonProduct.sizes.join(', ') : 'Standard'
+                            };
+                        }
+                    }
                     
                     if (!product) {
                         this.showError('Product not found');
@@ -428,13 +464,13 @@
                             const modifiedProducts = JSON.parse(savedProducts);
                             const modifiedProduct = modifiedProducts.find(p => p.id === productId);
                             if (modifiedProduct) {
-                                // Use modified product data
+                                // Use modified product data with proper owner field handling
                                 finalProduct = {
                                     ...product,
                                     name: modifiedProduct.productName,
                                     material: modifiedProduct.metadata?.material || product.material,
                                     price: modifiedProduct.metadata?.price || product.price,
-                                    owner: modifiedProduct.metadata?.owner || 'KiezForm Berlin'
+                                    owner: modifiedProduct.owner?.name || modifiedProduct.metadata?.owner || 'KiezForm Berlin'
                                 };
                             }
                         } catch (e) {
