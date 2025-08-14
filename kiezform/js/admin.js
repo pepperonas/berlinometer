@@ -544,6 +544,8 @@ function closeEditModal() {
 }
 
 async function saveProductChanges(productId) {
+    const ownerValue = document.getElementById('editOwner').value.trim();
+    
     const updatedProduct = {
         productName: document.getElementById('editName').value,
         category: document.getElementById('editCategory').value,
@@ -551,10 +553,17 @@ async function saveProductChanges(productId) {
             material: document.getElementById('editMaterial').value,
             price: parseFloat(document.getElementById('editPrice').value) || 0,
             description: document.getElementById('editDescription').value,
-            size: document.getElementById('editSizes').value,
-            owner: document.getElementById('editOwner').value
+            size: document.getElementById('editSizes').value
         }
     };
+
+    // Add owner as separate object if provided
+    if (ownerValue) {
+        updatedProduct.owner = {
+            name: ownerValue,
+            registrationDate: new Date()
+        };
+    }
 
     try {
         // Try to update via API first
@@ -578,6 +587,7 @@ async function saveProductChanges(productId) {
                     serialNumber: apiProduct.serialNumber,
                     category: apiProduct.category,
                     isValid: apiProduct.isValid,
+                    owner: apiProduct.owner, // Include owner field
                     metadata: apiProduct.metadata
                 };
             }
