@@ -240,7 +240,7 @@ Compatible with any static hosting service:
 - GitHub Pages
 - Traditional web hosting
 
-### Production Deployment (VPS)
+### Production Deployment (VPS: 69.62.121.168)
 
 **Unified Directory Structure:**
 ```
@@ -391,7 +391,29 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.4 (Latest)
+### v0.0.5 (Latest)
+- ✅ **Product Catalog Standardization**: Updated products.json with real chains
+  - 6 new chain products: Agama, Aurora, Cash4Love, Cruella, Goldelse, Snake-Eater
+  - 1 ring product: Brutalist Ring with real product images
+  - Standardized all chains: ["40cm", "50cm", "60cm"] sizes, "Premium-Quality PLA+" material
+  - Removed placeholder products and Binary/Techno chains
+  - Updated pricing: Cruella (€499), Goldelse (€79), Snake-Eater (€89), Brutalist Ring (€169)
+- ✅ **VPS Deployment**: Fixed IP address and blockchain sorting
+  - Corrected VPS IP from 194.164.72.75 to 69.62.121.168
+  - Fixed blockchain explorer sorting: chronological by timestamp instead of block number
+  - Updated database with real products and 60 purchases + 4 transfers since 01.04.2025
+  - All products bought at least once with realistic transaction history
+- ✅ **Social Media Icons**: Professional SVG implementation
+  - Replaced emoji links (📷📘🐦) with disabled SVG logos
+  - Instagram, Facebook, and X (modern Twitter) SVG icons
+  - Grayscale disabled state with "Coming Soon" tooltips
+  - Applied across index.html and blockchain.html
+  - CSS styling: pointer-events: none, opacity: 0.3, grayscale filter
+- ✅ **VERIFIKATIONSPROZESS**: Fixed to exactly 6 security features
+  - Removed redundant "Live Blockchain Explorer" item
+  - Clean 6-step verification workflow as requested
+
+### v0.0.4
 - ✅ **Blockchain System**: Complete SHA-256 hash-based blockchain implementation
   - MongoDB schemas for blocks, products, and transfer requests
   - Pseudonym system (USR-XXXXXXXX) for privacy protection

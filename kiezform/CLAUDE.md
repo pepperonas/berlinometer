@@ -284,19 +284,44 @@ function loadProductData() {
 
 ## Important Notes
 
-### Static Hosting Compatible
-- No server-side processing required
-- All functionality runs in browser
-- Can be deployed to any static hosting service (Netlify, Vercel, GitHub Pages)
+### Current Version: v0.0.5
+
+### Production Deployment
+- **VPS IP Address**: 69.62.121.168 (corrected from previous 194.164.72.75)
+- **Live Site**: https://kiezform.de
+- **Backend API**: Port 3000 with PM2 process management (kiezform-api)
+- **Database**: MongoDB with real product data and blockchain transactions
+
+### Product Catalog (Updated)
+- **6 Chain Products**: Agama (€149), Aurora (€179), Cash4Love (€129), Cruella (€499), Goldelse (€79), Snake-Eater (€89)
+- **1 Ring Product**: Brutalist Ring (€169)
+- **Standardized Sizes**: All chains use ["40cm", "50cm", "60cm"]
+- **Material**: All chains use "Premium-Quality PLA+"
+- **Real Images**: Product URLs point to actual product photos at kiezform.de/images/products/
+
+### Blockchain System
+- **Sorting**: Fixed to chronological order by timestamp (not block number)
+- **Transaction History**: 60 purchases + 4 transfers since 01.04.2025
+- **All Products**: Each product has been bought at least once with realistic history
+- **Explorer**: Available at /blockchain with search and filtering
+- **API Endpoint**: Updated server.js to sort by `.sort({ timestamp: -1 })`
+
+### Social Media Icons
+- **Implementation**: Professional SVG icons for Instagram, Facebook, X (Twitter)
+- **State**: Disabled with grayscale filter and "Coming Soon" tooltips
+- **Styling**: `pointer-events: none`, `opacity: 0.3`, `filter: grayscale(100%) brightness(0.6)`
+- **Applied To**: index.html and blockchain.html footers
+- **X Logo**: Updated to modern X branding (replaced old Twitter bird)
 
 ### Data Management
-- Products stored in JSON file
-- No database integration
-- Images referenced by URL (currently placeholders)
-- Admin interface is client-side only (not persistent)
+- **Primary Storage**: MongoDB with blockchain integration
+- **Product Data**: JSON file synchronized with database
+- **Images**: Real product URLs (not placeholders)
+- **Admin Interface**: Full CRUD operations with database persistence
+- **Blockchain Integrity**: SHA-256 hash chains with validation
 
 ### Analytics Integration
-- Google Analytics configured (placeholder ID)
+- Google Analytics configured (placeholder ID - needs real tracking ID)
 - IP anonymization enabled for privacy compliance
 
 ### Legal Compliance
@@ -305,7 +330,29 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.4 (Current)
+### v0.0.5 (Current)
+- **Product Catalog Standardization**: Updated products.json with real chains
+  - 6 new chain products: Agama, Aurora, Cash4Love, Cruella, Goldelse, Snake-Eater
+  - 1 ring product: Brutalist Ring with real product images
+  - Standardized all chains: ["40cm", "50cm", "60cm"] sizes, "Premium-Quality PLA+" material
+  - Removed placeholder products and Binary/Techno chains
+  - Updated pricing: Cruella (€499), Goldelse (€79), Snake-Eater (€89), Brutalist Ring (€169)
+- **VPS Deployment**: Fixed IP address and blockchain sorting
+  - Corrected VPS IP from 194.164.72.75 to 69.62.121.168
+  - Fixed blockchain explorer sorting: chronological by timestamp instead of block number
+  - Updated database with real products and 60 purchases + 4 transfers since 01.04.2025
+  - All products bought at least once with realistic transaction history
+- **Social Media Icons**: Professional SVG implementation
+  - Replaced emoji links (📷📘🐦) with disabled SVG logos
+  - Instagram, Facebook, and X (modern Twitter) SVG icons
+  - Grayscale disabled state with "Coming Soon" tooltips
+  - Applied across index.html and blockchain.html
+  - CSS styling: pointer-events: none, opacity: 0.3, grayscale filter
+- **VERIFIKATIONSPROZESS**: Fixed to exactly 6 security features
+  - Removed redundant "Live Blockchain Explorer" item
+  - Clean 6-step verification workflow as requested
+
+### v0.0.4
 - **Blockchain System**: Complete SHA-256 hash-based blockchain implementation
   - MongoDB schemas for blocks, products, and transfer requests
   - Pseudonym system (USR-XXXXXXXX) for privacy protection
