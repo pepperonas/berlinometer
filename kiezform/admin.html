@@ -34,14 +34,12 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
-                <a href="/" class="brand-link">KIEZFORM</a>
+                <a href="/" target="_blank" class="brand-link">KIEZFORM</a>
             </div>
             <div class="nav-menu" id="nav-menu">
-                <a href="/" class="nav-link">HOME</a>
-                <a href="/#products" class="nav-link">PRODUCTS</a>
-                <a href="/#features" class="nav-link">FEATURES</a>
+                <a href="/" target="_blank" class="nav-link">HOME</a>
                 <a href="/admin" class="nav-link active">ADMIN</a>
-                <a href="/impressum" class="nav-link">IMPRESSUM</a>
+                <button class="logout-btn" onclick="logout()" style="display: none;" id="navLogoutBtn">Logout</button>
             </div>
             <div class="nav-toggle" id="nav-toggle">
                 <span class="bar"></span>
@@ -55,6 +53,7 @@
         <div class="container">
             <div class="logo">KIEZFORM</div>
             <div class="subtitle">Admin Dashboard</div>
+            <div class="version">v0.0.2</div>
         </div>
     </header>
 
@@ -66,11 +65,11 @@
                 <div id="loginMessage"></div>
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required value="admin">
+                    <input type="text" id="username" name="username" required placeholder="Username">
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required value="admin123">
+                    <input type="password" id="password" name="password" required placeholder="Password">
                 </div>
                 <button type="submit" id="loginBtn">Login</button>
             </form>
@@ -78,8 +77,6 @@
 
         <!-- Dashboard -->
         <div id="dashboardSection" class="dashboard">
-            <button class="logout-btn" onclick="logout()">Logout</button>
-            
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number" id="totalProducts">-</div>

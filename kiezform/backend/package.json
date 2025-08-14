@@ -1,6 +1,6 @@
 {
   "name": "kiezform-verification-backend",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "Backend API for KiezForm product verification system",
   "main": "server.js",
   "scripts": {

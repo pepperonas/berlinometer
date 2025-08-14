@@ -29,6 +29,63 @@
     
     <link rel="stylesheet" href="/css/styles.css">
     <style>
+        /* CSS-Variablen für die Animation */
+        :root {
+            --acc-1: rgba(255,255,255,0.08);
+            --acc-2: rgba(255,255,255,0.04);
+            --scan: rgba(255,255,255,0.15);
+        }
+
+        /* Hauptcontainer für die Hintergrundanimation */
+        #secure-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: #000;
+            overflow: hidden;
+        }
+
+        /* Gitter-Overlay mit pulsierender Animation */
+        .grid-overlay {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 1px 1px, var(--acc-1) 1px, transparent 1.2px);
+            background-size: 40px 40px;
+            opacity: 0.3;
+            animation: gridPulse 8s ease-in-out infinite;
+        }
+
+        /* Scan-Linie Animation */
+        #secure-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 0%, var(--scan) 40%, transparent 60%);
+            animation: scanSweep 20s linear infinite;
+        }
+
+        /* Keyframes für Gitter-Pulsierung */
+        @keyframes gridPulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Keyframes für Scan-Bewegung */
+        @keyframes scanSweep {
+            0% { transform: translateY(-100%); opacity: 0; }
+            10% { opacity: 1; }
+            60% { transform: translateY(100%); opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Canvas für die Partikel-Netzwerk-Animation */
+        #secure-canvas {
+            position: absolute;
+            inset: 0;
+            display: block;
+        }
+
         .verification-container {
             max-width: 600px;
             margin: 2rem auto;
@@ -36,6 +93,9 @@
             background: rgba(10, 10, 10, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(10px);
         }
 
         .verification-header {
@@ -160,6 +220,12 @@
             border-color: rgba(255, 255, 255, 0.4);
         }
 
+        /* Navbar und andere Elemente über dem Hintergrund */
+        .navbar, main {
+            position: relative;
+            z-index: 20;
+        }
+
         @media (max-width: 768px) {
             .verification-container {
                 margin: 1rem;
@@ -174,6 +240,11 @@
     </style>
 </head>
 <body>
+    <!-- Hintergrund-Animation -->
+    <div id="secure-bg" aria-hidden="true">
+        <canvas id="secure-canvas"></canvas>
+        <div class="grid-overlay"></div>
+    </div>
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
@@ -218,6 +289,102 @@
 
     <script src="/js/main.js"></script>
     <script>
+        // Sicherheitshintergrund Animation
+        (function() {
+            const canvas = document.getElementById('secure-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height, dpr;
+            
+            // Konfiguration der Animation
+            const SETTINGS = {
+                spacing: 70,        // Abstand zwischen Knoten
+                jitter: 8,          // Zufällige Verschiebung
+                linkRadius: 90,     // Maximale Verbindungsdistanz
+                dotRadius: 1.2,     // Basis-Punktgröße
+                lineAlpha: 0.05,    // Transparenz der Linien
+                dotAlpha: 0.15,     // Transparenz der Punkte
+                waveSpeed: 0.015,   // Geschwindigkeit der Wellen
+                waveAmp: 0.4        // Amplitude der Wellen
+            };
+            
+            let nodes = [];
+            let t = 0;
+
+            // Canvas-Größe anpassen
+            function resize() {
+                dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+                width = canvas.clientWidth = canvas.parentElement.clientWidth;
+                height = canvas.clientHeight = canvas.parentElement.clientHeight;
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                initNodes();
+            }
+
+            // Knoten-Netzwerk initialisieren
+            function initNodes() {
+                nodes = [];
+                const cols = Math.ceil(width / SETTINGS.spacing) + 2;
+                const rows = Math.ceil(height / SETTINGS.spacing) + 2;
+                
+                for (let y = -1; y < rows; y++) {
+                    for (let x = -1; x < cols; x++) {
+                        const px = x * SETTINGS.spacing + (Math.random() * SETTINGS.jitter - SETTINGS.jitter/2);
+                        const py = y * SETTINGS.spacing + (Math.random() * SETTINGS.jitter - SETTINGS.jitter/2);
+                        nodes.push({ x: px, y: py });
+                    }
+                }
+            }
+
+            // Zeichenfunktion
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                ctx.lineWidth = 1;
+                
+                // Verbindungslinien zeichnen
+                for (let i = 0; i < nodes.length; i++) {
+                    const a = nodes[i];
+                    for (let j = i+1; j < nodes.length; j++) {
+                        const b = nodes[j];
+                        const dx = a.x - b.x, dy = a.y - b.y;
+                        const dist = Math.hypot(dx, dy);
+                        
+                        if (dist < SETTINGS.linkRadius) {
+                            const alpha = SETTINGS.lineAlpha * (1 - dist / SETTINGS.linkRadius);
+                            ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+                            ctx.beginPath();
+                            ctx.moveTo(a.x, a.y);
+                            ctx.lineTo(b.x, b.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                
+                // Punkte zeichnen
+                for (let i = 0; i < nodes.length; i++) {
+                    const n = nodes[i];
+                    const wave = (Math.sin((n.x * 0.015 + n.y * 0.01) + t * SETTINGS.waveSpeed) + 1) * 0.5;
+                    const r = SETTINGS.dotRadius + wave * SETTINGS.waveAmp;
+                    ctx.fillStyle = `rgba(255,255,255,${SETTINGS.dotAlpha})`;
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, r, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            // Animationsschleife
+            function loop() {
+                t += 1;
+                draw();
+                requestAnimationFrame(loop);
+            }
+
+            // Start
+            resize();
+            loop();
+            window.addEventListener('resize', resize);
+        })();
+
         class OwnerVerification {
             constructor() {
                 this.urlParams = new URLSearchParams(window.location.search);

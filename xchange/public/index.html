@@ -62,6 +62,26 @@
             text-align: center;
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
             box-shadow: var(--shadow);
+            position: relative;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: var(--accent-red);
+            color: var(--text-primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background-color: #d55556;
         }
 
         .upload-area {
@@ -491,6 +511,51 @@
             background-color: var(--accent-red);
             box-shadow: 0 0 6px var(--accent-red);
         }
+        
+        /* Restricted Info Styling */
+        .restricted-info {
+            margin-top: 20px;
+        }
+        
+        .info-card {
+            background-color: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border: 2px solid var(--accent-blue);
+        }
+        
+        .info-card h3 {
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        
+        .info-card p {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .info-card ul {
+            list-style: none;
+            text-align: left;
+            max-width: 300px;
+            margin: 0 auto 20px;
+            padding: 0;
+        }
+        
+        .info-card li {
+            padding: 8px 0;
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+        
+        .info-card small {
+            color: var(--text-secondary);
+            font-style: italic;
+        }
     </style>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css"
           rel="stylesheet">
@@ -499,6 +564,7 @@
 <div class="container" style="padding-bottom: 60px;">
     <header>
         <h1>xchange | Online Speicher</h1>
+        <button class="logout-btn" id="logoutBtn">Abmelden</button>
     </header>
 
     <div class="upload-area" id="dropZone">
@@ -518,7 +584,7 @@
         </div>
     </div>
 
-    <div class="files-container">
+    <div class="files-container" id="filesContainer">
         <div class="files-header">
             <h2>Meine Dateien</h2>
             <div class="files-info">
@@ -533,6 +599,20 @@
             </div>
             <ul class="files-list" id="filesListItems">
                 <!-- Dateien werden hier dynamisch eingefügt -->
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Info-Bereich für eingeschränkten Zugang -->
+    <div class="restricted-info" id="restrictedInfo" style="display: none;">
+        <div class="info-card">
+            <h3>Upload-Modus</h3>
+            <p>In diesem Modus können Sie:</p>
+            <ul>
+                <li>✅ Dateien hochladen</li>
+                <li>❌ Keine Dateien anzeigen</li>
+                <li>❌ Keine Dateien herunterladen</li>
+                <li>❌ Keine Dateien löschen oder teilen</li>
             </ul>
         </div>
     </div>
@@ -594,6 +674,26 @@
         // Session aus URL-Parameter extrahieren und für alle Anfragen verwenden
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
+        
+        // Logout-Button Event Listener
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                // Session löschen und zur Login-Seite weiterleiten
+                if (sessionId) {
+                    // Optional: Logout-Endpoint aufrufen
+                    fetch(appendSessionToUrl(API_BASE_URL + '/logout'), {
+                        method: 'POST'
+                    }).finally(() => {
+                        // Zur Login-Seite weiterleiten
+                        window.location.href = API_BASE_URL + '/login';
+                    });
+                } else {
+                    // Direkt zur Login-Seite weiterleiten
+                    window.location.href = API_BASE_URL + '/login';
+                }
+            });
+        }
 
         // Funktion zum Anhängen der Session an URLs
         function appendSessionToUrl(url) {
@@ -1197,7 +1297,18 @@
                             const response = JSON.parse(xhr.responseText);
                             if (response.success && Array.isArray(response.files)) {
                                 files = response.files;
-                                updateFilesList();
+                                // Bei eingeschränkter Session werden keine Dateien angezeigt, aber Upload bleibt verfügbar
+                                if (response.restricted) {
+                                    // Verstecke "Meine Dateien" Sektion
+                                    document.getElementById('filesContainer').style.display = 'none';
+                                    // Zeige Info-Bereich für eingeschränkten Zugang
+                                    document.getElementById('restrictedInfo').style.display = 'block';
+                                } else {
+                                    // Normale Session - zeige "Meine Dateien" und verstecke Info-Bereich
+                                    document.getElementById('filesContainer').style.display = 'block';
+                                    document.getElementById('restrictedInfo').style.display = 'none';
+                                    updateFilesList();
+                                }
                             } else {
                                 console.error('Unerwartetes Antwortformat:', response);
                                 fallbackToLocalStorage();

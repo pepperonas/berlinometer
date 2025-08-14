@@ -11,6 +11,7 @@ const port = process.env.PORT || 5009;
 // Konfiguration für den Passwortschutz
 const AUTH_CONFIG = {
     password: '1337',
+    altPassword: 'go',                     // Alternatives Passwort ohne Dateizugriff
     maxAttempts: 5,                              // Maximale Anzahl fehlgeschlagener Anmeldeversuche
     blockTime: 15 * 60 * 1000,                   // Blockzeit in Millisekunden (15 Minuten)
     sessionDuration: 24 * 60 * 60 * 1000         // Session-Gültigkeit (24 Stunden)
@@ -60,9 +61,13 @@ const API_PREFIX = '/xchange';
 // Hilfsfunktionen für die Datenbank
 function getFilesDb() {
     try {
-        return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+        const fileContent = fs.readFileSync(DB_FILE, 'utf8');
+        const files = JSON.parse(fileContent);
+        console.log(`Successfully read ${files.length} files from ${DB_FILE}`);
+        return files;
     } catch (error) {
         console.error('Fehler beim Lesen der Datenbankdatei:', error);
+        console.error(`DB_FILE path: ${DB_FILE}`);
         return [];
     }
 }
@@ -117,14 +122,15 @@ function saveSessions(sessions) {
     }
 }
 
-function createSession(ip) {
+function createSession(ip, restricted = false) {
     const sessionId = uuidv4();
     const sessions = getSessions();
 
     sessions[sessionId] = {
         ip,
         created: Date.now(),
-        expires: Date.now() + AUTH_CONFIG.sessionDuration
+        expires: Date.now() + AUTH_CONFIG.sessionDuration,
+        restricted: restricted  // Flag für eingeschränkte Session
     };
 
     saveSessions(sessions);
@@ -148,6 +154,24 @@ function validateSession(sessionId) {
     }
 
     return true;
+}
+
+function isRestrictedSession(sessionId) {
+    if (!sessionId) {
+        console.log('No sessionId provided for restriction check');
+        return false;
+    }
+    
+    const sessions = getSessions();
+    const session = sessions[sessionId];
+    
+    if (session) {
+        console.log(`Session ${sessionId} found: restricted = ${session.restricted}`);
+    } else {
+        console.log(`Session ${sessionId} not found in database`);
+    }
+    
+    return session && session.restricted === true;
 }
 
 // Bruteforce-Schutz
@@ -197,7 +221,7 @@ function resetFailedAttempts(ip) {
 // Authentifizierungs-Middleware
 function authMiddleware(req, res, next) {
     // Prüfe auf Login-Seite und Login-Anfrage - diese sind ohne Auth erlaubt
-    if (req.path === `${API_PREFIX}/login` || req.path === `${API_PREFIX}/authenticate`) {
+    if (req.path === `${API_PREFIX}/login` || req.path === `${API_PREFIX}/authenticate` || req.path === `${API_PREFIX}/logout`) {
         return next();
     }
 
@@ -737,7 +761,11 @@ app.get(`${API_PREFIX}/login`, (req, res) => {
                     .then(data => {
                         if (data.success) {
                             // Erfolgreich angemeldet - zur Hauptseite weiterleiten
-                            window.location.href = '${API_PREFIX}?session=' + data.sessionId;
+                            let redirectUrl = '${API_PREFIX}?session=' + data.sessionId;
+                            if (data.restricted) {
+                                redirectUrl += '&restricted=true';
+                            }
+                            window.location.href = redirectUrl;
                         } else {
                             // Fehlermeldung anzeigen
                             errorMessage.textContent = data.message || 'Ungültiges Passwort';
@@ -781,13 +809,26 @@ app.post(`${API_PREFIX}/authenticate`, (req, res) => {
         // Anmeldung erfolgreich - Fehlversuche zurücksetzen
         resetFailedAttempts(ip);
 
-        // Neue Session erstellen
-        const sessionId = createSession(ip);
+        // Neue normale Session erstellen (mit Dateizugriff)
+        const sessionId = createSession(ip, false);
 
         return res.json({
             success: true,
             message: 'Anmeldung erfolgreich',
             sessionId
+        });
+    } else if (password === AUTH_CONFIG.altPassword) {
+        // Alternative Anmeldung erfolgreich - Fehlversuche zurücksetzen
+        resetFailedAttempts(ip);
+
+        // Neue eingeschränkte Session erstellen (ohne Dateizugriff)
+        const sessionId = createSession(ip, true);
+
+        return res.json({
+            success: true,
+            message: 'Anmeldung erfolgreich',
+            sessionId,
+            restricted: true
         });
     } else {
         // Fehlgeschlagenen Anmeldeversuch registrieren
@@ -798,6 +839,25 @@ app.post(`${API_PREFIX}/authenticate`, (req, res) => {
             message: 'Ungültiges Passwort'
         });
     }
+});
+
+// Logout-Endpunkt
+app.post(`${API_PREFIX}/logout`, (req, res) => {
+    const sessionId = req.query.session || req.cookies?.sessionId;
+    
+    if (sessionId) {
+        // Session aus der Datenbank löschen
+        const sessions = getSessions();
+        if (sessions[sessionId]) {
+            delete sessions[sessionId];
+            saveSessions(sessions);
+        }
+    }
+    
+    res.json({
+        success: true,
+        message: 'Erfolgreich abgemeldet'
+    });
 });
 
 // Authentifizierungs-Middleware einbinden
@@ -813,7 +873,16 @@ app.get(`${API_PREFIX}/status`, (req, res) => {
 // Dateien auflisten
 app.get(`${API_PREFIX}/files`, (req, res) => {
     try {
+        const sessionId = req.query.session || req.cookies?.sessionId;
+        
+        // Bei eingeschränkter Session leere Dateiliste zurückgeben
+        if (isRestrictedSession(sessionId)) {
+            console.log('Restricted session detected, returning empty file list');
+            return res.json({success: true, files: [], restricted: true});
+        }
+        
         const files = getFilesDb();
+        console.log(`Loading files from database: ${files.length} files found`);
         const shares = getSharesDb();
 
         // Füge Sharing-Status zu den Dateien hinzu
@@ -835,6 +904,11 @@ app.get(`${API_PREFIX}/files`, (req, res) => {
 // Datei hochladen
 app.post(`${API_PREFIX}/upload`, (req, res) => {
     try {
+        const sessionId = req.query.session || req.cookies?.sessionId;
+        
+        // Bei eingeschränkter Session ist Upload ERLAUBT (geändert)
+        // Upload ist für alle Sessions verfügbar
+        
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).json({success: false, message: 'Keine Datei hochgeladen'});
         }
@@ -880,6 +954,13 @@ app.post(`${API_PREFIX}/upload`, (req, res) => {
 // Datei herunterladen
 app.get(`${API_PREFIX}/download/:id`, (req, res) => {
     try {
+        const sessionId = req.query.session || req.cookies?.sessionId;
+        
+        // Bei eingeschränkter Session Download verhindern
+        if (isRestrictedSession(sessionId)) {
+            return res.status(403).json({success: false, message: 'Download nicht verfügbar', restricted: true});
+        }
+        
         const fileId = req.params.id;
         const files = getFilesDb();
         const fileInfo = files.find(file => file.id === fileId);
@@ -921,6 +1002,13 @@ app.get(`${API_PREFIX}/download/:id`, (req, res) => {
 // Datei löschen
 app.delete(`${API_PREFIX}/files/:id`, (req, res) => {
     try {
+        const sessionId = req.query.session || req.cookies?.sessionId;
+        
+        // Bei eingeschränkter Session Löschen verhindern
+        if (isRestrictedSession(sessionId)) {
+            return res.status(403).json({success: false, message: 'Löschen nicht verfügbar', restricted: true});
+        }
+        
         const fileId = req.params.id;
         const files = getFilesDb();
         const fileIndex = files.findIndex(file => file.id === fileId);
@@ -959,6 +1047,13 @@ app.delete(`${API_PREFIX}/files/:id`, (req, res) => {
 // Share-Link erstellen
 app.post(`${API_PREFIX}/create-share`, (req, res) => {
     try {
+        const sessionId = req.query.session || req.cookies?.sessionId;
+        
+        // Bei eingeschränkter Session Share-Erstellung verhindern
+        if (isRestrictedSession(sessionId)) {
+            return res.status(403).json({success: false, message: 'Teilen nicht verfügbar', restricted: true});
+        }
+        
         const { fileId, expiryDays } = req.body;
 
         if (!fileId) {
