@@ -841,3 +841,278 @@ button:disabled {
         font-size: 1.5rem;
     }
 }
+
+/* Transfer QR Code Management Styles */
+.transfer-qr-management {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.transfer-info {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    margin: 1rem 0 2rem 0;
+    border-radius: 4px;
+}
+
+.transfer-info p {
+    color: #c0c0c0;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.bulk-actions {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 1rem 2rem;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    min-width: 200px;
+}
+
+.action-btn.primary {
+    background: rgba(220, 38, 127, 0.2);
+    border: 1px solid rgba(220, 38, 127, 0.4);
+}
+
+.action-btn.primary:hover {
+    background: rgba(220, 38, 127, 0.3);
+    border-color: rgba(220, 38, 127, 0.6);
+}
+
+.action-btn.secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.action-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.transfer-filter {
+    margin: 1rem 0 2rem 0;
+}
+
+.transfer-filter label {
+    display: inline-block;
+    margin-right: 1rem;
+    color: #e0e0e0;
+    font-weight: 500;
+}
+
+.transfer-filter select {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 0.8rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.transfer-list {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.transfer-item {
+    display: grid;
+    grid-template-columns: 1fr 150px 150px 200px;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.transfer-item:last-child {
+    border-bottom: none;
+}
+
+.transfer-item:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.transfer-item-info {
+    min-width: 0;
+}
+
+.transfer-item-title {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.transfer-item-serial {
+    color: #b0b0b0;
+    font-size: 0.85rem;
+    font-family: 'Courier New', monospace;
+}
+
+.transfer-status {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transfer-status.missing {
+    background: rgba(150, 150, 150, 0.2);
+    color: #b0b0b0;
+}
+
+.transfer-status.active {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}
+
+.transfer-status.used {
+    background: rgba(249, 115, 22, 0.2);
+    color: #fb923c;
+}
+
+.transfer-status.expired {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+.transfer-qr-preview {
+    text-align: center;
+}
+
+.qr-thumbnail {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.qr-placeholder {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #808080;
+    font-size: 0.7rem;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.transfer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.transfer-btn {
+    padding: 0.6rem 1rem;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.transfer-btn.generate {
+    background: rgba(220, 38, 127, 0.2);
+    border: 1px solid rgba(220, 38, 127, 0.4);
+}
+
+.transfer-btn.generate:hover {
+    background: rgba(220, 38, 127, 0.3);
+}
+
+.transfer-btn.download {
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.transfer-btn.download:hover {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.transfer-btn.invalidate {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.transfer-btn.invalidate:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+.transfer-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.loading {
+    text-align: center;
+    padding: 3rem;
+    color: #808080;
+    font-size: 0.9rem;
+}
+
+/* Mobile Transfer QR Styles */
+@media (max-width: 768px) {
+    .bulk-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .action-btn {
+        min-width: 100%;
+        padding: 1.2rem;
+    }
+    
+    .transfer-item {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .transfer-actions {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .transfer-btn {
+        flex: 1;
+        min-width: 120px;
+    }
+}

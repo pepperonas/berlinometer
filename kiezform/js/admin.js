@@ -983,3 +983,276 @@ function escapeHtml(unsafe) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+// Transfer QR Code Management Functions
+
+let transferCodesData = [];
+let filteredTransferCodes = [];
+
+// Load transfer codes when tab is accessed
+async function loadTransferCodes() {
+    try {
+        const response = await fetch('/api/admin/transfer-codes', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            transferCodesData = data.transferCodes;
+            filteredTransferCodes = [...transferCodesData];
+            renderTransferList();
+            
+            // Update statistics
+            const stats = {
+                total: data.totalProducts,
+                missing: transferCodesData.filter(item => item.overallStatus === 'missing').length,
+                active: transferCodesData.filter(item => item.overallStatus === 'active').length,
+                used: transferCodesData.filter(item => item.overallStatus === 'used').length,
+                expired: transferCodesData.filter(item => item.overallStatus === 'expired').length
+            };
+            
+            updateTransferStats(stats);
+            console.log('✅ Transfer codes loaded:', transferCodesData.length, 'products');
+        } else {
+            showMessage('transferMessage', data.error || 'Failed to load transfer codes', 'error');
+        }
+    } catch (error) {
+        console.error('Load transfer codes error:', error);
+        showMessage('transferMessage', 'Network error loading transfer codes', 'error');
+    }
+}
+
+function renderTransferList() {
+    const listContainer = document.getElementById('transferQRList');
+    
+    if (filteredTransferCodes.length === 0) {
+        listContainer.innerHTML = '<div class="loading">No transfer codes found</div>';
+        return;
+    }
+    
+    const html = filteredTransferCodes.map(item => `
+        <div class="transfer-item" data-product-id="${item.productId}" data-status="${item.overallStatus}">
+            <div class="transfer-item-info">
+                <div class="transfer-item-title">${escapeHtml(item.productName)}</div>
+                <div class="transfer-item-serial">${escapeHtml(item.serialNumber)}</div>
+            </div>
+            
+            <div class="transfer-status ${item.overallStatus}">
+                ${getStatusDisplay(item.overallStatus)}
+            </div>
+            
+            <div class="transfer-qr-preview">
+                ${renderQRPreview(item)}
+            </div>
+            
+            <div class="transfer-actions">
+                ${renderTransferActions(item)}
+            </div>
+        </div>
+    `).join('');
+    
+    listContainer.innerHTML = html;
+}
+
+function getStatusDisplay(status) {
+    const statusMap = {
+        'missing': 'Missing QR',
+        'active': 'Active',
+        'used': 'Used',
+        'expired': 'Expired',
+        'invalidated': 'Invalidated'
+    };
+    return statusMap[status] || status;
+}
+
+function renderQRPreview(item) {
+    if (item.transferQR && item.transferQR.qrImageUrl) {
+        return `<img src="${item.transferQR.qrImageUrl}" class="qr-thumbnail" alt="QR Code">`;
+    } else {
+        return `<div class="qr-placeholder">No QR<br>Code</div>`;
+    }
+}
+
+function renderTransferActions(item) {
+    const actions = [];
+    
+    if (item.overallStatus === 'missing') {
+        actions.push(`
+            <button class="transfer-btn generate" onclick="generateTransferQR('${item.productId}')">
+                🔴 Generate
+            </button>
+        `);
+    } else if (item.overallStatus === 'active') {
+        actions.push(`
+            <button class="transfer-btn download" onclick="downloadTransferQR('${item.productId}')">
+                📥 Download
+            </button>
+            <button class="transfer-btn invalidate" onclick="invalidateTransferQR('${item.productId}')">
+                🚫 Invalidate
+            </button>
+        `);
+    } else if (item.overallStatus === 'used' || item.overallStatus === 'expired') {
+        actions.push(`
+            <button class="transfer-btn generate" onclick="generateTransferQR('${item.productId}')">
+                🔄 Regenerate
+            </button>
+        `);
+        if (item.transferQR && item.transferQR.qrImageUrl) {
+            actions.push(`
+                <button class="transfer-btn download" onclick="downloadTransferQR('${item.productId}')">
+                    📥 Download
+                </button>
+            `);
+        }
+    }
+    
+    return actions.join('');
+}
+
+function updateTransferStats(stats) {
+    // You can add statistics display here if needed
+    console.log('Transfer Stats:', stats);
+}
+
+async function generateTransferQR(productId) {
+    try {
+        showToast('Generating QR code...', 'info');
+        
+        const response = await fetch(`/api/admin/generate-transfer-qr/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showToast(`QR code generated successfully! Token: ${data.qrToken}`, 'success');
+            // Refresh the list
+            await loadTransferCodes();
+        } else {
+            showToast(data.error || 'Failed to generate QR code', 'error');
+        }
+    } catch (error) {
+        console.error('Generate QR error:', error);
+        showToast('Error generating QR code', 'error');
+    }
+}
+
+async function downloadTransferQR(productId) {
+    try {
+        // Create download link
+        const link = document.createElement('a');
+        link.href = `/api/transfer-qr/${productId}`;
+        link.download = `kiezform-transfer-qr-${productId}.png`;
+        link.target = '_blank';
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast('QR Code download started', 'success');
+    } catch (error) {
+        console.error('Download QR error:', error);
+        showMessage('transferMessage', 'Failed to download QR code', 'error');
+    }
+}
+
+async function invalidateTransferQR(productId) {
+    if (!confirm('Are you sure you want to invalidate this transfer QR code? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        showToast('Invalidating QR code...', 'info');
+        
+        const response = await fetch(`/api/admin/transfer-code/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            showToast('QR code invalidated successfully', 'success');
+            // Refresh the list
+            await loadTransferCodes();
+        } else {
+            showToast(data.error || 'Failed to invalidate QR code', 'error');
+        }
+    } catch (error) {
+        console.error('Invalidate QR error:', error);
+        showToast('Error invalidating QR code', 'error');
+    }
+}
+
+async function generateAllMissingQRCodes() {
+    if (!confirm('Generate QR codes for all products without active codes? This may take a moment.')) {
+        return;
+    }
+    
+    try {
+        showToast('Generating missing QR codes...', 'info');
+        
+        const response = await fetch('/api/admin/generate-all-missing-qr', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.success) {
+            const successCount = data.results ? data.results.filter(r => r.success).length : 0;
+            showToast(`Successfully generated ${successCount} QR codes`, 'success');
+            
+            // Refresh the list
+            await loadTransferCodes();
+        } else {
+            showToast(data.error || 'Failed to generate QR codes', 'error');
+        }
+    } catch (error) {
+        console.error('Bulk generate QR error:', error);
+        showToast('Network error generating QR codes', 'error');
+    }
+}
+
+function refreshTransferList() {
+    loadTransferCodes();
+}
+
+function filterTransferList() {
+    const filter = document.getElementById('statusFilter').value;
+    
+    if (filter === 'all') {
+        filteredTransferCodes = [...transferCodesData];
+    } else {
+        filteredTransferCodes = transferCodesData.filter(item => item.overallStatus === filter);
+    }
+    
+    renderTransferList();
+}
+
+// Update the showTab function to load transfer codes when tab is accessed
+const originalShowTab = showTab;
+function showTab(tabName) {
+    originalShowTab(tabName);
+    
+    if (tabName === 'transferQR') {
+        loadTransferCodes();
+    }
+}

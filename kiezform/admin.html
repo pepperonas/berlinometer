@@ -99,6 +99,7 @@
             <div class="tabs">
                 <button class="tab active" onclick="showTab('products')">Products</button>
                 <button class="tab" onclick="showTab('addProduct')">Add Product</button>
+                <button class="tab" onclick="showTab('transferQR')">Transfer QR Codes</button>
             </div>
 
             <!-- Products Tab -->
@@ -193,10 +194,55 @@
                     <button type="submit" id="productBtn">Create Product</button>
                 </form>
             </div>
+
+            <!-- Transfer QR Codes Tab -->
+            <div id="transferQRTab" class="tab-content">
+                <div class="transfer-qr-management">
+                    <div class="form-title">🔴 Transfer QR Code Management</div>
+                    <div id="transferMessage"></div>
+                    
+                    <!-- QR Code Generation Section -->
+                    <div class="form-section">
+                        <h4>Generate Red Transfer QR Codes</h4>
+                        <div class="transfer-info">
+                            <p>Red Transfer QR Codes ermöglichen sichere Blockchain-Eigentumsübertragungen. Jeder Code ist einzigartig und kann nur einmal verwendet werden.</p>
+                        </div>
+                        
+                        <!-- Bulk Generation -->
+                        <div class="bulk-actions">
+                            <button type="button" onclick="generateAllMissingQRCodes()" class="action-btn primary">
+                                🔴 Generate All Missing QR Codes
+                            </button>
+                            <button type="button" onclick="refreshTransferList()" class="action-btn secondary">
+                                🔄 Refresh List
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Transfer QR List -->
+                    <div class="form-section">
+                        <h4>Product Transfer Status</h4>
+                        <div class="transfer-filter">
+                            <label for="statusFilter">Filter by Status:</label>
+                            <select id="statusFilter" onchange="filterTransferList()">
+                                <option value="all">All Products</option>
+                                <option value="missing">Missing QR Code</option>
+                                <option value="active">Active QR Code</option>
+                                <option value="used">Used QR Code</option>
+                                <option value="expired">Expired QR Code</option>
+                            </select>
+                        </div>
+                        
+                        <div id="transferQRList" class="transfer-list">
+                            <div class="loading">Loading transfer codes...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
     <script src="/js/main.js"></script>
-    <script src="/js/admin.js?v=2025"></script>
+    <script src="/js/admin.js?v=20250115"></script>
 </body>
 </html>

@@ -764,6 +764,308 @@ app.get('/api/stats', authenticateAdmin, async (req, res) => {
   }
 });
 
+// Transfer QR Code Management Endpoints
+
+// Schema for Transfer QR Codes
+const transferQRSchema = new mongoose.Schema({
+  productId: { type: String, required: true, unique: true },
+  qrToken: { type: String, required: true, unique: true },
+  qrCodeData: { type: String, required: true },
+  status: { 
+    type: String, 
+    enum: ['active', 'used', 'expired', 'invalidated'], 
+    default: 'active' 
+  },
+  generatedAt: { type: Date, default: Date.now },
+  usedAt: { type: Date },
+  expiresAt: { type: Date },
+  createdBy: { type: String, default: 'admin' },
+  metadata: {
+    productName: String,
+    serialNumber: String,
+    qrImageUrl: String
+  }
+});
+
+const TransferQR = mongoose.model('TransferQR', transferQRSchema);
+
+// Generate Transfer QR Code for specific product
+app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    
+    // Check if product exists
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    
+    // Check if transfer QR already exists and is active
+    const existingQR = await TransferQR.findOne({ 
+      productId, 
+      status: { $in: ['active', 'used'] } 
+    });
+    
+    if (existingQR && existingQR.status === 'active') {
+      return res.status(400).json({ 
+        error: 'Active transfer QR code already exists for this product',
+        qrToken: existingQR.qrToken
+      });
+    }
+    
+    // Generate unique QR token
+    const qrToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
+    
+    // Create transfer URL
+    const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${qrToken}&product=${productId}`;
+    
+    // QR Code data includes product info for verification
+    const qrCodeData = JSON.stringify({
+      type: 'TRANSFER',
+      token: qrToken,
+      productId: productId,
+      serial: product.serialNumber,
+      name: product.productName,
+      url: transferUrl,
+      generated: new Date().toISOString()
+    });
+    
+    // Create transfer QR record
+    const transferQR = new TransferQR({
+      productId,
+      qrToken,
+      qrCodeData,
+      status: 'active',
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      metadata: {
+        productName: product.productName,
+        serialNumber: product.serialNumber,
+        qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&bgcolor=dc2c3f&color=ffffff&data=${encodeURIComponent(transferUrl)}`
+      }
+    });
+    
+    await transferQR.save();
+    
+    res.json({
+      success: true,
+      qrToken,
+      qrCodeData,
+      transferUrl,
+      qrImageUrl: transferQR.metadata.qrImageUrl,
+      expiresAt: transferQR.expiresAt
+    });
+    
+  } catch (error) {
+    console.error('Generate transfer QR error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all transfer QR codes with status
+app.get('/api/admin/transfer-codes', async (req, res) => {
+  try {
+    const { status } = req.query;
+    
+    // Get all products
+    const products = await Product.find({}).sort({ createdAt: -1 });
+    
+    // Get transfer QR codes
+    const transferQRs = await TransferQR.find({}).sort({ generatedAt: -1 });
+    
+    // Create map for quick lookup
+    const qrMap = {};
+    transferQRs.forEach(qr => {
+      qrMap[qr.productId] = qr;
+    });
+    
+    // Combine product data with QR status
+    const results = products.map(product => {
+      const qr = qrMap[product._id];
+      const productData = {
+        productId: product._id,
+        productName: product.productName,
+        serialNumber: product.serialNumber,
+        category: product.category,
+        createdAt: product.createdAt,
+        transferQR: qr ? {
+          qrToken: qr.qrToken,
+          status: qr.status,
+          generatedAt: qr.generatedAt,
+          usedAt: qr.usedAt,
+          expiresAt: qr.expiresAt,
+          qrImageUrl: qr.metadata?.qrImageUrl
+        } : null
+      };
+      
+      // Determine overall status
+      if (!qr) {
+        productData.overallStatus = 'missing';
+      } else if (qr.expiresAt && qr.expiresAt < new Date()) {
+        productData.overallStatus = 'expired';
+      } else {
+        productData.overallStatus = qr.status;
+      }
+      
+      return productData;
+    });
+    
+    // Filter by status if requested
+    let filteredResults = results;
+    if (status && status !== 'all') {
+      filteredResults = results.filter(item => item.overallStatus === status);
+    }
+    
+    res.json({
+      success: true,
+      total: filteredResults.length,
+      totalProducts: products.length,
+      transferCodes: filteredResults
+    });
+    
+  } catch (error) {
+    console.error('Get transfer codes error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Download QR Code image
+app.get('/api/transfer-qr/:productId', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    
+    const transferQR = await TransferQR.findOne({ 
+      productId, 
+      status: { $in: ['active', 'used'] } 
+    });
+    
+    if (!transferQR) {
+      return res.status(404).json({ error: 'Transfer QR code not found' });
+    }
+    
+    // Redirect to QR image URL
+    res.redirect(transferQR.metadata.qrImageUrl);
+    
+  } catch (error) {
+    console.error('Download QR error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Invalidate Transfer QR Code
+app.delete('/api/admin/transfer-code/:productId', async (req, res) => {
+  try {
+    const { productId } = req.params;
+    
+    const transferQR = await TransferQR.findOneAndUpdate(
+      { productId },
+      { 
+        status: 'invalidated',
+        usedAt: new Date()
+      },
+      { new: true }
+    );
+    
+    if (!transferQR) {
+      return res.status(404).json({ error: 'Transfer QR code not found' });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Transfer QR code invalidated',
+      qrToken: transferQR.qrToken
+    });
+    
+  } catch (error) {
+    console.error('Invalidate transfer QR error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Bulk generate missing QR codes
+app.post('/api/admin/generate-all-missing-qr', async (req, res) => {
+  try {
+    // Get all products
+    const products = await Product.find({});
+    
+    // Get existing QR codes
+    const existingQRs = await TransferQR.find({ 
+      status: { $in: ['active', 'used'] } 
+    });
+    
+    const existingProductIds = new Set(existingQRs.map(qr => qr.productId));
+    
+    // Find products without QR codes
+    const missingProducts = products.filter(product => 
+      !existingProductIds.has(product._id.toString())
+    );
+    
+    const results = [];
+    
+    for (const product of missingProducts) {
+      try {
+        // Generate unique QR token
+        const qrToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
+        
+        // Create transfer URL
+        const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${qrToken}&product=${product._id}`;
+        
+        // QR Code data
+        const qrCodeData = JSON.stringify({
+          type: 'TRANSFER',
+          token: qrToken,
+          productId: product._id,
+          serial: product.serialNumber,
+          name: product.productName,
+          url: transferUrl,
+          generated: new Date().toISOString()
+        });
+        
+        // Create transfer QR record
+        const transferQR = new TransferQR({
+          productId: product._id,
+          qrToken,
+          qrCodeData,
+          status: 'active',
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+          metadata: {
+            productName: product.productName,
+            serialNumber: product.serialNumber,
+            qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&bgcolor=dc2c3f&color=ffffff&data=${encodeURIComponent(transferUrl)}`
+          }
+        });
+        
+        await transferQR.save();
+        
+        results.push({
+          productId: product._id,
+          productName: product.productName,
+          qrToken,
+          success: true
+        });
+        
+      } catch (error) {
+        results.push({
+          productId: product._id,
+          productName: product.productName,
+          success: false,
+          error: error.message
+        });
+      }
+    }
+    
+    res.json({
+      success: true,
+      message: `Generated ${results.filter(r => r.success).length} QR codes`,
+      totalProcessed: results.length,
+      results
+    });
+    
+  } catch (error) {
+    console.error('Bulk generate QR error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error);
