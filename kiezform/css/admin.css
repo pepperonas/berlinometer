@@ -513,11 +513,11 @@ button:disabled {
 /* Toast Notifications */
 .toast {
     position: fixed;
-    top: 20px;
-    right: 20px;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
     z-index: 10000;
     opacity: 0;
-    transform: translateX(100%);
     transition: all 0.3s ease-in-out;
     max-width: 400px;
     border-radius: 8px;
@@ -526,7 +526,7 @@ button:disabled {
 
 .toast-show {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(-50%) translateY(0);
 }
 
 .toast-content {
@@ -1019,11 +1019,16 @@ button:disabled {
     }
 
     .toast {
-        top: 1rem;
-        right: 1rem;
+        bottom: 1.5rem;
         left: 1rem;
+        right: 1rem;
         max-width: none;
         margin: 0;
+        transform: translateY(100%);
+    }
+    
+    .toast-show {
+        transform: translateY(0);
     }
 
     .toast-content {

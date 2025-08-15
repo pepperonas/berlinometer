@@ -796,6 +796,7 @@ const TransferQR = mongoose.model('TransferQR', transferQRSchema);
 app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
   try {
     const { productId } = req.params;
+    const force = req.query.force === 'true'; // Check for force regeneration
     
     // Check if product exists
     const product = await Product.findById(productId);
@@ -809,8 +810,8 @@ app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
       status: 'active'
     });
     
-    if (existingQR) {
-      // Return existing active QR code instead of error
+    if (existingQR && !force) {
+      // Return existing active QR code only if not forcing regeneration
       const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${existingQR.qrToken}&product=${productId}&mode=transfer`;
       const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(transferUrl)}&bgcolor=ffffff&color=dc2c3f`;
       
@@ -823,6 +824,21 @@ app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
         status: existingQR.status,
         expiresAt: existingQR.expiresAt
       });
+    }
+    
+    // If force=true, invalidate all existing QR codes for this product
+    if (force) {
+      await TransferQR.updateMany(
+        { productId, status: { $in: ['active', 'used', 'expired'] } },
+        { 
+          $set: { 
+            status: 'invalidated',
+            invalidatedAt: new Date(),
+            invalidatedReason: 'Manual regeneration by admin'
+          }
+        }
+      );
+      console.log(`Invalidated existing QR codes for product ${productId} due to forced regeneration`);
     }
 
     // Clean up any old invalidated QR codes for this product (keep for history)
@@ -867,7 +883,9 @@ app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
       qrCodeData,
       transferUrl,
       qrImageUrl: transferQR.metadata.qrImageUrl,
-      expiresAt: transferQR.expiresAt
+      expiresAt: transferQR.expiresAt,
+      message: force ? 'New QR code generated (forced regeneration)' : 'New QR code generated',
+      regenerated: force
     });
     
   } catch (error) {
@@ -887,10 +905,13 @@ app.get('/api/admin/transfer-codes', async (req, res) => {
     // Get transfer QR codes
     const transferQRs = await TransferQR.find({}).sort({ generatedAt: -1 });
     
-    // Create map for quick lookup
+    // Create map for quick lookup - prioritize active QR codes
     const qrMap = {};
     transferQRs.forEach(qr => {
-      qrMap[qr.productId] = qr;
+      // Only set if no QR exists for this product, or current QR is active (overrides inactive ones)
+      if (!qrMap[qr.productId] || qr.status === 'active') {
+        qrMap[qr.productId] = qr;
+      }
     });
     
     // Combine product data with QR status
@@ -1030,8 +1051,8 @@ app.post('/api/admin/generate-all-missing-qr', async (req, res) => {
         // Generate unique QR token
         const qrToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
         
-        // Create transfer URL
-        const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${qrToken}&product=${product._id}`;
+        // Create transfer URL - use owner-verify with transfer mode  
+        const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${qrToken}&product=${product._id}&mode=transfer`;
         
         // QR Code data
         const qrCodeData = JSON.stringify({
@@ -1286,8 +1307,8 @@ app.get('/api/admin/generate-stl-qr/:type/:productId', authenticateAdmin, async 
       if (qrData) {
         qrData = decodeURIComponent(qrData);
       } else {
-        // Fallback: reconstruct transfer URL
-        qrData = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${transferQR.qrToken}&product=${productId}`;
+        // Fallback: reconstruct transfer URL with owner-verify
+        qrData = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${transferQR.qrToken}&product=${productId}&mode=transfer`;
       }
       
       filename = `kiezform-transfer-qr-${product.serialNumber || productId}.stl`;

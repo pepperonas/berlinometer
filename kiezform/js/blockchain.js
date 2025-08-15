@@ -515,8 +515,9 @@ class BlockchainExplorer {
         
         toast.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100%);
             background: rgba(0, 0, 0, 0.9);
             color: ${colors[type] || colors.info};
             border: 1px solid ${colors[type] || colors.info};
@@ -524,7 +525,6 @@ class BlockchainExplorer {
             border-radius: 0;
             font-weight: 300;
             z-index: 10000;
-            transform: translateX(100%);
             transition: transform 0.3s ease;
             font-size: 0.9rem;
             text-transform: uppercase;
@@ -536,12 +536,12 @@ class BlockchainExplorer {
         
         // Trigger animation
         setTimeout(() => {
-            toast.style.transform = 'translateX(0)';
+            toast.style.transform = 'translateX(-50%) translateY(0)';
         }, 100);
         
         // Remove toast after 3 seconds
         setTimeout(() => {
-            toast.style.transform = 'translateX(100%)';
+            toast.style.transform = 'translateX(-50%) translateY(100%)';
             setTimeout(() => {
                 if (document.body.contains(toast)) {
                     document.body.removeChild(toast);

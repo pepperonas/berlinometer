@@ -146,15 +146,15 @@ function showToast(message) {
     toast.textContent = message;
     toast.style.cssText = `
         position: fixed;
-        top: 20px;
-        right: 20px;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100%);
         background: rgba(0, 255, 0, 0.9);
         color: #000;
         padding: 12px 20px;
         border-radius: 6px;
         font-weight: 500;
         z-index: 10000;
-        transform: translateX(100%);
         transition: transform 0.3s ease;
     `;
     
@@ -162,12 +162,12 @@ function showToast(message) {
     
     // Trigger animation
     setTimeout(() => {
-        toast.style.transform = 'translateX(0)';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
     }, 100);
     
     // Remove toast after 3 seconds
     setTimeout(() => {
-        toast.style.transform = 'translateX(100%)';
+        toast.style.transform = 'translateX(-50%) translateY(100%)';
         setTimeout(() => {
             document.body.removeChild(toast);
         }, 300);

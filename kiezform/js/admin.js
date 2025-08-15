@@ -48,6 +48,139 @@ async function constantTimeCompare(a, b) {
     return result === 0;
 }
 
+// Custom themed dialog system
+function showCustomConfirm(message, title = 'Bestätigung erforderlich') {
+    return new Promise((resolve) => {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        `;
+
+        // Create dialog content
+        const dialog = document.createElement('div');
+        dialog.style.cssText = `
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+            backdrop-filter: blur(10px);
+        `;
+
+        dialog.innerHTML = `
+            <div style="color: #ff6b6b; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+            <h2 style="color: #fff; margin-bottom: 1.5rem; font-size: 1.2rem; letter-spacing: 0.1em; text-transform: uppercase;">
+                ${title}
+            </h2>
+            <div style="color: #e0e0e0; margin-bottom: 2rem; line-height: 1.6; font-size: 1rem;">
+                ${message}
+            </div>
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button id="confirmBtn" style="
+                    background: transparent;
+                    border: 2px solid #ff6b6b;
+                    color: #ff6b6b;
+                    padding: 1rem 2rem;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    font-size: 0.9rem;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    transition: all 0.3s;
+                ">
+                    ✓ JA, FORTFAHREN
+                </button>
+                <button id="cancelBtn" style="
+                    background: transparent;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    color: rgba(255, 255, 255, 0.7);
+                    padding: 1rem 2rem;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.1em;
+                    transition: all 0.3s;
+                ">
+                    ✗ ABBRECHEN
+                </button>
+            </div>
+        `;
+
+        modal.appendChild(dialog);
+        document.body.appendChild(modal);
+
+        // Add animation styles
+        if (!document.getElementById('custom-dialog-styles')) {
+            const style = document.createElement('style');
+            style.id = 'custom-dialog-styles';
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from { transform: translateY(-20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                #confirmBtn:hover {
+                    background: rgba(255, 107, 107, 0.1) !important;
+                    transform: translateY(-1px);
+                }
+                #cancelBtn:hover {
+                    border-color: rgba(255, 255, 255, 0.6) !important;
+                    color: rgba(255, 255, 255, 1) !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Event handlers
+        document.getElementById('confirmBtn').onclick = () => {
+            modal.remove();
+            resolve(true);
+        };
+
+        document.getElementById('cancelBtn').onclick = () => {
+            modal.remove();
+            resolve(false);
+        };
+
+        // Close on ESC key
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', handleEsc);
+                resolve(false);
+            }
+        };
+        document.addEventListener('keydown', handleEsc);
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+                resolve(false);
+            }
+        });
+    });
+}
+
 
 // Check if already logged in and token is valid
 if (authToken) {
@@ -830,7 +963,7 @@ async function saveProductChanges(productId) {
 }
 
 async function deleteProduct(productId) {
-    if (confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+    if (await showCustomConfirm('Bist du sicher, dass du dieses Produkt löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.', 'Produkt löschen')) {
         try {
             // Try to delete via API first
             const response = await fetch(`/api/products/${productId}`, {
@@ -1239,7 +1372,7 @@ function renderTransferActions(item) {
     
     if (item.overallStatus === 'missing') {
         actions.push(`
-            <button class="transfer-btn generate" onclick="generateTransferQR('${item.productId}')">
+            <button class="transfer-btn generate" onclick="generateTransferQR('${item.productId}', false)">
                 🔴 Generate
             </button>
         `);
@@ -1257,7 +1390,7 @@ function renderTransferActions(item) {
         `);
     } else if (item.overallStatus === 'used' || item.overallStatus === 'expired') {
         actions.push(`
-            <button class="transfer-btn generate" onclick="generateTransferQR('${item.productId}')">
+            <button class="transfer-btn generate" onclick="generateTransferQR('${item.productId}', true)">
                 🔄 Regenerate
             </button>
         `);
@@ -1281,11 +1414,11 @@ function updateTransferStats(stats) {
     console.log('Transfer Stats:', stats);
 }
 
-window.generateTransferQR = async function(productId) {
+window.generateTransferQR = async function(productId, force = false) {
     try {
-        showToast('Generating QR code...', 'info');
+        showToast(force ? 'Regenerating QR code...' : 'Generating QR code...', 'info');
         
-        const response = await fetch(`/api/admin/generate-transfer-qr/${productId}`, {
+        const response = await fetch(`/api/admin/generate-transfer-qr/${productId}${force ? '?force=true' : ''}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${authToken}`,
@@ -1296,9 +1429,62 @@ window.generateTransferQR = async function(productId) {
         const data = await response.json();
         
         if (response.ok && data.success) {
-            showToast(`QR code generated successfully! Token: ${data.qrToken}`, 'success');
-            // Refresh the list
-            await loadTransferCodes();
+            const successMessage = data.regenerated ? 
+                `QR code regenerated successfully! New Token: ${data.qrToken}` : 
+                `QR code generated successfully! Token: ${data.qrToken}`;
+            showToast(successMessage, 'success');
+            
+            // Wait a moment for the database to update, then retry loading with fresh data
+            let retryCount = 0;
+            const maxRetries = 3;
+            
+            const reloadWithRetry = async () => {
+                await new Promise(resolve => setTimeout(resolve, 500 + (retryCount * 300))); // Increasing delay
+                
+                try {
+                    // Force fresh data by clearing cache and reloading
+                    const freshResponse = await fetch('/api/admin/transfer-codes?' + Date.now(), {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`,
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+                    
+                    if (freshResponse.ok) {
+                        const freshData = await freshResponse.json();
+                        if (freshData.success) {
+                            transferCodesData = freshData.transferCodes;
+                            filteredTransferCodes = [...transferCodesData];
+                            renderTransferList();
+                            
+                            // Verify the new QR code is displayed
+                            const updatedItem = transferCodesData.find(item => item.productId === productId);
+                            if (updatedItem && updatedItem.transferQR && updatedItem.transferQR.qrToken === data.qrToken) {
+                                console.log('New QR code successfully displayed:', data.qrToken);
+                                return; // Success!
+                            }
+                        }
+                    }
+                    
+                    // If we get here, retry if possible
+                    retryCount++;
+                    if (retryCount < maxRetries) {
+                        console.log(`Retrying QR refresh (${retryCount}/${maxRetries})...`);
+                        await reloadWithRetry();
+                    } else {
+                        console.warn('Max retries reached for QR refresh');
+                        showToast('QR code generated, but display may need manual refresh', 'warning');
+                    }
+                } catch (retryError) {
+                    console.error('Retry error:', retryError);
+                    retryCount++;
+                    if (retryCount < maxRetries) {
+                        await reloadWithRetry();
+                    }
+                }
+            };
+            
+            await reloadWithRetry();
         } else {
             showToast(data.error || 'Failed to generate QR code', 'error');
         }
@@ -1337,7 +1523,7 @@ window.downloadTransferQR = async function(productId) {
 }
 
 window.invalidateTransferQR = async function(productId) {
-    if (!confirm('Are you sure you want to invalidate this transfer QR code? This action cannot be undone.')) {
+    if (!await showCustomConfirm('Bist du sicher, dass du diesen Transfer-QR-Code ungültig machen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.', 'QR-Code ungültig machen')) {
         return;
     }
     
@@ -1367,7 +1553,7 @@ window.invalidateTransferQR = async function(productId) {
 }
 
 window.generateAllMissingQRCodes = async function() {
-    if (!confirm('Generate QR codes for all products without active codes? This may take a moment.')) {
+    if (!await showCustomConfirm('QR-Codes für alle Produkte ohne aktive Codes generieren? Dies kann einen Moment dauern.', 'Alle QR-Codes generieren')) {
         return;
     }
     
