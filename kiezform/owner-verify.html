@@ -87,46 +87,57 @@
         }
 
         .verification-container {
-            max-width: 600px;
-            margin: 2rem auto;
-            padding: 2rem;
+            max-width: 700px;
+            margin: 3rem auto;
+            padding: 2.5rem;
             background: rgba(10, 10, 10, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             position: relative;
             z-index: 10;
             backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
         }
 
         .verification-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .verification-header h1 {
             color: #fff;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
         }
 
         .verification-header p {
             color: #808080;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            margin: 0;
+            line-height: 1.4;
         }
 
         .product-verification {
             background: rgba(20, 20, 20, 0.8);
             border: 2px solid #00ff00;
             border-radius: 8px;
-            padding: 2rem;
-            margin: 2rem 0;
+            padding: 3rem 2rem;
+            margin: 3rem 0;
             text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
         }
 
         .verification-success {
             color: #00ff00;
-            font-size: 3rem;
-            margin-bottom: 1rem;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            line-height: 1;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
         }
 
         .product-details {
@@ -168,8 +179,10 @@
 
         .owner-highlight {
             color: #00ff00;
-            font-size: 1.2rem;
-            font-weight: 700;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
+            letter-spacing: 0.05em;
         }
 
         .verification-footer {
@@ -254,8 +267,9 @@
                 <a href="/" class="nav-link">HOME</a>
                 <a href="/#products" class="nav-link">PRODUCTS</a>
                 <a href="/#features" class="nav-link">FEATURES</a>
-                <a href="/impressum" class="nav-link">IMPRESSUM</a>
-                <a href="/datenschutz" class="nav-link">DATENSCHUTZ</a>
+                <a href="/#value" class="nav-link">VALUE</a>
+                <a href="/#share" class="nav-link">SHARE</a>
+                <a href="/blockchain" class="nav-link">BLOCKCHAIN</a>
             </div>
             <div class="nav-toggle" id="nav-toggle">
                 <span class="bar"></span>
@@ -508,9 +522,9 @@
                 resultContainer.innerHTML = `
                     <div class="product-verification">
                         <div class="verification-success">✓</div>
-                        <h2 style="color: #00ff00; margin-bottom: 1rem;">VERIFIZIERTER EIGENTÜMER</h2>
-                        <p style="color: #e0e0e0; font-size: 1.1rem;">Dieses Produkt gehört authentisch:</p>
-                        <p class="owner-highlight">${this.escapeHtml(product.owner)}</p>
+                        <h2 style="color: #00ff00; margin: 0 0 2rem 0; font-size: 1.4rem; letter-spacing: 0.2em; font-weight: 300;">VERIFIZIERTER EIGENTÜMER</h2>
+                        <p style="color: #e0e0e0; font-size: 1.1rem; margin: 0 0 1.5rem 0; line-height: 1.4;">Dieses Produkt gehört authentisch:</p>
+                        <p class="owner-highlight" style="margin: 0; font-size: 1.3rem; font-weight: 600;">${this.escapeHtml(product.owner)}</p>
                     </div>
 
                     <div class="product-details">
