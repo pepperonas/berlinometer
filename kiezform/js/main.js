@@ -17,11 +17,12 @@ if (navToggle && navMenu) {
     });
 }
 
-// Smooth scrolling for navigation links
+// Smooth scrolling for navigation links with URL hash updates
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const targetId = this.getAttribute('href');
+        const target = document.querySelector(targetId);
         if (target) {
             // Account for fixed navbar height
             const navbarHeight = document.querySelector('.navbar').offsetHeight;
@@ -31,6 +32,9 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 top: targetPosition,
                 behavior: 'smooth'
             });
+            
+            // Update URL hash
+            history.pushState(null, null, targetId);
         }
     });
 });

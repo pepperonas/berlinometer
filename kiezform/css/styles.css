@@ -1133,6 +1133,13 @@ body.modal-open {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.blockchain-preview {
+    background: #000;
+    padding: 4rem 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+}
+
 .verification-process::before,
 .verification-workflow::before,
 .security-features::before {
@@ -1371,7 +1378,7 @@ body.modal-open {
 
 /* Share Section - KiezForm Aesthetic */
 .share-section {
-    background: rgba(10, 10, 10, 0.8);
+    background: rgba(0, 0, 0, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.05);
     padding: 6rem 3rem;
     text-align: center;
