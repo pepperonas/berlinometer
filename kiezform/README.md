@@ -10,7 +10,7 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 - **Admin Dashboard**: Secure product management with MongoDB integration
 - **Backend API**: Full Express.js REST API with JWT authentication
 - **Verification System**: QR codes and secure share links for ownership verification  
-- **Transfer System**: QR-based ownership transfers with 24-hour expiration
+- **Transfer System**: Simplified QR-based ownership transfers with confirmation dialogs
 - **3D Print Integration**: STL file generation for QR codes (40x40x1mm format)
 - **Product Database**: MongoDB with comprehensive product and user management
 - **VALUE Section**: Comprehensive dual QR code verification system explanation
@@ -170,14 +170,16 @@ Navigate to `/admin` and login with:
 - Token-based verification system
 - Product authenticity confirmation
 - **Product Image Display**: Shows product thumbnails with error handling
+- **Transfer Mode**: Simplified ownership transfer with confirmation dialog
 - Owner badge display
 - Integration with admin-generated links
 
-### Transfer System (`transfer.html`)
-- QR-based ownership transfer acceptance
-- 24-hour expiration system with countdown timer
-- Blockchain integration for permanent ownership records
-- Pseudonym-based privacy protection
+### Transfer System (Simplified)
+- **Red QR Code Transfer**: Direct ownership transfer via 3D-printed QR cards
+- **Immediate Processing**: No 24-hour waiting period
+- **Confirmation Dialog**: Clear warning before irreversible transfers
+- **Blockchain Integration**: Automatic blockchain recording and QR regeneration
+- **Separate QR Cards**: Black for verification, red for transfer
 
 ## 🛡️ Security Features
 
@@ -322,8 +324,7 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 - `GET /api/blockchain/blocks` - Get blockchain blocks
 - `GET /api/blockchain/search/:query` - Search blockchain
 - `GET /api/blockchain/stats` - Blockchain statistics
-- `GET /api/transfer/:token` - Get transfer request
-- `POST /api/transfer/:token/accept` - Accept ownership transfer
+- `POST /api/transfer/simple` - Simplified immediate ownership transfer
 
 ### Admin Endpoints (Authentication required)
 - `POST /api/admin/login` - Admin login
@@ -359,18 +360,24 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 
 1. **Production**: Jewelry piece is 3D-printed
 2. **Registration**: Admin creates product entry in system
-3. **QR Code**: System generates unique QR code
-4. **Packaging**: QR code is printed on packaging/card
-5. **Sale**: Customer receives product with QR code
-6. **Verification**: Customer scans code → authenticity certificate
+3. **QR Card Generation**: System generates two separate 3D-printed QR cards
+4. **Packaging**: Customer receives jewelry + two QR cards (black + red)
+5. **Verification**: Customer scans black code → authenticity certificate
+6. **Transfer**: Customer scans red code → ownership transfer interface
 
-## 📱 QR Code Integration
+## 📱 QR Code System
 
-QR codes contain links to verification page:
-- Format: `https://kiezform.de/owner-verify?token={token}&product={productId}`
-- Error correction: Medium (M) level
-- Size: 300x300px via QR Server API
-- High contrast black/white for maximum readability
+### Two-QR Code System
+- **Black QR Code (Verification)**: `https://kiezform.de/owner-verify?token={token}&product={productId}`
+- **Red QR Code (Transfer)**: `https://kiezform.de/owner-verify?token={token}&product={productId}&mode=transfer`
+- **3D-Printed Cards**: Separate physical cards shipped with jewelry
+- **Error Correction**: Medium (M) level for scanning reliability
+- **Size**: 300x300px via QR Server API
+
+### Critical Warning System
+- **Loss Prevention**: Prominent warnings about red QR code importance
+- **Confirmation Dialog**: Modal warning before irreversible transfers
+- **Single Use**: Red codes become invalid after transfer, new ones auto-generated
 
 ## 🔧 Configuration
 
@@ -467,11 +474,11 @@ Update email addresses in:
   - Red highlighting for search results
   - Block detail modals with transaction information
   - Mobile-responsive with industrial KiezForm styling
-- ✅ **Transfer System**: QR-based ownership transfers (/transfer)
-  - 24-hour expiration with countdown timer
-  - Transfer acceptance workflow with blockchain integration
-  - Automatic pseudonym generation for new owners
-  - Secure token-based transfer links
+- ✅ **Transfer System**: Simplified QR-based ownership transfers
+  - Immediate transfer processing via red QR cards
+  - Confirmation dialog with security warnings
+  - Automatic blockchain recording and QR regeneration
+  - Separate 3D-printed QR cards for verification and transfer
 - ✅ **Section Title Styling**: Industrial theme for all page headlines
   - Ultra-thin typography (font-weight: 100)
   - Wide letter-spacing (0.3em) for technical aesthetic

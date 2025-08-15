@@ -810,18 +810,23 @@ app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
     });
     
     if (existingQR) {
-      return res.status(400).json({ 
-        error: 'Active transfer QR code already exists for this product. Please invalidate the existing code first.',
+      // Return existing active QR code instead of error
+      const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${existingQR.qrToken}&product=${productId}&mode=transfer`;
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(transferUrl)}&bgcolor=ffffff&color=dc2c3f`;
+      
+      return res.json({
+        success: true,
         qrToken: existingQR.qrToken,
-        existingStatus: existingQR.status
+        qrCodeUrl,
+        transferUrl,
+        message: 'Existing active QR code returned',
+        status: existingQR.status,
+        expiresAt: existingQR.expiresAt
       });
     }
 
-    // Clean up any old invalidated QR codes for this product
-    await TransferQR.deleteMany({
-      productId,
-      status: { $in: ['invalidated', 'expired', 'used'] }
-    });
+    // Clean up any old invalidated QR codes for this product (keep for history)
+    // Don't delete, just ignore them
     
     // Generate unique QR token
     const qrToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();

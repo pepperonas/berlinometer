@@ -599,7 +599,7 @@
                             
                             <div style="text-align: center;">
                                 <button id="transfer-submit" 
-                                        onclick="this.closest('.product-verification').parentElement.verificationInstance.executeTransfer()"
+                                        onclick="window.ownerVerificationInstance.executeTransfer()"
                                         style="background: transparent; border: 1px solid #dc2c3f; color: #dc2c3f; padding: 1rem 2rem; cursor: pointer; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.9rem; transition: all 0.3s;">
                                     🔐 Übertragung bestätigen
                                 </button>
@@ -613,7 +613,7 @@
                 
                 // Add reference to this instance for transfer button
                 if (this.transferMode) {
-                    resultContainer.verificationInstance = this;
+                    window.ownerVerificationInstance = this;
                     this.currentProduct = product;
                     this.currentToken = token;
                 }
@@ -641,6 +641,12 @@
                 
                 if (!newOwnerName) {
                     this.showTransferError('Bitte geben Sie einen Namen ein.');
+                    return;
+                }
+
+                // Show confirmation dialog with warning
+                const confirmed = await this.showConfirmationDialog(newOwnerName);
+                if (!confirmed) {
                     return;
                 }
 
@@ -698,6 +704,132 @@
                         </p>
                     </div>
                 `;
+            }
+
+            showConfirmationDialog(newOwnerName) {
+                // Create modal overlay
+                const modal = document.createElement('div');
+                modal.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.9);
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    animation: fadeIn 0.3s ease;
+                `;
+
+                // Create dialog content
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    background: rgba(20, 20, 20, 0.98);
+                    border: 2px solid #dc2c3f;
+                    border-radius: 8px;
+                    padding: 2rem;
+                    max-width: 500px;
+                    width: 90%;
+                    text-align: center;
+                    animation: slideIn 0.3s ease;
+                `;
+
+                dialog.innerHTML = `
+                    <div style="color: #dc2c3f; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                    <h2 style="color: #dc2c3f; margin-bottom: 1.5rem; font-size: 1.5rem; letter-spacing: 0.1em;">
+                        WICHTIGER HINWEIS
+                    </h2>
+                    <div style="color: #fff; margin-bottom: 1.5rem; line-height: 1.6;">
+                        <p style="margin-bottom: 1rem;">
+                            Sie sind dabei, das Eigentum dieses Produkts an 
+                            <strong style="color: #00ff00;">${this.escapeHtml(newOwnerName)}</strong> 
+                            zu übertragen.
+                        </p>
+                        <p style="color: #ff6b6b; font-weight: bold; margin-bottom: 1rem;">
+                            Diese Aktion ist ENDGÜLTIG und kann NICHT rückgängig gemacht werden!
+                        </p>
+                        <p style="color: #808080; font-size: 0.9rem;">
+                            Nach der Übertragung wird:
+                        </p>
+                        <ul style="text-align: left; display: inline-block; color: #808080; font-size: 0.9rem; margin-top: 0.5rem;">
+                            <li>Der neue Inhaber in der Blockchain gespeichert</li>
+                            <li>Dieser QR-Code ungültig</li>
+                            <li>Ein neuer QR-Code für weitere Übertragungen generiert</li>
+                        </ul>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                        <button id="confirmTransferBtn" style="
+                            background: transparent;
+                            border: 2px solid #dc2c3f;
+                            color: #dc2c3f;
+                            padding: 1rem 2rem;
+                            cursor: pointer;
+                            border-radius: 4px;
+                            font-size: 1rem;
+                            font-weight: bold;
+                            transition: all 0.3s;
+                        ">
+                            ✅ JA, ÜBERTRAGEN
+                        </button>
+                        <button id="cancelTransferBtn" style="
+                            background: transparent;
+                            border: 1px solid #666;
+                            color: #666;
+                            padding: 1rem 2rem;
+                            cursor: pointer;
+                            border-radius: 4px;
+                            font-size: 1rem;
+                            transition: all 0.3s;
+                        ">
+                            ❌ ABBRECHEN
+                        </button>
+                    </div>
+                `;
+
+                modal.appendChild(dialog);
+                document.body.appendChild(modal);
+
+                // Add animation styles
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                    @keyframes slideIn {
+                        from { transform: translateY(-20px); opacity: 0; }
+                        to { transform: translateY(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+
+                // Return promise for user choice
+                return new Promise((resolve) => {
+                    document.getElementById('confirmTransferBtn').onclick = () => {
+                        modal.remove();
+                        style.remove();
+                        resolve(true);
+                    };
+
+                    document.getElementById('cancelTransferBtn').onclick = () => {
+                        modal.remove();
+                        style.remove();
+                        resolve(false);
+                    };
+
+                    // Close on ESC key
+                    const handleEsc = (e) => {
+                        if (e.key === 'Escape') {
+                            modal.remove();
+                            style.remove();
+                            document.removeEventListener('keydown', handleEsc);
+                            resolve(false);
+                        }
+                    };
+                    document.addEventListener('keydown', handleEsc);
+                });
             }
 
             showTransferError(message) {

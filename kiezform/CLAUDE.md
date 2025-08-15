@@ -58,13 +58,13 @@ Visual blockchain interface with comprehensive functionality:
 - **Mobile Responsive**: Optimized for all screen sizes with KiezForm industrial styling
 - **Live Updates**: Real-time blockchain statistics and block counting
 
-#### Transfer System (transfer.html)
-QR-based ownership transfer workflow:
-- **24-Hour Expiration**: Secure time-limited transfer links with countdown timer
-- **Token Validation**: Server-side verification of transfer tokens
-- **Blockchain Integration**: Automatic TRANSFER transaction creation upon acceptance
-- **Pseudonym Generation**: Privacy-protected ownership with USR-XXXXXXXX codes
-- **Error Handling**: Comprehensive validation and user feedback
+#### Transfer System (Simplified)
+Immediate QR-based ownership transfer via owner-verify.html with mode=transfer:
+- **Simplified Workflow**: Red QR codes lead to unified verification page with transfer mode
+- **Immediate Processing**: No 24-hour waiting period, instant transfers
+- **Confirmation Dialog**: Modal warning with security confirmation before irreversible action
+- **Blockchain Integration**: Automatic TRANSFER transaction creation and QR regeneration
+- **Separate QR Cards**: 3D-printed black (verification) and red (transfer) cards
 
 #### Admin Dashboard System (js/admin.js)
 Comprehensive admin interface with smart features:
@@ -95,7 +95,7 @@ Comprehensive admin interface with smart features:
   metadata: {                   // Additional transaction data
     productName: "Product Name",
     serialNumber: "TC-2024-001",
-    transferMethod: "QR_CODE|ADMIN_MINT"
+    transferMethod: "SIMPLE_QR|ADMIN_MINT"
   },
   isValid: true                 // Blockchain validation status
 }
@@ -231,10 +231,11 @@ function loadProductData() {
 
 ### VALUE Section - Verification System
 - Comprehensive explanation of dual QR code verification mechanism
-- **3D-Printed QR Code**: Physical authenticity proof integrated into jewelry design
-- **Red QR Code**: Secure ownership transfer system for gifts and resale
+- **Separate 3D-Printed QR Cards**: Black card for verification, red card for transfer
+- **Black QR Code**: Ownership verification system showing current owner
+- **Red QR Code**: Immediate transfer system with confirmation dialogs
 - **Verification Workflow**: Step-by-step process from scanning to certificate
-- **Security Features**: Blockchain-based authentication, unique 3D structures
+- **Security Features**: Blockchain-based authentication, loss prevention warnings
 - **Complete Integration**: Matches KiezForm industrial aesthetic with grid system
 - **Mobile Responsive**: Optimized layouts for all screen sizes
 
@@ -333,7 +334,22 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.6 (Current)
+### v0.0.7 (Current)
+- **Simplified Transfer System**: Complete overhaul of ownership transfer mechanism
+  - Eliminated complex 24-hour email system in favor of immediate transfers
+  - Red QR codes now lead to owner-verify.html with mode=transfer parameter
+  - Unified verification/transfer interface with modal confirmation dialogs
+  - Clear security warnings before irreversible transfers
+  - Automatic QR regeneration after successful transfers
+  - Backend endpoint `/api/transfer/simple` for immediate processing
+- **Separate QR Cards Documentation**: Updated all documentation for 3D-printed card system
+  - FAQs completely rewritten with transfer process prioritized
+  - Strong warnings about red QR code loss prevention
+  - Clear explanation of black (verification) vs red (transfer) card purposes
+  - Support procedures for lost red QR codes (critical situation)
+  - README.md and CLAUDE.md updated with new system details
+
+### v0.0.6
 - **3D Print Integration**: Complete STL generation system for QR codes
   - Python script `qr_to_stl.py` for converting QR codes to 3D-printable STL files
   - Admin panel STL download buttons for both owner and transfer QR codes
