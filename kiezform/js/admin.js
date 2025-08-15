@@ -330,7 +330,25 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
                 loadProducts();
             }
         } else {
-            showMessage('productMessage', data.error || 'Failed to create product', 'error');
+            // Handle specific error cases
+            let errorMessage = data.error || 'Failed to create product';
+            
+            // Check for duplicate serial number error
+            if (data.error && data.error.includes('Serial number already exists')) {
+                errorMessage = `❌ Seriennummer "${productData.serialNumber}" ist bereits vergeben. Bitte verwende eine andere Seriennummer.`;
+                // Highlight the serial number field
+                const serialField = document.getElementById('serialNumber');
+                if (serialField) {
+                    serialField.style.borderColor = '#ff6b6b';
+                    serialField.focus();
+                    // Reset border color after 3 seconds
+                    setTimeout(() => {
+                        serialField.style.borderColor = '';
+                    }, 3000);
+                }
+            }
+            
+            showMessage('productMessage', errorMessage, 'error');
         }
     } catch (error) {
         console.error('Product creation failed:', error);
@@ -813,21 +831,31 @@ async function editProduct(productId) {
                         <input type="text" id="editName" value="${escapeHtml(product.productName)}" required>
                     </div>
                     <div class="form-group">
+                        <label for="editSerialNumber">Serial Number</label>
+                        <input type="text" id="editSerialNumber" value="${escapeHtml(product.serialNumber || '')}" required placeholder="TC-2024-001">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="editCategory">Category</label>
                         <select id="editCategory">
                             <option value="chains" ${product.category === 'chains' ? 'selected' : ''}>Chains</option>
                             <option value="rings" ${product.category === 'rings' ? 'selected' : ''}>Rings</option>
                         </select>
                     </div>
-                </div>
-                <div class="form-row">
                     <div class="form-group">
                         <label for="editMaterial">Material</label>
                         <input type="text" id="editMaterial" value="${escapeHtml(product.metadata?.material || '')}">
                     </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label for="editPrice">Price (€)</label>
                         <input type="number" id="editPrice" value="${product.metadata?.price || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="editSize">Size</label>
+                        <input type="text" id="editSize" value="${escapeHtml(product.metadata?.size || '')}" placeholder="M">
                     </div>
                 </div>
                 <div class="form-group">
@@ -883,6 +911,7 @@ async function saveProductChanges(productId) {
     
     const updatedProduct = {
         productName: document.getElementById('editName').value,
+        serialNumber: document.getElementById('editSerialNumber').value.trim(),
         category: document.getElementById('editCategory').value,
         metadata: {
             material: document.getElementById('editMaterial').value,
@@ -937,7 +966,28 @@ async function saveProductChanges(productId) {
             showToast('Product updated successfully in database!', 'success');
             console.log('✅ Product updated in MongoDB:', productId);
         } else {
-            throw new Error('API update failed');
+            // Handle API errors for product updates
+            const apiError = await response.json().catch(() => ({ error: 'Update failed' }));
+            
+            // Check for duplicate serial number error in updates
+            if (apiError.error && apiError.error.includes('Serial number already exists')) {
+                const serialNumber = document.getElementById('editSerialNumber').value; // Get current serial from form
+                showToast(`❌ Seriennummer "${serialNumber}" ist bereits vergeben. Bitte verwende eine andere Seriennummer.`, 'error');
+                
+                // Highlight the serial number field in edit modal
+                const editSerialField = document.getElementById('editSerialNumber');
+                if (editSerialField) {
+                    editSerialField.style.borderColor = '#ff6b6b';
+                    editSerialField.focus();
+                    // Reset border color after 3 seconds
+                    setTimeout(() => {
+                        editSerialField.style.borderColor = '';
+                    }, 3000);
+                }
+                return; // Don't close modal, let user fix the error
+            }
+            
+            throw new Error(apiError.error || 'API update failed');
         }
     } catch (error) {
         console.warn('Database update failed, saving locally:', error);
@@ -1381,9 +1431,6 @@ function renderTransferActions(item) {
             <button class="transfer-btn qr-view" onclick="viewTransferQR('${item.productId}', '${escapeHtml(item.productName)}', '${escapeHtml(item.serialNumber)}')">
                 📱 QR Code
             </button>
-            <button class="transfer-btn download" onclick="downloadTransferQR('${item.productId}')">
-                📥 Download
-            </button>
             <button class="transfer-btn invalidate" onclick="invalidateTransferQR('${item.productId}')">
                 🚫 Invalidate
             </button>
@@ -1398,9 +1445,6 @@ function renderTransferActions(item) {
             actions.push(`
                 <button class="transfer-btn qr-view" onclick="viewTransferQR('${item.productId}', '${escapeHtml(item.productName)}', '${escapeHtml(item.serialNumber)}')">
                     📱 QR Code
-                </button>
-                <button class="transfer-btn download" onclick="downloadTransferQR('${item.productId}')">
-                    📥 Download
                 </button>
             `);
         }
