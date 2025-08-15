@@ -4,7 +4,7 @@
       "id": "agama-001",
       "name": "Agama",
       "category": "chains",
-      "price": 79,
+      "price": 149,
       "material": "Premium-Quality PLA+ (Silk)",
       "sizes": [
         "40cm",
@@ -26,8 +26,8 @@
       "id": "aurora-002",
       "name": "Aurora",
       "category": "chains",
-      "price": 189,
-      "material": "Premium-Quality PLA+ (Silk)",
+      "price": 179,
+      "material": "Premium-Quality PLA+",
       "sizes": [
         "40cm",
         "50cm",
@@ -50,7 +50,7 @@
       "id": "cash4love-003",
       "name": "Cash4Love",
       "category": "chains",
-      "price": 89,
+      "price": 129,
       "material": "Premium-Quality PLA+ (Silk)",
       "sizes": [
         "40cm",
@@ -95,7 +95,7 @@
       "id": "goldelse-006",
       "name": "Goldelse",
       "category": "chains",
-      "price": 39,
+      "price": 79,
       "material": "Premium-Quality PLA+ (Silk)",
       "sizes": [
         "40cm",
@@ -118,7 +118,7 @@
       "id": "snake-eater-007",
       "name": "Snake-Eater",
       "category": "chains",
-      "price": 59,
+      "price": 89,
       "material": "Premium-Quality PLA+ (Silk)",
       "sizes": [
         "40cm",
@@ -141,7 +141,7 @@
       "id": "ring-001",
       "name": "BRUTALIST RING",
       "category": "rings",
-      "price": 69,
+      "price": 169,
       "material": "Premium-Quality PLA+ (Matte Black & White)",
       "sizes": [
         "S",
