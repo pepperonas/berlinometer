@@ -209,6 +209,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
             serialNumber: finalData.serialNumber,
             category: finalData.category,
             isValid: true,
+            createdAt: new Date().toISOString(), // Add timestamp
             metadata: finalData.metadata
         };
         
@@ -232,7 +233,7 @@ function showDashboard() {
     loadProductTemplates();
 }
 
-function logout() {
+window.logout = function() {
     localStorage.removeItem('authToken');
     localStorage.removeItem('kiezform_products'); // Clear cached products on logout
     authToken = null;
@@ -275,7 +276,7 @@ function populateCategoryDropdown() {
     });
 }
 
-function loadProductsForCategory() {
+window.loadProductsForCategory = function() {
     const categorySelect = document.getElementById('templateCategory');
     const productSelect = document.getElementById('templateProduct');
     
@@ -307,7 +308,7 @@ function loadProductsForCategory() {
     productSelect.disabled = false;
 }
 
-function loadProductData() {
+window.loadProductData = function() {
     const productSelect = document.getElementById('templateProduct');
     if (!productSelect || !productTemplates) return;
     
@@ -414,6 +415,8 @@ async function loadProducts() {
                 category: product.category,
                 imageUrl: product.imageUrl || null,
                 isValid: product.isValid !== undefined ? product.isValid : true,
+                createdAt: product.createdAt || product.manufacturingDate || product.created,
+                manufacturingDate: product.manufacturingDate,
                 owner: product.owner, // Keep the full owner object
                 metadata: {
                     material: product.metadata?.material || product.material,
@@ -451,6 +454,7 @@ async function loadProducts() {
                     serialNumber: product.id.toUpperCase(),
                     category: product.category,
                     isValid: true,
+                    createdAt: new Date().toISOString(), // Default timestamp for JSON products
                     metadata: {
                         material: product.material,
                         size: product.sizes ? product.sizes.join(', ') : 'N/A',
@@ -504,51 +508,110 @@ function displayProducts(products) {
 
     container.innerHTML = products.map(product => `
         <div class="product-item" id="product-${product.id}">
-            <div class="product-header">
-                <div class="product-info">
-                    <h3>${escapeHtml(product.productName)}</h3>
-                    <p>ID: ${escapeHtml(product.id)}</p>
-                    <div class="product-meta">
-                        <div class="meta-item">
-                            <div>Category</div>
-                            <div class="meta-value">${escapeHtml(product.category)}</div>
-                        </div>
-                        ${product.metadata?.material ? `
-                        <div class="meta-item">
-                            <div>Material</div>
-                            <div class="meta-value">${escapeHtml(product.metadata.material)}</div>
-                        </div>
-                        ` : ''}
-                        ${product.metadata?.price ? `
-                        <div class="meta-item">
-                            <div>Price</div>
-                            <div class="meta-value">€${product.metadata.price}</div>
-                        </div>
-                        ` : ''}
-                        ${product.metadata?.size ? `
-                        <div class="meta-item">
-                            <div>Sizes</div>
-                            <div class="meta-value">${escapeHtml(product.metadata.size)}</div>
-                        </div>
-                        ` : ''}
-                        ${(product.owner?.name || product.metadata?.owner) ? `
-                        <div class="meta-item">
-                            <div>Owner</div>
-                            <div class="meta-value">${escapeHtml(product.owner?.name || product.metadata.owner)}</div>
-                        </div>
-                        ` : ''}
-                        <div class="meta-item">
-                            <div>Status</div>
-                            <div class="meta-value" style="color: ${product.isValid ? '#00ff00' : '#ff4444'};">${product.isValid ? 'Valid' : 'Invalid'}</div>
-                        </div>
+            <!-- Modern Product Card Layout -->
+            <div class="product-card-header">
+                <div class="product-title-section">
+                    <div class="product-name-row">
+                        <h3 class="product-name">${escapeHtml(product.productName)}</h3>
+                        <span class="status-dot ${product.isValid ? 'valid' : 'invalid'}" title="${product.isValid ? 'Valid Product' : 'Invalid Product'}"></span>
+                    </div>
+                    <div class="product-meta-row">
+                        <span class="category-pill">${escapeHtml(product.category)}</span>
+                        <span class="product-id">ID: ${escapeHtml(product.id)}</span>
                     </div>
                 </div>
-                <div class="product-actions">
-                    <button onclick="editProduct('${product.id}')" class="edit-btn">Edit</button>
-                    <button onclick="deleteProduct('${product.id}')" class="delete-btn">Delete</button>
-                    <button onclick="generateShareLink('${product.id}')" class="share-btn">Share Link</button>
-                    <button onclick="generateOwnerQR('${product.id}')" class="qr-btn">QR Code</button>
+                ${product.imageUrl ? `
+                <div class="product-thumbnail">
+                    <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.productName)}" loading="lazy" />
                 </div>
+                ` : ''}
+            </div>
+
+            <div class="product-info-grid">
+                ${formatProductDate(product) ? `
+                <div class="info-item">
+                    <div class="info-icon">🗓️</div>
+                    <div class="info-content">
+                        <span class="info-label">Created</span>
+                        <span class="info-value">${formatProductDate(product)}</span>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${product.metadata?.price ? `
+                <div class="info-item">
+                    <div class="info-icon">💰</div>
+                    <div class="info-content">
+                        <span class="info-label">Price</span>
+                        <span class="info-value">€${product.metadata.price}</span>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${product.metadata?.material ? `
+                <div class="info-item">
+                    <div class="info-icon">🔧</div>
+                    <div class="info-content">
+                        <span class="info-label">Material</span>
+                        <span class="info-value">${escapeHtml(product.metadata.material)}</span>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${product.metadata?.size ? `
+                <div class="info-item">
+                    <div class="info-icon">📏</div>
+                    <div class="info-content">
+                        <span class="info-label">Size</span>
+                        <span class="info-value">${escapeHtml(product.metadata.size)}</span>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${(product.owner?.name || product.metadata?.owner) ? `
+                <div class="info-item">
+                    <div class="info-icon">👤</div>
+                    <div class="info-content">
+                        <span class="info-label">Owner</span>
+                        <span class="info-value">${escapeHtml(product.owner?.name || product.metadata.owner)}</span>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+
+            <div class="product-actions-bar">
+                <button onclick="editProduct('${product.id}')" class="btn-action btn-primary" title="Edit Product">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                    </svg>
+                    Edit
+                </button>
+                <button onclick="generateShareLink('${product.id}')" class="btn-action btn-secondary" title="Share Product">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+                    </svg>
+                    Share
+                </button>
+                <button onclick="generateOwnerQR('${product.id}')" class="btn-action btn-secondary" title="Generate QR Code">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM13 3v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4z"/>
+                        <rect x="13" y="13" width="2" height="2"/>
+                        <rect x="15" y="15" width="2" height="2"/>
+                        <rect x="13" y="17" width="2" height="2"/>
+                        <rect x="15" y="19" width="2" height="2"/>
+                        <rect x="17" y="13" width="2" height="2"/>
+                        <rect x="19" y="15" width="2" height="2"/>
+                        <rect x="17" y="17" width="2" height="2"/>
+                        <rect x="19" y="19" width="2" height="2"/>
+                    </svg>
+                    QR
+                </button>
+                <button onclick="deleteProduct('${product.id}')" class="btn-action btn-danger" title="Delete Product">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                    </svg>
+                    Delete
+                </button>
             </div>
         </div>
     `).join('');
@@ -974,6 +1037,41 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
+function formatProductDate(product) {
+    if (!product) return '';
+    
+    // Use manufacturingDate (which has been synced with blockchain MINT blocks)
+    let dateValue = null;
+    if (product.manufacturingDate) {
+        dateValue = product.manufacturingDate;
+    } else if (product.createdAt) {
+        dateValue = product.createdAt;
+    } else if (product.created) {
+        dateValue = product.created;
+    } else {
+        return '';
+    }
+    
+    try {
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) {
+            return '';
+        }
+        
+        // Format as German date: DD.MM.YYYY HH:mm
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        
+        return `${day}.${month}.${year} ${hours}:${minutes}`;
+    } catch (error) {
+        console.warn('Error formatting product date:', error);
+        return '';
+    }
+}
+
 function escapeHtml(unsafe) {
     if (typeof unsafe !== 'string') return '';
     return unsafe
@@ -1091,6 +1189,9 @@ function renderTransferActions(item) {
         `);
     } else if (item.overallStatus === 'active') {
         actions.push(`
+            <button class="transfer-btn qr-view" onclick="viewTransferQR('${item.productId}', '${escapeHtml(item.productName)}', '${escapeHtml(item.serialNumber)}')">
+                📱 QR Code
+            </button>
             <button class="transfer-btn download" onclick="downloadTransferQR('${item.productId}')">
                 📥 Download
             </button>
@@ -1106,6 +1207,9 @@ function renderTransferActions(item) {
         `);
         if (item.transferQR && item.transferQR.qrImageUrl) {
             actions.push(`
+                <button class="transfer-btn qr-view" onclick="viewTransferQR('${item.productId}', '${escapeHtml(item.productName)}', '${escapeHtml(item.serialNumber)}')">
+                    📱 QR Code
+                </button>
                 <button class="transfer-btn download" onclick="downloadTransferQR('${item.productId}')">
                     📥 Download
                 </button>
@@ -1121,7 +1225,7 @@ function updateTransferStats(stats) {
     console.log('Transfer Stats:', stats);
 }
 
-async function generateTransferQR(productId) {
+window.generateTransferQR = async function(productId) {
     try {
         showToast('Generating QR code...', 'info');
         
@@ -1148,27 +1252,35 @@ async function generateTransferQR(productId) {
     }
 }
 
-async function downloadTransferQR(productId) {
+window.downloadTransferQR = async function(productId) {
     try {
-        // Create download link
+        // Find the transfer QR data to get the direct QR image URL
+        const transferItem = transferCodesData.find(item => item.productId === productId);
+        if (!transferItem || !transferItem.transferQR || !transferItem.transferQR.qrImageUrl) {
+            showToast('QR Code not found', 'error');
+            return;
+        }
+        
+        // Use the same download logic as Owner QR codes
+        const qrUrl = transferItem.transferQR.qrImageUrl;
+        const response = await fetch(qrUrl);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        
         const link = document.createElement('a');
-        link.href = `/api/transfer-qr/${productId}`;
+        link.href = url;
         link.download = `kiezform-transfer-qr-${productId}.png`;
-        link.target = '_blank';
-        
-        // Trigger download
-        document.body.appendChild(link);
         link.click();
-        document.body.removeChild(link);
         
-        showToast('QR Code download started', 'success');
+        URL.revokeObjectURL(url);
+        showToast('QR Code downloaded successfully', 'success');
     } catch (error) {
         console.error('Download QR error:', error);
-        showMessage('transferMessage', 'Failed to download QR code', 'error');
+        showToast('Error downloading QR code', 'error');
     }
 }
 
-async function invalidateTransferQR(productId) {
+window.invalidateTransferQR = async function(productId) {
     if (!confirm('Are you sure you want to invalidate this transfer QR code? This action cannot be undone.')) {
         return;
     }
@@ -1198,7 +1310,7 @@ async function invalidateTransferQR(productId) {
     }
 }
 
-async function generateAllMissingQRCodes() {
+window.generateAllMissingQRCodes = async function() {
     if (!confirm('Generate QR codes for all products without active codes? This may take a moment.')) {
         return;
     }
@@ -1231,11 +1343,11 @@ async function generateAllMissingQRCodes() {
     }
 }
 
-function refreshTransferList() {
+window.refreshTransferList = function() {
     loadTransferCodes();
 }
 
-function filterTransferList() {
+window.filterTransferList = function() {
     const filter = document.getElementById('statusFilter').value;
     
     if (filter === 'all') {
@@ -1247,9 +1359,93 @@ function filterTransferList() {
     renderTransferList();
 }
 
+window.viewTransferQR = function(productId, productName, serialNumber) {
+    // Find the transfer QR data
+    const transferItem = transferCodesData.find(item => item.productId === productId);
+    if (!transferItem || !transferItem.transferQR || !transferItem.transferQR.qrImageUrl) {
+        showToast('QR Code not found', 'error');
+        return;
+    }
+
+    // Create QR modal with Owner Verification design
+    const modal = document.createElement('div');
+    modal.className = 'edit-modal';
+    modal.innerHTML = `
+        <div class="modal-backdrop" onclick="closeTransferQRModal()"></div>
+        <div class="modal-content">
+            <h2>Transfer QR Code</h2>
+            
+            <div style="margin: 1.5rem 0;">
+                <p><span style="color: #00ff00; font-weight: bold;">Product:</span> ${escapeHtml(productName)}</p>
+                <p><span style="color: #00ff00; font-weight: bold;">Serial:</span> ${escapeHtml(serialNumber)}</p>
+                <p><span style="color: #00ff00; font-weight: bold;">QR Token:</span> ${escapeHtml(transferItem.transferQR.qrToken)}</p>
+                <p><span style="color: #00ff00; font-weight: bold;">Status:</span> <span style="color: ${getStatusColor(transferItem.overallStatus)};">${getStatusDisplay(transferItem.overallStatus)}</span></p>
+            </div>
+            
+            <div class="qr-container">
+                <img src="${transferItem.transferQR.qrImageUrl}" alt="Transfer QR Code" class="qr-image">
+                <p style="color: #808080; font-style: italic; margin-top: 1rem;">Scan this QR code for ownership transfer</p>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="button" onclick="downloadTransferQRFromModal('${productId}')">DOWNLOAD QR</button>
+                <button type="button" onclick="closeTransferQRModal()">CLOSE</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function getStatusColor(status) {
+    const colorMap = {
+        'missing': '#b0b0b0',
+        'active': '#4ade80',
+        'used': '#fb923c',
+        'expired': '#f87171',
+        'invalidated': '#f87171'
+    };
+    return colorMap[status] || '#b0b0b0';
+}
+
+window.closeTransferQRModal = function() {
+    const modal = document.querySelector('.edit-modal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+window.downloadTransferQRFromModal = async function(productId) {
+    try {
+        // Find the transfer QR data to get the direct QR image URL
+        const transferItem = transferCodesData.find(item => item.productId === productId);
+        if (!transferItem || !transferItem.transferQR || !transferItem.transferQR.qrImageUrl) {
+            showToast('QR Code not found', 'error');
+            return;
+        }
+        
+        // Use the same download logic as Owner QR codes
+        const qrUrl = transferItem.transferQR.qrImageUrl;
+        const response = await fetch(qrUrl);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `kiezform-transfer-qr-${productId}.png`;
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        showToast('QR Code downloaded successfully', 'success');
+    } catch (error) {
+        console.error('Download QR error:', error);
+        showToast('Error downloading QR code', 'error');
+    }
+}
+
 // Update the showTab function to load transfer codes when tab is accessed
 const originalShowTab = showTab;
-function showTab(tabName) {
+window.showTab = function(tabName) {
     originalShowTab(tabName);
     
     if (tabName === 'transferQR') {
