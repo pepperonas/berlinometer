@@ -33,13 +33,15 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 ### File Structure
 ```
 kiezform/
-├── index.html              # Main landing page
-├── admin.html              # Admin dashboard
+├── index.html              # Main landing page (German localized)
+├── admin.html              # Admin dashboard with custom dialogs
 ├── blockchain.html         # Blockchain explorer interface
-├── transfer.html           # Ownership transfer acceptance page
-├── owner-verify.html       # Ownership verification page
+├── transfer.html           # Ownership transfer acceptance page (German)
+├── owner-verify.html       # Ownership verification page (German)
+├── faq.html                # FAQ with legal page styling (German)
 ├── impressum.html          # Legal imprint (German)
 ├── datenschutz.html        # Privacy policy (German)
+├── nutzungsbedingungen.html # Terms of Service (German)
 ├── products.json           # Product catalog data
 ├── backend/                # Node.js/Express backend API
 │   ├── server.js           # Main API server
@@ -52,14 +54,14 @@ kiezform/
 ├── admin/                  # Additional admin resources
 ├── css/
 │   ├── styles.css          # Main site styles with section title styling
-│   ├── admin.css           # Admin interface styles
+│   ├── admin.css           # Admin interface styles with custom dialog support
 │   ├── blockchain.css      # Blockchain explorer styles
-│   └── legal.css           # Legal pages styles
+│   └── legal.css           # Legal pages styles (FAQ, Terms, Privacy, Imprint)
 ├── js/
-│   ├── main.js             # General functionality + QR generation/sharing
+│   ├── main.js             # General functionality + QR generation/sharing + unified toasts
 │   ├── products.js         # Product gallery system
-│   ├── blockchain.js       # Blockchain explorer functionality
-│   └── admin.js            # Secure admin functionality
+│   ├── blockchain.js       # Blockchain explorer functionality + unified toasts
+│   └── admin.js            # Secure admin functionality + custom dialogs + unified toasts
 └── images/                 # Static assets and favicons
 ```
 
@@ -144,17 +146,19 @@ Navigate to `/admin` and login with:
 - mailto link generation
 
 ### Admin Dashboard (`js/admin.js`)  
-- **Version Display**: Shows current version (v0.0.5) in header
+- **Version Display**: Shows current version (v0.0.8) in header
+- **Custom Dialog System**: Promise-based async confirmation modals with industrial theme
 - **Smart Product Templates**: Cascade dropdown system for quick product creation
 - **Auto-Fill Forms**: Load product data from templates with full editability
 - **Image URL Support**: Product thumbnail management and display
 - **STL Download**: Generate 3D-printable QR codes (owner & transfer) as STL files
+- **QR Regeneration**: Force parameter handling for regenerating used QR codes
 - Secure SHA-256 authentication with salt
 - Product CRUD operations with MongoDB integration
 - Owner management and editing
 - Share link generation with secure tokens
 - QR code creation for verification
-- Toast notifications for better UX
+- Unified bottom-center toast notifications
 - Real-time statistics dashboard
 - Fallback to localStorage for offline mode
 
@@ -167,19 +171,24 @@ Navigate to `/admin` and login with:
 - Mobile-responsive design with KiezForm industrial styling
 
 ### Ownership Verification (`owner-verify.html`)
+- **Complete German Localization**: Fully translated with informal "du" addressing
+- **Enhanced Navbar**: Added VALUE, SHARE, BLOCKCHAIN navigation links
 - Token-based verification system
 - Product authenticity confirmation
 - **Product Image Display**: Shows product thumbnails with error handling
 - **Transfer Mode**: Simplified ownership transfer with confirmation dialog
 - Owner badge display
 - Integration with admin-generated links
+- Improved content spacing and mobile responsiveness
 
 ### Transfer System (Simplified)
+- **Complete German Translation**: Fully localized transfer.html with personal addressing
 - **Red QR Code Transfer**: Direct ownership transfer via 3D-printed QR cards
 - **Immediate Processing**: No 24-hour waiting period
-- **Confirmation Dialog**: Clear warning before irreversible transfers
+- **Custom Confirmation Dialog**: Branded warning modals before irreversible transfers
 - **Blockchain Integration**: Automatic blockchain recording and QR regeneration
 - **Separate QR Cards**: Black for verification, red for transfer
+- **Fixed QR Regeneration**: Proper force parameter handling for used QR codes
 
 ## 🛡️ Security Features
 
@@ -225,6 +234,8 @@ Navigate to `/admin` and login with:
 - **Accent**: Neon green (#00ff00) - used for version badges and highlights
 - **Version Display**: Green (#00ff00) with 80% opacity
 - **Borders**: Semi-transparent white
+- **Dialog Backdrop**: Black with 90% opacity and blur effects
+- **Toast Notifications**: Bottom-center positioning with consistent styling
 
 ### Typography
 - **Primary Font**: Helvetica Neue
@@ -245,6 +256,12 @@ Compatible with any static hosting service:
 - Vercel  
 - GitHub Pages
 - Traditional web hosting
+
+### German Localization Notes
+- All user-facing content uses informal "du" addressing
+- Complete German translations for verification and transfer workflows
+- Legal pages follow German DSGVO compliance requirements
+- FAQ styled consistently with other legal pages
 
 ### Production Deployment (VPS: 69.62.121.168)
 
@@ -318,7 +335,7 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 ### Public Endpoints
 - `GET /api/health` - Health check
 - `GET /api/verify/:id` - Product verification
-- `GET /api/qrcode/:id` - QR code generation
+- `GET /api/qrcode/:id` - QR code generation with force parameter support
 
 ### Blockchain Endpoints
 - `GET /api/blockchain/blocks` - Get blockchain blocks
@@ -334,6 +351,7 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 - `DELETE /api/products/:id` - Delete product
 - `GET /api/stats` - Get statistics
 - `GET /api/admin/generate-stl-qr/:type/:productId` - Generate STL files for QR codes
+- `POST /api/admin/qr/regenerate` - Force regenerate QR codes (with force parameter)
 
 ## 🔐 Security & Authentication
 
@@ -373,11 +391,13 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 - **3D-Printed Cards**: Separate physical cards shipped with jewelry
 - **Error Correction**: Medium (M) level for scanning reliability
 - **Size**: 300x300px via QR Server API
+- **STL Generation**: 40x40x1mm 3D-printable format for jewelry integration
 
 ### Critical Warning System
-- **Loss Prevention**: Prominent warnings about red QR code importance
-- **Confirmation Dialog**: Modal warning before irreversible transfers
+- **Loss Prevention**: Prominent warnings about red QR code importance (German)
+- **Custom Confirmation Dialog**: Branded modal warnings before irreversible transfers
 - **Single Use**: Red codes become invalid after transfer, new ones auto-generated
+- **Force Regeneration**: Admin can regenerate used QR codes with force parameter
 
 ## 🔧 Configuration
 
@@ -427,7 +447,57 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.6 (Latest)
+### v0.0.8 (Latest)
+- ✅ **Terms of Service Implementation**: Professional legal framework
+  - Created comprehensive `/nutzungsbedingungen` page emphasizing digital certificates
+  - Legal focus: Digital certificate as main product, jewelry as free accessory
+  - DSGVO-compliant privacy protection and liability limitation
+  - Clear refund, warranty, and intellectual property policies
+  - Footer integration with Impressum, Datenschutz, FAQ links
+- ✅ **Complete German Localization & Personalization**:
+  - Changed all formal "Sie" addressing to informal "du" throughout the app
+  - Made text more personal and engaging for younger target audience
+  - Translated `owner-verify.html` and `transfer.html` completely to German
+  - Updated FAQ text: "Der neue vereinfachte Transfer-Prozess" → "Der Transfer-Prozess"
+  - Enhanced navbar on owner-verify page with VALUE, SHARE, BLOCKCHAIN links
+- ✅ **Custom Themed Dialog System**: Replaced browser alerts with branded modals
+  - Promise-based async confirmation dialogs matching industrial theme
+  - Backdrop blur effects and fade-in animations
+  - Custom styling with KiezForm color scheme and typography
+  - Applied across admin.js for consistent user experience
+- ✅ **Owner-Verify Page Optimization**: Enhanced UX and German content
+  - Complete German translation with personal "du" addressing
+  - Improved content spacing and navbar alignment
+  - Better visual hierarchy and mobile responsiveness
+  - Enhanced verification display with clearer messaging
+- ✅ **FAQ Complete Redesign**: Legal page theme consistency
+  - Removed hero section for clean professional layout
+  - Applied legal.css styling to match Impressum/Datenschutz/Nutzungsbedingungen
+  - Fixed remaining formal "Sie" to informal "du" addressing
+  - Consistent typography and spacing with other legal pages
+- ✅ **Toast Notification Unification**: Bottom-center positioning
+  - Updated all toast implementations across admin.js, blockchain.js, main.js
+  - Consistent `bottom: 30px; left: 50%; transform: translateX(-50%)` positioning
+  - Smooth slide-up animations with proper z-index layering
+- ✅ **QR Code Regeneration Fix**: Force parameter implementation
+  - Fixed issue where "used" QR codes couldn't be regenerated
+  - Added force parameter logic to distinguish regeneration from new generation
+  - Updated duplicate prevention to only check `status: 'active'`
+  - Proper invalidation of existing QR codes before creating new ones
+- ✅ **Transfer URL Migration**: Updated all transfer endpoints
+  - Migrated from `/transfer` to `/owner-verify?mode=transfer`
+  - Fixed 404 errors on transfer QR code usage
+  - Updated backend endpoints and frontend URL handling
+
+### v0.0.7
+- ✅ **3D Print Integration Enhancements**: Production-ready STL system
+  - Fixed backend authentication middleware for STL endpoints
+  - Completed VPS Python environment setup with all dependencies
+  - Tested and verified STL generation in production environment
+  - Improved error handling and temporary file cleanup
+  - Updated FAQ documentation for 3D-printed QR codes
+
+### v0.0.6
 - ✅ **3D Print Integration**: Complete STL generation system for QR codes
   - Python script `qr_to_stl.py` for converting QR codes to 3D-printable STL files
   - Admin panel STL download buttons for both owner and transfer QR codes

@@ -55,7 +55,7 @@
         <div class="nav-brand">
             <a href="#hero" class="brand-link">KIEZFORM</a>
         </div>
-        <div class="nav-menu" id="nav-menu">
+        <div class="nav-menu" id="nav-menu" aria-hidden="true">
             <a href="#hero" class="nav-link">HOME</a>
             <a href="#products" class="nav-link">PRODUCTS</a>
             <a href="#features" class="nav-link">FEATURES</a>
@@ -63,7 +63,11 @@
             <a href="#share" class="nav-link">SHARE</a>
             <a href="/blockchain" class="nav-link">BLOCKCHAIN</a>
         </div>
-        <div class="nav-toggle" id="nav-toggle">
+        <div class="nav-toggle" id="nav-toggle" 
+             role="button" 
+             aria-label="Navigation Menu öffnen"
+             aria-expanded="false"
+             tabindex="0">
             <span class="bar"></span>
             <span class="bar"></span>
             <span class="bar"></span>

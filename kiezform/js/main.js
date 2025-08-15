@@ -1,11 +1,23 @@
-// Mobile navigation toggle
+// Enhanced Mobile Navigation für moderne Smartphones
 const navToggle = document.getElementById('nav-toggle');
 const navMenu = document.getElementById('nav-menu');
 
 if (navToggle && navMenu) {
-    navToggle.addEventListener('click', () => {
+    // Hamburger Toggle mit Touch-Feedback
+    navToggle.addEventListener('click', (e) => {
+        e.preventDefault();
         navToggle.classList.toggle('active');
         navMenu.classList.toggle('active');
+        
+        // ARIA Accessibility
+        const isExpanded = navMenu.classList.contains('active');
+        navToggle.setAttribute('aria-expanded', isExpanded);
+        navMenu.setAttribute('aria-hidden', !isExpanded);
+        
+        // Vibration Feedback für Touch-Geräte
+        if ('vibrate' in navigator) {
+            navigator.vibrate(50);
+        }
     });
 
     // Close mobile menu when clicking on a link
@@ -13,20 +25,47 @@ if (navToggle && navMenu) {
         link.addEventListener('click', () => {
             navToggle.classList.remove('active');
             navMenu.classList.remove('active');
+            navToggle.setAttribute('aria-expanded', 'false');
+            navMenu.setAttribute('aria-hidden', 'true');
         });
+    });
+    
+    // Close menu when clicking outside (Touch-friendly)
+    document.addEventListener('click', (e) => {
+        if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
+            navToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+            navToggle.setAttribute('aria-expanded', 'false');
+            navMenu.setAttribute('aria-hidden', 'true');
+        }
+    });
+    
+    // Escape key support
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+            navToggle.classList.remove('active');
+            navMenu.classList.remove('active');
+            navToggle.setAttribute('aria-expanded', 'false');
+            navMenu.setAttribute('aria-hidden', 'true');
+            navToggle.focus(); // Return focus to toggle button
+        }
     });
 }
 
-// Smooth scrolling for navigation links with URL hash updates
+// Enhanced Smooth Scrolling für Mobile
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
         const targetId = this.getAttribute('href');
         const target = document.querySelector(targetId);
         if (target) {
-            // Account for fixed navbar height
-            const navbarHeight = document.querySelector('.navbar').offsetHeight;
-            const targetPosition = target.offsetTop - navbarHeight;
+            // Account for fixed navbar height + extra mobile spacing
+            const navbar = document.querySelector('.navbar');
+            const navbarHeight = navbar ? navbar.offsetHeight : 70;
+            const isMobile = window.innerWidth <= 768;
+            const extraOffset = isMobile ? 20 : 0; // Extra spacing on mobile
+            
+            const targetPosition = target.offsetTop - navbarHeight - extraOffset;
             
             window.scrollTo({
                 top: targetPosition,
@@ -35,9 +74,48 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             
             // Update URL hash
             history.pushState(null, null, targetId);
+            
+            // Haptic feedback on mobile
+            if ('vibrate' in navigator && isMobile) {
+                navigator.vibrate(30);
+            }
         }
     });
 });
+
+// Mobile-optimized Touch Event Improvements
+if ('ontouchstart' in window) {
+    // Prevent zoom on double-tap for buttons
+    document.querySelectorAll('button, .btn, .cta-button, .nav-link').forEach(element => {
+        element.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            this.click();
+        });
+    });
+    
+    // Prevent scrolling behind modal
+    function preventBodyScroll(e) {
+        e.preventDefault();
+    }
+    
+    // Disable body scroll when modal is open
+    const modalObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.target.classList.contains('modal') && 
+                mutation.target.style.display === 'flex') {
+                document.body.addEventListener('touchmove', preventBodyScroll, { passive: false });
+            } else if (mutation.target.classList.contains('modal') && 
+                       mutation.target.style.display === 'none') {
+                document.body.removeEventListener('touchmove', preventBodyScroll);
+            }
+        });
+    });
+    
+    // Observe modal changes
+    document.querySelectorAll('.modal, .product-modal').forEach(modal => {
+        modalObserver.observe(modal, { attributes: true, attributeFilter: ['style'] });
+    });
+}
 
 // Add animation on scroll
 const observerOptions = {

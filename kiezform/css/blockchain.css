@@ -679,23 +679,28 @@
     background: rgba(255, 0, 0, 0.1);
 }
 
-/* Enhanced Mobile Responsiveness */
+/* Enhanced Mobile Responsiveness für moderne Smartphones */
 @media (max-width: 768px) {
     .blockchain-header {
-        padding: 3rem 1.5rem;
+        padding: 4rem 1rem 3rem 1rem;
         margin-bottom: 3rem;
     }
 
     .blockchain-header h1 {
-        font-size: 2.2rem;
-        letter-spacing: 0.15em;
-        margin-bottom: 1.5rem;
+        font-size: clamp(1.8rem, 6vw, 2.4rem);
+        letter-spacing: 0.12em;
+        margin-bottom: 2rem;
+        line-height: 1.15;
     }
     
     .blockchain-header .subtitle {
-        font-size: 0.9rem;
-        margin-bottom: 2.5rem;
-        letter-spacing: 0.08em;
+        font-size: clamp(0.9rem, 2.5vw, 1rem);
+        margin-bottom: 3rem;
+        letter-spacing: 0.06em;
+        line-height: 1.4;
+        max-width: 90%;
+        margin-left: auto;
+        margin-right: auto;
     }
     
     .chain-info {
@@ -719,14 +724,15 @@
     }
     
     .search-section {
-        padding: 2rem 1.5rem;
+        padding: 2.5rem 1rem;
         margin-bottom: 3rem;
     }
 
     .search-section h2 {
-        font-size: 1.6rem;
-        margin-bottom: 1.5rem;
-        letter-spacing: 0.12em;
+        font-size: clamp(1.4rem, 4vw, 1.8rem);
+        margin-bottom: 2rem;
+        letter-spacing: 0.1em;
+        line-height: 1.2;
     }
 
     .search-description {
@@ -939,39 +945,88 @@
     }
 }
 
+/* Kompakte Smartphones - Blockchain Explorer */
 @media (max-width: 480px) {
     .blockchain-header h1 {
-        font-size: 1.8rem;
-        letter-spacing: 0.1em;
+        font-size: clamp(1.6rem, 7vw, 1.8rem);
+        letter-spacing: 0.08em;
+        margin-bottom: 1.5rem;
     }
 
     .blockchain-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 0 0.5rem;
     }
     
     .view-controls {
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 1rem;
+        margin-bottom: 2rem;
     }
 
     .control-btn {
-        max-width: none;
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+        min-height: 48px;
+        padding: 1.2rem;
+        font-size: 1rem;
+        border-radius: 12px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
     }
     
     .block {
-        min-height: 100px;
-        padding: 0.8rem;
+        min-height: 120px;
+        padding: 1.2rem;
+        border-radius: 12px;
+        touch-action: manipulation;
     }
 
     .search-input-container {
+        flex-direction: column;
         gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .search-input {
+        font-size: 16px; /* Verhindert Zoom auf iOS */
+        min-height: 48px;
+        padding: 1rem;
+        border-radius: 12px;
+        width: 100%;
+    }
+    
+    .search-btn {
+        min-height: 48px;
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        border-radius: 12px;
+        touch-action: manipulation;
     }
 
     .pagination-controls {
         gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .pagination-btn {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
+        border-radius: 8px;
     }
 
     .legend-items {
-        max-width: 250px;
+        max-width: 100%;
+        text-align: center;
+    }
+    
+    .legend-item {
+        margin: 0.5rem;
+        min-height: 40px;
+        padding: 0.8rem 1rem;
     }
 }

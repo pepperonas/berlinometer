@@ -9,11 +9,15 @@ KiezForm is a comprehensive e-commerce and product verification system for a Ber
 ## Architecture
 
 ### File Structure
-- `index.html` - Main landing page and product showcase with section titles
-- `admin.html` - Admin dashboard for product management 
+- `index.html` - Main landing page and product showcase with personalized content ("du" addressing)
+- `admin.html` - Admin dashboard for product management with custom themed dialogs
 - `blockchain.html` - Blockchain explorer interface with visual block representation
-- `transfer.html` - Ownership transfer acceptance page with countdown timer
-- `owner-verify.html` - Product ownership verification page
+- `transfer.html` - Ownership transfer acceptance page (German localized)
+- `owner-verify.html` - Product ownership verification page (complete German translation, enhanced UX)
+- `nutzungsbedingungen.html` - Terms of service emphasizing digital certificate as main product
+- `faq.html` - Frequently asked questions with legal page styling and "du" addressing
+- `impressum.html` - Legal imprint page
+- `datenschutz.html` - Privacy policy page
 - `products.json` - Product catalog data source
 - `js/main.js` - General site functionality (smooth scrolling, animations, QR generation, sharing)
 - `js/products.js` - Product gallery and modal system
@@ -334,7 +338,38 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.7 (Current)
+### v0.0.8 (Current)
+- **Terms of Service Implementation**: Complete legal framework for digital certificate sales
+  - Created comprehensive `nutzungsbedingungen.html` emphasizing digital certificate as main product
+  - Jewelry positioned as free gift/addition to digital blockchain certificate
+  - Professional legal language with friendly tone, German law compliance
+  - Consistent styling with other legal pages (impressum/datenschutz)
+  - Footer navigation updated across all pages to include "Nutzungsbedingungen"
+- **Complete German Localization & Personalization**:
+  - **Formal to Informal Addressing**: Converted all "Sie/Ihren" to "du/deinen" across entire site
+  - **Personal Content Enhancement**: Added direct user addressing for emotional connection
+    - "Präzisionsdruck": "für perfekte Details, die dich begeistern werden"
+    - "Einzigartige Formen": "die dich zum Staunen bringen"
+    - "Made in Berlin": "jedes Stück ein Unikat aus deiner Hauptstadt"
+  - **Owner-Verify Translation**: Complete German translation with consistent "du" form
+  - **Transfer Page Translation**: Unified informal addressing, footer localization
+- **Custom Themed Dialog System**: Professional replacement for browser dialogs
+  - **Admin Interface**: Custom confirmation dialogs matching KiezForm industrial theme
+  - **Features**: Dark backdrop, blur effects, smooth animations, ESC key support
+  - **German Localization**: "Bestätigung erforderlich", "JA, FORTFAHREN", "ABBRECHEN"
+  - **Theme Integration**: rgba borders, glow effects, consistent typography
+- **Owner-Verify Page Optimization**: Enhanced user experience and navigation
+  - **Complete Navbar**: Added missing menu items (VALUE, SHARE, BLOCKCHAIN)
+  - **Professional Layout**: Improved spacing, larger containers, better visual hierarchy
+  - **Enhanced Verification Display**: Larger checkmark, better typography, glow effects
+  - **Responsive Design**: Optimized margins, paddings, and mobile layouts
+- **FAQ Complete Redesign**: Unified styling with legal pages
+  - **Layout Overhaul**: Removed hero section, implemented legal page structure
+  - **Theme Consistency**: Uses legal.css for unified appearance with impressum/datenschutz
+  - **German Localization**: "Sie" to "du" conversion, German footer ("Alle Rechte vorbehalten")
+  - **Professional Structure**: Added "Stand: August 2025", consistent content hierarchy
+
+### v0.0.7
 - **Simplified Transfer System**: Complete overhaul of ownership transfer mechanism
   - Eliminated complex 24-hour email system in favor of immediate transfers
   - Red QR codes now lead to owner-verify.html with mode=transfer parameter
