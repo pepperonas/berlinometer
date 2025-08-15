@@ -24,12 +24,14 @@ KiezForm is a comprehensive e-commerce and product verification system for a Ber
 - `css/admin.css` - Admin dashboard styles  
 - `css/legal.css` - Legal pages (impressum/datenschutz) styles
 - `backend/` - Node.js/Express backend API with blockchain functionality
+  - `qr_to_stl.py` - Python script for 3D-printable STL generation
 - `public/` - Static assets for verification system
 - `admin/` - Additional admin resources
 
 ### Technology Stack
 - **Frontend**: Vanilla JavaScript (ES6+), CSS3, HTML5
 - **Backend**: Node.js/Express, MongoDB, JWT Authentication
+- **3D Printing**: Python integration with numpy-stl, PIL, qrcode for STL generation
 - **Blockchain**: SHA-256 hash-based blockchain simulation with MongoDB storage
 - **Data**: JSON file-based product catalog + MongoDB for verification and blockchain
 - **Styling**: Custom CSS with CSS Grid/Flexbox, dark theme with scanline effects
@@ -70,6 +72,7 @@ Comprehensive admin interface with smart features:
 - **Auto-Fill Forms**: Template-based form population with full editability
 - **Product Management**: CRUD operations with MongoDB integration
 - **Image URL Support**: Product thumbnail management and display
+- **STL Download System**: Generate 3D-printable QR codes as STL files (40x40x1mm)
 - **Verification Links**: QR code and share link generation
 - **Security**: SHA-256 authentication with salt and JWT tokens
 - **Real-time Stats**: Dashboard with live product statistics
@@ -330,7 +333,29 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.5 (Current)
+### v0.0.6 (Current)
+- **3D Print Integration**: Complete STL generation system for QR codes
+  - Python script `qr_to_stl.py` for converting QR codes to 3D-printable STL files
+  - Admin panel STL download buttons for both owner and transfer QR codes
+  - 40x40x1mm format optimized for jewelry integration with 0.5mm QR height
+  - Backend API endpoint `/api/admin/generate-stl-qr/:type/:productId`
+  - Child process integration with Python script execution
+  - Automatic file naming with timestamps and product identification
+  - Error handling and temporary file cleanup system
+- **VPS Deployment**: Complete Python environment setup on production VPS
+  - Installed numpy-stl, PIL, qrcode dependencies via apt and pip
+  - Fixed authentication middleware (`authenticateAdmin`) for STL endpoints
+  - Tested and verified STL generation functionality in production
+  - PM2 process management maintains backend API stability
+- **Red Border Fix**: Removed thin red border from transfer QR codes
+  - Changed QR Server API parameters from `bgcolor=dc2c3f` to `bgcolor=ffffff&color=dc2c3f`
+- **QR Regeneration Fix**: Allow creating new QR codes after invalidation
+  - Modified duplicate prevention logic to only check `status: 'active'`
+- **FAQ Updates**: Complete rewrite for 3D-printed QR codes
+  - Updated all references from PVC cards to 3D-printed QR codes integrated into jewelry
+  - Revised support procedures and cost structure for physical QR damage
+
+### v0.0.5
 - **Product Catalog Standardization**: Updated products.json with real chains
   - 6 new chain products: Agama, Aurora, Cash4Love, Cruella, Goldelse, Snake-Eater
   - 1 ring product: Brutalist Ring with real product images

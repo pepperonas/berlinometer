@@ -394,10 +394,17 @@
             async init() {
                 const token = this.urlParams.get('token');
                 const productId = this.urlParams.get('product');
+                this.transferMode = this.urlParams.get('mode') === 'transfer';
 
                 if (!token || !productId) {
                     this.showError('Invalid verification link');
                     return;
+                }
+
+                // Update header for transfer mode
+                if (this.transferMode) {
+                    document.querySelector('.verification-header h1').textContent = 'Eigentumsübertragung';
+                    document.querySelector('.verification-header p').textContent = 'Transfer von KiezForm Schmuckstück';
                 }
 
                 // Simulate loading delay
@@ -567,9 +574,49 @@
                             from our secure admin system and cannot be forged.
                         </p>
                     </div>
+
+                    ${this.transferMode ? `
+                    <div class="transfer-section" style="background: rgba(220, 44, 63, 0.1); border: 1px solid rgba(220, 44, 63, 0.3); border-radius: 8px; padding: 2rem; margin: 2rem 0;">
+                        <h3 style="color: #dc2c3f; margin-bottom: 1.5rem; text-align: center;">🔄 Inhaber ändern</h3>
+                        <p style="color: #e0e0e0; margin-bottom: 1.5rem; text-align: center;">
+                            Geben Sie den Namen des neuen Inhabers ein, um das Eigentum zu übertragen.
+                        </p>
+                        
+                        <div class="transfer-form" style="max-width: 400px; margin: 0 auto;">
+                            <div style="margin-bottom: 1.5rem;">
+                                <label for="new-owner-name" style="display: block; color: #a0a0a0; margin-bottom: 0.5rem; font-size: 0.9rem;">
+                                    Neuer Inhaber:
+                                </label>
+                                <input type="text" 
+                                       id="new-owner-name" 
+                                       placeholder="z.B. Max Mustermann" 
+                                       style="width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 1rem; font-size: 0.9rem; border-radius: 4px;"
+                                       required>
+                                <small style="display: block; margin-top: 0.5rem; color: #808080; font-size: 0.8rem;">
+                                    Der Transfer wird sofort in der Blockchain erfasst.
+                                </small>
+                            </div>
+                            
+                            <div style="text-align: center;">
+                                <button id="transfer-submit" 
+                                        onclick="this.closest('.product-verification').parentElement.verificationInstance.executeTransfer()"
+                                        style="background: transparent; border: 1px solid #dc2c3f; color: #dc2c3f; padding: 1rem 2rem; cursor: pointer; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.9rem; transition: all 0.3s;">
+                                    🔐 Übertragung bestätigen
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
                 `;
                 
                 resultContainer.style.display = 'block';
+                
+                // Add reference to this instance for transfer button
+                if (this.transferMode) {
+                    resultContainer.verificationInstance = this;
+                    this.currentProduct = product;
+                    this.currentToken = token;
+                }
             }
 
             showError(message) {
@@ -587,6 +634,86 @@
                 `;
                 
                 resultContainer.style.display = 'block';
+            }
+
+            async executeTransfer() {
+                const newOwnerName = document.getElementById('new-owner-name').value.trim();
+                
+                if (!newOwnerName) {
+                    this.showTransferError('Bitte geben Sie einen Namen ein.');
+                    return;
+                }
+
+                const submitBtn = document.getElementById('transfer-submit');
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Übertragung läuft...';
+                submitBtn.style.opacity = '0.5';
+
+                try {
+                    const response = await fetch('/api/transfer/simple', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            token: this.currentToken,
+                            productId: this.urlParams.get('product'),
+                            newOwnerName: newOwnerName
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.showTransferSuccess(data, newOwnerName);
+                    } else {
+                        throw new Error(data.error || 'Transfer fehlgeschlagen');
+                    }
+                } catch (error) {
+                    console.error('Transfer error:', error);
+                    this.showTransferError(error.message || 'Fehler bei der Übertragung');
+                    
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '🔐 Übertragung bestätigen';
+                    submitBtn.style.opacity = '1';
+                }
+            }
+
+            showTransferSuccess(data, newOwnerName) {
+                const transferSection = document.querySelector('.transfer-section');
+                transferSection.innerHTML = `
+                    <div style="text-align: center; color: #00ff00;">
+                        <h3 style="color: #00ff00; margin-bottom: 1rem;">✅ Transfer erfolgreich!</h3>
+                        <p style="color: #e0e0e0; margin-bottom: 1rem;">
+                            Das Eigentum wurde erfolgreich auf <strong>${this.escapeHtml(newOwnerName)}</strong> übertragen.
+                        </p>
+                        <div style="background: rgba(0, 255, 0, 0.1); border: 1px solid rgba(0, 255, 0, 0.3); padding: 1rem; border-radius: 4px; margin: 1rem 0;">
+                            <p style="color: #00ff00; font-family: monospace; font-size: 0.9rem;">
+                                Blockchain-Block: ${data.blockId || 'N/A'}
+                            </p>
+                        </div>
+                        <p style="color: #808080; font-size: 0.9rem;">
+                            Der rote QR-Code wurde automatisch erneuert.
+                        </p>
+                    </div>
+                `;
+            }
+
+            showTransferError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3); color: #ff4444; padding: 1rem; border-radius: 4px; margin: 1rem 0; text-align: center;';
+                errorDiv.innerHTML = `❌ ${this.escapeHtml(message)}`;
+                
+                const transferForm = document.querySelector('.transfer-form');
+                transferForm.insertBefore(errorDiv, transferForm.firstChild);
+                
+                // Remove error after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.remove();
+                    }
+                }, 5000);
             }
 
             escapeHtml(unsafe) {

@@ -955,7 +955,8 @@ function generateOwnerQR(productId) {
                 <p>Scan this QR code to verify ownership</p>
             </div>
             <div class="modal-actions">
-                <button type="button" onclick="downloadQR('${qrUrl}', '${product.id}')">Download QR</button>
+                <button type="button" onclick="downloadQR('${qrUrl}', '${product.id}')" class="btn-secondary">📥 Download QR</button>
+                <button type="button" onclick="downloadSTL('${product.id}', 'owner')" class="btn-stl" title="Download 3D printable STL file">🏗️ 3D Print (STL)</button>
                 <button type="button" onclick="closeQRModal()">Close</button>
             </div>
         </div>
@@ -1000,6 +1001,61 @@ async function downloadQR(qrUrl, productId) {
     } catch (error) {
         console.error('Error downloading QR code:', error);
         showToast('Error downloading QR code', 'error');
+    }
+}
+
+// STL Download Function
+async function downloadSTL(productId, type) {
+    try {
+        showToast('Generating 3D printable STL file...', 'info');
+        
+        const response = await fetch(`/api/admin/generate-stl-qr/${type}/${productId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+        
+        // Get the filename from the response headers
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = `kiezform-${type}-qr-${productId}.stl`;
+        if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename="([^"]+)"/);
+            if (filenameMatch) {
+                filename = filenameMatch[1];
+            }
+        }
+        
+        // Download the STL file
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(url);
+        showToast(`STL file downloaded successfully! (${filename})`, 'success');
+        
+    } catch (error) {
+        console.error('Error downloading STL:', error);
+        let errorMessage = 'Error downloading STL file';
+        if (error.message.includes('STL converter script not found')) {
+            errorMessage = 'STL generation not available (missing Python dependencies)';
+        } else if (error.message.includes('No active transfer QR')) {
+            errorMessage = 'No active transfer QR code found for this product';
+        } else if (error.message) {
+            errorMessage = `STL generation error: ${error.message}`;
+        }
+        showToast(errorMessage, 'error');
     }
 }
 
@@ -1388,8 +1444,9 @@ window.viewTransferQR = function(productId, productName, serialNumber) {
             </div>
             
             <div class="modal-actions">
-                <button type="button" onclick="downloadTransferQRFromModal('${productId}')">DOWNLOAD QR</button>
-                <button type="button" onclick="closeTransferQRModal()">CLOSE</button>
+                <button type="button" onclick="downloadTransferQRFromModal('${productId}')" class="btn-secondary">📥 Download QR</button>
+                <button type="button" onclick="downloadSTL('${productId}', 'transfer')" class="btn-stl" title="Download 3D printable STL file">🏗️ 3D Print (STL)</button>
+                <button type="button" onclick="closeTransferQRModal()">Close</button>
             </div>
         </div>
     `;

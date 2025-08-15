@@ -6,6 +6,9 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const QRCode = require('qrcode');
 const crypto = require('crypto');
+const { spawn } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -625,7 +628,7 @@ app.post('/api/transfer/initiate', async (req, res) => {
       width: 300,
       margin: 2,
       color: {
-        dark: '#ff0000', // Red QR code for transfers
+        dark: '#dc2c3f', // Red QR code for transfers
         light: '#FFFFFF'
       },
       errorCorrectionLevel: 'M'
@@ -803,21 +806,28 @@ app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
     // Check if transfer QR already exists and is active
     const existingQR = await TransferQR.findOne({ 
       productId, 
-      status: { $in: ['active', 'used'] } 
+      status: 'active'
     });
     
-    if (existingQR && existingQR.status === 'active') {
+    if (existingQR) {
       return res.status(400).json({ 
-        error: 'Active transfer QR code already exists for this product',
-        qrToken: existingQR.qrToken
+        error: 'Active transfer QR code already exists for this product. Please invalidate the existing code first.',
+        qrToken: existingQR.qrToken,
+        existingStatus: existingQR.status
       });
     }
+
+    // Clean up any old invalidated QR codes for this product
+    await TransferQR.deleteMany({
+      productId,
+      status: { $in: ['invalidated', 'expired', 'used'] }
+    });
     
     // Generate unique QR token
     const qrToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
     
-    // Create transfer URL
-    const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${qrToken}&product=${productId}`;
+    // Create transfer URL - simplified to use owner-verify with transfer mode
+    const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${qrToken}&product=${productId}&mode=transfer`;
     
     // QR Code data includes product info for verification
     const qrCodeData = JSON.stringify({
@@ -840,7 +850,7 @@ app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
       metadata: {
         productName: product.productName,
         serialNumber: product.serialNumber,
-        qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&bgcolor=dc2c3f&color=ffffff&data=${encodeURIComponent(transferUrl)}`
+        qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&bgcolor=ffffff&color=dc2c3f&data=${encodeURIComponent(transferUrl)}`
       }
     });
     
@@ -957,7 +967,10 @@ app.delete('/api/admin/transfer-code/:productId', async (req, res) => {
     const { productId } = req.params;
     
     const transferQR = await TransferQR.findOneAndUpdate(
-      { productId },
+      { 
+        productId, 
+        status: 'active' 
+      },
       { 
         status: 'invalidated',
         usedAt: new Date()
@@ -987,9 +1000,9 @@ app.post('/api/admin/generate-all-missing-qr', async (req, res) => {
     // Get all products
     const products = await Product.find({});
     
-    // Get existing QR codes
+    // Get existing active QR codes
     const existingQRs = await TransferQR.find({ 
-      status: { $in: ['active', 'used'] } 
+      status: 'active'
     });
     
     const existingProductIds = new Set(existingQRs.map(qr => qr.productId));
@@ -1003,6 +1016,12 @@ app.post('/api/admin/generate-all-missing-qr', async (req, res) => {
     
     for (const product of missingProducts) {
       try {
+        // Clean up any old invalidated QR codes for this product
+        await TransferQR.deleteMany({
+          productId: product._id,
+          status: { $in: ['invalidated', 'expired', 'used'] }
+        });
+
         // Generate unique QR token
         const qrToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
         
@@ -1030,7 +1049,7 @@ app.post('/api/admin/generate-all-missing-qr', async (req, res) => {
           metadata: {
             productName: product.productName,
             serialNumber: product.serialNumber,
-            qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&bgcolor=dc2c3f&color=ffffff&data=${encodeURIComponent(transferUrl)}`
+            qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&bgcolor=ffffff&color=dc2c3f&data=${encodeURIComponent(transferUrl)}`
           }
         });
         
@@ -1073,6 +1092,274 @@ app.use((error, req, res, next) => {
     error: 'Internal server error',
     timestamp: new Date().toISOString()
   });
+});
+
+// Simple Transfer Endpoint - No email required
+app.post('/api/transfer/simple', async (req, res) => {
+  try {
+    const { token, productId, newOwnerName } = req.body;
+
+    // Validate input
+    if (!token || !productId || !newOwnerName) {
+      return res.status(400).json({ 
+        error: 'Missing required fields: token, productId, newOwnerName' 
+      });
+    }
+
+    // Find the transfer QR code
+    const transferQR = await TransferQR.findOne({ 
+      qrToken: token, 
+      productId, 
+      status: 'active' 
+    });
+
+    if (!transferQR) {
+      return res.status(404).json({ 
+        error: 'Transfer QR code not found or invalid' 
+      });
+    }
+
+    // Find the product
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Generate new owner pseudonym
+    const newOwnerPseudonym = generatePseudonym();
+
+    // Create blockchain transaction
+    const transferBlock = new Block({
+      blockId: 'BLK-' + crypto.randomBytes(4).toString('hex').toUpperCase(),
+      blockNumber: await Block.countDocuments() + 1,
+      productId: productId,
+      transactionType: 'TRANSFER',
+      fromOwner: product.blockchainInfo?.currentOwner || 'USR-INITIAL',
+      toOwner: newOwnerPseudonym,
+      timestamp: new Date(),
+      metadata: {
+        productName: product.productName,
+        serialNumber: product.serialNumber,
+        transferMethod: 'QR_CODE_SIMPLE'
+      }
+    });
+
+    // Calculate hash for the new block
+    const previousBlock = await Block.findOne().sort({ blockNumber: -1 });
+    transferBlock.previousHash = previousBlock ? previousBlock.currentHash : '0';
+    
+    const blockData = {
+      blockId: transferBlock.blockId,
+      blockNumber: transferBlock.blockNumber,
+      previousHash: transferBlock.previousHash,
+      productId: transferBlock.productId,
+      transactionType: transferBlock.transactionType,
+      fromOwner: transferBlock.fromOwner,
+      toOwner: transferBlock.toOwner,
+      timestamp: transferBlock.timestamp,
+      metadata: transferBlock.metadata
+    };
+    
+    transferBlock.currentHash = generateHash(blockData);
+    transferBlock.isValid = true;
+
+    // Update product owner information
+    product.owner = {
+      name: newOwnerName,
+      email: null, // No email required for simple transfer
+      registrationDate: new Date()
+    };
+    
+    product.blockchainInfo = {
+      currentOwner: newOwnerPseudonym,
+      mintBlock: product.blockchainInfo?.mintBlock || transferBlock.blockId,
+      lastBlock: transferBlock.blockId,
+      transferCount: (product.blockchainInfo?.transferCount || 0) + 1
+    };
+
+    product.lastVerified = new Date();
+
+    // Mark old transfer QR as used
+    transferQR.status = 'used';
+    transferQR.completedAt = new Date();
+
+    // Generate new transfer QR code for future transfers
+    const newQRToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
+    const newTransferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${newQRToken}&product=${productId}&mode=transfer`;
+    
+    const newTransferQR = new TransferQR({
+      productId,
+      qrToken: newQRToken,
+      qrCodeData: JSON.stringify({
+        type: 'TRANSFER',
+        token: newQRToken,
+        productId: productId,
+        serial: product.serialNumber,
+        name: product.productName,
+        url: newTransferUrl,
+        generated: new Date().toISOString()
+      }),
+      status: 'active',
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      metadata: {
+        productName: product.productName,
+        serialNumber: product.serialNumber,
+        qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&bgcolor=ffffff&color=dc2c3f&data=${encodeURIComponent(newTransferUrl)}`
+      }
+    });
+
+    // Save all changes
+    await Promise.all([
+      transferBlock.save(),
+      product.save(),
+      transferQR.save(),
+      newTransferQR.save()
+    ]);
+
+    res.json({
+      success: true,
+      message: 'Transfer completed successfully',
+      blockId: transferBlock.blockId,
+      newOwner: newOwnerPseudonym,
+      newOwnerName: newOwnerName,
+      newTransferQRToken: newQRToken,
+      timestamp: transferBlock.timestamp
+    });
+
+  } catch (error) {
+    console.error('Simple transfer error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error during transfer',
+      details: error.message
+    });
+  }
+});
+
+// STL Generation for QR Codes
+app.get('/api/admin/generate-stl-qr/:type/:productId', authenticateAdmin, async (req, res) => {
+  try {
+    const { type, productId } = req.params;
+    
+    // Validate type parameter
+    if (!['owner', 'transfer'].includes(type)) {
+      return res.status(400).json({ error: 'Invalid QR type. Must be "owner" or "transfer"' });
+    }
+
+    // Find the product
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    let qrData = '';
+    let filename = '';
+
+    if (type === 'owner') {
+      // Generate owner verification QR data
+      const ownerName = product.owner?.name || 'KiezForm Berlin';
+      const token = btoa(JSON.stringify({
+        productId: product._id,
+        owner: ownerName,
+        timestamp: Date.now()
+      })).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+
+      qrData = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${token}&product=${productId}`;
+      filename = `kiezform-owner-qr-${product.serialNumber || productId}.stl`;
+    } else if (type === 'transfer') {
+      // Find active transfer QR
+      const transferQR = await TransferQR.findOne({ 
+        productId, 
+        status: 'active' 
+      });
+      
+      if (!transferQR) {
+        return res.status(404).json({ error: 'No active transfer QR code found for this product' });
+      }
+
+      // Use the transfer URL from the QR metadata
+      qrData = transferQR.metadata.qrImageUrl.split('data=')[1];
+      if (qrData) {
+        qrData = decodeURIComponent(qrData);
+      } else {
+        // Fallback: reconstruct transfer URL
+        qrData = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${transferQR.qrToken}&product=${productId}`;
+      }
+      
+      filename = `kiezform-transfer-qr-${product.serialNumber || productId}.stl`;
+    }
+
+    // Generate temporary filename
+    const tempDir = path.join(__dirname, 'temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    const tempStlFile = path.join(tempDir, `${Date.now()}-${filename}`);
+    const pythonScript = path.join(__dirname, 'qr_to_stl.py');
+
+    // Check if Python script exists
+    if (!fs.existsSync(pythonScript)) {
+      return res.status(500).json({ error: 'QR to STL converter script not found' });
+    }
+
+    // Execute Python script
+    const pythonProcess = spawn('python3', [
+      pythonScript,
+      qrData,
+      '-o', tempStlFile,
+      '-s', '40',        // 40mm size
+      '-t', '1',         // 1mm thickness
+      '-q', '0.5',       // 0.5mm QR height
+      '-r', '2'          // 2mm corner radius
+    ]);
+
+    let stderr = '';
+    pythonProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    pythonProcess.on('close', (code) => {
+      if (code !== 0) {
+        console.error('Python script error:', stderr);
+        return res.status(500).json({ 
+          error: 'Failed to generate STL file', 
+          details: stderr 
+        });
+      }
+
+      // Check if STL file was created
+      if (!fs.existsSync(tempStlFile)) {
+        return res.status(500).json({ error: 'STL file was not generated' });
+      }
+
+      // Send the STL file
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Type', 'application/octet-stream');
+      
+      const fileStream = fs.createReadStream(tempStlFile);
+      fileStream.pipe(res);
+
+      // Cleanup temp file after sending
+      fileStream.on('end', () => {
+        fs.unlink(tempStlFile, (err) => {
+          if (err) console.error('Error deleting temp file:', err);
+        });
+      });
+    });
+
+    // Handle Python process errors
+    pythonProcess.on('error', (error) => {
+      console.error('Error spawning Python process:', error);
+      res.status(500).json({ 
+        error: 'Failed to start STL generation process',
+        details: error.message 
+      });
+    });
+
+  } catch (error) {
+    console.error('STL generation error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // 404 handler

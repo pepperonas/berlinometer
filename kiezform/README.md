@@ -11,6 +11,7 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 - **Backend API**: Full Express.js REST API with JWT authentication
 - **Verification System**: QR codes and secure share links for ownership verification  
 - **Transfer System**: QR-based ownership transfers with 24-hour expiration
+- **3D Print Integration**: STL file generation for QR codes (40x40x1mm format)
 - **Product Database**: MongoDB with comprehensive product and user management
 - **VALUE Section**: Comprehensive dual QR code verification system explanation
 - **SHARE Section**: Interactive QR code for site sharing with Web Share API
@@ -23,6 +24,7 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 ### Technology Stack
 - **Frontend**: Vanilla JavaScript (ES6+), CSS3, HTML5
 - **Backend**: Node.js/Express (Port 3000), MongoDB, JWT Authentication
+- **3D Printing**: Python integration with qr_to_stl.py script for STL generation
 - **Data**: JSON file-based product catalog + MongoDB for verification
 - **Styling**: Custom CSS with Grid/Flexbox, dark industrial theme
 - **Security**: SHA-256 password hashing, bcrypt, constant-time comparison
@@ -41,6 +43,7 @@ kiezform/
 ├── products.json           # Product catalog data
 ├── backend/                # Node.js/Express backend API
 │   ├── server.js           # Main API server
+│   ├── qr_to_stl.py        # Python script for STL generation
 │   ├── init-admin.js       # Admin initialization script
 │   ├── ecosystem.config.js # PM2 configuration
 │   ├── package.json        # Backend dependencies
@@ -141,10 +144,11 @@ Navigate to `/admin` and login with:
 - mailto link generation
 
 ### Admin Dashboard (`js/admin.js`)  
-- **Version Display**: Shows current version (v0.0.2) in header
+- **Version Display**: Shows current version (v0.0.5) in header
 - **Smart Product Templates**: Cascade dropdown system for quick product creation
 - **Auto-Fill Forms**: Load product data from templates with full editability
 - **Image URL Support**: Product thumbnail management and display
+- **STL Download**: Generate 3D-printable QR codes (owner & transfer) as STL files
 - Secure SHA-256 authentication with salt
 - Product CRUD operations with MongoDB integration
 - Owner management and editing
@@ -328,6 +332,7 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 - `PUT /api/products/:id` - Update product
 - `DELETE /api/products/:id` - Delete product
 - `GET /api/stats` - Get statistics
+- `GET /api/admin/generate-stl-qr/:type/:productId` - Generate STL files for QR codes
 
 ## 🔐 Security & Authentication
 
@@ -389,9 +394,46 @@ Update email addresses in:
 - Product inquiry mailto links (`js/products.js`)
 - Legal pages contact details
 
+## 🖨️ 3D Printing Integration
+
+### STL Generation System
+- **Python Script**: `qr_to_stl.py` converts QR codes to 3D-printable STL files
+- **File Format**: 40x40x1mm STL files optimized for 3D printing
+- **QR Code Types**: Both owner verification and transfer QR codes supported
+- **Admin Interface**: STL download buttons in QR code modals
+- **File Naming**: Timestamped files with product identification
+- **Dependencies**: numpy-stl, PIL, qrcode, numpy
+
+### STL File Specifications
+- **Base Size**: 40mm x 40mm x 1mm
+- **QR Height**: 0.5mm raised above base
+- **Material**: Compatible with PLA+, PETG, ABS
+- **Print Settings**: 0.2mm layer height, 100% infill recommended
+- **Support**: No supports needed for optimal print quality
+
+### Integration Workflow
+1. **Admin Panel**: Click STL download button in QR modal
+2. **Backend Processing**: Python script generates STL from QR URL
+3. **File Download**: Browser downloads ready-to-print STL file
+4. **3D Printing**: Print file with standard FDM printer settings
+5. **Integration**: Embed 3D-printed QR code into jewelry piece
+
 ## 🏷️ Version History
 
-### v0.0.5 (Latest)
+### v0.0.6 (Latest)
+- ✅ **3D Print Integration**: Complete STL generation system for QR codes
+  - Python script `qr_to_stl.py` for converting QR codes to 3D-printable STL files
+  - Admin panel STL download buttons for both owner and transfer QR codes
+  - 40x40x1mm format optimized for jewelry integration
+  - Automatic file naming with timestamps and product identification
+  - Error handling and temporary file cleanup
+- ✅ **VPS Deployment**: Complete Python environment setup
+  - Installed numpy-stl, PIL, qrcode dependencies on production VPS
+  - Fixed authentication middleware for STL endpoints
+  - Tested and verified STL generation functionality
+  - PM2 process management for backend API stability
+
+### v0.0.5
 - ✅ **Product Catalog Standardization**: Updated products.json with real chains
   - 6 new chain products: Agama, Aurora, Cash4Love, Cruella, Goldelse, Snake-Eater
   - 1 ring product: Brutalist Ring with real product images
