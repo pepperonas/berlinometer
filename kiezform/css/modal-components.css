@@ -93,7 +93,7 @@
     .modal-title {
         margin: 0;
         font-size: var(--kf-text-xl);
-        font-weight: var(--kf-weight-semibold);
+        font-weight: var(--kf-weight-medium);
         color: var(--kf-text-primary);
         letter-spacing: var(--kf-tracking-wide);
     }
@@ -220,7 +220,7 @@
         
         .modal-price {
             font-size: var(--kf-text-xl);
-            font-weight: var(--kf-weight-bold);
+            font-weight: var(--kf-weight-medium);
             color: var(--kf-accent-green);
             margin-bottom: var(--kf-space-4);
         }
@@ -304,7 +304,7 @@
             padding: var(--kf-space-1) var(--kf-space-3);
             border-radius: var(--kf-radius-full);
             font-size: var(--kf-text-xs);
-            font-weight: var(--kf-weight-semibold);
+            font-weight: var(--kf-weight-medium);
             color: var(--kf-accent-green);
             font-family: var(--kf-font-mono);
         }
@@ -313,7 +313,7 @@
             padding: var(--kf-space-1) var(--kf-space-2);
             border-radius: var(--kf-radius-default);
             font-size: var(--kf-text-xs);
-            font-weight: var(--kf-weight-semibold);
+            font-weight: var(--kf-weight-medium);
             text-transform: uppercase;
             letter-spacing: var(--kf-tracking-wide);
             
@@ -378,7 +378,7 @@
         
         .dialog-title {
             font-size: var(--kf-text-lg);
-            font-weight: var(--kf-weight-semibold);
+            font-weight: var(--kf-weight-medium);
             color: var(--kf-text-primary);
             margin-bottom: var(--kf-space-3);
         }
@@ -450,6 +450,38 @@
         font-size: var(--kf-text-lg);
     }
     
+    /* Block modal specific mobile optimizations */
+    .block-modal {
+        .modal {
+            padding-top: var(--kf-space-12);
+            align-items: flex-start;
+        }
+        
+        .modal-content {
+            margin-top: 0;
+            max-height: calc(100vh - var(--kf-space-24));
+            overflow-y: auto;
+        }
+        
+        .detail-header {
+            grid-template-columns: 1fr;
+            gap: var(--kf-space-2);
+            text-align: center;
+            
+            .detail-header-left {
+                justify-content: center;
+            }
+            
+            .detail-header-right {
+                text-align: center;
+            }
+        }
+        
+        .detail-grid {
+            gap: var(--kf-space-4);
+        }
+    }
+    
     /* Mobile-optimized modal padding */
     .modal-header,
     .modal-footer {
@@ -471,6 +503,15 @@
     
     .modal {
         padding-top: max(env(safe-area-inset-top, 160px), 160px);
+    }
+    
+    /* Block modal specific S24 Ultra optimizations */
+    .block-modal .modal {
+        padding-top: max(env(safe-area-inset-top, 100px), 100px);
+    }
+    
+    .block-modal .modal-content {
+        max-height: calc(100vh - max(env(safe-area-inset-top, 100px), 100px) - var(--kf-space-12));
     }
     
     .modal-close {

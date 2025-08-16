@@ -6,6 +6,16 @@
     <meta name="description" content="KiezForm Eigentümerverifikation - Authentizitätsprüfung für 3D-gedruckten Schmuck">
     <title>Owner Verification - KiezForm</title>
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JHCP2YWPX5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-JHCP2YWPX5');
+    </script>
+
     <!-- Open Graph -->
     <meta property="og:title" content="KiezForm - Eigentümerverifikation">
     <meta property="og:description" content="Authentizitätsprüfung für 3D-gedruckten Schmuck aus Berlin.">
@@ -169,18 +179,18 @@
 
         .detail-label {
             color: #808080;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         .detail-value {
             color: #e0e0e0;
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .owner-highlight {
             color: #00ff00;
             font-size: 1.3rem;
-            font-weight: 600;
+            font-weight: 500;
             text-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
             letter-spacing: 0.05em;
         }
@@ -524,7 +534,7 @@
                         <div class="verification-success">✓</div>
                         <h2 style="color: #00ff00; margin: 0 0 2rem 0; font-size: 1.4rem; letter-spacing: 0.2em; font-weight: 300;">VERIFIZIERTER EIGENTÜMER</h2>
                         <p style="color: #e0e0e0; font-size: 1.1rem; margin: 0 0 1.5rem 0; line-height: 1.4;">Dieses Produkt gehört authentisch:</p>
-                        <p class="owner-highlight" style="margin: 0; font-size: 1.3rem; font-weight: 600;">${this.escapeHtml(product.owner)}</p>
+                        <p class="owner-highlight" style="margin: 0; font-size: 1.3rem; font-weight: 500;">${this.escapeHtml(product.owner)}</p>
                     </div>
 
                     <div class="product-details">
@@ -761,7 +771,7 @@
                             <strong style="color: #00ff00;">${this.escapeHtml(newOwnerName)}</strong> 
                             zu übertragen.
                         </p>
-                        <p style="color: #ff6b6b; font-weight: bold; margin-bottom: 1rem;">
+                        <p style="color: #ff6b6b; font-weight: 500; margin-bottom: 1rem;">
                             Diese Aktion ist ENDGÜLTIG und kann NICHT rückgängig gemacht werden!
                         </p>
                         <p style="color: #808080; font-size: 0.9rem;">
@@ -782,7 +792,7 @@
                             cursor: pointer;
                             border-radius: 4px;
                             font-size: 1rem;
-                            font-weight: bold;
+                            font-weight: 500;
                             transition: all 0.3s;
                         ">
                             ✅ JA, ÜBERTRAGEN

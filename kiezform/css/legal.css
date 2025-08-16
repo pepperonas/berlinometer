@@ -51,8 +51,8 @@ html {
     --font-weight-light: 300;
     --font-weight-regular: 400;
     --font-weight-medium: 500;
-    --font-weight-semibold: 600;
-    --font-weight-bold: 700;
+    --font-weight-semibold: 500;
+    --font-weight-bold: 550;
     
     /* Line Heights */
     --line-height-tight: 1.2;
@@ -343,7 +343,7 @@ footer {
 
 .faq-category-title {
     font-size: var(--font-size-h2);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 400;
     color: var(--color-text-primary);
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -367,7 +367,7 @@ footer {
 
 .faq-question {
     font-size: var(--font-size-h4);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 400;
     color: var(--color-text-primary);
     padding: 2rem;
     margin: 0;
@@ -399,7 +399,7 @@ footer {
 
 .faq-answer h4 {
     font-size: var(--font-size-h4);
-    font-weight: var(--font-weight-semibold);
+    font-weight: 400;
     color: var(--color-text-secondary);
     margin: 2rem 0 1rem 0;
     text-transform: uppercase;

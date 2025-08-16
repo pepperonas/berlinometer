@@ -98,7 +98,7 @@ function showCustomConfirm(message, title = 'Bestätigung erforderlich') {
                     cursor: pointer;
                     border-radius: 4px;
                     font-size: 0.9rem;
-                    font-weight: bold;
+                    font-weight: 500;
                     text-transform: uppercase;
                     letter-spacing: 0.1em;
                     transition: all 0.3s;
@@ -1689,10 +1689,10 @@ window.viewTransferQR = function(productId, productName, serialNumber) {
             <h2>Transfer QR Code</h2>
             
             <div style="margin: 1.5rem 0;">
-                <p><span style="color: #00ff00; font-weight: bold;">Product:</span> ${escapeHtml(productName)}</p>
-                <p><span style="color: #00ff00; font-weight: bold;">Serial:</span> ${escapeHtml(serialNumber)}</p>
-                <p><span style="color: #00ff00; font-weight: bold;">QR Token:</span> ${escapeHtml(transferItem.transferQR.qrToken)}</p>
-                <p><span style="color: #00ff00; font-weight: bold;">Status:</span> <span style="color: ${getStatusColor(transferItem.overallStatus)};">${getStatusDisplay(transferItem.overallStatus)}</span></p>
+                <p><span style="color: #00ff00; font-weight: 500;">Product:</span> ${escapeHtml(productName)}</p>
+                <p><span style="color: #00ff00; font-weight: 500;">Serial:</span> ${escapeHtml(serialNumber)}</p>
+                <p><span style="color: #00ff00; font-weight: 500;">QR Token:</span> ${escapeHtml(transferItem.transferQR.qrToken)}</p>
+                <p><span style="color: #00ff00; font-weight: 500;">Status:</span> <span style="color: ${getStatusColor(transferItem.overallStatus)};">${getStatusDisplay(transferItem.overallStatus)}</span></p>
             </div>
             
             <div class="qr-container">

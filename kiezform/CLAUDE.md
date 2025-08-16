@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KiezForm is a comprehensive e-commerce and product verification system for a Berlin-based 3D-printed jewelry brand. The project combines a static frontend website showcasing jewelry products with a complete backend API for product verification, authentication, and admin management. The site features two main product categories (chains and rings) with industrial aesthetics and sustainable materials.
 
+**Design System**: Features a unified CSS component library with 150+ design tokens, eliminating design inconsistencies while maintaining simple deployment without build processes.
+
 ## Architecture
 
 ### File Structure
@@ -23,9 +25,14 @@ KiezForm is a comprehensive e-commerce and product verification system for a Ber
 - `js/products.js` - Product gallery and modal system with mobile optimization
 - `js/blockchain.js` - Blockchain explorer with ultra-smooth search animations and UX
 - `js/admin.js` - Admin interface with secure authentication and modal integration
-- `css/styles.css` - Main site styles with industrial section title styling
-- `css/blockchain.css` - Blockchain explorer styles with KiezForm industrial theme
-- `css/admin.css` - Admin dashboard styles  
+- `css/kiezform-design-system.css` - **Master design system** (import this for new projects)
+- `css/design-tokens.css` - Global CSS variables and design tokens (150+ variables)
+- `css/button-components.css` - Unified button component library (8 variants)
+- `css/modal-components.css` - Unified modal component library (4 types)
+- `css/form-components.css` - Unified form component library (all input types)
+- `css/styles.css` - Legacy main site styles (still supported)
+- `css/blockchain.css` - Legacy blockchain explorer styles (still supported)
+- `css/admin.css` - Legacy admin dashboard styles (still supported)
 - `css/legal.css` - Legal pages (impressum/datenschutz) styles
 - `backend/` - Node.js/Express backend API with blockchain functionality
   - `qr_to_stl.py` - Python script for 3D-printable STL generation
@@ -38,7 +45,8 @@ KiezForm is a comprehensive e-commerce and product verification system for a Ber
 - **3D Printing**: Python integration with numpy-stl, PIL, qrcode for STL generation
 - **Blockchain**: SHA-256 hash-based blockchain simulation with MongoDB storage
 - **Data**: JSON file-based product catalog + MongoDB for verification and blockchain
-- **Styling**: Custom CSS with CSS Grid/Flexbox, dark theme with scanline effects
+- **Design System**: Unified CSS component library with 150+ design tokens for consistent theming
+- **Styling**: CSS Grid/Flexbox, dark industrial theme with scanline effects
 - **Security**: SHA-256 password hashing, JWT tokens, bcrypt, blockchain integrity
 - **Deployment**: PM2 process management, Nginx reverse proxy
 
@@ -153,12 +161,72 @@ Comprehensive admin interface with smart features:
 }
 ```
 
+## Unified Design System
+
+### Architecture Overview
+KiezForm features a **component-based CSS architecture** that eliminates design inconsistencies while maintaining the simplicity of static deployment (no build process required).
+
+#### **Design Token System** (css/design-tokens.css)
+- **150+ CSS Variables**: `--kf-black`, `--kf-text-primary`, `--kf-accent-green`, etc.
+- **Color Hierarchy**: Primary, secondary, muted text with accent colors
+- **Typography Scale**: Responsive font sizes with mobile optimization
+- **Spacing System**: Consistent 4px-based spacing scale (`--kf-space-1` to `--kf-space-24`)
+- **Animation Tokens**: Material Design 3 easing functions
+- **Z-Index Scale**: Organized layer management (`--kf-z-modal`, `--kf-z-toast`, etc.)
+
+#### **Component Libraries**
+
+**Button Components** (css/button-components.css):
+- **8 Variants**: Primary, Secondary, Outline, Ghost, Success, Danger, Search, Icon
+- **3 Sizes**: Small (36px), Default (44px), Large (52px)
+- **States**: Hover, Focus, Active, Disabled, Loading
+- **Accessibility**: ARIA support, 44px touch targets, screen reader friendly
+- **Mobile**: Samsung S24 Ultra (1440x3120px) + iPhone 16 Pro optimizations
+
+**Modal Components** (css/modal-components.css):
+- **4 Types**: Standard, Product Detail, Blockchain Block, Confirmation Dialog
+- **Animations**: Fade-scale, Slide-up, Zoom with Material Design 3 easing
+- **Integration**: Compatible with existing ModalHistoryManager
+- **Responsive**: Mobile-first with safe-area support for notches/Dynamic Island
+- **Performance**: Hardware acceleration, backdrop blur effects
+
+**Form Components** (css/form-components.css):
+- **All Input Types**: Text, Number, Date, File, Range, Checkbox, Radio, Select
+- **Validation States**: Error, Success, Focus, Disabled with consistent styling
+- **Input Groups**: With icons, buttons, help text, labels
+- **Accessibility**: High contrast support, reduced motion, screen reader friendly
+- **Mobile**: 16px font size (prevents iOS zoom), touch-friendly interactions
+
+#### **Master Import** (css/kiezform-design-system.css)
+```html
+<!-- Recommended: Single import for new projects -->
+<link rel="stylesheet" href="/css/kiezform-design-system.css">
+
+<!-- Legacy: Individual imports still supported -->
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/admin.css">
+<link rel="stylesheet" href="/css/blockchain.css">
+```
+
+#### **Design Principles**
+- **Industrial Aesthetic**: Ultra-thin typography, wide letter spacing, scanline overlays
+- **Mobile-First**: 44px touch targets, safe-area support, no horizontal scroll
+- **Performance**: Hardware acceleration, reduced motion support, legacy browser fallbacks
+- **Consistency**: Unified spacing, typography, and color systems across all components
+- **Accessibility**: WCAG 2.1 AA compliance, screen reader support, keyboard navigation
+
+#### **Migration Strategy**
+- **Backward Compatible**: Existing CSS classes continue working
+- **Gradual Migration**: Can replace CSS imports incrementally
+- **No Breaking Changes**: Legacy components function alongside new design system
+- **Performance Improvement**: Unified system reduces CSS redundancy and inconsistencies
+
 ## Development Workflow
 
 ### Local Development
 
 #### Frontend Only (Static)
-No build process required. Serve files using any static web server:
+No build process required. Design system uses pure CSS imports:
 ```bash
 # Python
 python -m http.server 8000
@@ -207,10 +275,12 @@ python -m http.server 8000
 4. Test category filtering works with new products
 
 #### Styling Modifications
-- Main styles in `css/styles.css`
-- Industrial dark theme with subtle scanline overlay effect
-- Uses CSS custom properties for consistent theming
-- Responsive grid layout for product gallery
+- **Recommended**: Use unified design system (`css/kiezform-design-system.css`)
+- **Legacy**: Individual CSS files still supported (`css/styles.css`, `css/admin.css`, etc.)
+- **Design Tokens**: Modify CSS variables in `css/design-tokens.css` for global changes
+- **Components**: Add new components following existing patterns in component libraries
+- **Theme**: Industrial dark theme with subtle scanline overlay effect maintained
+- **Responsive**: CSS Grid/Flexbox with mobile-first approach
 
 #### JavaScript Enhancements
 - Modern ES6+ syntax throughout
@@ -307,7 +377,7 @@ function loadProductData() {
 
 ## Important Notes
 
-### Current Version: v0.0.9
+### Current Version: v1.0.0
 
 ### Production Deployment
 - **VPS IP Address**: 69.62.121.168 (corrected from previous 194.164.72.75)
@@ -353,7 +423,46 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.9 (Current)
+### v1.0.0 (Current) - Unified Design System
+- ✅ **Complete Design System Implementation**: Eliminated all design inconsistencies
+  - **150+ Design Tokens**: Comprehensive CSS variable system (`--kf-*` namespace)
+  - **Component Libraries**: Unified buttons, modals, forms with consistent styling
+  - **Master Import**: Single CSS file import for entire design system
+  - **Backward Compatibility**: Legacy CSS files still supported for gradual migration
+  - **No Build Process**: Pure CSS imports maintain simple deployment workflow
+- ✅ **Button Component Library**: 8 variants with accessibility and mobile optimization
+  - Primary, Secondary, Outline, Ghost, Success, Danger, Search, Icon buttons
+  - 3 sizes (Small 36px, Default 44px, Large 52px) with touch-friendly targets
+  - Loading states, focus indicators, keyboard navigation support
+  - Samsung S24 Ultra and iPhone 16 Pro specific optimizations
+- ✅ **Modal Component Library**: 4 specialized modal types with advanced animations
+  - Standard, Product Detail, Blockchain Block, Confirmation Dialog variants
+  - Material Design 3 compliant animations (emphasized easing, proper timing)
+  - Integration with existing ModalHistoryManager for mobile back button support
+  - Hardware acceleration and performance optimizations
+- ✅ **Form Component Library**: Complete form system with validation and accessibility
+  - All input types (text, number, date, file, range, checkbox, radio, select)
+  - Validation states (error, success, focus, disabled) with consistent styling
+  - Input groups with icons, buttons, help text, and labels
+  - Mobile optimizations (16px font size prevents iOS zoom, touch-friendly)
+- ✅ **Industrial Design Consistency**: Maintained aesthetic while improving structure
+  - Scanline overlay effects preserved across all components
+  - Ultra-thin typography and wide letter spacing for technical aesthetic
+  - Monospace elements for technical data (block IDs, serial numbers)
+  - Dark theme with consistent color hierarchy
+- ✅ **Performance & Accessibility Enhancements**:
+  - Hardware acceleration for animated elements (`will-change`, `transform3d`)
+  - Reduced motion support for accessibility preferences
+  - High contrast mode support for vision accessibility
+  - WCAG 2.1 AA compliance with proper focus indicators and screen reader support
+  - Legacy browser fallbacks with graceful degradation
+- ✅ **Migration Strategy**: Zero breaking changes with progressive enhancement
+  - Existing CSS classes continue functioning (`.cta-button`, `.filter-btn`, etc.)
+  - New unified classes available for better consistency (`.btn-primary`, `.btn-secondary`)
+  - Gradual migration path allows incremental adoption
+  - Documentation updated with integration examples and best practices
+
+### v0.0.9
 - **Global Modal History Manager**: Revolutionary mobile back button handling system
   - `ModalHistoryManager` class in `main.js` with complete History API integration
   - Samsung S24 Ultra (6.8", 1440x3120px) and iPhone 16 Pro (6.3", 1206x2622px) specific optimizations  

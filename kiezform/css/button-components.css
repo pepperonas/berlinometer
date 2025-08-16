@@ -172,7 +172,7 @@ button,
     color: var(--kf-black);
     font-size: var(--kf-text-base);
     border-radius: var(--kf-radius-default);
-    font-weight: var(--kf-weight-semibold);
+    font-weight: var(--kf-weight-medium);
     
     &:hover {
         background: transparent;
@@ -190,7 +190,7 @@ button,
     color: var(--kf-white);
     font-size: var(--kf-text-base);
     border-radius: var(--kf-radius-default);
-    font-weight: var(--kf-weight-semibold);
+    font-weight: var(--kf-weight-medium);
     
     &:hover {
         background: transparent;

@@ -76,14 +76,22 @@
     --kf-text-3xl-mobile: clamp(1.875rem, 4.5vw, 2.25rem);
     --kf-text-4xl-mobile: clamp(2.25rem, 5vw, 3rem);
     
-    /* Font Weights */
-    --kf-weight-thin: 100;
-    --kf-weight-light: 300;
-    --kf-weight-regular: 400;
-    --kf-weight-medium: 500;
-    --kf-weight-semibold: 600;
-    --kf-weight-bold: 700;
-    --kf-weight-black: 900;
+    /* Font Weights - Refined for elegant mobile appearance */
+    --kf-weight-thin: 100;          /* Ultra-thin for section titles */
+    --kf-weight-light: 300;         /* Light for subtitles and descriptions */
+    --kf-weight-regular: 400;       /* Regular for body text */
+    --kf-weight-medium: 450;        /* Slightly heavier than regular (was 500) */
+    --kf-weight-semibold: 500;      /* Reduced from 600 for elegant mobile look */
+    --kf-weight-bold: 550;          /* Reduced from 700 for refined appearance */
+    --kf-weight-black: 600;         /* Reduced from 900 for consistency */
+    
+    /* Mobile-specific font weights for Samsung S24 Ultra elegance */
+    --kf-weight-mobile-thin: 100;
+    --kf-weight-mobile-light: 300;
+    --kf-weight-mobile-regular: 400;
+    --kf-weight-mobile-medium: 400;     /* Lighter on mobile */
+    --kf-weight-mobile-semibold: 450;   /* Much lighter on mobile */
+    --kf-weight-mobile-bold: 500;       /* Significantly lighter on mobile */
     
     /* Line Heights */
     --kf-leading-tight: 1.2;
@@ -345,3 +353,126 @@ select:focus {
 .rounded-lg { border-radius: var(--kf-radius-lg); }
 .rounded-xl { border-radius: var(--kf-radius-xl); }
 .rounded-full { border-radius: var(--kf-radius-full); }
+
+/* === MOBILE TYPOGRAPHY REFINEMENT === */
+
+/* Global mobile font weight reduction for elegant appearance */
+@media (max-width: 768px) {
+    /* Override all font weights to be lighter on mobile */
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: var(--kf-weight-mobile-light) !important;
+    }
+    
+    /* Specific heading refinements */
+    h1 {
+        font-weight: var(--kf-weight-mobile-thin) !important;
+        letter-spacing: var(--kf-tracking-widest);
+    }
+    
+    h2 {
+        font-weight: var(--kf-weight-mobile-light) !important;
+        letter-spacing: var(--kf-tracking-wider);
+    }
+    
+    h3, h4 {
+        font-weight: var(--kf-weight-mobile-regular) !important;
+        letter-spacing: var(--kf-tracking-wide);
+    }
+    
+    /* Body text should remain regular but never bold */
+    p, span, div {
+        font-weight: var(--kf-weight-mobile-regular) !important;
+    }
+    
+    /* Override any bold or semibold text */
+    .font-semibold,
+    .font-bold,
+    strong,
+    b {
+        font-weight: var(--kf-weight-mobile-medium) !important;
+    }
+    
+    /* Navigation and button text */
+    .nav-link,
+    .btn,
+    button {
+        font-weight: var(--kf-weight-mobile-regular) !important;
+    }
+    
+    /* Form labels and inputs */
+    label,
+    .form-label {
+        font-weight: var(--kf-weight-mobile-regular) !important;
+    }
+    
+    /* Table headers and important data */
+    th,
+    .table-header {
+        font-weight: var(--kf-weight-mobile-medium) !important;
+    }
+    
+    /* Modal titles */
+    .modal-title {
+        font-weight: var(--kf-weight-mobile-light) !important;
+    }
+    
+    /* Card titles */
+    .card-title {
+        font-weight: var(--kf-weight-mobile-regular) !important;
+    }
+}
+
+/* High-DPI mobile devices (including Samsung S24 Ultra) typography refinements */
+@media screen and (max-width: 430px) 
+       and (-webkit-device-pixel-ratio: 3),
+       screen and (max-width: 430px) 
+       and (-webkit-device-pixel-ratio: 4) {
+    
+    /* Force elegant thin typography on high-resolution displays */
+    h1 {
+        font-weight: var(--kf-weight-thin) !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    h2, h3 {
+        font-weight: var(--kf-weight-light) !important;
+        -webkit-font-smoothing: antialiased;
+    }
+    
+    h4, h5, h6 {
+        font-weight: var(--kf-weight-regular) !important;
+    }
+    
+    /* Override any remaining heavy font weights */
+    strong, b, .font-bold {
+        font-weight: var(--kf-weight-mobile-medium) !important;
+    }
+    
+    .font-semibold {
+        font-weight: var(--kf-weight-mobile-regular) !important;
+    }
+    
+    /* Navigation elements */
+    .nav-link, .navbar a {
+        font-weight: var(--kf-weight-mobile-regular) !important;
+    }
+    
+    /* Button text refinements */
+    button, .btn {
+        font-weight: var(--kf-weight-mobile-regular) !important;
+    }
+    
+    /* Product titles and important content */
+    .product-title, .modal-title, .section-title {
+        font-weight: var(--kf-weight-light) !important;
+    }
+    
+    /* Ensure all text is optimally rendered with anti-aliasing */
+    * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        font-synthesis: none;
+    }
+}

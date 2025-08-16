@@ -883,7 +883,7 @@ class BlockchainExplorer {
                 padding: 0.25rem 0.75rem;
                 border-radius: 20px;
                 font-size: 0.8rem;
-                font-weight: 600;
+                font-weight: 500;
                 color: #00ff00;
                 font-family: monospace;
             }
@@ -892,7 +892,7 @@ class BlockchainExplorer {
                 padding: 0.25rem 0.5rem;
                 border-radius: 4px;
                 font-size: 0.7rem;
-                font-weight: 600;
+                font-weight: 500;
                 text-transform: uppercase;
                 letter-spacing: 0.05em;
             }
@@ -911,7 +911,7 @@ class BlockchainExplorer {
             
             .block-number {
                 font-size: 1.1rem;
-                font-weight: 600;
+                font-weight: 500;
                 color: #fff;
             }
             
@@ -935,7 +935,7 @@ class BlockchainExplorer {
             
             .product-name {
                 font-size: 1.2rem;
-                font-weight: 600;
+                font-weight: 500;
                 color: #fff;
                 margin: 0 0 0.25rem 0;
                 letter-spacing: 0.05em;
@@ -1008,7 +1008,7 @@ class BlockchainExplorer {
             .owner-code {
                 font-family: monospace;
                 font-size: 0.9rem;
-                font-weight: 600;
+                font-weight: 500;
                 color: #fff;
             }
             
@@ -1021,7 +1021,7 @@ class BlockchainExplorer {
             .transfer-arrow {
                 font-size: 1.2rem;
                 color: #00ff00;
-                font-weight: bold;
+                font-weight: 500;
                 flex-shrink: 0;
             }
             
@@ -1109,7 +1109,7 @@ class BlockchainExplorer {
             
             .price-value {
                 font-size: 1.1rem;
-                font-weight: 600;
+                font-weight: 500;
                 color: #00ff00;
                 font-family: monospace;
                 transition: all 0.3s;

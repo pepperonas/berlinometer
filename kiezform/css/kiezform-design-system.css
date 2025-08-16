@@ -44,7 +44,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
     margin: 0 0 var(--kf-space-4) 0;
-    font-weight: var(--kf-weight-semibold);
+    font-weight: var(--kf-weight-medium);
     color: var(--kf-text-primary);
     line-height: var(--kf-leading-tight);
 }
@@ -154,7 +154,7 @@ p {
     
     .nav-brand {
         font-size: var(--kf-text-xl);
-        font-weight: var(--kf-weight-bold);
+        font-weight: var(--kf-weight-medium);
         color: var(--kf-text-primary);
         text-decoration: none;
         letter-spacing: var(--kf-tracking-wide);
@@ -306,7 +306,7 @@ p {
         .card-title {
             margin: 0;
             font-size: var(--kf-text-lg);
-            font-weight: var(--kf-weight-semibold);
+            font-weight: var(--kf-weight-medium);
             color: var(--kf-text-primary);
         }
     }

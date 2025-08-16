@@ -42,7 +42,7 @@ label {
     &[required]::after {
         content: ' *';
         color: var(--kf-accent-red);
-        font-weight: var(--kf-weight-bold);
+        font-weight: var(--kf-weight-medium);
     }
 }
 
@@ -645,7 +645,7 @@ select:focus-visible {
 /* Required field styling */
 .required {
     color: var(--kf-accent-red);
-    font-weight: var(--kf-weight-semibold);
+    font-weight: var(--kf-weight-medium);
 }
 
 /* Read-only styling */

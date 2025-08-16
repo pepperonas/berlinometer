@@ -15,6 +15,7 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 - **Product Database**: MongoDB with comprehensive product and user management
 - **VALUE Section**: Comprehensive dual QR code verification system explanation
 - **SHARE Section**: Interactive QR code for site sharing with Web Share API
+- **Design System**: Unified CSS component library with 150+ design tokens
 - **Mobile-First**: Responsive design with hamburger navigation
 - **Clean URLs**: No .html extensions with automatic redirects
 - **Dark Theme**: Industrial aesthetic with subtle scanline effects
@@ -26,7 +27,8 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 - **Backend**: Node.js/Express (Port 3000), MongoDB, JWT Authentication
 - **3D Printing**: Python integration with qr_to_stl.py script for STL generation
 - **Data**: JSON file-based product catalog + MongoDB for verification
-- **Styling**: Custom CSS with Grid/Flexbox, dark industrial theme
+- **Styling**: Unified Design System with CSS Grid/Flexbox, dark industrial theme
+- **Design Tokens**: 150+ CSS variables for consistent theming across all components
 - **Security**: SHA-256 password hashing, bcrypt, constant-time comparison
 - **Deployment**: PM2 process management, Nginx static serving + API proxy
 
@@ -53,10 +55,15 @@ kiezform/
 ├── public/                 # Static assets for verification
 ├── admin/                  # Additional admin resources
 ├── css/
-│   ├── styles.css          # Main site styles with section title styling
-│   ├── admin.css           # Admin interface styles with custom dialog support
-│   ├── blockchain.css      # Blockchain explorer styles
-│   └── legal.css           # Legal pages styles (FAQ, Terms, Privacy, Imprint)
+│   ├── kiezform-design-system.css  # Master design system (import this)
+│   ├── design-tokens.css           # Global CSS variables and design tokens
+│   ├── button-components.css       # Unified button component library
+│   ├── modal-components.css        # Unified modal component library
+│   ├── form-components.css         # Unified form component library
+│   ├── styles.css                  # Legacy main site styles
+│   ├── admin.css                   # Legacy admin interface styles
+│   ├── blockchain.css              # Legacy blockchain explorer styles
+│   └── legal.css                   # Legal pages styles
 ├── js/
 │   ├── main.js             # General functionality + QR generation/sharing + Global Modal History Manager
 │   ├── products.js         # Product gallery system with mobile optimization
@@ -231,29 +238,206 @@ Navigate to `/admin` and login with:
 }
 ```
 
-## 🎨 Design System
+## 🎨 Unified Design System
 
-### Color Palette
-- **Background**: Dark grays (#0a0a0a, #1a1a1a)
-- **Text**: White (#fff) and light gray (#e0e0e0)
-- **Accent**: Neon green (#00ff00) - used for version badges and highlights
-- **Version Display**: Green (#00ff00) with 80% opacity
-- **Borders**: Semi-transparent white
-- **Dialog Backdrop**: Black with 90% opacity and blur effects
-- **Toast Notifications**: Bottom-center positioning with consistent styling
+### Architecture
+KiezForm uses a **component-based CSS architecture** with design tokens for consistent theming across all pages and components.
 
-### Typography
-- **Primary Font**: Helvetica Neue
-- **Fallbacks**: Arial, sans-serif
-- **Weights**: 300 (light), 400 (normal), 600 (semibold), 700 (bold)
+#### **Import Structure** (Recommended)
+```html
+<!-- Replace individual CSS imports with unified system -->
+<link rel="stylesheet" href="/css/kiezform-design-system.css">
+```
 
-### Effects
-- Subtle scanline overlay for industrial aesthetic
-- Smooth CSS transitions (0.3s)
-- Intersection Observer animations
-- Box shadows for depth
+#### **Legacy Support** (Fallback)
+```html
+<!-- Individual imports still supported for gradual migration -->
+<link rel="stylesheet" href="/css/styles.css">
+<link rel="stylesheet" href="/css/admin.css">
+<link rel="stylesheet" href="/css/blockchain.css">
+```
+
+### Design Tokens (150+ CSS Variables)
+
+#### **Color System**
+```css
+/* Primary Colors */
+--kf-black: #000000;           /* OLED-optimized true black */
+--kf-dark: #0a0a0a;            /* Primary backgrounds */
+--kf-dark-2: #1a1a1a;          /* Secondary backgrounds */
+--kf-gray: #404040;            /* Interactive elements */
+--kf-white: #ffffff;           /* Primary text */
+
+/* Text Hierarchy */
+--kf-text-primary: #f0f0f0;    /* Headlines, important text */
+--kf-text-secondary: #e0e0e0;  /* Body text, descriptions */
+--kf-text-muted: #909090;      /* Subtle text, placeholders */
+
+/* Accent Colors */
+--kf-accent-green: #00ff00;    /* Success, version badges */
+--kf-accent-blue: #0096ff;     /* Links, focus states */
+--kf-accent-red: #dc2c3f;      /* Errors, transfer QR codes */
+--kf-accent-yellow: #ffa500;   /* Warnings, notifications */
+```
+
+#### **Typography Scale**
+```css
+/* Responsive font sizes with mobile optimization */
+--kf-text-xs: 0.75rem;         /* 12px */
+--kf-text-sm: 0.875rem;        /* 14px */
+--kf-text-base: 1rem;          /* 16px - prevents iOS zoom */
+--kf-text-lg: 1.125rem;        /* 18px */
+--kf-text-xl: 1.25rem;         /* 20px */
+--kf-text-2xl: 1.5rem;         /* 24px */
+--kf-text-3xl: 1.875rem;       /* 30px */
+--kf-text-4xl: 2.25rem;        /* 36px */
+
+/* Font weights */
+--kf-weight-thin: 100;          /* Industrial titles */
+--kf-weight-light: 300;
+--kf-weight-regular: 400;
+--kf-weight-medium: 500;
+--kf-weight-semibold: 600;
+--kf-weight-bold: 700;
+```
+
+#### **Spacing System**
+```css
+/* Consistent spacing scale (4px base) */
+--kf-space-1: 0.25rem;         /* 4px */
+--kf-space-2: 0.5rem;          /* 8px */
+--kf-space-3: 0.75rem;         /* 12px */
+--kf-space-4: 1rem;            /* 16px */
+--kf-space-6: 1.5rem;          /* 24px */
+--kf-space-8: 2rem;            /* 32px */
+--kf-space-12: 3rem;           /* 48px */
+--kf-space-16: 4rem;           /* 64px */
+```
+
+#### **Animation Tokens**
+```css
+/* Material Design 3 easing functions */
+--kf-ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+--kf-ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+--kf-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+/* Duration scale */
+--kf-duration-fast: 150ms;
+--kf-duration-normal: 300ms;
+--kf-duration-medium: 500ms;
+```
+
+### Component Libraries
+
+#### **Button Components** (`button-components.css`)
+- **8 Variants**: Primary, Secondary, Outline, Ghost, Success, Danger, Search, Icon
+- **3 Sizes**: Small (36px), Default (44px), Large (52px)
+- **States**: Hover, Focus, Active, Disabled, Loading
+- **Accessibility**: ARIA support, 44px touch targets, focus indicators
+- **Mobile**: Samsung S24 Ultra + iPhone 16 Pro optimizations
+
+```html
+<!-- Button examples -->
+<button class="btn-primary">Primary Action</button>
+<button class="btn-secondary">Filter Option</button>
+<button class="btn-outline">View Details</button>
+<button class="btn-ghost">Subtle Action</button>
+```
+
+#### **Modal Components** (`modal-components.css`)
+- **4 Types**: Standard, Product Detail, Blockchain Block, Confirmation Dialog
+- **Animations**: Fade-scale, Slide-up, Zoom variants
+- **Integration**: Works with existing ModalHistoryManager
+- **Mobile**: Responsive layouts, safe-area support
+- **Performance**: Hardware acceleration, backdrop blur
+
+```html
+<!-- Modal structure -->
+<div class="modal modal-fade-scale">
+    <div class="modal-content">
+        <button class="modal-close">×</button>
+        <div class="modal-header">
+            <h2 class="modal-title">Title</h2>
+        </div>
+        <div class="modal-body">Content</div>
+        <div class="modal-footer">
+            <button class="btn-secondary">Cancel</button>
+            <button class="btn-primary">Confirm</button>
+        </div>
+    </div>
+</div>
+```
+
+#### **Form Components** (`form-components.css`)
+- **All Input Types**: Text, Number, Date, File, Range, Checkbox, Radio
+- **Validation States**: Error, Success, Focus, Disabled
+- **Input Groups**: With icons, buttons, labels
+- **Accessibility**: Screen reader support, high contrast mode
+- **Mobile**: 16px font size (prevents iOS zoom), touch-friendly
+
+```html
+<!-- Form examples -->
+<div class="form-group">
+    <label class="form-label required">Product Name</label>
+    <input type="text" placeholder="Enter product name">
+    <span class="form-help">This will be displayed publicly</span>
+</div>
+```
+
+### Design Principles
+
+#### **Industrial Aesthetic**
+- **Scanline Overlay**: Subtle CRT-style effect for technical feel
+- **Ultra-thin Typography**: Font-weight 100 for section titles
+- **Wide Letter Spacing**: 0.3em for industrial technical look
+- **Monospace Elements**: For technical data (block IDs, serial numbers)
+
+#### **Mobile-First Approach**
+- **Touch Targets**: Minimum 44px for accessibility
+- **Safe Areas**: Support for notches and Dynamic Island
+- **No Horizontal Scroll**: Constrained layouts with proper overflow
+- **iOS Zoom Prevention**: 16px minimum font size on inputs
+
+#### **Performance Optimization**
+- **Hardware Acceleration**: `will-change` and `transform3d` for animations
+- **Reduced Motion**: Respects user accessibility preferences
+- **Critical CSS**: Inline critical styles, lazy load non-critical
+- **Legacy Support**: Graceful degradation for older browsers
 
 ## 🌐 Deployment
+
+### Design System Integration
+
+#### **Quick Setup** (Recommended)
+1. **Replace CSS imports** in HTML files:
+```html
+<!-- Remove old imports -->
+<!-- <link rel="stylesheet" href="/css/styles.css"> -->
+<!-- <link rel="stylesheet" href="/css/admin.css"> -->
+<!-- <link rel="stylesheet" href="/css/blockchain.css"> -->
+
+<!-- Add unified design system -->
+<link rel="stylesheet" href="/css/kiezform-design-system.css">
+```
+
+2. **Update component classes** (optional for better consistency):
+```html
+<!-- Old button classes still work, but new classes provide better consistency -->
+<button class="btn-primary"><!-- instead of cta-button --></button>
+<button class="btn-secondary"><!-- instead of filter-btn --></button>
+<button class="btn-outline"><!-- instead of view-btn --></button>
+```
+
+3. **Verify mobile compatibility**:
+- Samsung S24 Ultra: Special safe-area handling
+- iPhone 16 Pro: Dynamic Island support
+- Touch targets automatically 44px minimum
+
+#### **Migration Strategy**
+- **Gradual**: Legacy CSS files still work alongside design system
+- **No Breaking Changes**: Existing components continue functioning
+- **Progressive Enhancement**: New features use design system components
+- **Performance**: Unified system reduces CSS redundancy
 
 ### Static Hosting
 Compatible with any static hosting service:
@@ -262,11 +446,14 @@ Compatible with any static hosting service:
 - GitHub Pages
 - Traditional web hosting
 
+**No build process required** - Design system uses pure CSS imports.
+
 ### German Localization Notes
 - All user-facing content uses informal "du" addressing
 - Complete German translations for verification and transfer workflows
 - Legal pages follow German DSGVO compliance requirements
 - FAQ styled consistently with other legal pages
+- Design system supports German character sets and longer text strings
 
 ### Production Deployment (VPS: 69.62.121.168)
 
