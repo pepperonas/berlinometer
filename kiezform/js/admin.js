@@ -1703,6 +1703,7 @@ window.viewTransferQR = function(productId, productName, serialNumber) {
             <div class="modal-actions">
                 <button type="button" onclick="downloadTransferQRFromModal('${productId}')" class="btn-secondary">📥 Download QR</button>
                 <button type="button" onclick="downloadSTL('${productId}', 'transfer')" class="btn-stl" title="Download 3D printable STL file">🏗️ 3D Print (STL)</button>
+                <button type="button" onclick="openTransferPage('${escapeHtml(transferItem.transferQR.qrToken)}')" class="btn-primary" style="background: linear-gradient(135deg, #dc2c3f 0%, #ff4444 100%); border-color: #dc2c3f;">🔗 Transfer-Seite öffnen</button>
                 <button type="button" onclick="closeTransferQRModal()">Close</button>
             </div>
         </div>
@@ -1765,4 +1766,18 @@ window.showTab = function(tabName) {
     if (tabName === 'transferQR') {
         loadTransferCodes();
     }
+}
+
+// Transfer QR Modal Functions
+function closeTransferQRModal() {
+    const modal = document.getElementById('transferQRModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function openTransferPage(qrToken) {
+    // Open the transfer page with the QR token in a new tab
+    const transferUrl = `/transfer?token=${qrToken}`;
+    window.open(transferUrl, '_blank');
 }

@@ -652,6 +652,80 @@ app.post('/api/transfer/complete', async (req, res) => {
   try {
     const { transferToken, newOwnerName } = req.body;
     
+    // Try to find a TransferQR (new system)
+    const transferQR = await TransferQR.findOne({
+      qrToken: transferToken,
+      status: 'active'
+    });
+    
+    if (transferQR) {
+      // New system with TransferQR
+      const product = await Product.findById(transferQR.productId);
+      
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      
+      // Generate pseudonym for new owner
+      const newOwnerPseudonym = generatePseudonym();
+      
+      // Create transfer block
+      const transferBlock = await createTransferBlock(
+        transferQR.productId,
+        product.blockchainInfo?.currentOwner || 'USR-INITIAL',
+        newOwnerPseudonym,
+        'QR_CODE'
+      );
+      
+      // Update product
+      product.blockchainInfo.currentOwner = newOwnerPseudonym;
+      product.blockchainInfo.lastBlock = transferBlock.blockId;
+      product.blockchainInfo.transferCount = (product.blockchainInfo.transferCount || 0) + 1;
+      product.owner = {
+        name: newOwnerName || 'Anonym',
+        email: null,
+        registrationDate: new Date()
+      };
+      await product.save();
+      
+      // Mark TransferQR as used
+      transferQR.status = 'used';
+      transferQR.completedAt = new Date();
+      await transferQR.save();
+      
+      // Generate new TransferQR for future transfers
+      const newQRToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
+      const newTransferQR = new TransferQR({
+        productId: transferQR.productId,
+        qrToken: newQRToken,
+        qrCodeData: JSON.stringify({
+          type: 'TRANSFER',
+          token: newQRToken,
+          productId: transferQR.productId,
+          serial: product.serialNumber,
+          name: product.productName,
+          url: `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${newQRToken}`,
+          generated: new Date().toISOString()
+        }),
+        status: 'active',
+        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        metadata: {
+          productName: product.productName,
+          serialNumber: product.serialNumber,
+          qrImageUrl: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&format=png&bgcolor=ffffff&color=dc2c3f&data=${encodeURIComponent(`${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${newQRToken}`)}`
+        }
+      });
+      await newTransferQR.save();
+      
+      return res.json({
+        success: true,
+        newOwner: newOwnerPseudonym,
+        blockId: transferBlock.blockId,
+        message: 'Ownership transferred successfully!'
+      });
+    }
+    
+    // Fallback to old TransferRequest system
     const transferRequest = await TransferRequest.findOne({
       transferToken,
       status: 'PENDING',
@@ -693,6 +767,31 @@ app.post('/api/transfer/complete', async (req, res) => {
 
 app.get('/api/transfer/:token', async (req, res) => {
   try {
+    // Try to find a TransferQR (new system)
+    const transferQR = await TransferQR.findOne({
+      qrToken: req.params.token,
+      status: 'active'
+    });
+    
+    if (transferQR) {
+      // New system with TransferQR
+      const product = await Product.findById(transferQR.productId);
+      
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      
+      return res.json({
+        transferId: transferQR.qrToken,
+        productId: transferQR.productId,
+        productName: product.productName || 'Unknown Product',
+        fromOwner: product.blockchainInfo?.currentOwner || 'USR-INITIAL',
+        expiresAt: transferQR.expiresAt,
+        message: 'Ready to complete transfer'
+      });
+    }
+    
+    // Fallback to old TransferRequest system
     const transferRequest = await TransferRequest.findOne({
       transferToken: req.params.token,
       status: 'PENDING'
@@ -812,7 +911,7 @@ app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
     
     if (existingQR && !force) {
       // Return existing active QR code only if not forcing regeneration
-      const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${existingQR.qrToken}&product=${productId}&mode=transfer`;
+      const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${existingQR.qrToken}`;
       const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(transferUrl)}&bgcolor=ffffff&color=dc2c3f`;
       
       return res.json({
@@ -847,8 +946,8 @@ app.post('/api/admin/generate-transfer-qr/:productId', async (req, res) => {
     // Generate unique QR token
     const qrToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
     
-    // Create transfer URL - simplified to use owner-verify with transfer mode
-    const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${qrToken}&product=${productId}&mode=transfer`;
+    // Create transfer URL - use transfer page with token
+    const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${qrToken}`;
     
     // QR Code data includes product info for verification
     const qrCodeData = JSON.stringify({
@@ -1052,7 +1151,7 @@ app.post('/api/admin/generate-all-missing-qr', async (req, res) => {
         const qrToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
         
         // Create transfer URL - use owner-verify with transfer mode  
-        const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${qrToken}&product=${product._id}&mode=transfer`;
+        const transferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${qrToken}`;
         
         // QR Code data
         const qrCodeData = JSON.stringify({
@@ -1211,7 +1310,7 @@ app.post('/api/transfer/simple', async (req, res) => {
 
     // Generate new transfer QR code for future transfers
     const newQRToken = 'TQR-' + crypto.randomBytes(6).toString('hex').toUpperCase();
-    const newTransferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${newQRToken}&product=${productId}&mode=transfer`;
+    const newTransferUrl = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${newQRToken}`;
     
     const newTransferQR = new TransferQR({
       productId,
@@ -1308,7 +1407,7 @@ app.get('/api/admin/generate-stl-qr/:type/:productId', authenticateAdmin, async 
         qrData = decodeURIComponent(qrData);
       } else {
         // Fallback: reconstruct transfer URL with owner-verify
-        qrData = `${process.env.BASE_URL || 'https://kiezform.de'}/owner-verify?token=${transferQR.qrToken}&product=${productId}&mode=transfer`;
+        qrData = `${process.env.BASE_URL || 'https://kiezform.de'}/transfer?token=${transferQR.qrToken}`;
       }
       
       filename = `kiezform-transfer-qr-${product.serialNumber || productId}.stl`;

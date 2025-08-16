@@ -44,15 +44,7 @@ class BlockchainExplorer {
             });
         }
         
-        // View controls
-        document.querySelectorAll('.control-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const view = e.target.dataset.view;
-                if (view) {
-                    this.switchView(view);
-                }
-            });
-        });
+        // Always use grid view (view controls removed)
         
         // Filter controls
         const filterSelect = document.getElementById('transaction-filter');
@@ -532,19 +524,7 @@ class BlockchainExplorer {
         });
     }
     
-    switchView(view) {
-        this.currentView = view;
-        
-        // Update active button
-        document.querySelectorAll('.control-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.dataset.view === view) {
-                btn.classList.add('active');
-            }
-        });
-        
-        this.renderBlocks();
-    }
+    // switchView method removed - always using grid view
     
     renderBlocks() {
         const container = document.getElementById('blockchain-container');
@@ -601,29 +581,26 @@ class BlockchainExplorer {
                             <span>✕</span> SUCHE LÖSCHEN
                         </button>
                     </div>
-                    <div class="search-results-grid">
-                        ${this.searchResults.slice(0, 8).map((block, index) => {
-                            const date = new Date(block.timestamp).toLocaleDateString('de-DE');
-                            const typeClass = block.transactionType.toLowerCase();
-                            return `
-                                <div class="search-result-block ${typeClass}" 
-                                     data-block-id="${block.blockId}">
-                                    <div class="result-block-header">
-                                        <span class="result-block-id">${block.blockId}</span>
-                                        <span class="result-block-type">${block.transactionType}</span>
+                    <div class="search-results-scrollview">
+                        <div class="search-results-grid">
+                            ${this.searchResults.map((block, index) => {
+                                const date = new Date(block.timestamp).toLocaleDateString('de-DE');
+                                const typeClass = block.transactionType.toLowerCase();
+                                return `
+                                    <div class="search-result-block ${typeClass}" 
+                                         data-block-id="${block.blockId}">
+                                        <div class="result-block-header">
+                                            <span class="result-block-id">${block.blockId}</span>
+                                            <span class="result-block-type">${block.transactionType}</span>
+                                        </div>
+                                        <div class="result-block-product">
+                                            ${block.metadata?.productName || block.productId}
+                                        </div>
+                                        <div class="result-block-date">${date}</div>
                                     </div>
-                                    <div class="result-block-product">
-                                        ${block.metadata?.productName || block.productId}
-                                    </div>
-                                    <div class="result-block-date">${date}</div>
-                                </div>
-                            `;
-                        }).join('')}
-                        ${this.searchResults.length > 8 ? `
-                            <div class="search-results-more">
-                                +${this.searchResults.length - 8} weitere
-                            </div>
-                        ` : ''}
+                                `;
+                            }).join('')}
+                        </div>
                     </div>
                 </div>
             `;
@@ -704,71 +681,58 @@ class BlockchainExplorer {
         const mockPrice = this.generateMockPrice(block.metadata?.productName);
         
         detailsContainer.innerHTML = `
-            <!-- Kompakter Header -->
-            <div class="detail-header">
-                <div class="detail-header-left">
-                    <div class="block-id-badge">${block.blockId}</div>
-                    <div class="transaction-type-badge ${block.transactionType.toLowerCase()}">${block.transactionType}</div>
-                </div>
-                <div class="detail-header-right">
-                    <div class="block-number">#${block.blockNumber}</div>
-                    <div class="timestamp-compact">${dateShort} ${timeShort}</div>
-                </div>
-            </div>
-            
-            <!-- Produkt-Info Kompakt -->
-            <div class="product-info-compact">
-                <div class="product-primary">
-                    <h3 class="product-name">${block.metadata?.productName || 'Unknown Product'}</h3>
-                    <div class="serial-number">${block.metadata?.serialNumber || 'N/A'}</div>
-                </div>
-                <div class="product-secondary">
-                    <div class="product-id-short" title="${block.productId}">
-                        ${block.productId.substring(0, 8)}...
+            <!-- Ultra-Kompakter Header mit allen wichtigen Infos -->
+            <div class="detail-header-compact">
+                <div class="header-top-row">
+                    <div class="block-info">
+                        <span class="block-id-badge">${block.blockId}</span>
+                        <span class="block-number">#${block.blockNumber}</span>
+                        <span class="transaction-type-badge ${block.transactionType.toLowerCase()}">${block.transactionType}</span>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Ownership Transfer mit Price Toggle -->
-            <div class="ownership-section">
-                <div class="ownership-flow">
-                    ${block.fromOwner ? `
-                        <div class="owner-card from">
-                            <div class="owner-label">VON</div>
-                            <div class="owner-code">${block.fromOwner}</div>
-                        </div>
-                        <div class="transfer-arrow">→</div>
-                    ` : `
-                        <div class="owner-card mint">
-                            <div class="owner-label">MINT</div>
-                            <div class="mint-text">Erstausgabe</div>
-                        </div>
-                        <div class="transfer-arrow">→</div>
-                    `}
-                    <div class="owner-card to">
-                        <div class="owner-label">AN</div>
-                        <div class="owner-code">${block.toOwner}</div>
+                    <div class="timestamp-info">
+                        <span class="date-compact">${dateShort}</span>
+                        <span class="time-compact">${timeShort}</span>
                     </div>
                 </div>
                 
-                <!-- Price Toggle (nur bei Transfers) -->
+                <!-- Produkt-Titel als Hauptzeile -->
+                <div class="product-title-row">
+                    <h3 class="product-name-main">${block.metadata?.productName || 'Unknown Product'}</h3>
+                    <span class="serial-number-compact">${block.metadata?.serialNumber || 'N/A'}</span>
+                </div>
+            </div>
+            
+            <!-- Kompakte Ownership-Zeile -->
+            <div class="ownership-compact">
+                <div class="ownership-flow-inline">
+                    ${block.fromOwner ? `
+                        <span class="owner-from">
+                            <span class="owner-label-mini">VON</span>
+                            <span class="owner-code-mini">${block.fromOwner.substring(0, 12)}...</span>
+                        </span>
+                        <span class="transfer-arrow-mini">→</span>
+                    ` : `
+                        <span class="owner-mint">
+                            <span class="mint-badge">MINT</span>
+                        </span>
+                        <span class="transfer-arrow-mini">→</span>
+                    `}
+                    <span class="owner-to">
+                        <span class="owner-label-mini">AN</span>
+                        <span class="owner-code-mini">${block.toOwner.substring(0, 12)}...</span>
+                    </span>
+                </div>
+                
+                <!-- Kompakte Preis-Anzeige (nur bei Transfers) -->
                 ${block.transactionType === 'TRANSFER' ? `
-                    <div class="price-section">
-                        <div class="price-toggle-container">
-                            <label class="price-toggle-label">
-                                <span>Kaufpreis anzeigen</span>
-                                <div class="toggle-switch">
-                                    <input type="checkbox" id="price-toggle-${block.blockId}" 
-                                           onchange="blockchainExplorer.togglePriceVisibility('${block.blockId}', ${mockPrice})"
-                                           checked>
-                                    <span class="toggle-slider"></span>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="price-display" id="price-display-${block.blockId}">
-                            <span class="price-label">Kaufpreis:</span>
-                            <span class="price-value" id="price-value-${block.blockId}">${mockPrice}€</span>
-                        </div>
+                    <div class="price-compact">
+                        <label class="price-toggle-mini">
+                            <input type="checkbox" id="price-toggle-${block.blockId}" 
+                                   onchange="blockchainExplorer.togglePriceVisibility('${block.blockId}', ${mockPrice})"
+                                   checked>
+                            <span class="price-label-mini">Preis</span>
+                        </label>
+                        <span class="price-value-mini" id="price-value-${block.blockId}">${mockPrice}€</span>
                     </div>
                 ` : ''}
             </div>
