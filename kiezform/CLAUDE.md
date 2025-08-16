@@ -377,13 +377,20 @@ function loadProductData() {
 
 ## Important Notes
 
-### Current Version: v1.0.0
+### Current Version: v0.0.10 - Transfer System Fix
 
 ### Production Deployment
-- **VPS IP Address**: 69.62.121.168 (corrected from previous 194.164.72.75)
+- **VPS IP Address**: 69.62.121.168
 - **Live Site**: https://kiezform.de
 - **Backend API**: Port 3000 with PM2 process management (kiezform-api)
 - **Database**: MongoDB with real product data and blockchain transactions
+
+### Critical Deployment Structure
+- **Development Directory**: `/var/www/kiezform/` (syncs from MacBook)
+- **Production Directory**: `/var/www/html/kiezform/` (served by Nginx)
+- **Manual Sync Required**: Changes in dev directory must be copied to production
+- **Always verify**: Files in `/var/www/html/kiezform/` after deployment
+- **Recent Fix**: Transfer system bug caused by mismatched directories (v0.0.10)
 
 ### Product Catalog (Updated)
 - **6 Chain Products**: Agama (€149), Aurora (€179), Cash4Love (€129), Cruella (€499), Goldelse (€79), Snake-Eater (€89)
@@ -423,7 +430,23 @@ function loadProductData() {
 
 ## Version History
 
-### v1.0.0 (Current) - Unified Design System
+### v0.0.10 (Current) - Transfer System Fix
+- 🔧 **Critical Production Bug Resolution**: Fixed transfer token parsing error that was breaking ownership transfers
+  - **Root Cause**: VPS had separate development (`/var/www/kiezform/`) and production (`/var/www/html/kiezform/`) directories
+  - **Issue**: Production `transfer.html` contained old, defective `getTransferTokenFromURL()` function
+  - **Solution**: Copied corrected transfer.html from development to production directory
+  - **Result**: Transfer URLs like `/transfer?token=TQR-XXXXXXXXX` now function correctly
+- ✅ **Complete Transfer Token Refresh**: Regenerated all QR codes for fresh start
+  - Deleted 8 existing transfer tokens from MongoDB to prevent conflicts
+  - Generated 45 new transfer tokens for all products using bulk API endpoint
+  - **Example Updates**: Cash4Love now uses `TQR-D9C0B2077CEE` (replaced `TQR-020F4D3908F6`)
+  - All Agama, Aurora, Cruella, Goldelse, Snake-Eater, and Brutalist Ring products have working tokens
+- 📁 **Deployment Documentation**: Added critical VPS directory structure notes
+  - Documented two-directory system to prevent future deployment confusion
+  - Added manual sync requirements between dev and production directories
+  - Included verification steps for ensuring changes go live correctly
+
+### v1.0.0 - Unified Design System
 - ✅ **Complete Design System Implementation**: Eliminated all design inconsistencies
   - **150+ Design Tokens**: Comprehensive CSS variable system (`--kf-*` namespace)
   - **Component Libraries**: Unified buttons, modals, forms with consistent styling

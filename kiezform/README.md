@@ -457,15 +457,25 @@ Compatible with any static hosting service:
 
 ### Production Deployment (VPS: 69.62.121.168)
 
-**Unified Directory Structure:**
+**Directory Structure (Important!):**
 ```
-/var/www/html/kiezform/
+/var/www/html/kiezform/        # ← Live production files (served by Nginx)
 ├── Frontend files (HTML, CSS, JS)
 └── backend/
     ├── server.js (Port 3000)
     ├── ecosystem.config.js (PM2)
     └── .env (Environment)
+
+/var/www/kiezform/             # ← Development sync directory (from MacBook)
+├── Same structure as above
+└── Files need to be copied to /var/www/html/kiezform/ for production
 ```
+
+**Critical Deployment Note:**
+- **Development files sync to**: `/var/www/kiezform/`
+- **Production files served from**: `/var/www/html/kiezform/`
+- **Manual sync required** between directories for changes to go live
+- Always verify changes in `/var/www/html/kiezform/` after deployment
 
 **Nginx Configuration:**
 ```nginx
@@ -652,7 +662,23 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.9 (Latest)
+### v0.0.10 (Latest) - Transfer System Fix
+- 🔧 **Critical Production Bug Fix**: Resolved transfer token parsing error
+  - **Root Cause**: VPS had two directories - dev sync (`/var/www/kiezform/`) vs production (`/var/www/html/kiezform/`)
+  - **Problem**: Production `transfer.html` contained old, defective `getTransferTokenFromURL()` function
+  - **Solution**: Copied fixed transfer.html from dev to production directory
+  - **Impact**: Transfer URLs like `/transfer?token=TQR-XXXXXXXXX` now work correctly
+- ✅ **Transfer Token System Refresh**: Complete QR code regeneration
+  - Deleted all 8 existing transfer tokens from MongoDB
+  - Generated 45 new transfer tokens for all products via bulk API
+  - All Cash4Love, Agama, Aurora, etc. products have fresh working tokens
+  - **Example**: Cash4Love now uses `TQR-D9C0B2077CEE` (was `TQR-020F4D3908F6`)
+- 📁 **Documentation Update**: Clarified VPS directory structure
+  - Added critical deployment notes about manual sync requirement
+  - Documented `/var/www/kiezform/` (dev) vs `/var/www/html/kiezform/` (production)
+  - Prevents future deployment confusion and debugging
+
+### v0.0.9
 - ✅ **Global Modal History Manager**: Complete mobile back button handling system
   - ModalHistoryManager class with History API integration (`pushState`/`popstate`)
   - Samsung S24 Ultra (6.8", 1440x3120px) and iPhone 16 Pro (6.3", 1206x2622px) optimizations
