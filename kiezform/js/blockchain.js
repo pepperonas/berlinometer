@@ -163,6 +163,16 @@ class BlockchainExplorer {
                 this.searchResults = data.blocks;
                 this.isSearchMode = true;
                 await this.animateSearchSuccess(searchInput, data.blocks.length);
+                
+                // Prüfe, ob bereits Suchergebnisse angezeigt werden
+                const resultsContainer = document.getElementById('search-results');
+                const hasExistingResults = resultsContainer && resultsContainer.innerHTML !== '';
+                
+                if (hasExistingResults) {
+                    // Bestehende Ergebnisse erst ausblenden, dann neue anzeigen
+                    await this.fadeOutSearchResultsAsync();
+                }
+                
                 this.renderSearchResults();
                 this.renderBlocks(); // Rendere Blöcke mit Highlighting
                 
@@ -452,6 +462,48 @@ class BlockchainExplorer {
         }
     }
     
+    fadeOutSearchResultsAsync() {
+        return new Promise((resolve) => {
+            const resultsContainer = document.getElementById('search-results');
+            if (resultsContainer && resultsContainer.innerHTML !== '') {
+                const searchBlocks = resultsContainer.querySelectorAll('.search-result-block');
+                const wrapper = resultsContainer.querySelector('.search-results-wrapper');
+                
+                if (searchBlocks.length > 0 && wrapper) {
+                    // Material Design 3: Reverse-Order Exit (von hinten nach vorn)
+                    const blocksArray = Array.from(searchBlocks);
+                    const reversedBlocks = blocksArray.reverse();
+                    
+                    // Sequenzielle Verschwinden-Animation von hinten nach vorn
+                    reversedBlocks.forEach((block, index) => {
+                        block.style.animation = `searchResultFadeOut 200ms cubic-bezier(0.4, 0, 1, 1) forwards`; // MD3 Emphasized accelerate
+                        block.style.animationDelay = `${index * 80}ms`; // 80ms Delay pro Block
+                    });
+                    
+                    // Container Collapse nach allen Block-Animationen
+                    const blockAnimationTime = (reversedBlocks.length * 80) + 200; // Delays + Animation
+                    setTimeout(() => {
+                        wrapper.style.animation = 'containerCollapse 300ms cubic-bezier(0.4, 0, 1, 1) forwards';
+                        
+                        // Komplette Entfernung nach Container-Animation
+                        setTimeout(() => {
+                            resultsContainer.innerHTML = '';
+                            resultsContainer.style.display = 'none';
+                            resolve(); // Promise erfüllen nach kompletter Animation
+                        }, 300);
+                    }, blockAnimationTime);
+                } else {
+                    // Fallback: Sofortiges Entfernen wenn keine Blöcke vorhanden
+                    resultsContainer.innerHTML = '';
+                    resultsContainer.style.display = 'none';
+                    resolve(); // Promise sofort erfüllen
+                }
+            } else {
+                resolve(); // Promise erfüllen wenn keine Ergebnisse vorhanden
+            }
+        });
+    }
+    
     animateSearchResultBlocks() {
         const searchBlocks = document.querySelectorAll('.search-result-block');
         
@@ -576,22 +628,29 @@ class BlockchainExplorer {
                 </div>
             `;
             
-            // Container einfach anzeigen (ohne Container-Animation)
+            // Container mit Expand-Animation anzeigen
             resultsContainer.style.display = 'block';
-            resultsContainer.style.opacity = '1';
-            resultsContainer.style.transform = 'translateY(0)';
             resultsContainer.innerHTML = searchResultsHTML;
             
-            // Add click listeners to result blocks
-            resultsContainer.querySelectorAll('.search-result-block').forEach(blockEl => {
-                blockEl.addEventListener('click', () => {
-                    const blockId = blockEl.dataset.blockId;
-                    const block = this.searchResults.find(b => b.blockId === blockId);
-                    if (block) {
-                        this.showBlockDetails(block);
-                    }
-                });
-            });
+            // Starte Container Expand Animation
+            const wrapper = resultsContainer.querySelector('.search-results-wrapper');
+            if (wrapper) {
+                // MD3 Emphasized decelerate für Enter-Animation (400ms)
+                wrapper.style.animation = 'containerExpand 400ms cubic-bezier(0, 0, 0.2, 1) forwards';
+                
+                // Nach Container-Animation: Starte Block-Animationen
+                setTimeout(() => {
+                    this.animateSearchResultBlocks();
+                }, 250); // Leichter Overlap für flüssigen Übergang
+            } else {
+                // Fallback falls kein wrapper gefunden wird
+                this.animateSearchResultBlocks();
+            }
+            
+            // Click listeners werden nach Block-Animation hinzugefügt
+            setTimeout(() => {
+                this.addClickListenersToResultBlocks();
+            }, 800); // Nach allen Animationen
         }
     }
     
@@ -1208,6 +1267,21 @@ class BlockchainExplorer {
             } else {
                 document.body.style.overflow = '';
             }
+        }
+    }
+    
+    addClickListenersToResultBlocks() {
+        const resultsContainer = document.getElementById('search-results');
+        if (resultsContainer) {
+            resultsContainer.querySelectorAll('.search-result-block').forEach(blockEl => {
+                blockEl.addEventListener('click', () => {
+                    const blockId = blockEl.dataset.blockId;
+                    const block = this.searchResults.find(b => b.blockId === blockId);
+                    if (block) {
+                        this.showBlockDetails(block);
+                    }
+                });
+            });
         }
     }
     
