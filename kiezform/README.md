@@ -58,10 +58,10 @@ kiezform/
 │   ├── blockchain.css      # Blockchain explorer styles
 │   └── legal.css           # Legal pages styles (FAQ, Terms, Privacy, Imprint)
 ├── js/
-│   ├── main.js             # General functionality + QR generation/sharing + unified toasts
-│   ├── products.js         # Product gallery system
-│   ├── blockchain.js       # Blockchain explorer functionality + unified toasts
-│   └── admin.js            # Secure admin functionality + custom dialogs + unified toasts
+│   ├── main.js             # General functionality + QR generation/sharing + Global Modal History Manager
+│   ├── products.js         # Product gallery system with mobile optimization
+│   ├── blockchain.js       # Blockchain explorer with ultra-smooth animations + search UX
+│   └── admin.js            # Secure admin functionality + custom dialogs + modal integration
 └── images/                 # Static assets and favicons
 ```
 
@@ -142,17 +142,19 @@ Navigate to `/admin` and login with:
 - Loads products from `products.json`
 - Category filtering (chains, rings, all)
 - Modal system with image carousel
-- Keyboard navigation (ESC to close)
+- **Global Modal History Manager**: Integrated with browser back button handling
+- **Mobile-Optimized**: Samsung S24 Ultra and iPhone 16 Pro responsive design
 - mailto link generation
 
 ### Admin Dashboard (`js/admin.js`)  
-- **Version Display**: Shows current version (v0.0.8) in header
+- **Version Display**: Shows current version (v0.0.9) in header
 - **Custom Dialog System**: Promise-based async confirmation modals with industrial theme
 - **Smart Product Templates**: Cascade dropdown system for quick product creation
 - **Auto-Fill Forms**: Load product data from templates with full editability
 - **Image URL Support**: Product thumbnail management and display
 - **STL Download**: Generate 3D-printable QR codes (owner & transfer) as STL files
 - **QR Regeneration**: Force parameter handling for regenerating used QR codes
+- **Global Modal History Manager**: Integrated with browser back button handling
 - Secure SHA-256 authentication with salt
 - Product CRUD operations with MongoDB integration
 - Owner management and editing
@@ -165,9 +167,12 @@ Navigate to `/admin` and login with:
 ### Blockchain Explorer (`js/blockchain.js`)
 - Visual blockchain interface with grid and chain views
 - Real-time search across blocks, products, and owners
+- **Ultra-Smooth Animations**: Monochrome meteor/FastLED style success animations
+- **Advanced Search UX**: Fade-out transitions and professional result highlighting
 - Pagination and infinite scroll support
-- Red highlighting for search results
 - Block detail modals with transaction information
+- **Global Modal History Manager**: Integrated with browser back button handling
+- **Samsung S24 Ultra Optimized**: Device-specific responsive design
 - Mobile-responsive design with KiezForm industrial styling
 
 ### Ownership Verification (`owner-verify.html`)
@@ -324,11 +329,24 @@ pm2 start /var/www/html/kiezform/backend/ecosystem.config.js
 
 ## 📱 Mobile Optimization
 
-- Responsive grid layouts
-- Touch-friendly navigation
-- Optimized form inputs
-- No horizontal scrolling
-- Hamburger menu for small screens
+### Global Modal History Manager (`js/main.js`)
+- **ModalHistoryManager Class**: Complete browser history integration for mobile back button
+- **Samsung S24 Ultra Support**: 6.8" (1440x3120px) device-specific optimizations
+- **iPhone 16 Pro Support**: 6.3" (1206x2622px) responsive design
+- **History API Integration**: `pushState`/`popstate` for modal navigation
+- **Modal Stack Management**: Support for nested/stacked modals
+- **Body Scroll Prevention**: `modal-active` class prevents background scrolling
+- **ESC Key Global Handler**: Unified keyboard navigation across all modals
+- **Touch-Optimized**: 44px minimum touch targets for accessibility
+
+### Mobile-First Features
+- **Responsive Grid Layouts**: CSS Grid/Flexbox with device breakpoints
+- **Touch-Friendly Navigation**: Hamburger menu with haptic feedback
+- **Hardware Acceleration**: `transform3d` and `will-change` for smooth animations
+- **Safe Area Support**: CSS `env()` for modern device notches/Dynamic Island
+- **No Horizontal Scrolling**: Constrained layouts with proper overflow handling
+- **Optimized Form Inputs**: Mobile-friendly input types and validation
+- **Smooth Scrolling**: Enhanced with mobile offset calculations
 
 ## 📊 API Endpoints
 
@@ -447,7 +465,36 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.8 (Latest)
+### v0.0.9 (Latest)
+- ✅ **Global Modal History Manager**: Complete mobile back button handling system
+  - ModalHistoryManager class with History API integration (`pushState`/`popstate`)
+  - Samsung S24 Ultra (6.8", 1440x3120px) and iPhone 16 Pro (6.3", 1206x2622px) optimizations
+  - Modal stack management for nested/stacked modals with proper cleanup
+  - Body scroll prevention with `modal-active` CSS class
+  - ESC key global handler replacing individual modal implementations
+- ✅ **Ultra-Smooth Search Animations**: Professional AAA-quality animations
+  - Monochrome meteor/FastLED style animations replacing red/green color scheme
+  - Fade-out transitions for existing search results before new searches
+  - Silky-smooth 3-step keyframe animations with hardware acceleration
+  - 40ms stagger timing for block result animations
+  - Clean white text without emoji for search result headers
+- ✅ **Complete Modal Integration**: All modals use global history manager
+  - Blockchain Explorer: Block details modal with back button support
+  - Product Gallery: Product detail modal with mobile optimization
+  - Admin Interface: Edit product and confirmation dialogs integrated
+  - Custom themed dialogs with Promise-based async handling
+- ✅ **Samsung S24 Ultra Mobile Optimization**: Device-specific enhancements
+  - CSS media queries for 1440x3120px display resolution
+  - Touch-optimized 44px minimum target sizes for accessibility
+  - Hardware-accelerated animations with `transform3d` and `will-change`
+  - Safe area support for modern device features (notch/Dynamic Island)
+- ✅ **Advanced Search UX**: Professional search experience
+  - Removed all red/reddish colors from blockchain page (now white)
+  - Professional fade-out animations for search result clearing
+  - Enhanced search loading states with disabled input feedback
+  - Haptic feedback patterns for mobile success/error states
+
+### v0.0.8
 - ✅ **Terms of Service Implementation**: Professional legal framework
   - Created comprehensive `/nutzungsbedingungen` page emphasizing digital certificates
   - Legal focus: Digital certificate as main product, jewelry as free accessory

@@ -19,10 +19,10 @@ KiezForm is a comprehensive e-commerce and product verification system for a Ber
 - `impressum.html` - Legal imprint page
 - `datenschutz.html` - Privacy policy page
 - `products.json` - Product catalog data source
-- `js/main.js` - General site functionality (smooth scrolling, animations, QR generation, sharing)
-- `js/products.js` - Product gallery and modal system
-- `js/blockchain.js` - Blockchain explorer with search and pagination
-- `js/admin.js` - Admin interface with secure authentication
+- `js/main.js` - General site functionality + Global Modal History Manager (ModalHistoryManager class)
+- `js/products.js` - Product gallery and modal system with mobile optimization
+- `js/blockchain.js` - Blockchain explorer with ultra-smooth search animations and UX
+- `js/admin.js` - Admin interface with secure authentication and modal integration
 - `css/styles.css` - Main site styles with industrial section title styling
 - `css/blockchain.css` - Blockchain explorer styles with KiezForm industrial theme
 - `css/admin.css` - Admin dashboard styles  
@@ -44,19 +44,34 @@ KiezForm is a comprehensive e-commerce and product verification system for a Ber
 
 ### Core Components
 
+#### ModalHistoryManager Class (js/main.js)
+Revolutionary global modal management system for mobile-first web applications:
+- **History API Integration**: Uses `pushState`/`popstate` for proper mobile back button handling
+- **Samsung S24 Ultra Support**: Device-specific optimizations for 6.8" (1440x3120px) display
+- **iPhone 16 Pro Support**: Responsive design for 6.3" (1206x2622px) display  
+- **Modal Stack Management**: Supports nested/stacked modals with proper cleanup
+- **Global ESC Handler**: Unified keyboard navigation replacing individual modal listeners
+- **Body Scroll Prevention**: `modal-active` CSS class prevents background scrolling
+- **Touch Optimization**: 44px minimum touch targets for accessibility compliance
+- **Hardware Acceleration**: Uses `transform3d` and `will-change` for smooth animations
+
 #### ProductGallery Class (js/products.js)
 Central component managing the product catalog interface:
 - Loads products from `products.json` via fetch API
 - Handles category filtering (all, chains, rings)
+- **Modal History Integration**: Uses global ModalHistoryManager for mobile back button support
 - Manages product modal with image gallery
 - Implements keyboard navigation (ESC to close modal)
 - Generates mailto links for product inquiries
 
 #### Blockchain Explorer (js/blockchain.js)
-Visual blockchain interface with comprehensive functionality:
+Visual blockchain interface with ultra-smooth professional UX:
 - **Multiple Views**: Grid and chain view modes for different perspectives
-- **Real-time Search**: Search across blocks, products, owners, and transaction types
-- **Visual Highlighting**: Red highlighting for search results with subtle glow effects
+- **Ultra-Smooth Search**: Monochrome meteor/FastLED style animations with AAA-quality polish
+- **Advanced Search UX**: Professional fade-out transitions and clean white text (no emoji)
+- **Silky-Smooth Animations**: 3-step keyframes with hardware acceleration and 40ms stagger
+- **Modal History Integration**: Block details modal uses global ModalHistoryManager
+- **Samsung S24 Ultra Optimized**: Device-specific responsive design and touch targets
 - **Block Details**: Modal system showing complete transaction information
 - **Pagination**: Efficient loading with page-based navigation
 - **Mobile Responsive**: Optimized for all screen sizes with KiezForm industrial styling
@@ -292,7 +307,7 @@ function loadProductData() {
 
 ## Important Notes
 
-### Current Version: v0.0.5
+### Current Version: v0.0.9
 
 ### Production Deployment
 - **VPS IP Address**: 69.62.121.168 (corrected from previous 194.164.72.75)
@@ -338,7 +353,39 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.8 (Current)
+### v0.0.9 (Current)
+- **Global Modal History Manager**: Revolutionary mobile back button handling system
+  - `ModalHistoryManager` class in `main.js` with complete History API integration
+  - Samsung S24 Ultra (6.8", 1440x3120px) and iPhone 16 Pro (6.3", 1206x2622px) specific optimizations  
+  - Browser `pushState`/`popstate` handling for proper modal navigation on mobile
+  - Modal stack management supporting nested/stacked modals with proper cleanup
+  - Body scroll prevention with `modal-active` CSS class during modal display
+  - Global ESC key handler replacing individual modal keyboard listeners
+- **Ultra-Smooth AAA-Quality Search Animations**: Professional blockchain search experience
+  - Complete redesign from red/green to elegant monochrome color scheme
+  - Meteor/FastLED style animations with silky-smooth 3-step keyframes
+  - Hardware-accelerated animations using `transform3d` and `will-change`
+  - Fade-out transitions for existing search results before new searches
+  - 40ms stagger timing for ultra-smooth block result animations
+  - Removed emoji from search headers, using clean white text
+- **Complete Modal Integration Across All Pages**: Unified modal behavior
+  - Blockchain Explorer: Block details modal integrated with history manager
+  - Product Gallery: Product detail modal with mobile back button support
+  - Admin Interface: Edit product and confirmation dialogs fully integrated
+  - Custom themed dialogs with Promise-based async handling
+- **Samsung S24 Ultra Mobile Optimization**: Device-specific enhancements
+  - CSS media queries targeting 1440x3120px display resolution  
+  - Touch-optimized 44px minimum target sizes for accessibility compliance
+  - Safe area support for modern device features (notch/Dynamic Island)
+  - Hardware-accelerated transitions and animations
+- **Advanced Search UX Improvements**: Professional search interface
+  - Removed all red/reddish colors from blockchain page (now white)
+  - Professional fade-out animations when clearing search results
+  - Enhanced search loading states with proper input feedback
+  - Haptic feedback patterns for mobile success/error states
+  - Clean, emoji-free search result displays with better typography
+
+### v0.0.8
 - **Terms of Service Implementation**: Complete legal framework for digital certificate sales
   - Created comprehensive `nutzungsbedingungen.html` emphasizing digital certificate as main product
   - Jewelry positioned as free gift/addition to digital blockchain certificate
