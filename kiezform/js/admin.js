@@ -124,6 +124,18 @@ function showCustomConfirm(message, title = 'Bestätigung erforderlich') {
 
         modal.appendChild(dialog);
         document.body.appendChild(modal);
+        
+        // Integration mit globalem Modal History Manager
+        if (window.modalHistoryManager) {
+            window.modalHistoryManager.openModal(
+                'confirm-modal',
+                () => {
+                    modal.remove();
+                    resolve(false);
+                },
+                { title: title, message: message }
+            );
+        }
 
         // Add animation styles
         if (!document.getElementById('custom-dialog-styles')) {
@@ -153,28 +165,29 @@ function showCustomConfirm(message, title = 'Bestätigung erforderlich') {
         // Event handlers
         document.getElementById('confirmBtn').onclick = () => {
             modal.remove();
+            if (window.modalHistoryManager) {
+                window.modalHistoryManager.closeModal('confirm-modal');
+            }
             resolve(true);
         };
 
         document.getElementById('cancelBtn').onclick = () => {
             modal.remove();
+            if (window.modalHistoryManager) {
+                window.modalHistoryManager.closeModal('confirm-modal');
+            }
             resolve(false);
         };
 
-        // Close on ESC key
-        const handleEsc = (e) => {
-            if (e.key === 'Escape') {
-                modal.remove();
-                document.removeEventListener('keydown', handleEsc);
-                resolve(false);
-            }
-        };
-        document.addEventListener('keydown', handleEsc);
+        // ESC key wird vom globalen ModalHistoryManager behandelt
 
         // Close on backdrop click
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.remove();
+                if (window.modalHistoryManager) {
+                    window.modalHistoryManager.closeModal('confirm-modal');
+                }
                 resolve(false);
             }
         });
@@ -891,6 +904,15 @@ async function editProduct(productId) {
     `;
     
     document.body.appendChild(modal);
+    
+    // Integration mit globalem Modal History Manager
+    if (window.modalHistoryManager) {
+        window.modalHistoryManager.openModal(
+            'edit-modal',
+            () => closeEditModal(),
+            { productId: productId, product: product }
+        );
+    }
 
     // Handle form submission
     document.getElementById('editProductForm').addEventListener('submit', (e) => {
@@ -903,6 +925,11 @@ function closeEditModal() {
     const modal = document.querySelector('.edit-modal');
     if (modal) {
         modal.remove();
+        
+        // Integration mit globalem Modal History Manager
+        if (window.modalHistoryManager) {
+            window.modalHistoryManager.closeModal('edit-modal');
+        }
     }
 }
 

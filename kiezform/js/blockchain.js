@@ -91,12 +91,7 @@ class BlockchainExplorer {
             });
         }
         
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.closeModal();
-            }
-        });
+        // Keyboard shortcuts (ESC wird vom globalen ModalHistoryManager behandelt)
     }
     
     async loadChainInfo() {
@@ -661,7 +656,17 @@ class BlockchainExplorer {
         
         this.addDetailModalStyles();
         modal.classList.add('active');
-        document.body.style.overflow = 'hidden';
+        
+        // Integration mit globalem Modal History Manager
+        if (window.modalHistoryManager) {
+            window.modalHistoryManager.openModal(
+                'block-modal',
+                () => this.closeModal(),
+                { blockId: block.blockId, block: block }
+            );
+        } else {
+            document.body.style.overflow = 'hidden';
+        }
     }
     
     generateMockPrice(productName) {
@@ -1102,7 +1107,16 @@ class BlockchainExplorer {
         const modal = document.getElementById('block-modal');
         if (modal) {
             modal.classList.remove('active');
-            document.body.style.overflow = '';
+            
+            // Integration mit globalem Modal History Manager
+            if (window.modalHistoryManager) {
+                window.modalHistoryManager.closeModal('block-modal', () => {
+                    // Modal ist bereits geschlossen, nur cleanup
+                    document.body.style.overflow = '';
+                });
+            } else {
+                document.body.style.overflow = '';
+            }
         }
     }
     

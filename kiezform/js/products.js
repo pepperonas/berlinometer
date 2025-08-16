@@ -137,7 +137,17 @@ class ProductGallery {
         `;
 
         modal.classList.add('active');
-        document.body.classList.add('modal-open');
+        
+        // Integration mit globalem Modal History Manager
+        if (window.modalHistoryManager) {
+            window.modalHistoryManager.openModal(
+                'product-modal',
+                () => this.closeModal(),
+                { productId: product.id, product: product }
+            );
+        } else {
+            document.body.classList.add('modal-open');
+        }
 
         // Setup image gallery
         this.setupImageGallery();
@@ -164,8 +174,17 @@ class ProductGallery {
         const modal = document.getElementById('product-modal');
         if (modal) {
             modal.classList.remove('active');
-            document.body.classList.remove('modal-open');
             this.selectedProduct = null;
+            
+            // Integration mit globalem Modal History Manager
+            if (window.modalHistoryManager) {
+                window.modalHistoryManager.closeModal('product-modal', () => {
+                    // Modal ist bereits geschlossen, nur cleanup
+                    document.body.classList.remove('modal-open');
+                });
+            } else {
+                document.body.classList.remove('modal-open');
+            }
         }
     }
 
@@ -208,11 +227,8 @@ class ProductGallery {
     }
 
     setupKeyboardNavigation() {
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && this.selectedProduct) {
-                this.closeModal();
-            }
-        });
+        // ESC wird vom globalen ModalHistoryManager behandelt
+        // Nur spezifische Produkt-Keyboard-Navigation hier
     }
 
     showError() {

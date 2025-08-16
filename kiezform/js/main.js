@@ -252,6 +252,113 @@ function showToast(message) {
     }, 3000);
 }
 
+// ===== GLOBALER MODAL HISTORY MANAGER =====
+class ModalHistoryManager {
+    constructor() {
+        this.activeModals = [];
+        this.initialized = false;
+        this.init();
+    }
+
+    init() {
+        if (this.initialized) return;
+        
+        // History State Listener für Back-Button
+        window.addEventListener('popstate', (event) => {
+            if (this.activeModals.length > 0) {
+                event.preventDefault();
+                event.stopPropagation();
+                const lastModal = this.activeModals[this.activeModals.length - 1];
+                this.closeModal(lastModal.id, lastModal.closeFn);
+                return false;
+            }
+        });
+
+        // ESC Key Listener (globaler Handler)
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && this.activeModals.length > 0) {
+                event.preventDefault();
+                const lastModal = this.activeModals[this.activeModals.length - 1];
+                this.closeModal(lastModal.id, lastModal.closeFn);
+            }
+        });
+
+        this.initialized = true;
+        console.log('Modal History Manager initialized');
+    }
+
+    openModal(modalId, closeFn, data = {}) {
+        // Füge Modal zur History hinzu
+        const modalState = {
+            id: modalId,
+            closeFn: closeFn,
+            data: data,
+            timestamp: Date.now()
+        };
+        
+        this.activeModals.push(modalState);
+        
+        // Push State für Browser History
+        const stateData = {
+            modalOpen: true,
+            modalId: modalId,
+            timestamp: modalState.timestamp
+        };
+        
+        history.pushState(stateData, '', window.location.href);
+        
+        // Body Scroll verhindern
+        document.body.classList.add('modal-active');
+        
+        console.log(`Modal opened: ${modalId}`, this.activeModals);
+    }
+
+    closeModal(modalId, closeFn) {
+        // Finde und entferne Modal
+        const modalIndex = this.activeModals.findIndex(modal => modal.id === modalId);
+        if (modalIndex === -1) return false;
+        
+        const modal = this.activeModals[modalIndex];
+        this.activeModals.splice(modalIndex, 1);
+        
+        // Führe Close-Funktion aus
+        if (typeof closeFn === 'function') {
+            closeFn();
+        } else if (typeof modal.closeFn === 'function') {
+            modal.closeFn();
+        }
+        
+        // Body Scroll wiederherstellen wenn keine Modals mehr offen
+        if (this.activeModals.length === 0) {
+            document.body.classList.remove('modal-active');
+        }
+        
+        console.log(`Modal closed: ${modalId}`, this.activeModals);
+        return true;
+    }
+
+    closeAllModals() {
+        while (this.activeModals.length > 0) {
+            const modal = this.activeModals.pop();
+            if (typeof modal.closeFn === 'function') {
+                modal.closeFn();
+            }
+        }
+        document.body.classList.remove('modal-active');
+    }
+
+    isModalOpen(modalId) {
+        return this.activeModals.some(modal => modal.id === modalId);
+    }
+
+    getActiveModals() {
+        return [...this.activeModals];
+    }
+}
+
+// Globale Instanz erstellen
+window.modalHistoryManager = new ModalHistoryManager();
+
 // Initialize QR code when page loads
 document.addEventListener('DOMContentLoaded', function() {
     generateShareQR();

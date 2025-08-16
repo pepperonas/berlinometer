@@ -559,6 +559,63 @@ footer {
     margin: 0.5rem 0;
 }
 
+/* Modal Body Scroll Prevention */
+.modal-active {
+    overflow: hidden !important;
+    height: 100vh !important;
+    position: fixed !important;
+    width: 100% !important;
+}
+
+/* Samsung S24 Ultra Modal Optimierungen (6.8", 1440x3120px, Android) */
+@media (max-width: 768px) and (min-height: 900px) and (min-resolution: 2dppx) {
+    .modal, .product-modal, .block-modal {
+        padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 1rem) env(safe-area-inset-bottom, 1rem) env(safe-area-inset-left, 1rem) !important;
+        align-items: flex-start !important;
+        padding-top: max(env(safe-area-inset-top, 0), 2rem) !important;
+    }
+    
+    .modal-content {
+        max-height: calc(100vh - env(safe-area-inset-top, 0) - env(safe-area-inset-bottom, 0) - 4rem) !important;
+        width: calc(100% - 2rem) !important;
+        margin: 0 auto !important;
+        max-width: none !important;
+        border-radius: 16px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+    
+    .modal-close {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.8rem !important;
+        top: 1rem !important;
+        right: 1rem !important;
+        background: rgba(0, 0, 0, 0.95) !important;
+        border-radius: 50% !important;
+        border: 2px solid rgba(255, 255, 255, 0.3) !important;
+        z-index: 1000 !important;
+        touch-action: manipulation !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .modal-body {
+        padding: 2.5rem 1.8rem 2rem 1.8rem !important;
+        padding-top: calc(48px + 1.5rem) !important; /* Platz für Close Button */
+    }
+    
+    .modal-title {
+        font-size: 1.7rem !important;
+        margin-bottom: 2.5rem !important;
+        line-height: 1.3 !important;
+        padding-right: 4rem !important; /* Platz für Close Button */
+        letter-spacing: 0.1em !important;
+    }
+}
+
 /* Core Mobile Styles */
 @media (max-width: 768px) {
     h1 {
