@@ -1,0 +1,347 @@
+/**
+ * KiezForm Design System - Global Design Tokens
+ * Version 1.0 - Unified CSS Variables for consistent theming
+ * 
+ * Diese Datei definiert alle globalen Design-Tokens für die gesamte KiezForm-App.
+ * Importiere diese Datei als erstes in allen anderen CSS-Dateien.
+ */
+
+:root {
+    /* === COLORS - Industrial Dark Theme === */
+    
+    /* Primary Colors */
+    --kf-black: #000000;           /* True black for OLED optimization */
+    --kf-dark: #0a0a0a;            /* Primary dark background */
+    --kf-dark-2: #1a1a1a;          /* Secondary dark background */
+    --kf-gray-dark: #2a2a2a;       /* Dark gray surfaces */
+    --kf-gray: #404040;            /* Medium gray */
+    --kf-gray-light: #808080;      /* Light gray text */
+    --kf-white: #ffffff;           /* Pure white text */
+    
+    /* Text Colors */
+    --kf-text-primary: #f0f0f0;    /* Primary text (bright) */
+    --kf-text-secondary: #e0e0e0;  /* Secondary text */
+    --kf-text-tertiary: #c0c0c0;   /* Tertiary text */
+    --kf-text-muted: #909090;      /* Muted text */
+    --kf-text-disabled: #606060;   /* Disabled text */
+    
+    /* Accent Colors */
+    --kf-accent-green: #00ff00;    /* Version badges, success states */
+    --kf-accent-blue: #0096ff;     /* Links, info states */
+    --kf-accent-red: #dc2c3f;      /* Transfer QR, error states */
+    --kf-accent-yellow: #ffa500;   /* Warning states */
+    
+    /* Background Overlays */
+    --kf-overlay-light: rgba(255, 255, 255, 0.02);
+    --kf-overlay-medium: rgba(255, 255, 255, 0.05);
+    --kf-overlay-strong: rgba(255, 255, 255, 0.1);
+    --kf-overlay-backdrop: rgba(0, 0, 0, 0.9);
+    
+    /* Borders & Outlines */
+    --kf-border-subtle: rgba(255, 255, 255, 0.05);
+    --kf-border-default: rgba(255, 255, 255, 0.1);
+    --kf-border-strong: rgba(255, 255, 255, 0.15);
+    --kf-border-focus: rgba(255, 255, 255, 0.3);
+    
+    /* Glow & Shadow Effects */
+    --kf-glow-subtle: rgba(255, 255, 255, 0.03);
+    --kf-glow-medium: rgba(255, 255, 255, 0.05);
+    --kf-shadow-subtle: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --kf-shadow-strong: 0 4px 16px rgba(0, 0, 0, 0.5);
+    
+    /* === TYPOGRAPHY === */
+    
+    /* Font Families */
+    --kf-font-primary: 'Helvetica Neue', Arial, sans-serif;
+    --kf-font-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    
+    /* Font Sizes - Desktop */
+    --kf-text-xs: 0.75rem;         /* 12px */
+    --kf-text-sm: 0.875rem;        /* 14px */
+    --kf-text-base: 1rem;          /* 16px */
+    --kf-text-lg: 1.125rem;        /* 18px */
+    --kf-text-xl: 1.25rem;         /* 20px */
+    --kf-text-2xl: 1.5rem;         /* 24px */
+    --kf-text-3xl: 1.875rem;       /* 30px */
+    --kf-text-4xl: 2.25rem;        /* 36px */
+    --kf-text-5xl: 3rem;           /* 48px */
+    
+    /* Font Sizes - Mobile (Responsive) */
+    --kf-text-xs-mobile: clamp(0.75rem, 2vw, 0.875rem);
+    --kf-text-sm-mobile: clamp(0.875rem, 2.2vw, 1rem);
+    --kf-text-base-mobile: clamp(1rem, 2.5vw, 1.125rem);
+    --kf-text-lg-mobile: clamp(1.125rem, 3vw, 1.25rem);
+    --kf-text-xl-mobile: clamp(1.25rem, 3.5vw, 1.5rem);
+    --kf-text-2xl-mobile: clamp(1.5rem, 4vw, 1.875rem);
+    --kf-text-3xl-mobile: clamp(1.875rem, 4.5vw, 2.25rem);
+    --kf-text-4xl-mobile: clamp(2.25rem, 5vw, 3rem);
+    
+    /* Font Weights */
+    --kf-weight-thin: 100;
+    --kf-weight-light: 300;
+    --kf-weight-regular: 400;
+    --kf-weight-medium: 500;
+    --kf-weight-semibold: 600;
+    --kf-weight-bold: 700;
+    --kf-weight-black: 900;
+    
+    /* Line Heights */
+    --kf-leading-tight: 1.2;
+    --kf-leading-normal: 1.4;
+    --kf-leading-relaxed: 1.6;
+    --kf-leading-loose: 1.8;
+    
+    /* Letter Spacing */
+    --kf-tracking-tight: -0.025em;
+    --kf-tracking-normal: 0;
+    --kf-tracking-wide: 0.1em;
+    --kf-tracking-wider: 0.2em;
+    --kf-tracking-widest: 0.3em;     /* For industrial section titles */
+    
+    /* === SPACING === */
+    
+    /* Space Scale (based on 0.25rem = 4px) */
+    --kf-space-0: 0;
+    --kf-space-1: 0.25rem;          /* 4px */
+    --kf-space-2: 0.5rem;           /* 8px */
+    --kf-space-3: 0.75rem;          /* 12px */
+    --kf-space-4: 1rem;             /* 16px */
+    --kf-space-5: 1.25rem;          /* 20px */
+    --kf-space-6: 1.5rem;           /* 24px */
+    --kf-space-8: 2rem;             /* 32px */
+    --kf-space-10: 2.5rem;          /* 40px */
+    --kf-space-12: 3rem;            /* 48px */
+    --kf-space-16: 4rem;            /* 64px */
+    --kf-space-20: 5rem;            /* 80px */
+    --kf-space-24: 6rem;            /* 96px */
+    
+    /* === LAYOUT === */
+    
+    /* Container Widths */
+    --kf-container-sm: 640px;
+    --kf-container-md: 768px;
+    --kf-container-lg: 1024px;
+    --kf-container-xl: 1280px;
+    --kf-container-max: 1200px;     /* KiezForm standard */
+    
+    /* Border Radius */
+    --kf-radius-none: 0;
+    --kf-radius-sm: 0.125rem;       /* 2px */
+    --kf-radius-default: 0.25rem;   /* 4px */
+    --kf-radius-md: 0.375rem;       /* 6px */
+    --kf-radius-lg: 0.5rem;         /* 8px */
+    --kf-radius-xl: 0.75rem;        /* 12px */
+    --kf-radius-2xl: 1rem;          /* 16px */
+    --kf-radius-full: 9999px;       /* Fully rounded */
+    
+    /* === ANIMATION & TRANSITIONS === */
+    
+    /* Duration */
+    --kf-duration-fast: 150ms;
+    --kf-duration-normal: 300ms;
+    --kf-duration-medium: 500ms;
+    --kf-duration-slow: 750ms;
+    --kf-duration-slower: 1000ms;
+    
+    /* Easing Functions */
+    --kf-ease-linear: linear;
+    --kf-ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --kf-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --kf-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Material Design 3 Easing */
+    --kf-ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+    --kf-ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+    --kf-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+    
+    /* === Z-INDEX SCALE === */
+    
+    --kf-z-negative: -1;
+    --kf-z-base: 0;
+    --kf-z-elevated: 10;
+    --kf-z-sticky: 50;
+    --kf-z-fixed: 100;
+    --kf-z-overlay: 200;
+    --kf-z-dropdown: 300;
+    --kf-z-modal: 400;
+    --kf-z-popover: 500;
+    --kf-z-tooltip: 600;
+    --kf-z-toast: 700;
+    --kf-z-max: 9999;
+    
+    /* === COMPONENT-SPECIFIC TOKENS === */
+    
+    /* Buttons */
+    --kf-button-height: 44px;       /* Touch-friendly minimum */
+    --kf-button-height-sm: 36px;
+    --kf-button-height-lg: 52px;
+    --kf-button-padding-x: var(--kf-space-6);
+    --kf-button-padding-y: var(--kf-space-3);
+    
+    /* Inputs */
+    --kf-input-height: 44px;
+    --kf-input-padding-x: var(--kf-space-4);
+    --kf-input-padding-y: var(--kf-space-3);
+    
+    /* Modals */
+    --kf-modal-backdrop: var(--kf-overlay-backdrop);
+    --kf-modal-radius: var(--kf-radius-lg);
+    --kf-modal-padding: var(--kf-space-8);
+    
+    /* Cards */
+    --kf-card-padding: var(--kf-space-6);
+    --kf-card-radius: var(--kf-radius-lg);
+    --kf-card-border: var(--kf-border-subtle);
+    
+    /* Navigation */
+    --kf-nav-height: 80px;
+    --kf-nav-height-mobile: 70px;
+}
+
+/* === GLOBAL RESETS & OPTIMIZATIONS === */
+
+/* Performance optimizations for all elements */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+/* Prevent text selection on interactive elements */
+button,
+[role="button"],
+.clickable {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+    outline: 2px solid var(--kf-border-focus);
+    outline-offset: 2px;
+}
+
+/* Improved focus for buttons and interactive elements */
+button:focus,
+[role="button"]:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: 2px solid var(--kf-accent-blue);
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--kf-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--kf-gray);
+    border-radius: var(--kf-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--kf-gray-light);
+}
+
+/* === UTILITY CLASSES === */
+
+/* Text Colors */
+.text-primary { color: var(--kf-text-primary); }
+.text-secondary { color: var(--kf-text-secondary); }
+.text-tertiary { color: var(--kf-text-tertiary); }
+.text-muted { color: var(--kf-text-muted); }
+.text-disabled { color: var(--kf-text-disabled); }
+
+/* Background Colors */
+.bg-dark { background-color: var(--kf-dark); }
+.bg-dark-2 { background-color: var(--kf-dark-2); }
+.bg-overlay-light { background-color: var(--kf-overlay-light); }
+.bg-overlay-medium { background-color: var(--kf-overlay-medium); }
+.bg-overlay-strong { background-color: var(--kf-overlay-strong); }
+
+/* Border Utilities */
+.border-subtle { border: 1px solid var(--kf-border-subtle); }
+.border-default { border: 1px solid var(--kf-border-default); }
+.border-strong { border: 1px solid var(--kf-border-strong); }
+
+/* Animation Classes */
+.transition-fast { transition: all var(--kf-duration-fast) var(--kf-ease-out); }
+.transition-normal { transition: all var(--kf-duration-normal) var(--kf-ease-out); }
+.transition-medium { transition: all var(--kf-duration-medium) var(--kf-ease-out); }
+
+/* Spacing Utilities */
+.p-0 { padding: var(--kf-space-0); }
+.p-1 { padding: var(--kf-space-1); }
+.p-2 { padding: var(--kf-space-2); }
+.p-3 { padding: var(--kf-space-3); }
+.p-4 { padding: var(--kf-space-4); }
+.p-6 { padding: var(--kf-space-6); }
+.p-8 { padding: var(--kf-space-8); }
+
+.m-0 { margin: var(--kf-space-0); }
+.m-1 { margin: var(--kf-space-1); }
+.m-2 { margin: var(--kf-space-2); }
+.m-3 { margin: var(--kf-space-3); }
+.m-4 { margin: var(--kf-space-4); }
+.m-6 { margin: var(--kf-space-6); }
+.m-8 { margin: var(--kf-space-8); }
+
+/* Display Utilities */
+.hidden { display: none; }
+.block { display: block; }
+.inline { display: inline; }
+.inline-block { display: inline-block; }
+.flex { display: flex; }
+.grid { display: grid; }
+
+/* Flexbox Utilities */
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-end { justify-content: flex-end; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+
+/* Text Utilities */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+.uppercase { text-transform: uppercase; }
+.lowercase { text-transform: lowercase; }
+.capitalize { text-transform: capitalize; }
+
+/* Font Weight Utilities */
+.font-thin { font-weight: var(--kf-weight-thin); }
+.font-light { font-weight: var(--kf-weight-light); }
+.font-regular { font-weight: var(--kf-weight-regular); }
+.font-medium { font-weight: var(--kf-weight-medium); }
+.font-semibold { font-weight: var(--kf-weight-semibold); }
+.font-bold { font-weight: var(--kf-weight-bold); }
+
+/* Border Radius Utilities */
+.rounded-none { border-radius: var(--kf-radius-none); }
+.rounded-sm { border-radius: var(--kf-radius-sm); }
+.rounded { border-radius: var(--kf-radius-default); }
+.rounded-md { border-radius: var(--kf-radius-md); }
+.rounded-lg { border-radius: var(--kf-radius-lg); }
+.rounded-xl { border-radius: var(--kf-radius-xl); }
+.rounded-full { border-radius: var(--kf-radius-full); }
