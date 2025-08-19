@@ -154,7 +154,7 @@ Navigate to `/admin` and login with:
 - mailto link generation
 
 ### Admin Dashboard (`js/admin.js`)  
-- **Version Display**: Shows current version (v0.0.9) in header
+- **Version Display**: Shows current version (v0.0.11) in header
 - **Custom Dialog System**: Promise-based async confirmation modals with industrial theme
 - **Smart Product Templates**: Cascade dropdown system for quick product creation
 - **Auto-Fill Forms**: Load product data from templates with full editability
@@ -662,7 +662,22 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.10 (Latest) - Transfer System Fix
+### v0.0.11 (Latest) - Confirmation Dialog & Owner Name Fix  
+- ✅ **Transfer Confirmation Dialog**: Added missing security confirmation to transfer.html
+  - **Unified UX**: Both transfer.html and owner-verify.html now have identical confirmation dialogs
+  - **Security Warning**: "ENDGÜLTIG und kann NICHT rückgängig gemacht werden!" with visual warning
+  - **Promise-based Implementation**: Clean async/await with ESC key and button handling
+  - **Industrial Theme**: Consistent dark theme with red accent borders
+- ✅ **Owner Name Display Fix**: Resolved USR- pseudonym showing instead of real names
+  - **Backend Enhancement**: `/api/transfer/complete` returns both `newOwner` and `newOwnerName`
+  - **Frontend Update**: Success screen shows "Neuer Eigentümer: [Real Name]" 
+  - **Fallback Support**: Maintains compatibility with existing transfer systems
+- ✅ **E11000 Database Error Resolution**: Fixed critical MongoDB indexing issue
+  - **Schema Fix**: Removed unique constraint on `productId` in transferQRSchema
+  - **Index Optimization**: Proper compound index with partial filter for active status only
+  - **Transfer QR Generation**: Multiple QRs per product now supported correctly
+
+### v0.0.10 - Transfer System Fix
 - 🔧 **Critical Production Bug Fix**: Resolved transfer token parsing error
   - **Root Cause**: VPS had two directories - dev sync (`/var/www/kiezform/`) vs production (`/var/www/html/kiezform/`)
   - **Problem**: Production `transfer.html` contained old, defective `getTransferTokenFromURL()` function

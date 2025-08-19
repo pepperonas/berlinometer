@@ -377,7 +377,7 @@ function loadProductData() {
 
 ## Important Notes
 
-### Current Version: v0.0.10 - Transfer System Fix
+### Current Version: v0.0.11
 
 ### Production Deployment
 - **VPS IP Address**: 69.62.121.168
@@ -385,12 +385,6 @@ function loadProductData() {
 - **Backend API**: Port 3000 with PM2 process management (kiezform-api)
 - **Database**: MongoDB with real product data and blockchain transactions
 
-### Critical Deployment Structure
-- **Development Directory**: `/var/www/kiezform/` (syncs from MacBook)
-- **Production Directory**: `/var/www/html/kiezform/` (served by Nginx)
-- **Manual Sync Required**: Changes in dev directory must be copied to production
-- **Always verify**: Files in `/var/www/html/kiezform/` after deployment
-- **Recent Fix**: Transfer system bug caused by mismatched directories (v0.0.10)
 
 ### Product Catalog (Updated)
 - **6 Chain Products**: Agama (€149), Aurora (€179), Cash4Love (€129), Cruella (€499), Goldelse (€79), Snake-Eater (€89)
@@ -430,23 +424,30 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.10 (Current) - Transfer System Fix
-- 🔧 **Critical Production Bug Resolution**: Fixed transfer token parsing error that was breaking ownership transfers
-  - **Root Cause**: VPS had separate development (`/var/www/kiezform/`) and production (`/var/www/html/kiezform/`) directories
-  - **Issue**: Production `transfer.html` contained old, defective `getTransferTokenFromURL()` function
-  - **Solution**: Copied corrected transfer.html from development to production directory
-  - **Result**: Transfer URLs like `/transfer?token=TQR-XXXXXXXXX` now function correctly
-- ✅ **Complete Transfer Token Refresh**: Regenerated all QR codes for fresh start
-  - Deleted 8 existing transfer tokens from MongoDB to prevent conflicts
-  - Generated 45 new transfer tokens for all products using bulk API endpoint
-  - **Example Updates**: Cash4Love now uses `TQR-D9C0B2077CEE` (replaced `TQR-020F4D3908F6`)
-  - All Agama, Aurora, Cruella, Goldelse, Snake-Eater, and Brutalist Ring products have working tokens
-- 📁 **Deployment Documentation**: Added critical VPS directory structure notes
-  - Documented two-directory system to prevent future deployment confusion
-  - Added manual sync requirements between dev and production directories
-  - Included verification steps for ensuring changes go live correctly
+### v0.0.11 (Current) - Transfer Flow Improvements
+- ✅ **Confirmation Dialog Implementation**: Added missing security confirmation to transfer.html
+  - **Unified UX**: Both transfer.html and owner-verify.html now have identical confirmation dialogs
+  - **Security Warning**: "ENDGÜLTIG und kann NICHT rückgängig gemacht werden!" with visual warning
+  - **Promise-based Dialog**: Clean async/await implementation with ESC key and button handling
+  - **Industrial Theme**: Consistent dark theme with red accent borders and proper animations
+- ✅ **Owner Name Display Fix**: Resolved USR- pseudonym showing instead of real names
+  - **Backend Enhancement**: `/api/transfer/complete` now returns both `newOwner` (pseudonym) and `newOwnerName` (real name)
+  - **Frontend Update**: Success screen displays "Neuer Eigentümer: [Real Name]" instead of cryptic USR- codes
+  - **Fallback Support**: `${data.newOwnerName || data.newOwner}` ensures backward compatibility
+  - **Improved UX**: Clear separation between user-friendly names and technical blockchain identifiers
+- ✅ **E11000 Duplicate Key Error Resolution**: Fixed critical MongoDB indexing issue
+  - **Root Cause**: Mongoose schema had `unique: true` on `productId` preventing multiple transfer QRs per product
+  - **Schema Fix**: Removed unique constraint and implemented proper compound index with partial filter
+  - **Collection Recreation**: Complete MongoDB collection rebuild to eliminate problematic indexes
+  - **Index Optimization**: Only `qrToken` remains unique, multiple transfer QRs per product now supported
+  - **Transfer QR Generation**: Force regeneration now works correctly without database conflicts
+- ✅ **Complete Transfer Flow Testing**: End-to-end verification of ownership transfer system
+  - **Confirmation Flow**: Dialog → Backend API → Blockchain Update → Success Display
+  - **Data Integrity**: Proper pseudonym generation, blockchain recording, and QR invalidation/regeneration
+  - **User Experience**: Smooth transition from security warning to successful completion message
+  - **Mobile Compatibility**: Touch-optimized dialogs with proper safe-area support
 
-### v1.0.0 - Unified Design System
+### v0.0.9 - Global Modal History Manager
 - ✅ **Complete Design System Implementation**: Eliminated all design inconsistencies
   - **150+ Design Tokens**: Comprehensive CSS variable system (`--kf-*` namespace)
   - **Component Libraries**: Unified buttons, modals, forms with consistent styling

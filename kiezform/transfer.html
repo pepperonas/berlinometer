@@ -177,6 +177,12 @@ class TransferPage {
         const nameInput = document.getElementById('owner-name');
         const newOwnerName = nameInput?.value.trim() || 'Anonym';
         
+        // Show confirmation dialog with warning
+        const confirmed = await this.showConfirmationDialog(newOwnerName);
+        if (!confirmed) {
+            return;
+        }
+        
         try {
             const confirmBtn = document.getElementById('confirm-transfer');
             confirmBtn.disabled = true;
@@ -222,8 +228,8 @@ class TransferPage {
                 
                 <div class="success-details">
                     <div class="detail-item">
-                        <span class="label">Dein neuer Eigentümer-Code:</span>
-                        <span class="value owner-code">${data.newOwner}</span>
+                        <span class="label">Neuer Eigentümer:</span>
+                        <span class="value owner-name">${data.newOwnerName || data.newOwner}</span>
                     </div>
                     <div class="detail-item">
                         <span class="label">Blockchain-Block:</span>
@@ -234,7 +240,8 @@ class TransferPage {
                 <div class="next-steps">
                     <h3>NÄCHSTE SCHRITTE</h3>
                     <ul>
-                        <li>Notiere dir deinen Eigentümer-Code: <strong>${data.newOwner}</strong></li>
+                        <li>Eigentümer: <strong>${data.newOwnerName || data.newOwner}</strong></li>
+                        <li>Blockchain-Code: <strong>${data.newOwner}</strong></li>
                         <li>Verwende diesen Code, um dein Zertifikat in der <a href="/blockchain">Blockchain</a> zu finden</li>
                         <li>Der Transfer ist permanent und kann nicht rückgängig gemacht werden</li>
                     </ul>
@@ -611,6 +618,143 @@ class TransferPage {
             }
         `;
         document.head.appendChild(style);
+    }
+    
+    showConfirmationDialog(newOwnerName) {
+        return new Promise((resolve) => {
+            // Create modal overlay
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            // Create dialog content
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+                background: rgba(20, 20, 20, 0.98);
+                border: 2px solid #dc2c3f;
+                border-radius: 8px;
+                padding: 2rem;
+                max-width: 500px;
+                width: 90%;
+                text-align: center;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            dialog.innerHTML = `
+                <div style="color: #dc2c3f; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h2 style="color: #dc2c3f; margin-bottom: 1.5rem; font-size: 1.5rem; letter-spacing: 0.1em;">
+                    WICHTIGER HINWEIS
+                </h2>
+                <div style="color: #fff; margin-bottom: 1.5rem; line-height: 1.6;">
+                    <p style="margin-bottom: 1rem;">
+                        Du bist dabei, das Eigentum dieses Produkts an 
+                        <strong style="color: #00ff00;">${this.escapeHtml(newOwnerName)}</strong> 
+                        zu übertragen.
+                    </p>
+                    <p style="color: #ff6b6b; font-weight: 500; margin-bottom: 1rem;">
+                        Diese Aktion ist ENDGÜLTIG und kann NICHT rückgängig gemacht werden!
+                    </p>
+                    <p style="color: #808080; font-size: 0.9rem;">
+                        Nach der Übertragung wird:
+                    </p>
+                    <ul style="text-align: left; display: inline-block; color: #808080; font-size: 0.9rem; margin-top: 0.5rem;">
+                        <li>Der neue Inhaber in der Blockchain gespeichert</li>
+                        <li>Dieser QR-Code ungültig</li>
+                        <li>Ein neuer QR-Code für weitere Übertragungen generiert</li>
+                    </ul>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button id="confirmCancel" style="
+                        background: transparent;
+                        border: 2px solid #666;
+                        color: #666;
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 1rem;
+                        font-weight: 500;
+                        letter-spacing: 0.05em;
+                        transition: all 0.3s ease;
+                    ">ABBRECHEN</button>
+                    <button id="confirmProceed" style="
+                        background: #dc2c3f;
+                        border: 2px solid #dc2c3f;
+                        color: #fff;
+                        padding: 0.75rem 1.5rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 1rem;
+                        font-weight: 500;
+                        letter-spacing: 0.05em;
+                        transition: all 0.3s ease;
+                    ">JA, FORTFAHREN</button>
+                </div>
+            `;
+            
+            modal.appendChild(dialog);
+            document.body.appendChild(modal);
+            
+            // Add animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes slideIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px) scale(0.9);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Handle button clicks
+            document.getElementById('confirmCancel').onclick = () => {
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+                resolve(false);
+            };
+            
+            document.getElementById('confirmProceed').onclick = () => {
+                document.body.removeChild(modal);
+                document.head.removeChild(style);
+                resolve(true);
+            };
+            
+            // Handle ESC key
+            const escapeHandler = (event) => {
+                if (event.key === 'Escape') {
+                    document.removeEventListener('keydown', escapeHandler);
+                    document.body.removeChild(modal);
+                    document.head.removeChild(style);
+                    resolve(false);
+                }
+            };
+            document.addEventListener('keydown', escapeHandler);
+        });
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 }
 
