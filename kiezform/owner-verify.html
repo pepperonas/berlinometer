@@ -451,6 +451,7 @@
                             product = {
                                 id: apiData._id || apiData.id,
                                 name: apiData.productName,
+                                serialNumber: apiData.serialNumber,
                                 category: apiData.category,
                                 material: apiData.metadata?.material || 'Premium Materials',
                                 price: apiData.metadata?.price || 0,
@@ -473,6 +474,7 @@
                             product = {
                                 id: jsonProduct.id,
                                 name: jsonProduct.name,
+                                serialNumber: jsonProduct.serialNumber || jsonProduct.id.toUpperCase(),
                                 category: jsonProduct.category,
                                 material: jsonProduct.material,
                                 price: jsonProduct.price,
@@ -501,6 +503,7 @@
                                 finalProduct = {
                                     ...product,
                                     name: modifiedProduct.productName,
+                                    serialNumber: modifiedProduct.serialNumber || product.serialNumber,
                                     material: modifiedProduct.metadata?.material || product.material,
                                     price: modifiedProduct.metadata?.price || product.price,
                                     owner: modifiedProduct.owner?.name || modifiedProduct.metadata?.owner || 'KiezForm Berlin',
@@ -542,6 +545,10 @@
                         <div class="detail-row">
                             <span class="detail-label">Produktname:</span>
                             <span class="detail-value">${this.escapeHtml(product.name)}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Seriennummer:</span>
+                            <span class="detail-value" style="font-family: monospace;">${this.escapeHtml(product.serialNumber || product.id.toUpperCase())}</span>
                         </div>
                         <div class="detail-row">
                             <span class="detail-label">Produkt-ID:</span>

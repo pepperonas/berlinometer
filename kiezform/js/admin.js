@@ -392,8 +392,17 @@ function showDashboard() {
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('dashboardSection').classList.add('active');
     document.getElementById('navLogoutBtn').style.display = 'block';
-    loadStats();
-    loadProducts();
+    
+    // Restore last active tab from localStorage
+    const savedTab = localStorage.getItem('kiezform_active_tab');
+    if (savedTab && ['products', 'transferQR'].includes(savedTab)) {
+        currentTab = savedTab;
+        showTab(savedTab);
+    } else {
+        loadStats();
+        loadProducts();
+    }
+    
     loadProductTemplates();
 }
 
@@ -501,6 +510,10 @@ window.loadProductData = function() {
 
 function showTab(tab) {
     currentTab = tab;
+    
+    // Save active tab to localStorage
+    localStorage.setItem('kiezform_active_tab', tab);
+    
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     
@@ -681,6 +694,7 @@ function displayProducts(products) {
                     </div>
                     <div class="product-meta-row">
                         <span class="category-pill">${escapeHtml(product.category)}</span>
+                        <span class="serial-number" style="color: #00ff00; font-weight: 500;">SN: ${escapeHtml(product.serialNumber)}</span>
                         <span class="product-id">ID: ${escapeHtml(product.id)}</span>
                     </div>
                 </div>
@@ -1406,6 +1420,7 @@ function renderTransferList() {
             <div class="transfer-item-info">
                 <div class="transfer-item-title">${escapeHtml(item.productName)}</div>
                 <div class="transfer-item-serial">${escapeHtml(item.serialNumber)}</div>
+                ${item.currentOwner ? `<div class="transfer-item-owner" style="color: #00ff00; font-size: 0.9rem; margin-top: 0.25rem;">Owner: ${escapeHtml(item.currentOwner)}</div>` : ''}
             </div>
             
             <div class="transfer-status ${item.overallStatus}">
