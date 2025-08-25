@@ -352,27 +352,6 @@ app.post('/api/products', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Public endpoint for active products only (no auth required)
-app.get('/api/products/active', async (req, res) => {
-  try {
-    const { category } = req.query;
-    const filter = { isActive: true, isValid: true };
-    
-    if (category && category !== 'all') {
-      filter.category = category;
-    }
-    
-    const products = await Product.find(filter)
-      .select('productName category metadata.material metadata.price imageUrl')
-      .sort({ createdAt: -1 });
-      
-    res.json({ products });
-  } catch (error) {
-    console.error('Error fetching active products:', error);
-    res.status(500).json({ error: 'Failed to fetch products' });
-  }
-});
-
 app.get('/api/products', authenticateAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 20, category, isValid } = req.query;
@@ -397,6 +376,28 @@ app.get('/api/products', authenticateAdmin, async (req, res) => {
   } catch (error) {
     console.error('Products fetch error:', error);
     res.status(400).json({ error: error.message });
+  }
+});
+
+// Public endpoint for active products only (no auth required)
+// IMPORTANT: Must be before /api/products/:id route to avoid route conflicts
+app.get('/api/products/active', async (req, res) => {
+  try {
+    const { category } = req.query;
+    const filter = { isActive: true, isValid: true };
+    
+    if (category && category !== 'all') {
+      filter.category = category;
+    }
+    
+    const products = await Product.find(filter)
+      .select('productName category metadata.material metadata.price imageUrl')
+      .sort({ createdAt: -1 });
+      
+    res.json({ products });
+  } catch (error) {
+    console.error('Error fetching active products:', error);
+    res.status(500).json({ error: 'Failed to fetch products' });
   }
 });
 
