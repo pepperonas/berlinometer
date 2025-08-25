@@ -17,6 +17,44 @@ class ProductGallery {
 
     async loadProducts() {
         try {
+            // Try to fetch active products from API first
+            const apiResponse = await fetch('/api/products/active');
+            if (apiResponse.ok) {
+                const apiData = await apiResponse.json();
+                if (apiData.products && apiData.products.length > 0) {
+                    // Convert API products to frontend format
+                    this.products = apiData.products.map(p => ({
+                        id: p._id || p.id,
+                        name: p.productName,
+                        category: p.category,
+                        material: p.metadata?.material || 'Premium-Quality PLA+',
+                        price: p.metadata?.price || 0,
+                        sizes: p.metadata?.size ? [p.metadata.size] : ['40cm', '50cm', '60cm'],
+                        images: {
+                            thumb: p.imageUrl || '/images/placeholder.jpg',
+                            full: [p.imageUrl || '/images/placeholder.jpg']
+                        },
+                        new: false
+                    }));
+                    
+                    // Generate categories from products
+                    const uniqueCategories = [...new Set(this.products.map(p => p.category))];
+                    this.categories = [
+                        { id: 'all', displayName: 'ALL PRODUCTS' },
+                        ...uniqueCategories.map(cat => ({
+                            id: cat,
+                            displayName: cat.toUpperCase()
+                        }))
+                    ];
+                    return;
+                }
+            }
+        } catch (error) {
+            console.log('API not available, falling back to products.json');
+        }
+        
+        // Fallback to products.json if API fails or returns no products
+        try {
             const response = await fetch('/products.json');
             const data = await response.json();
             this.products = data.products;

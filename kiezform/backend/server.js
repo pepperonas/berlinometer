@@ -59,6 +59,7 @@ const productSchema = new mongoose.Schema({
     transferCount: { type: Number, default: 0 }
   },
   isValid: { type: Boolean, default: true },
+  isActive: { type: Boolean, default: true }, // For hiding products from main page
   createdAt: { type: Date, default: Date.now },
   lastVerified: { type: Date }
 });
@@ -351,6 +352,27 @@ app.post('/api/products', authenticateAdmin, async (req, res) => {
   }
 });
 
+// Public endpoint for active products only (no auth required)
+app.get('/api/products/active', async (req, res) => {
+  try {
+    const { category } = req.query;
+    const filter = { isActive: true, isValid: true };
+    
+    if (category && category !== 'all') {
+      filter.category = category;
+    }
+    
+    const products = await Product.find(filter)
+      .select('productName category metadata.material metadata.price imageUrl')
+      .sort({ createdAt: -1 });
+      
+    res.json({ products });
+  } catch (error) {
+    console.error('Error fetching active products:', error);
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
+});
+
 app.get('/api/products', authenticateAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 20, category, isValid } = req.query;
@@ -506,7 +528,7 @@ app.get('/api/blockchain', async (req, res) => {
     const { page = 1, limit = 50 } = req.query;
     
     const blocks = await Block.find({ isValid: true })
-      .sort({ blockNumber: -1 })
+      .sort({ timestamp: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .select('-__v');
@@ -559,7 +581,7 @@ app.get('/api/blockchain/product/:productId', async (req, res) => {
 
 app.get('/api/blockchain/search/:query', async (req, res) => {
   try {
-    const query = req.params.query.toUpperCase();
+    const query = req.params.query;
     
     // Search by product ID, block ID, or pseudonym
     const blocks = await Block.find({
@@ -568,10 +590,11 @@ app.get('/api/blockchain/search/:query', async (req, res) => {
         { blockId: { $regex: query, $options: 'i' } },
         { toOwner: { $regex: query, $options: 'i' } },
         { fromOwner: { $regex: query, $options: 'i' } },
-        { 'metadata.serialNumber': { $regex: query, $options: 'i' } }
+        { 'metadata.serialNumber': { $regex: query, $options: 'i' } },
+        { 'metadata.productName': { $regex: query, $options: 'i' } }
       ],
       isValid: true
-    }).sort({ blockNumber: -1 }).select('-__v');
+    }).sort({ timestamp: -1 }).select('-__v');
     
     res.json({
       query,
@@ -786,6 +809,10 @@ app.get('/api/transfer/:token', async (req, res) => {
         productId: transferQR.productId,
         productName: product.productName || 'Unknown Product',
         fromOwner: product.blockchainInfo?.currentOwner || 'USR-INITIAL',
+        fromOwnerName: product.owner?.name || null, // Real name of current owner
+        price: product.metadata?.price || null,
+        category: product.category,
+        serialNumber: product.serialNumber,
         expiresAt: transferQR.expiresAt,
         message: 'Ready to complete transfer'
       });
@@ -815,6 +842,10 @@ app.get('/api/transfer/:token', async (req, res) => {
       productId: transferRequest.productId,
       productName: product?.productName || 'Unknown Product',
       fromOwner: transferRequest.fromOwner,
+      fromOwnerName: product?.owner?.name || null, // Real name of current owner
+      price: product?.metadata?.price || null,
+      category: product?.category,
+      serialNumber: product?.serialNumber,
       expiresAt: transferRequest.expiresAt,
       message: 'Ready to complete transfer'
     });

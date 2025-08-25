@@ -681,86 +681,69 @@ class BlockchainExplorer {
         const mockPrice = this.generateMockPrice(block.metadata?.productName);
         
         detailsContainer.innerHTML = `
-            <!-- Ultra-Kompakter Header mit allen wichtigen Infos -->
-            <div class="detail-header-compact">
-                <div class="header-top-row">
-                    <div class="block-info">
-                        <span class="block-id-badge">${block.blockId}</span>
-                        <span class="block-number">#${block.blockNumber}</span>
+            <!-- Responsive Grid Layout für alle Infos -->
+            <div class="detail-content-grid">
+                <!-- Hauptinformationen -->
+                <div class="main-info-card">
+                    <div class="info-header">
+                        <h3 class="product-name">${block.metadata?.productName || 'Unknown Product'}</h3>
                         <span class="transaction-type-badge ${block.transactionType.toLowerCase()}">${block.transactionType}</span>
                     </div>
-                    <div class="timestamp-info">
-                        <span class="date-compact">${dateShort}</span>
-                        <span class="time-compact">${timeShort}</span>
+                    <div class="info-meta">
+                        <span class="serial-number">SN: ${block.metadata?.serialNumber || 'N/A'}</span>
+                        <span class="block-id">${block.blockId} (#${block.blockNumber})</span>
                     </div>
                 </div>
                 
-                <!-- Produkt-Titel als Hauptzeile -->
-                <div class="product-title-row">
-                    <h3 class="product-name-main">${block.metadata?.productName || 'Unknown Product'}</h3>
-                    <span class="serial-number-compact">${block.metadata?.serialNumber || 'N/A'}</span>
-                </div>
-            </div>
-            
-            <!-- Kompakte Ownership-Zeile -->
-            <div class="ownership-compact">
-                <div class="ownership-flow-inline">
-                    ${block.fromOwner ? `
-                        <span class="owner-from">
-                            <span class="owner-label-mini">VON</span>
-                            <span class="owner-code-mini">${block.fromOwner.substring(0, 12)}...</span>
-                        </span>
-                        <span class="transfer-arrow-mini">→</span>
-                    ` : `
-                        <span class="owner-mint">
-                            <span class="mint-badge">MINT</span>
-                        </span>
-                        <span class="transfer-arrow-mini">→</span>
-                    `}
-                    <span class="owner-to">
-                        <span class="owner-label-mini">AN</span>
-                        <span class="owner-code-mini">${block.toOwner.substring(0, 12)}...</span>
-                    </span>
+                <!-- Zeitstempel -->
+                <div class="timestamp-card">
+                    <div class="timestamp-label">Timestamp</div>
+                    <div class="timestamp-value">${dateShort} ${timeShort}</div>
                 </div>
                 
-                <!-- Kompakte Preis-Anzeige (nur bei Transfers) -->
-                ${block.transactionType === 'TRANSFER' ? `
-                    <div class="price-compact">
-                        <label class="price-toggle-mini">
-                            <input type="checkbox" id="price-toggle-${block.blockId}" 
-                                   onchange="blockchainExplorer.togglePriceVisibility('${block.blockId}', ${mockPrice})"
-                                   checked>
-                            <span class="price-label-mini">Preis</span>
-                        </label>
-                        <span class="price-value-mini" id="price-value-${block.blockId}">${mockPrice}€</span>
-                    </div>
-                ` : ''}
-            </div>
-            
-            <!-- Technical Details (Collapsible) -->
-            <div class="technical-section">
-                <button class="technical-toggle" onclick="this.parentElement.classList.toggle('expanded')">
-                    <span>Technische Details</span>
-                    <span class="toggle-icon">▼</span>
-                </button>
-                <div class="technical-content">
-                    <div class="hash-grid">
-                        <div class="hash-item">
-                            <div class="hash-label">Previous Hash</div>
-                            <div class="hash-value" title="${block.previousHash}">
-                                ${block.previousHash.substring(0, 16)}...
+                <!-- Eigentumstransfer -->
+                <div class="ownership-card">
+                    <div class="ownership-label">Eigentum</div>
+                    <div class="ownership-flow">
+                        ${block.fromOwner ? `
+                            <div class="owner-item from">
+                                <span class="owner-label">Von:</span>
+                                <span class="owner-code">${block.fromOwner}</span>
                             </div>
+                            <div class="transfer-arrow">↓</div>
+                        ` : `
+                            <div class="mint-item">
+                                <span class="mint-label">Neu erstellt</span>
+                            </div>
+                            <div class="transfer-arrow">↓</div>
+                        `}
+                        <div class="owner-item to">
+                            <span class="owner-label">An:</span>
+                            <span class="owner-code">${block.toOwner}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Technische Details -->
+                <div class="technical-card">
+                    <div class="technical-label">Hashes</div>
+                    <div class="hash-list">
+                        <div class="hash-item">
+                            <span class="hash-label">Previous:</span>
+                            <span class="hash-value" title="${block.previousHash}">
+                                ${block.previousHash.substring(0, 12)}...
+                            </span>
                         </div>
                         <div class="hash-item">
-                            <div class="hash-label">Current Hash</div>
-                            <div class="hash-value" title="${block.currentHash}">
-                                ${block.currentHash.substring(0, 16)}...
-                            </div>
+                            <span class="hash-label">Current:</span>
+                            <span class="hash-value" title="${block.currentHash}">
+                                ${block.currentHash.substring(0, 12)}...
+                            </span>
                         </div>
                     </div>
                     ${block.metadata?.transferMethod ? `
-                        <div class="transfer-method">
-                            <span class="method-label">Transfer Method:</span>
+                        <div class="transfer-method-info">
+                            <span class="method-label">Methode:</span>
                             <span class="method-value">${block.metadata.transferMethod}</span>
                         </div>
                     ` : ''}
@@ -797,20 +780,6 @@ class BlockchainExplorer {
         return prices[productName] || Math.floor(Math.random() * 200) + 50;
     }
     
-    togglePriceVisibility(blockId, price) {
-        const checkbox = document.getElementById(`price-toggle-${blockId}`);
-        const priceValue = document.getElementById(`price-value-${blockId}`);
-        
-        if (checkbox && priceValue) {
-            if (checkbox.checked) {
-                priceValue.textContent = `${price}€`;
-                priceValue.classList.remove('hidden');
-            } else {
-                priceValue.textContent = 'XXX€';
-                priceValue.classList.add('hidden');
-            }
-        }
-    }
     
     addDetailModalStyles() {
         if (document.getElementById('detail-modal-styles')) return;
@@ -818,19 +787,212 @@ class BlockchainExplorer {
         const style = document.createElement('style');
         style.id = 'detail-modal-styles';
         style.textContent = `
-            /* Kompakter Detail Header */
-            .detail-header {
+            /* Responsive Grid Layout für Block Details */
+            .detail-content-grid {
                 display: grid;
-                grid-template-columns: 1fr auto;
+                grid-template-columns: 1fr 1fr;
                 gap: 1rem;
-                margin-bottom: 1.5rem;
-                padding-bottom: 1rem;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 0;
             }
             
-            .detail-header-left {
+            .main-info-card,
+            .timestamp-card,
+            .ownership-card,
+            .technical-card {
+                background: rgba(255, 255, 255, 0.02);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 8px;
+                padding: 1rem;
+            }
+            
+            .main-info-card {
+                grid-column: 1 / -1; /* Spans both columns */
+            }
+            
+            .info-header {
                 display: flex;
-                gap: 0.75rem;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 0.5rem;
+            }
+            
+            .product-name {
+                color: #fff;
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin: 0;
+            }
+            
+            .transaction-type-badge {
+                padding: 0.25rem 0.75rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+            
+            .transaction-type-badge.mint {
+                background: rgba(34, 197, 94, 0.2);
+                color: #22c55e;
+                border: 1px solid rgba(34, 197, 94, 0.3);
+            }
+            
+            .transaction-type-badge.transfer {
+                background: rgba(59, 130, 246, 0.2);
+                color: #3b82f6;
+                border: 1px solid rgba(59, 130, 246, 0.3);
+            }
+            
+            .info-meta {
+                display: flex;
+                justify-content: space-between;
+                color: #999;
+                font-size: 0.85rem;
+            }
+            
+            .serial-number {
+                color: #00ff00;
+                font-family: 'Courier New', monospace;
+            }
+            
+            .block-id {
+                color: #ccc;
+                font-family: 'Courier New', monospace;
+            }
+            
+            .timestamp-card .timestamp-label,
+            .ownership-card .ownership-label,
+            .technical-card .technical-label {
+                color: #ccc;
+                font-size: 0.8rem;
+                text-transform: uppercase;
+                margin-bottom: 0.5rem;
+                display: block;
+                font-weight: 600;
+            }
+            
+            .timestamp-value {
+                color: #fff;
+                font-size: 0.9rem;
+                font-family: 'Courier New', monospace;
+            }
+            
+            .ownership-flow {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            .owner-item, .mint-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .owner-label, .mint-label {
+                color: #999;
+                font-size: 0.8rem;
+            }
+            
+            .owner-code {
+                color: #3b82f6;
+                font-family: 'Courier New', monospace;
+                font-size: 0.8rem;
+                max-width: 120px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            .mint-label {
+                color: #22c55e;
+                font-weight: 500;
+            }
+            
+            .transfer-arrow {
+                text-align: center;
+                color: #666;
+                font-size: 0.8rem;
+                margin: 0.25rem 0;
+            }
+            
+            .hash-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .hash-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .hash-label {
+                color: #999;
+                font-size: 0.8rem;
+                min-width: 70px;
+            }
+            
+            .hash-value {
+                color: #666;
+                font-family: 'Courier New', monospace;
+                font-size: 0.75rem;
+                background: rgba(0, 0, 0, 0.3);
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: color 0.2s ease;
+            }
+            
+            .hash-value:hover {
+                color: #999;
+            }
+            
+            .transfer-method-info {
+                margin-top: 0.75rem;
+                padding-top: 0.75rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .method-label {
+                color: #999;
+                font-size: 0.8rem;
+            }
+            
+            .method-value {
+                color: #3b82f6;
+                font-size: 0.85rem;
+                font-weight: 500;
+            }
+            
+            /* Mobile Layout */
+            @media (max-width: 768px) {
+                .detail-content-grid {
+                    grid-template-columns: 1fr;
+                    gap: 0.75rem;
+                }
+                
+                .main-info-card {
+                    grid-column: 1;
+                }
+                
+                .info-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 0.5rem;
+                }
+                
+                .owner-code {
+                    max-width: 100px;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
                 align-items: center;
             }
             
@@ -997,21 +1159,6 @@ class BlockchainExplorer {
                 border: 1px solid rgba(255, 255, 255, 0.05);
             }
             
-            .price-toggle-container {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 0.75rem;
-            }
-            
-            .price-toggle-label {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                cursor: pointer;
-                font-size: 0.9rem;
-                color: #ccc;
-            }
             
             .toggle-switch {
                 position: relative;
@@ -1207,11 +1354,6 @@ class BlockchainExplorer {
                     gap: 0.25rem;
                 }
                 
-                .price-toggle-container {
-                    flex-direction: column;
-                    align-items: flex-start;
-                    gap: 0.5rem;
-                }
             }
         `;
         document.head.appendChild(style);

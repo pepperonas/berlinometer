@@ -312,6 +312,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
         productName: productData.productName,
         category: productData.category,
         imageUrl: productData.imageUrl || null,
+        isActive: document.getElementById('isActive').checked,
         metadata: metadata
     };
 
@@ -592,6 +593,7 @@ async function loadProducts() {
                 category: product.category,
                 imageUrl: product.imageUrl || null,
                 isValid: product.isValid !== undefined ? product.isValid : true,
+                isActive: product.isActive !== undefined ? product.isActive : true,
                 createdAt: product.createdAt || product.manufacturingDate || product.created,
                 manufacturingDate: product.manufacturingDate,
                 owner: product.owner, // Keep the full owner object
@@ -691,6 +693,7 @@ function displayProducts(products) {
                     <div class="product-name-row">
                         <h3 class="product-name">${escapeHtml(product.productName)}</h3>
                         <span class="status-dot ${product.isValid ? 'valid' : 'invalid'}" title="${product.isValid ? 'Valid Product' : 'Invalid Product'}"></span>
+                        ${product.isActive === false ? '<span style="background: #dc2c3f; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.75rem; margin-left: 0.5rem;">INACTIVE</span>' : ''}
                     </div>
                     <div class="product-meta-row">
                         <span class="category-pill">${escapeHtml(product.category)}</span>
@@ -909,6 +912,12 @@ async function editProduct(productId) {
                         <input type="text" id="editNotes" value="${escapeHtml(product.metadata?.notes || '')}" placeholder="Additional product information">
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="editIsActive" ${product.isActive !== false ? 'checked' : ''}>
+                        <span>Active (Show on main page)</span>
+                    </label>
+                </div>
                 <div class="modal-actions">
                     <button type="button" onclick="closeEditModal()">Cancel</button>
                     <button type="submit">Save Changes</button>
@@ -954,6 +963,7 @@ async function saveProductChanges(productId) {
         productName: document.getElementById('editName').value,
         serialNumber: document.getElementById('editSerialNumber').value.trim(),
         category: document.getElementById('editCategory').value,
+        isActive: document.getElementById('editIsActive').checked,
         metadata: {
             material: document.getElementById('editMaterial').value,
             price: parseFloat(document.getElementById('editPrice').value) || 0,
@@ -994,6 +1004,7 @@ async function saveProductChanges(productId) {
                     serialNumber: apiProduct.serialNumber,
                     category: apiProduct.category,
                     isValid: apiProduct.isValid,
+                    isActive: apiProduct.isActive,
                     owner: apiProduct.owner, // Include owner field
                     metadata: apiProduct.metadata
                 };

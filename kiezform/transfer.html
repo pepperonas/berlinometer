@@ -118,13 +118,29 @@ class TransferPage {
                             <span class="value">${transferData.productName}</span>
                         </div>
                         <div class="info-item">
-                            <span class="label">Produkt-ID:</span>
-                            <span class="value">${transferData.productId}</span>
+                            <span class="label">Seriennummer:</span>
+                            <span class="value serial">${transferData.serialNumber || 'N/A'}</span>
                         </div>
                         <div class="info-item">
-                            <span class="label">Aktueller Besitzer:</span>
-                            <span class="value">${transferData.fromOwner}</span>
+                            <span class="label">Kategorie:</span>
+                            <span class="value">${transferData.category || 'N/A'}</span>
                         </div>
+                        ${transferData.price ? `
+                        <div class="info-item">
+                            <span class="label">Verkaufspreis:</span>
+                            <span class="value price">€${transferData.price}</span>
+                        </div>
+                        ` : ''}
+                        <div class="info-item">
+                            <span class="label">Aktueller Besitzer (USR-Code):</span>
+                            <span class="value owner-code">${transferData.fromOwner}</span>
+                        </div>
+                        ${transferData.fromOwnerName ? `
+                        <div class="info-item">
+                            <span class="label">Aktueller Besitzer (Name):</span>
+                            <span class="value owner-name">${transferData.fromOwnerName}</span>
+                        </div>
+                        ` : ''}
                         <div class="info-item">
                             <span class="label">Gültig bis:</span>
                             <span class="value">${new Date(transferData.expiresAt).toLocaleString('de-DE')}</span>
@@ -340,6 +356,28 @@ class TransferPage {
             .info-item .value {
                 color: #fff;
                 font-family: monospace;
+            }
+            
+            .info-item .value.serial {
+                color: #00ff00;
+                font-weight: 600;
+            }
+            
+            .info-item .value.price {
+                color: #22c55e;
+                font-weight: 600;
+                font-size: 1.1rem;
+            }
+            
+            .info-item .value.owner-code {
+                color: #3b82f6;
+                font-size: 0.85rem;
+            }
+            
+            .info-item .value.owner-name {
+                color: #fff;
+                font-weight: 500;
+                font-family: inherit;
             }
             
             .form-group {
