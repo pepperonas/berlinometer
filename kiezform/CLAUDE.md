@@ -424,7 +424,28 @@ function loadProductData() {
 
 ## Version History
 
-### v0.0.11 (Current) - Transfer Flow Improvements
+### v0.0.12 (Current) - UI/UX Improvements & Product Management
+- ✅ **Removed Price Toggle from Blockchain**: Prices no longer shown/toggleable on blockchain page
+- ✅ **Enhanced Transfer Page Display**: 
+  - Shows product price prominently (€ amount in green)
+  - Displays both USR pseudonym AND real owner name for transparency
+  - Enhanced product information (serial number, category)
+  - Improved visual styling with color-coded information
+- ✅ **Redesigned Blockchain Block Details Dialog**:
+  - New responsive grid layout (2 columns desktop, 1 column mobile) 
+  - No collapsible sections - all information immediately visible
+  - Better space utilization across all device sizes
+  - 4 organized cards: Main info, Timestamp, Ownership transfer, Technical details
+- ✅ **Product Active/Inactive Management**:
+  - Admin interface: checkbox to toggle product visibility on main page
+  - Inactive products hidden from main page but still verifiable via QR codes
+  - Visual indicators in admin panel (red "INACTIVE" badge)
+- ✅ **Backend API Enhancements**:
+  - New `/api/products/active` endpoint for filtering active products
+  - Extended transfer API to include price and real owner names
+  - Added `isActive` field to product schema (default: true)
+
+### v0.0.11 - Transfer Flow Improvements
 - ✅ **Confirmation Dialog Implementation**: Added missing security confirmation to transfer.html
   - **Unified UX**: Both transfer.html and owner-verify.html now have identical confirmation dialogs
   - **Security Warning**: "ENDGÜLTIG und kann NICHT rückgängig gemacht werden!" with visual warning

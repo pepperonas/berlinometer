@@ -4,21 +4,21 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 
 ## 🌟 Features
 
-- **Product Gallery**: Dynamic showcase of chains and rings with category filtering
+- **Product Gallery**: Dynamic showcase with active/inactive filtering and category management
 - **Blockchain System**: SHA-256 hash-based blockchain for certificate ownership tracking
-- **Blockchain Explorer**: Visual blockchain interface with search and block navigation
-- **Admin Dashboard**: Secure product management with MongoDB integration
-- **Backend API**: Full Express.js REST API with JWT authentication
-- **Verification System**: QR codes and secure share links for ownership verification  
-- **Transfer System**: Simplified QR-based ownership transfers with confirmation dialogs
+- **Blockchain Explorer**: Redesigned visual interface with responsive grid layout and no collapsible sections
+- **Admin Dashboard**: Product management with active/inactive toggles and comprehensive controls
+- **Backend API**: Enhanced REST API with separate endpoints for active products and pricing
+- **Verification System**: QR codes maintain functionality for both active and inactive products
+- **Transfer System**: Enhanced ownership transfers showing price and real owner names  
 - **3D Print Integration**: STL file generation for QR codes (40x40x1mm format)
-- **Product Database**: MongoDB with comprehensive product and user management
+- **Product Database**: MongoDB with isActive field and extended transfer information
 - **VALUE Section**: Comprehensive dual QR code verification system explanation
 - **SHARE Section**: Interactive QR code for site sharing with Web Share API
 - **Design System**: Unified CSS component library with 150+ design tokens
-- **Mobile-First**: Responsive design with hamburger navigation
+- **Mobile-First**: Responsive design optimized for Samsung S24 Ultra and iPhone 16 Pro
 - **Clean URLs**: No .html extensions with automatic redirects
-- **Dark Theme**: Industrial aesthetic with subtle scanline effects
+- **Dark Theme**: Industrial aesthetic with subtle scanline effects and improved UX
 
 ## 🏗️ Architecture
 
@@ -662,7 +662,29 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.11 (Latest) - Confirmation Dialog & Owner Name Fix  
+### v0.0.12 (Latest) - UI/UX Improvements & Product Management
+- ✅ **Removed Price Toggle from Blockchain**: Prices no longer shown/toggleable on blockchain page for cleaner UX
+- ✅ **Enhanced Transfer Page Display**: 
+  - Shows product price prominently (€ amount in green) only on red QR transfer pages
+  - Displays both USR pseudonym AND real owner name for transparency
+  - Enhanced product information display (serial number, category)
+  - Improved visual styling with color-coded information
+- ✅ **Redesigned Blockchain Block Details Dialog**:
+  - New responsive grid layout (2 columns desktop, 1 column mobile) 
+  - No collapsible sections - all information immediately visible for better UX
+  - Optimized space utilization across all device sizes
+  - 4 organized cards: Main info, Timestamp, Ownership transfer, Technical details
+- ✅ **Product Active/Inactive Management**:
+  - Admin interface: checkbox to toggle product visibility on main page
+  - Inactive products hidden from main page but still verifiable via QR codes
+  - Visual indicators in admin panel (red "INACTIVE" badge)
+  - New API endpoint `/api/products/active` for filtering (with route ordering fix)
+- ✅ **Backend API Enhancements**:
+  - Extended transfer API to include price and real owner names
+  - Added `isActive` field to product schema (default: true)
+  - Fixed route ordering: `/api/products/active` now comes before `/api/products/:id`
+
+### v0.0.11 - Confirmation Dialog & Owner Name Fix  
 - ✅ **Transfer Confirmation Dialog**: Added missing security confirmation to transfer.html
   - **Unified UX**: Both transfer.html and owner-verify.html now have identical confirmation dialogs
   - **Security Warning**: "ENDGÜLTIG und kann NICHT rückgängig gemacht werden!" with visual warning

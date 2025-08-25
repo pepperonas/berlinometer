@@ -8,6 +8,7 @@ const App: React.FC = () => {
     const [showPwned, setShowPwned] = useState<boolean>(false);
     const [showConfetti, setShowConfetti] = useState<boolean>(false);
     const [showDisclaimer, setShowDisclaimer] = useState<boolean>(true);
+    const [showInputHint, setShowInputHint] = useState<boolean>(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -58,6 +59,11 @@ const App: React.FC = () => {
         const value = e.target.value;
         if (/^\d*$/.test(value) || value === '🍔🍟') {
             setInputValue(value);
+            
+            // Hide hint when user starts typing
+            if (showInputHint) {
+                setShowInputHint(false);
+            }
 
             // Check für 3001 Easter Egg
             if (value === '3001') {
@@ -88,6 +94,10 @@ const App: React.FC = () => {
         if (!showDisclaimer && inputRef.current) {
             const timer = setTimeout(() => {
                 inputRef.current?.focus();
+                // Show input hint animation after disclaimer
+                setShowInputHint(true);
+                // Hide hint after 5 seconds
+                setTimeout(() => setShowInputHint(false), 5000);
             }, 100);
 
             return () => clearTimeout(timer);
@@ -199,6 +209,12 @@ const App: React.FC = () => {
             )}
 
             <div className="mobile-container" style={{backgroundImage: `url(${backgroundImage})`}}>
+                {showInputHint && (
+                    <div className="input-hint-container">
+                        <div className="input-hint-arrow">↗</div>
+                        <div className="input-hint-text">Hier tippen!</div>
+                    </div>
+                )}
                 <input
                     ref={inputRef}
                     type="text"
@@ -214,7 +230,7 @@ const App: React.FC = () => {
                     onTouchStart={handleTouchStart}
                     onTouchEnd={handleTouchEnd}
                     onTouchCancel={handleTouchEnd}
-                    className="number-input"
+                    className={`number-input ${showInputHint ? 'input-highlight' : ''}`}
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="off"

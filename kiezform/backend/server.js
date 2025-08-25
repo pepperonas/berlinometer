@@ -251,6 +251,18 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Test route without auth to debug middleware issue
+app.get('/api/test-no-auth', async (req, res) => {
+  try {
+    res.json({ 
+      message: 'Test route works without auth',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Admin Routes
 app.post('/api/admin/register', async (req, res) => {
   try {
