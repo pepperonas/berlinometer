@@ -74,14 +74,15 @@ setInterval(() => {
 async function loadData(limit = 1000) {
     try {
         const [rows] = await pool.execute(
-            `SELECT id, temperature, humidity, pressure, temperature_indoor, humidity_indoor, pressure_indoor, temperature_outdoor, humidity_outdoor, sensor_indoor, sensor_outdoor, timestamp, created_at FROM weather_data ORDER BY timestamp DESC LIMIT ${parseInt(limit)}`
+            `SELECT id, temperature_indoor, humidity_indoor, pressure_indoor, temperature_outdoor, humidity_outdoor, sensor_indoor, sensor_outdoor, timestamp, created_at FROM weather_data ORDER BY timestamp DESC LIMIT ${parseInt(limit)}`
         );
         // Konvertiere die Daten und stelle sicher, dass sie Zahlen sind
         return rows.reverse().map(row => ({
             id: row.id,
-            temperature: parseFloat(row.temperature),
-            humidity: parseFloat(row.humidity),
-            pressure: row.pressure ? parseFloat(row.pressure) : null,
+            // Use indoor values as primary for backward compatibility
+            temperature: row.temperature_indoor ? parseFloat(row.temperature_indoor) : null,
+            humidity: row.humidity_indoor ? parseFloat(row.humidity_indoor) : null,
+            pressure: row.pressure_indoor ? parseFloat(row.pressure_indoor) : null,
             temperature_indoor: row.temperature_indoor ? parseFloat(row.temperature_indoor) : null,
             humidity_indoor: row.humidity_indoor ? parseFloat(row.humidity_indoor) : null,
             pressure_indoor: row.pressure_indoor ? parseFloat(row.pressure_indoor) : null,
@@ -101,13 +102,14 @@ async function loadData(limit = 1000) {
 async function getLastValidReading() {
     try {
         const [rows] = await pool.execute(
-            'SELECT temperature, humidity, pressure, temperature_indoor, humidity_indoor, pressure_indoor, temperature_outdoor, humidity_outdoor, sensor_indoor, sensor_outdoor, timestamp FROM weather_data ORDER BY timestamp DESC LIMIT 1'
+            'SELECT temperature_indoor, humidity_indoor, pressure_indoor, temperature_outdoor, humidity_outdoor, sensor_indoor, sensor_outdoor, timestamp FROM weather_data ORDER BY timestamp DESC LIMIT 1'
         );
         if (rows.length > 0) {
             return {
-                temperature: parseFloat(rows[0].temperature),
-                humidity: parseFloat(rows[0].humidity),
-                pressure: rows[0].pressure ? parseFloat(rows[0].pressure) : null,
+                // Use indoor as primary for backward compatibility
+                temperature: rows[0].temperature_indoor ? parseFloat(rows[0].temperature_indoor) : null,
+                humidity: rows[0].humidity_indoor ? parseFloat(rows[0].humidity_indoor) : null,
+                pressure: rows[0].pressure_indoor ? parseFloat(rows[0].pressure_indoor) : null,
                 temperature_indoor: rows[0].temperature_indoor ? parseFloat(rows[0].temperature_indoor) : null,
                 humidity_indoor: rows[0].humidity_indoor ? parseFloat(rows[0].humidity_indoor) : null,
                 pressure_indoor: rows[0].pressure_indoor ? parseFloat(rows[0].pressure_indoor) : null,
@@ -207,13 +209,13 @@ async function saveData(data) {
         
         await pool.execute(
             `INSERT INTO weather_data (
-                temperature, humidity, pressure, timestamp,
+                timestamp,
                 temperature_indoor, humidity_indoor, pressure_indoor,
                 temperature_outdoor, humidity_outdoor,
                 sensor_indoor, sensor_outdoor
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                temperature, humidity, pressure, timestamp,
+                timestamp,
                 temperature_indoor, humidity_indoor, pressure_indoor,
                 temperature_outdoor, humidity_outdoor,
                 sensor_indoor, sensor_outdoor
@@ -245,12 +247,19 @@ app.post('/weather-tracker', async (req, res) => {
         const press = pressure ? parseFloat(pressure) : null;
         const ts = timestamp || Math.floor(Date.now() / 1000);
         
-        // Parse indoor/outdoor values
-        const tempIndoor = temperature_indoor !== undefined ? parseFloat(temperature_indoor) : temp;
-        const humIndoor = humidity_indoor !== undefined ? parseFloat(humidity_indoor) : hum;
-        const pressIndoor = pressure_indoor !== undefined ? parseFloat(pressure_indoor) : press;
+        // Parse indoor/outdoor values - only use fallback if both indoor/outdoor are undefined
+        let tempIndoor = temperature_indoor !== undefined ? parseFloat(temperature_indoor) : null;
+        let humIndoor = humidity_indoor !== undefined ? parseFloat(humidity_indoor) : null;
+        let pressIndoor = pressure_indoor !== undefined ? parseFloat(pressure_indoor) : null;
         const tempOutdoor = temperature_outdoor !== undefined ? parseFloat(temperature_outdoor) : null;
         const humOutdoor = humidity_outdoor !== undefined ? parseFloat(humidity_outdoor) : null;
+        
+        // Legacy fallback: if no indoor/outdoor data provided, use primary values as indoor
+        if (tempIndoor === null && tempOutdoor === null) {
+            tempIndoor = temp;
+            humIndoor = hum;
+            pressIndoor = press;
+        }
         
         if (temperature === undefined || humidity === undefined) {
             return res.status(400).json({error: 'Missing temperature or humidity'});
@@ -1006,22 +1015,8 @@ app.get('/', async (req, res) => {
                     }
                 };
                 
-                // Temperature Chart datasets
+                // Temperature Chart datasets - Only Indoor/Outdoor
                 const tempDatasets = [];
-                
-                // Add primary temperature (for compatibility)
-                if (data.temperature && data.temperature.length > 0) {
-                    tempDatasets.push({
-                        label: 'Temperatur (°C)',
-                        data: data.temperature,
-                        borderColor: accentRed,
-                        backgroundColor: 'rgba(225, 97, 98, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        pointHoverRadius: 6
-                    });
-                }
                 
                 // Add indoor temperature
                 if (data.temperatureIndoor && data.temperatureIndoor.length > 0) {
@@ -1089,22 +1084,8 @@ app.get('/', async (req, res) => {
                     options: tempOptions
                 });
                 
-                // Humidity Chart datasets
+                // Humidity Chart datasets - Only Indoor/Outdoor
                 const humDatasets = [];
-                
-                // Add primary humidity (for compatibility)
-                if (data.humidity && data.humidity.length > 0) {
-                    humDatasets.push({
-                        label: 'Luftfeuchtigkeit (%)',
-                        data: data.humidity,
-                        borderColor: accentBlue,
-                        backgroundColor: 'rgba(104, 141, 177, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        pointHoverRadius: 6
-                    });
-                }
                 
                 // Add indoor humidity
                 if (data.humidityIndoor && data.humidityIndoor.length > 0) {
@@ -1172,24 +1153,10 @@ app.get('/', async (req, res) => {
                     options: humOptions
                 });
                 
-                // Pressure Chart (only if we have pressure data)
+                // Pressure Chart (only indoor pressure data)
                 const pressureDatasets = [];
                 
-                // Add primary pressure (for compatibility)
-                if (data.pressure && data.pressure.length > 0) {
-                    pressureDatasets.push({
-                        label: 'Luftdruck (hPa)',
-                        data: data.pressure,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4,
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        pointHoverRadius: 6
-                    });
-                }
-                
-                // Add indoor pressure
+                // Add indoor pressure only
                 if (data.pressureIndoor && data.pressureIndoor.length > 0) {
                     pressureDatasets.push({
                         label: '🏠 Indoor Luftdruck (hPa)',
@@ -1420,20 +1387,20 @@ app.get('/api/chart-data', async (req, res) => {
         } else {
             query = `
                 SELECT 
-                    AVG(temperature) as temperature,
-                    AVG(humidity) as humidity,
-                    AVG(pressure) as pressure,
+                    AVG(temperature_indoor) as temperature,
+                    AVG(humidity_indoor) as humidity,
+                    AVG(pressure_indoor) as pressure,
                     AVG(temperature_indoor) as temperature_indoor,
                     AVG(humidity_indoor) as humidity_indoor,
                     AVG(pressure_indoor) as pressure_indoor,
                     AVG(temperature_outdoor) as temperature_outdoor,
                     AVG(humidity_outdoor) as humidity_outdoor,
-                    MIN(temperature) as min_temp,
-                    MAX(temperature) as max_temp,
-                    MIN(humidity) as min_hum,
-                    MAX(humidity) as max_hum,
-                    MIN(pressure) as min_pressure,
-                    MAX(pressure) as max_pressure,
+                    MIN(temperature_indoor) as min_temp,
+                    MAX(temperature_indoor) as max_temp,
+                    MIN(humidity_indoor) as min_hum,
+                    MAX(humidity_indoor) as max_hum,
+                    MIN(pressure_indoor) as min_pressure,
+                    MAX(pressure_indoor) as max_pressure,
                     MIN(temperature_indoor) as min_temp_indoor,
                     MAX(temperature_indoor) as max_temp_indoor,
                     MIN(humidity_indoor) as min_hum_indoor,
@@ -1473,10 +1440,13 @@ app.get('/api/chart-data', async (req, res) => {
         rows.forEach(row => {
             const timestamp = aggregation === 'raw' ? row.timestamp : row.grouped_timestamp;
             labels.push(formatTimestamp(timestamp));
-            temperature.push(parseFloat(row.temperature));
-            humidity.push(parseFloat(row.humidity));
-            if (row.pressure) {
-                pressure.push(parseFloat(row.pressure));
+            // Use indoor values as primary for backward compatibility
+            const primaryTemp = row.temperature_indoor || row.temperature;
+            const primaryHum = row.humidity_indoor || row.humidity;
+            temperature.push(parseFloat(primaryTemp));
+            humidity.push(parseFloat(primaryHum));
+            if (row.pressure_indoor || row.pressure) {
+                pressure.push(parseFloat(row.pressure_indoor || row.pressure));
             }
             
             // Indoor/outdoor data
@@ -1542,9 +1512,9 @@ app.get('/api/chart-data', async (req, res) => {
         });
         
         // Calculate stats
-        const temps = rows.map(r => parseFloat(r.temperature));
-        const hums = rows.map(r => parseFloat(r.humidity));
-        const pressures = rows.filter(r => r.pressure).map(r => parseFloat(r.pressure));
+        const temps = rows.map(r => parseFloat(r.temperature_indoor || r.temperature || 0));
+        const hums = rows.map(r => parseFloat(r.humidity_indoor || r.humidity || 0));
+        const pressures = rows.filter(r => r.pressure_indoor || r.pressure).map(r => parseFloat(r.pressure_indoor || r.pressure || 0));
         const tempsIndoor = rows.filter(r => r.temperature_indoor !== null).map(r => parseFloat(r.temperature_indoor));
         const humsIndoor = rows.filter(r => r.humidity_indoor !== null).map(r => parseFloat(r.humidity_indoor));
         const tempsOutdoor = rows.filter(r => r.temperature_outdoor !== null).map(r => parseFloat(r.temperature_outdoor));

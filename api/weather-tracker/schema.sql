@@ -4,9 +4,6 @@ USE weather_tracker;
 
 CREATE TABLE IF NOT EXISTS weather_data (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    temperature DECIMAL(5,2) NOT NULL,
-    humidity DECIMAL(5,2) NOT NULL,
-    pressure DECIMAL(7,2) DEFAULT NULL,
     temperature_indoor DECIMAL(5,2) DEFAULT NULL,
     humidity_indoor DECIMAL(5,2) DEFAULT NULL,
     pressure_indoor DECIMAL(7,2) DEFAULT NULL,
