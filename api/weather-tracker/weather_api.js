@@ -29,6 +29,13 @@ async function initDatabase() {
             temperature DECIMAL(5,2) NOT NULL,
             humidity DECIMAL(5,2) NOT NULL,
             pressure DECIMAL(7,2) DEFAULT NULL,
+            temperature_indoor DECIMAL(5,2) DEFAULT NULL,
+            humidity_indoor DECIMAL(5,2) DEFAULT NULL,
+            pressure_indoor DECIMAL(7,2) DEFAULT NULL,
+            temperature_outdoor DECIMAL(5,2) DEFAULT NULL,
+            humidity_outdoor DECIMAL(5,2) DEFAULT NULL,
+            sensor_indoor VARCHAR(20) DEFAULT NULL,
+            sensor_outdoor VARCHAR(20) DEFAULT NULL,
             timestamp INT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             INDEX idx_timestamp (timestamp)
@@ -67,7 +74,7 @@ setInterval(() => {
 async function loadData(limit = 1000) {
     try {
         const [rows] = await pool.execute(
-            `SELECT id, temperature, humidity, pressure, timestamp, created_at FROM weather_data ORDER BY timestamp DESC LIMIT ${parseInt(limit)}`
+            `SELECT id, temperature, humidity, pressure, temperature_indoor, humidity_indoor, pressure_indoor, temperature_outdoor, humidity_outdoor, sensor_indoor, sensor_outdoor, timestamp, created_at FROM weather_data ORDER BY timestamp DESC LIMIT ${parseInt(limit)}`
         );
         // Konvertiere die Daten und stelle sicher, dass sie Zahlen sind
         return rows.reverse().map(row => ({
@@ -75,6 +82,13 @@ async function loadData(limit = 1000) {
             temperature: parseFloat(row.temperature),
             humidity: parseFloat(row.humidity),
             pressure: row.pressure ? parseFloat(row.pressure) : null,
+            temperature_indoor: row.temperature_indoor ? parseFloat(row.temperature_indoor) : null,
+            humidity_indoor: row.humidity_indoor ? parseFloat(row.humidity_indoor) : null,
+            pressure_indoor: row.pressure_indoor ? parseFloat(row.pressure_indoor) : null,
+            temperature_outdoor: row.temperature_outdoor ? parseFloat(row.temperature_outdoor) : null,
+            humidity_outdoor: row.humidity_outdoor ? parseFloat(row.humidity_outdoor) : null,
+            sensor_indoor: row.sensor_indoor,
+            sensor_outdoor: row.sensor_outdoor,
             timestamp: parseInt(row.timestamp),
             created_at: row.created_at
         }));
@@ -87,13 +101,20 @@ async function loadData(limit = 1000) {
 async function getLastValidReading() {
     try {
         const [rows] = await pool.execute(
-            'SELECT temperature, humidity, pressure, timestamp FROM weather_data ORDER BY timestamp DESC LIMIT 1'
+            'SELECT temperature, humidity, pressure, temperature_indoor, humidity_indoor, pressure_indoor, temperature_outdoor, humidity_outdoor, sensor_indoor, sensor_outdoor, timestamp FROM weather_data ORDER BY timestamp DESC LIMIT 1'
         );
         if (rows.length > 0) {
             return {
                 temperature: parseFloat(rows[0].temperature),
                 humidity: parseFloat(rows[0].humidity),
                 pressure: rows[0].pressure ? parseFloat(rows[0].pressure) : null,
+                temperature_indoor: rows[0].temperature_indoor ? parseFloat(rows[0].temperature_indoor) : null,
+                humidity_indoor: rows[0].humidity_indoor ? parseFloat(rows[0].humidity_indoor) : null,
+                pressure_indoor: rows[0].pressure_indoor ? parseFloat(rows[0].pressure_indoor) : null,
+                temperature_outdoor: rows[0].temperature_outdoor ? parseFloat(rows[0].temperature_outdoor) : null,
+                humidity_outdoor: rows[0].humidity_outdoor ? parseFloat(rows[0].humidity_outdoor) : null,
+                sensor_indoor: rows[0].sensor_indoor,
+                sensor_outdoor: rows[0].sensor_outdoor,
                 timestamp: parseInt(rows[0].timestamp)
             };
         }
@@ -175,11 +196,28 @@ function validateSensorData(temperature, humidity, timestamp, lastReading) {
     };
 }
 
-async function saveData(temperature, humidity, pressure, timestamp) {
+async function saveData(data) {
     try {
+        const {
+            temperature, humidity, pressure, timestamp,
+            temperature_indoor, humidity_indoor, pressure_indoor,
+            temperature_outdoor, humidity_outdoor,
+            sensor_indoor, sensor_outdoor
+        } = data;
+        
         await pool.execute(
-            'INSERT INTO weather_data (temperature, humidity, pressure, timestamp) VALUES (?, ?, ?, ?)',
-            [temperature, humidity, pressure, timestamp]
+            `INSERT INTO weather_data (
+                temperature, humidity, pressure, timestamp,
+                temperature_indoor, humidity_indoor, pressure_indoor,
+                temperature_outdoor, humidity_outdoor,
+                sensor_indoor, sensor_outdoor
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                temperature, humidity, pressure, timestamp,
+                temperature_indoor, humidity_indoor, pressure_indoor,
+                temperature_outdoor, humidity_outdoor,
+                sensor_indoor, sensor_outdoor
+            ]
         );
     } catch (error) {
         console.error('Error saving data:', error);
@@ -194,16 +232,29 @@ function formatTimestamp(timestamp) {
 // API endpoint for receiving sensor data
 app.post('/weather-tracker', async (req, res) => {
     try {
-        const {temperature, humidity, pressure, timestamp} = req.body;
+        const {
+            temperature, humidity, pressure, timestamp,
+            temperature_indoor, humidity_indoor, pressure_indoor,
+            temperature_outdoor, humidity_outdoor,
+            sensor_indoor, sensor_outdoor
+        } = req.body;
 
-        if (temperature === undefined || humidity === undefined) {
-            return res.status(400).json({error: 'Missing temperature or humidity'});
-        }
-
+        // Backward compatibility: use primary temp/humidity if indoor/outdoor not provided
         const temp = parseFloat(temperature);
         const hum = parseFloat(humidity);
         const press = pressure ? parseFloat(pressure) : null;
         const ts = timestamp || Math.floor(Date.now() / 1000);
+        
+        // Parse indoor/outdoor values
+        const tempIndoor = temperature_indoor !== undefined ? parseFloat(temperature_indoor) : temp;
+        const humIndoor = humidity_indoor !== undefined ? parseFloat(humidity_indoor) : hum;
+        const pressIndoor = pressure_indoor !== undefined ? parseFloat(pressure_indoor) : press;
+        const tempOutdoor = temperature_outdoor !== undefined ? parseFloat(temperature_outdoor) : null;
+        const humOutdoor = humidity_outdoor !== undefined ? parseFloat(humidity_outdoor) : null;
+        
+        if (temperature === undefined || humidity === undefined) {
+            return res.status(400).json({error: 'Missing temperature or humidity'});
+        }
 
         // Check rate limiting - only one entry per minute
         const minuteTimestamp = Math.floor(ts / 60) * 60;
@@ -247,7 +298,19 @@ app.post('/weather-tracker', async (req, res) => {
             });
         }
 
-        await saveData(temp, hum, press, ts);
+        await saveData({
+            temperature: temp,
+            humidity: hum,
+            pressure: press,
+            timestamp: ts,
+            temperature_indoor: tempIndoor,
+            humidity_indoor: humIndoor,
+            pressure_indoor: pressIndoor,
+            temperature_outdoor: tempOutdoor,
+            humidity_outdoor: humOutdoor,
+            sensor_indoor: sensor_indoor || null,
+            sensor_outdoor: sensor_outdoor || null
+        });
 
         // Store in recent readings map
         recentReadings.set(minuteKey, {
@@ -256,10 +319,24 @@ app.post('/weather-tracker', async (req, res) => {
         });
 
         // Update last valid reading
-        lastValidReading = { temperature: temp, humidity: hum, pressure: press, timestamp: ts };
+        lastValidReading = {
+            temperature: temp,
+            humidity: hum,
+            pressure: press,
+            timestamp: ts,
+            temperature_indoor: tempIndoor,
+            humidity_indoor: humIndoor,
+            pressure_indoor: pressIndoor,
+            temperature_outdoor: tempOutdoor,
+            humidity_outdoor: humOutdoor,
+            sensor_indoor: sensor_indoor || null,
+            sensor_outdoor: sensor_outdoor || null
+        };
 
         const pressureText = press ? `, ${press.toFixed(1)}hPa` : '';
-        console.log(`Accepted: ${temp.toFixed(1)}°C, ${hum.toFixed(1)}%${pressureText} at ${formatTimestamp(ts)}`);
+        const indoorText = tempIndoor !== null ? ` Indoor: ${tempIndoor.toFixed(1)}°C, ${humIndoor.toFixed(1)}%` : '';
+        const outdoorText = tempOutdoor !== null ? ` Outdoor: ${tempOutdoor.toFixed(1)}°C, ${humOutdoor.toFixed(1)}%` : '';
+        console.log(`Accepted: ${temp.toFixed(1)}°C, ${hum.toFixed(1)}%${pressureText}${indoorText}${outdoorText} at ${formatTimestamp(ts)}`);
 
         res.json({status: 'success'});
 
@@ -496,27 +573,72 @@ app.get('/', async (req, res) => {
             
             ${latest ? `
             <!-- Current Weather Card -->
-            <div class="bg-primary rounded-lg shadow-lg p-6 sm:p-8 mb-6 text-center animate-slideIn">
-                <div class="grid grid-cols-${latest.pressure ? '3' : '2'} gap-4 sm:gap-6">
-                    <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
-                        <div class="text-blue-400 text-sm font-medium mb-2">Temperatur</div>
-                        <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.temperature).toFixed(1)}°</div>
-                        <div class="text-gray-400 text-xs sm:text-sm mt-1">Celsius</div>
+            <div class="bg-primary rounded-lg shadow-lg p-6 sm:p-8 mb-6 animate-slideIn">
+                ${latest.temperature_indoor !== null || latest.temperature_outdoor !== null ? `
+                <!-- Indoor/Outdoor Display -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    ${latest.temperature_indoor !== null ? `
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-blue-300 mb-4">🏠 Indoor (${latest.sensor_indoor || 'Unknown'})</h3>
+                        <div class="grid grid-cols-${latest.pressure_indoor ? '3' : '2'} gap-3">
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 transition-transform duration-200 hover:scale-105">
+                                <div class="text-blue-400 text-xs font-medium mb-1">Temperatur</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-white">${parseFloat(latest.temperature_indoor).toFixed(1)}°</div>
+                            </div>
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 transition-transform duration-200 hover:scale-105">
+                                <div class="text-blue-400 text-xs font-medium mb-1">Feuchtigkeit</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-white">${parseFloat(latest.humidity_indoor).toFixed(0)}%</div>
+                            </div>
+                            ${latest.pressure_indoor ? `
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 transition-transform duration-200 hover:scale-105">
+                                <div class="text-green-400 text-xs font-medium mb-1">Druck</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-white">${parseFloat(latest.pressure_indoor).toFixed(1)}</div>
+                            </div>
+                            ` : ''}
+                        </div>
                     </div>
-                    <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
-                        <div class="text-blue-400 text-sm font-medium mb-2">Luftfeuchtigkeit</div>
-                        <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.humidity).toFixed(0)}%</div>
-                        <div class="text-gray-400 text-xs sm:text-sm mt-1">Relative</div>
-                    </div>
-                    ${latest.pressure ? `
-                    <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
-                        <div class="text-green-400 text-sm font-medium mb-2">Luftdruck</div>
-                        <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.pressure).toFixed(1)}</div>
-                        <div class="text-gray-400 text-xs sm:text-sm mt-1">hPa</div>
+                    ` : ''}
+                    ${latest.temperature_outdoor !== null ? `
+                    <div class="text-center">
+                        <h3 class="text-lg font-semibold text-orange-300 mb-4">🌤️ Outdoor (${latest.sensor_outdoor || 'Unknown'})</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 transition-transform duration-200 hover:scale-105">
+                                <div class="text-orange-400 text-xs font-medium mb-1">Temperatur</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-white">${parseFloat(latest.temperature_outdoor).toFixed(1)}°</div>
+                            </div>
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 transition-transform duration-200 hover:scale-105">
+                                <div class="text-orange-400 text-xs font-medium mb-1">Feuchtigkeit</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-white">${parseFloat(latest.humidity_outdoor).toFixed(0)}%</div>
+                            </div>
+                        </div>
                     </div>
                     ` : ''}
                 </div>
-                <div class="text-gray-500 text-xs sm:text-sm mt-4 pt-4 border-t border-gray-600">
+                ` : `
+                <!-- Legacy Single Sensor Display -->
+                <div class="text-center">
+                    <div class="grid grid-cols-${latest.pressure ? '3' : '2'} gap-4 sm:gap-6">
+                        <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
+                            <div class="text-blue-400 text-sm font-medium mb-2">Temperatur</div>
+                            <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.temperature).toFixed(1)}°</div>
+                            <div class="text-gray-400 text-xs sm:text-sm mt-1">Celsius</div>
+                        </div>
+                        <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
+                            <div class="text-blue-400 text-sm font-medium mb-2">Luftfeuchtigkeit</div>
+                            <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.humidity).toFixed(0)}%</div>
+                            <div class="text-gray-400 text-xs sm:text-sm mt-1">Relative</div>
+                        </div>
+                        ${latest.pressure ? `
+                        <div class="bg-primary-light rounded-lg p-4 sm:p-6 transition-transform duration-200 hover:scale-105">
+                            <div class="text-green-400 text-sm font-medium mb-2">Luftdruck</div>
+                            <div class="text-4xl sm:text-5xl font-bold text-white">${parseFloat(latest.pressure).toFixed(1)}</div>
+                            <div class="text-gray-400 text-xs sm:text-sm mt-1">hPa</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                `}
+                <div class="text-gray-500 text-xs sm:text-sm mt-4 pt-4 border-t border-gray-600 text-center">
                     Zuletzt aktualisiert: ${formatTimestamp(latest.timestamp)}
                 </div>
             </div>
@@ -564,40 +686,102 @@ app.get('/', async (req, res) => {
             <div class="bg-primary rounded-lg shadow-md p-4 sm:p-6 mb-6 animate-slideIn" style="animation-delay: 0.2s">
                 <h2 class="text-lg sm:text-xl font-semibold mb-4 text-blue-300">Statistiken (24 Stunden)</h2>
                 
-                <!-- MAX Values Row -->
-                <div class="mb-3">
-                    <div class="text-xs text-gray-500 font-medium mb-2 text-center">MAXIMUM WERTE</div>
-                    <div class="grid gap-3 sm:gap-4" id="maxStatsGrid">
-                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
-                            <div class="text-xs text-gray-400 font-medium">MAX TEMP</div>
-                            <div class="text-2xl sm:text-3xl font-bold text-red-400 mt-1" id="maxTemp">--</div>
+                <div id="legacyStats">
+                    <!-- Legacy Stats for single sensor -->
+                    <!-- MAX Values Row -->
+                    <div class="mb-3">
+                        <div class="text-xs text-gray-500 font-medium mb-2 text-center">MAXIMUM WERTE</div>
+                        <div class="grid gap-3 sm:gap-4" id="maxStatsGrid">
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                                <div class="text-xs text-gray-400 font-medium">MAX TEMP</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-red-400 mt-1" id="maxTemp">--</div>
+                            </div>
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                                <div class="text-xs text-gray-400 font-medium">MAX FEUCHTE</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-green-400 mt-1" id="maxHum">--</div>
+                            </div>
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105" id="maxPressureStat" style="display: none;">
+                                <div class="text-xs text-gray-400 font-medium">MAX DRUCK</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-purple-400 mt-1" id="maxPressure">--</div>
+                            </div>
                         </div>
-                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
-                            <div class="text-xs text-gray-400 font-medium">MAX FEUCHTE</div>
-                            <div class="text-2xl sm:text-3xl font-bold text-green-400 mt-1" id="maxHum">--</div>
-                        </div>
-                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105" id="maxPressureStat" style="display: none;">
-                            <div class="text-xs text-gray-400 font-medium">MAX DRUCK</div>
-                            <div class="text-2xl sm:text-3xl font-bold text-purple-400 mt-1" id="maxPressure">--</div>
+                    </div>
+                    
+                    <!-- MIN Values Row -->
+                    <div>
+                        <div class="text-xs text-gray-500 font-medium mb-2 text-center">MINIMUM WERTE</div>
+                        <div class="grid gap-3 sm:gap-4" id="minStatsGrid">
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                                <div class="text-xs text-gray-400 font-medium">MIN TEMP</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minTemp">--</div>
+                            </div>
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
+                                <div class="text-xs text-gray-400 font-medium">MIN FEUCHTE</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minHum">--</div>
+                            </div>
+                            <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105" id="minPressureStat" style="display: none;">
+                                <div class="text-xs text-gray-400 font-medium">MIN DRUCK</div>
+                                <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minPressure">--</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- MIN Values Row -->
-                <div>
-                    <div class="text-xs text-gray-500 font-medium mb-2 text-center">MINIMUM WERTE</div>
-                    <div class="grid gap-3 sm:gap-4" id="minStatsGrid">
-                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
-                            <div class="text-xs text-gray-400 font-medium">MIN TEMP</div>
-                            <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minTemp">--</div>
+                <div id="indoorOutdoorStats" style="display: none;">
+                    <!-- Indoor/Outdoor Stats -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Indoor Stats -->
+                        <div id="indoorStatsSection" style="display: none;">
+                            <h3 class="text-md font-semibold text-blue-300 mb-3 text-center">🏠 Indoor Extremwerte</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-primary-light rounded-lg p-2 text-center">
+                                    <div class="text-xs text-red-400 font-medium">MAX</div>
+                                    <div class="text-lg font-bold text-white" id="maxTempIndoor">--</div>
+                                    <div class="text-xs text-gray-400">TEMP</div>
+                                </div>
+                                <div class="bg-primary-light rounded-lg p-2 text-center">
+                                    <div class="text-xs text-blue-400 font-medium">MIN</div>
+                                    <div class="text-lg font-bold text-white" id="minTempIndoor">--</div>
+                                    <div class="text-xs text-gray-400">TEMP</div>
+                                </div>
+                                <div class="bg-primary-light rounded-lg p-2 text-center">
+                                    <div class="text-xs text-green-400 font-medium">MAX</div>
+                                    <div class="text-lg font-bold text-white" id="maxHumIndoor">--</div>
+                                    <div class="text-xs text-gray-400">FEUCHTE</div>
+                                </div>
+                                <div class="bg-primary-light rounded-lg p-2 text-center">
+                                    <div class="text-xs text-blue-400 font-medium">MIN</div>
+                                    <div class="text-lg font-bold text-white" id="minHumIndoor">--</div>
+                                    <div class="text-xs text-gray-400">FEUCHTE</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105">
-                            <div class="text-xs text-gray-400 font-medium">MIN FEUCHTE</div>
-                            <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minHum">--</div>
-                        </div>
-                        <div class="bg-primary-light rounded-lg p-3 sm:p-4 text-center transition-transform duration-200 hover:scale-105" id="minPressureStat" style="display: none;">
-                            <div class="text-xs text-gray-400 font-medium">MIN DRUCK</div>
-                            <div class="text-2xl sm:text-3xl font-bold text-blue-400 mt-1" id="minPressure">--</div>
+                        
+                        <!-- Outdoor Stats -->
+                        <div id="outdoorStatsSection" style="display: none;">
+                            <h3 class="text-md font-semibold text-orange-300 mb-3 text-center">🌤️ Outdoor Extremwerte</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="bg-primary-light rounded-lg p-2 text-center">
+                                    <div class="text-xs text-red-400 font-medium">MAX</div>
+                                    <div class="text-lg font-bold text-white" id="maxTempOutdoor">--</div>
+                                    <div class="text-xs text-gray-400">TEMP</div>
+                                </div>
+                                <div class="bg-primary-light rounded-lg p-2 text-center">
+                                    <div class="text-xs text-blue-400 font-medium">MIN</div>
+                                    <div class="text-lg font-bold text-white" id="minTempOutdoor">--</div>
+                                    <div class="text-xs text-gray-400">TEMP</div>
+                                </div>
+                                <div class="bg-primary-light rounded-lg p-2 text-center">
+                                    <div class="text-xs text-green-400 font-medium">MAX</div>
+                                    <div class="text-lg font-bold text-white" id="maxHumOutdoor">--</div>
+                                    <div class="text-xs text-gray-400">FEUCHTE</div>
+                                </div>
+                                <div class="bg-primary-light rounded-lg p-2 text-center">
+                                    <div class="text-xs text-blue-400 font-medium">MIN</div>
+                                    <div class="text-lg font-bold text-white" id="minHumOutdoor">--</div>
+                                    <div class="text-xs text-gray-400">FEUCHTE</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -609,17 +793,48 @@ app.get('/', async (req, res) => {
                 <div class="max-h-64 overflow-y-auto custom-scrollbar">
                     <div class="space-y-2">
                         ${data.slice(-20).reverse().map((entry, index) => `
-                            <div class="bg-primary-light rounded-lg p-3 flex flex-col sm:flex-row sm:justify-between sm:items-center transition-colors duration-200 hover:bg-gray-700 ${index === 0 ? 'border-l-2 border-blue-500' : ''}">
-                                <div class="flex items-center gap-4">
-                                    <span class="text-white font-medium">${parseFloat(entry.temperature).toFixed(1)}°C</span>
-                                    <span class="text-gray-400">|</span>
-                                    <span class="text-white font-medium">${parseFloat(entry.humidity).toFixed(1)}%</span>
-                                    ${entry.pressure ? `
-                                    <span class="text-gray-400">|</span>
-                                    <span class="text-white font-medium">${parseFloat(entry.pressure).toFixed(1)}hPa</span>
+                            <div class="bg-primary-light rounded-lg p-3 transition-colors duration-200 hover:bg-gray-700 ${index === 0 ? 'border-l-2 border-blue-500' : ''}">
+                                ${entry.temperature_indoor !== null || entry.temperature_outdoor !== null ? `
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    ${entry.temperature_indoor !== null ? `
+                                    <div class="text-center sm:text-left">
+                                        <div class="text-xs text-blue-400 font-medium mb-1">🏠 Indoor</div>
+                                        <div class="flex items-center justify-center sm:justify-start gap-2">
+                                            <span class="text-white font-medium">${parseFloat(entry.temperature_indoor).toFixed(1)}°C</span>
+                                            <span class="text-gray-400">|</span>
+                                            <span class="text-white font-medium">${parseFloat(entry.humidity_indoor).toFixed(1)}%</span>
+                                            ${entry.pressure_indoor ? `
+                                            <span class="text-gray-400">|</span>
+                                            <span class="text-white font-medium">${parseFloat(entry.pressure_indoor).toFixed(1)}hPa</span>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                    ${entry.temperature_outdoor !== null ? `
+                                    <div class="text-center sm:text-left">
+                                        <div class="text-xs text-orange-400 font-medium mb-1">🌤️ Outdoor</div>
+                                        <div class="flex items-center justify-center sm:justify-start gap-2">
+                                            <span class="text-white font-medium">${parseFloat(entry.temperature_outdoor).toFixed(1)}°C</span>
+                                            <span class="text-gray-400">|</span>
+                                            <span class="text-white font-medium">${parseFloat(entry.humidity_outdoor).toFixed(1)}%</span>
+                                        </div>
+                                    </div>
                                     ` : ''}
                                 </div>
-                                <span class="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-0">${formatTimestamp(entry.timestamp)}</span>
+                                ` : `
+                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                                    <div class="flex items-center gap-4">
+                                        <span class="text-white font-medium">${parseFloat(entry.temperature).toFixed(1)}°C</span>
+                                        <span class="text-gray-400">|</span>
+                                        <span class="text-white font-medium">${parseFloat(entry.humidity).toFixed(1)}%</span>
+                                        ${entry.pressure ? `
+                                        <span class="text-gray-400">|</span>
+                                        <span class="text-white font-medium">${parseFloat(entry.pressure).toFixed(1)}hPa</span>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                `}
+                                <div class="text-xs sm:text-sm text-gray-500 mt-2 text-center sm:text-right">${formatTimestamp(entry.timestamp)}</div>
                             </div>
                         `).join('')}
                     </div>
@@ -791,104 +1006,239 @@ app.get('/', async (req, res) => {
                     }
                 };
                 
+                // Temperature Chart datasets
+                const tempDatasets = [];
+                
+                // Add primary temperature (for compatibility)
+                if (data.temperature && data.temperature.length > 0) {
+                    tempDatasets.push({
+                        label: 'Temperatur (°C)',
+                        data: data.temperature,
+                        borderColor: accentRed,
+                        backgroundColor: 'rgba(225, 97, 98, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    });
+                }
+                
+                // Add indoor temperature
+                if (data.temperatureIndoor && data.temperatureIndoor.length > 0) {
+                    tempDatasets.push({
+                        label: '🏠 Indoor Temperatur (°C)',
+                        data: data.temperatureIndoor,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    });
+                }
+                
+                // Add outdoor temperature
+                if (data.temperatureOutdoor && data.temperatureOutdoor.length > 0) {
+                    tempDatasets.push({
+                        label: '🌤️ Outdoor Temperatur (°C)',
+                        data: data.temperatureOutdoor,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    });
+                }
+                
                 // Temperature Chart
                 const tempCtx = document.getElementById('tempChart').getContext('2d');
+                const tempOptions = {
+                    ...commonOptions,
+                    plugins: {
+                        ...commonOptions.plugins,
+                        legend: {
+                            display: tempDatasets.length > 1,
+                            labels: {
+                                color: textPrimary,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        ...commonOptions.scales,
+                        y: {
+                            ...commonOptions.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Temperatur (°C)',
+                                color: textPrimary
+                            }
+                        }
+                    }
+                };
+                
                 tempChart = new Chart(tempCtx, {
                     type: 'line',
                     data: {
                         labels: data.labels,
-                        datasets: [{
-                            label: 'Temperatur (°C)',
-                            data: data.temperature,
-                            borderColor: accentRed,
-                            backgroundColor: 'rgba(225, 97, 98, 0.1)',
-                            tension: 0.4,
-                            borderWidth: 2,
-                            pointRadius: 0,
-                            pointHoverRadius: 6
-                        }]
+                        datasets: tempDatasets
                     },
-                    options: {
-                        ...commonOptions,
-                        scales: {
-                            ...commonOptions.scales,
-                            y: {
-                                ...commonOptions.scales.y,
-                                title: {
-                                    display: true,
-                                    text: 'Temperatur (°C)',
-                                    color: textPrimary
-                                }
-                            }
-                        }
-                    }
+                    options: tempOptions
                 });
+                
+                // Humidity Chart datasets
+                const humDatasets = [];
+                
+                // Add primary humidity (for compatibility)
+                if (data.humidity && data.humidity.length > 0) {
+                    humDatasets.push({
+                        label: 'Luftfeuchtigkeit (%)',
+                        data: data.humidity,
+                        borderColor: accentBlue,
+                        backgroundColor: 'rgba(104, 141, 177, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    });
+                }
+                
+                // Add indoor humidity
+                if (data.humidityIndoor && data.humidityIndoor.length > 0) {
+                    humDatasets.push({
+                        label: '🏠 Indoor Luftfeuchtigkeit (%)',
+                        data: data.humidityIndoor,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    });
+                }
+                
+                // Add outdoor humidity
+                if (data.humidityOutdoor && data.humidityOutdoor.length > 0) {
+                    humDatasets.push({
+                        label: '🌤️ Outdoor Luftfeuchtigkeit (%)',
+                        data: data.humidityOutdoor,
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    });
+                }
                 
                 // Humidity Chart
                 const humCtx = document.getElementById('humChart').getContext('2d');
+                const humOptions = {
+                    ...commonOptions,
+                    plugins: {
+                        ...commonOptions.plugins,
+                        legend: {
+                            display: humDatasets.length > 1,
+                            labels: {
+                                color: textPrimary,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        ...commonOptions.scales,
+                        y: {
+                            ...commonOptions.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Luftfeuchtigkeit (%)',
+                                color: textPrimary
+                            }
+                        }
+                    }
+                };
+                
                 humChart = new Chart(humCtx, {
                     type: 'line',
                     data: {
                         labels: data.labels,
-                        datasets: [{
-                            label: 'Luftfeuchtigkeit (%)',
-                            data: data.humidity,
-                            borderColor: accentBlue,
-                            backgroundColor: 'rgba(104, 141, 177, 0.1)',
-                            tension: 0.4,
-                            borderWidth: 2,
-                            pointRadius: 0,
-                            pointHoverRadius: 6
-                        }]
+                        datasets: humDatasets
                     },
-                    options: {
+                    options: humOptions
+                });
+                
+                // Pressure Chart (only if we have pressure data)
+                const pressureDatasets = [];
+                
+                // Add primary pressure (for compatibility)
+                if (data.pressure && data.pressure.length > 0) {
+                    pressureDatasets.push({
+                        label: 'Luftdruck (hPa)',
+                        data: data.pressure,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    });
+                }
+                
+                // Add indoor pressure
+                if (data.pressureIndoor && data.pressureIndoor.length > 0) {
+                    pressureDatasets.push({
+                        label: '🏠 Indoor Luftdruck (hPa)',
+                        data: data.pressureIndoor,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    });
+                }
+                
+                if (pressureDatasets.length > 0) {
+                    const pressCtx = document.getElementById('pressChart').getContext('2d');
+                    const pressOptions = {
                         ...commonOptions,
+                        plugins: {
+                            ...commonOptions.plugins,
+                            legend: {
+                                display: pressureDatasets.length > 1,
+                                labels: {
+                                    color: textPrimary,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        },
                         scales: {
                             ...commonOptions.scales,
                             y: {
                                 ...commonOptions.scales.y,
                                 title: {
                                     display: true,
-                                    text: 'Luftfeuchtigkeit (%)',
+                                    text: 'Luftdruck (hPa)',
                                     color: textPrimary
                                 }
                             }
                         }
-                    }
-                });
-                
-                // Pressure Chart (only if we have pressure data)
-                if (data.pressure && data.pressure.length > 0) {
-                    const pressCtx = document.getElementById('pressChart').getContext('2d');
+                    };
+                    
                     pressChart = new Chart(pressCtx, {
                         type: 'line',
                         data: {
                             labels: data.labels,
-                            datasets: [{
-                                label: 'Luftdruck (hPa)',
-                                data: data.pressure,
-                                borderColor: '#10b981',
-                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                                tension: 0.4,
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                pointHoverRadius: 6
-                            }]
+                            datasets: pressureDatasets
                         },
-                        options: {
-                            ...commonOptions,
-                            scales: {
-                                ...commonOptions.scales,
-                                y: {
-                                    ...commonOptions.scales.y,
-                                    title: {
-                                        display: true,
-                                        text: 'Luftdruck (hPa)',
-                                        color: textPrimary
-                                    }
-                                }
-                            }
-                        }
+                        options: pressOptions
                     });
                 } else {
                     // Hide pressure chart section if no pressure data
@@ -901,27 +1251,56 @@ app.get('/', async (req, res) => {
                     }
                 }
                 
-                // Update stats
-                document.getElementById('minTemp').textContent = data.stats.minTemp + '°C';
-                document.getElementById('maxTemp').textContent = data.stats.maxTemp + '°C';
-                document.getElementById('minHum').textContent = data.stats.minHum + '%';
-                document.getElementById('maxHum').textContent = data.stats.maxHum + '%';
-                
-                // Update pressure stats if available
-                if (data.stats.hasPressureData) {
-                    document.getElementById('minPressure').textContent = data.stats.minPressure + 'hPa';
-                    document.getElementById('maxPressure').textContent = data.stats.maxPressure + 'hPa';
-                    document.getElementById('minPressureStat').style.display = 'block';
-                    document.getElementById('maxPressureStat').style.display = 'block';
-                    // 3 columns when pressure data is available
-                    document.getElementById('maxStatsGrid').className = 'grid grid-cols-3 gap-3 sm:gap-4';
-                    document.getElementById('minStatsGrid').className = 'grid grid-cols-3 gap-3 sm:gap-4';
+                // Check if we have indoor/outdoor data
+                if (data.stats.hasIndoorData || data.stats.hasOutdoorData) {
+                    // Show indoor/outdoor stats
+                    document.getElementById('legacyStats').style.display = 'none';
+                    document.getElementById('indoorOutdoorStats').style.display = 'block';
+                    
+                    // Update indoor stats if available
+                    if (data.stats.hasIndoorData) {
+                        document.getElementById('indoorStatsSection').style.display = 'block';
+                        document.getElementById('minTempIndoor').textContent = data.stats.minTempIndoor + '°C';
+                        document.getElementById('maxTempIndoor').textContent = data.stats.maxTempIndoor + '°C';
+                        document.getElementById('minHumIndoor').textContent = data.stats.minHumIndoor + '%';
+                        document.getElementById('maxHumIndoor').textContent = data.stats.maxHumIndoor + '%';
+                    }
+                    
+                    // Update outdoor stats if available
+                    if (data.stats.hasOutdoorData) {
+                        document.getElementById('outdoorStatsSection').style.display = 'block';
+                        document.getElementById('minTempOutdoor').textContent = data.stats.minTempOutdoor + '°C';
+                        document.getElementById('maxTempOutdoor').textContent = data.stats.maxTempOutdoor + '°C';
+                        document.getElementById('minHumOutdoor').textContent = data.stats.minHumOutdoor + '%';
+                        document.getElementById('maxHumOutdoor').textContent = data.stats.maxHumOutdoor + '%';
+                    }
                 } else {
-                    document.getElementById('minPressureStat').style.display = 'none';
-                    document.getElementById('maxPressureStat').style.display = 'none';
-                    // 2 columns when no pressure data
-                    document.getElementById('maxStatsGrid').className = 'grid grid-cols-2 gap-3 sm:gap-4';
-                    document.getElementById('minStatsGrid').className = 'grid grid-cols-2 gap-3 sm:gap-4';
+                    // Show legacy stats
+                    document.getElementById('legacyStats').style.display = 'block';
+                    document.getElementById('indoorOutdoorStats').style.display = 'none';
+                    
+                    // Update legacy stats
+                    document.getElementById('minTemp').textContent = data.stats.minTemp + '°C';
+                    document.getElementById('maxTemp').textContent = data.stats.maxTemp + '°C';
+                    document.getElementById('minHum').textContent = data.stats.minHum + '%';
+                    document.getElementById('maxHum').textContent = data.stats.maxHum + '%';
+                    
+                    // Update pressure stats if available
+                    if (data.stats.hasPressureData) {
+                        document.getElementById('minPressure').textContent = data.stats.minPressure + 'hPa';
+                        document.getElementById('maxPressure').textContent = data.stats.maxPressure + 'hPa';
+                        document.getElementById('minPressureStat').style.display = 'block';
+                        document.getElementById('maxPressureStat').style.display = 'block';
+                        // 3 columns when pressure data is available
+                        document.getElementById('maxStatsGrid').className = 'grid grid-cols-3 gap-3 sm:gap-4';
+                        document.getElementById('minStatsGrid').className = 'grid grid-cols-3 gap-3 sm:gap-4';
+                    } else {
+                        document.getElementById('minPressureStat').style.display = 'none';
+                        document.getElementById('maxPressureStat').style.display = 'none';
+                        // 2 columns when no pressure data
+                        document.getElementById('maxStatsGrid').className = 'grid grid-cols-2 gap-3 sm:gap-4';
+                        document.getElementById('minStatsGrid').className = 'grid grid-cols-2 gap-3 sm:gap-4';
+                    }
                 }
                 
                 // Show data point info
@@ -1044,12 +1423,25 @@ app.get('/api/chart-data', async (req, res) => {
                     AVG(temperature) as temperature,
                     AVG(humidity) as humidity,
                     AVG(pressure) as pressure,
+                    AVG(temperature_indoor) as temperature_indoor,
+                    AVG(humidity_indoor) as humidity_indoor,
+                    AVG(pressure_indoor) as pressure_indoor,
+                    AVG(temperature_outdoor) as temperature_outdoor,
+                    AVG(humidity_outdoor) as humidity_outdoor,
                     MIN(temperature) as min_temp,
                     MAX(temperature) as max_temp,
                     MIN(humidity) as min_hum,
                     MAX(humidity) as max_hum,
                     MIN(pressure) as min_pressure,
                     MAX(pressure) as max_pressure,
+                    MIN(temperature_indoor) as min_temp_indoor,
+                    MAX(temperature_indoor) as max_temp_indoor,
+                    MIN(humidity_indoor) as min_hum_indoor,
+                    MAX(humidity_indoor) as max_hum_indoor,
+                    MIN(temperature_outdoor) as min_temp_outdoor,
+                    MAX(temperature_outdoor) as max_temp_outdoor,
+                    MIN(humidity_outdoor) as min_hum_outdoor,
+                    MAX(humidity_outdoor) as max_hum_outdoor,
                     FLOOR(timestamp / ${groupInterval}) * ${groupInterval} as grouped_timestamp,
                     COUNT(*) as data_points
                 FROM weather_data 
@@ -1065,9 +1457,18 @@ app.get('/api/chart-data', async (req, res) => {
         const temperature = [];
         const humidity = [];
         const pressure = [];
+        const temperatureIndoor = [];
+        const humidityIndoor = [];
+        const pressureIndoor = [];
+        const temperatureOutdoor = [];
+        const humidityOutdoor = [];
         const tempRanges = [];
         const humRanges = [];
         const pressRanges = [];
+        const tempIndoorRanges = [];
+        const humIndoorRanges = [];
+        const tempOutdoorRanges = [];
+        const humOutdoorRanges = [];
         
         rows.forEach(row => {
             const timestamp = aggregation === 'raw' ? row.timestamp : row.grouped_timestamp;
@@ -1076,6 +1477,23 @@ app.get('/api/chart-data', async (req, res) => {
             humidity.push(parseFloat(row.humidity));
             if (row.pressure) {
                 pressure.push(parseFloat(row.pressure));
+            }
+            
+            // Indoor/outdoor data
+            if (row.temperature_indoor !== null) {
+                temperatureIndoor.push(parseFloat(row.temperature_indoor));
+            }
+            if (row.humidity_indoor !== null) {
+                humidityIndoor.push(parseFloat(row.humidity_indoor));
+            }
+            if (row.pressure_indoor !== null) {
+                pressureIndoor.push(parseFloat(row.pressure_indoor));
+            }
+            if (row.temperature_outdoor !== null) {
+                temperatureOutdoor.push(parseFloat(row.temperature_outdoor));
+            }
+            if (row.humidity_outdoor !== null) {
+                humidityOutdoor.push(parseFloat(row.humidity_outdoor));
             }
             
             // Store ranges for aggregated data
@@ -1094,6 +1512,32 @@ app.get('/api/chart-data', async (req, res) => {
                         max: parseFloat(row.max_pressure)
                     });
                 }
+                
+                // Indoor/outdoor ranges
+                if (row.min_temp_indoor && row.max_temp_indoor) {
+                    tempIndoorRanges.push({
+                        min: parseFloat(row.min_temp_indoor),
+                        max: parseFloat(row.max_temp_indoor)
+                    });
+                }
+                if (row.min_hum_indoor && row.max_hum_indoor) {
+                    humIndoorRanges.push({
+                        min: parseFloat(row.min_hum_indoor),
+                        max: parseFloat(row.max_hum_indoor)
+                    });
+                }
+                if (row.min_temp_outdoor && row.max_temp_outdoor) {
+                    tempOutdoorRanges.push({
+                        min: parseFloat(row.min_temp_outdoor),
+                        max: parseFloat(row.max_temp_outdoor)
+                    });
+                }
+                if (row.min_hum_outdoor && row.max_hum_outdoor) {
+                    humOutdoorRanges.push({
+                        min: parseFloat(row.min_hum_outdoor),
+                        max: parseFloat(row.max_hum_outdoor)
+                    });
+                }
             }
         });
         
@@ -1101,6 +1545,10 @@ app.get('/api/chart-data', async (req, res) => {
         const temps = rows.map(r => parseFloat(r.temperature));
         const hums = rows.map(r => parseFloat(r.humidity));
         const pressures = rows.filter(r => r.pressure).map(r => parseFloat(r.pressure));
+        const tempsIndoor = rows.filter(r => r.temperature_indoor !== null).map(r => parseFloat(r.temperature_indoor));
+        const humsIndoor = rows.filter(r => r.humidity_indoor !== null).map(r => parseFloat(r.humidity_indoor));
+        const tempsOutdoor = rows.filter(r => r.temperature_outdoor !== null).map(r => parseFloat(r.temperature_outdoor));
+        const humsOutdoor = rows.filter(r => r.humidity_outdoor !== null).map(r => parseFloat(r.humidity_outdoor));
         
         const stats = {
             minTemp: temps.length ? Math.min(...temps).toFixed(1) : '--',
@@ -1109,7 +1557,19 @@ app.get('/api/chart-data', async (req, res) => {
             maxHum: hums.length ? Math.max(...hums).toFixed(1) : '--',
             minPressure: pressures.length ? Math.min(...pressures).toFixed(1) : '--',
             maxPressure: pressures.length ? Math.max(...pressures).toFixed(1) : '--',
-            hasPressureData: pressures.length > 0
+            hasPressureData: pressures.length > 0,
+            // Indoor stats
+            minTempIndoor: tempsIndoor.length ? Math.min(...tempsIndoor).toFixed(1) : '--',
+            maxTempIndoor: tempsIndoor.length ? Math.max(...tempsIndoor).toFixed(1) : '--',
+            minHumIndoor: humsIndoor.length ? Math.min(...humsIndoor).toFixed(1) : '--',
+            maxHumIndoor: humsIndoor.length ? Math.max(...humsIndoor).toFixed(1) : '--',
+            hasIndoorData: tempsIndoor.length > 0,
+            // Outdoor stats
+            minTempOutdoor: tempsOutdoor.length ? Math.min(...tempsOutdoor).toFixed(1) : '--',
+            maxTempOutdoor: tempsOutdoor.length ? Math.max(...tempsOutdoor).toFixed(1) : '--',
+            minHumOutdoor: humsOutdoor.length ? Math.min(...humsOutdoor).toFixed(1) : '--',
+            maxHumOutdoor: humsOutdoor.length ? Math.max(...humsOutdoor).toFixed(1) : '--',
+            hasOutdoorData: tempsOutdoor.length > 0
         };
         
         const responseData = { 
@@ -1117,6 +1577,11 @@ app.get('/api/chart-data', async (req, res) => {
             temperature, 
             humidity, 
             pressure,
+            temperatureIndoor,
+            humidityIndoor,
+            pressureIndoor,
+            temperatureOutdoor,
+            humidityOutdoor,
             stats,
             aggregation,
             dataPoints: rows.length
@@ -1127,6 +1592,10 @@ app.get('/api/chart-data', async (req, res) => {
             responseData.tempRanges = tempRanges;
             responseData.humRanges = humRanges;
             responseData.pressRanges = pressRanges;
+            responseData.tempIndoorRanges = tempIndoorRanges;
+            responseData.humIndoorRanges = humIndoorRanges;
+            responseData.tempOutdoorRanges = tempOutdoorRanges;
+            responseData.humOutdoorRanges = humOutdoorRanges;
         }
         
         res.json(responseData);
