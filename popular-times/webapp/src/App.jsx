@@ -14,6 +14,7 @@ function App() {
   const [showAboutDialog, setShowAboutDialog] = useState(false)
   const [unsortedResults, setUnsortedResults] = useState([])
 
+
   // Funktion zum Extrahieren der Auslastung in Prozent
   const extractOccupancyPercentage = (occupancyText) => {
     if (!occupancyText || typeof occupancyText !== 'string') return -1
@@ -54,6 +55,62 @@ function App() {
       return 0
     })
   }
+
+  // Load existing results on component mount
+  useEffect(() => {
+    const loadExistingResults = async () => {
+      try {
+        console.log('Attempting to load existing results...')
+        const response = await fetch('/popular-times/latest_results.json')
+        console.log('Response status:', response.status, response.statusText)
+        
+        if (response.ok) {
+          const text = await response.text()
+          console.log('Response text length:', text.length)
+          
+          let data
+          try {
+            data = JSON.parse(text)
+          } catch (parseError) {
+            console.error('JSON parsing error:', parseError)
+            throw new Error('Invalid JSON format')
+          }
+          
+          // Handle different JSON formats
+          let resultsArray = []
+          if (Array.isArray(data)) {
+            resultsArray = data
+          } else if (data && Array.isArray(data.results)) {
+            resultsArray = data.results
+          } else if (data && data.locations && Array.isArray(data.locations)) {
+            resultsArray = data.locations
+          }
+          
+          console.log('Parsed results array length:', resultsArray.length)
+          
+          if (resultsArray.length > 0) {
+            console.log('Loaded existing results:', resultsArray.length, 'locations')
+            const sorted = sortResultsByOccupancy(resultsArray)
+            setResults(sorted)
+          } else {
+            console.log('No results found in JSON data')
+          }
+        } else {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+      } catch (error) {
+        console.error('Error loading existing results:', error)
+        // Show error message in UI
+        setResults([{
+          error: 'Fehler beim Laden der Historie',
+          location_name: 'Fehler beim Laden der Historie',
+          timestamp: new Date().toISOString()
+        }])
+      }
+    }
+    
+    loadExistingResults()
+  }, [])
 
   // Sortiere Ergebnisse wenn Scraping abgeschlossen ist
   useEffect(() => {

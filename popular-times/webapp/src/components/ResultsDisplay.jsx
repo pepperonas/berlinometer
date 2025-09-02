@@ -1,4 +1,7 @@
+import { useState, useMemo } from 'react'
+
 function ResultsDisplay({ results }) {
+  const [searchTerm, setSearchTerm] = useState('')
   const formatTimestamp = (timestamp) => {
     return new Date(timestamp).toLocaleString('de-DE', {
       year: 'numeric',
@@ -194,6 +197,39 @@ function ResultsDisplay({ results }) {
     return -1
   }
 
+  // Filter results based on search term
+  const filteredResults = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return results
+    }
+    
+    const term = searchTerm.toLowerCase().trim()
+    
+    return results.filter(result => {
+      // Search in location name
+      if (result.location_name && result.location_name.toLowerCase().includes(term)) {
+        return true
+      }
+      
+      // Search in address
+      if (result.address && result.address.toLowerCase().includes(term)) {
+        return true
+      }
+      
+      // Search in occupancy text
+      if (result.live_occupancy && result.live_occupancy.toLowerCase().includes(term)) {
+        return true
+      }
+      
+      // Search in rating
+      if (result.rating && result.rating.toString().includes(term)) {
+        return true
+      }
+      
+      return false
+    })
+  }, [results, searchTerm])
+
   const sortResultsByOccupancy = (results) => {
     return [...results].sort((a, b) => {
       const occupancyA = extractOccupancyPercentage(a.live_occupancy)
@@ -221,7 +257,7 @@ function ResultsDisplay({ results }) {
   }
 
   const exportToJson = () => {
-    const sortedResults = sortResultsByOccupancy(results)
+    const sortedResults = sortResultsByOccupancy(filteredResults)
     const dataStr = JSON.stringify(sortedResults, null, 2)
     const dataBlob = new Blob([dataStr], { type: 'application/json' })
     const url = URL.createObjectURL(dataBlob)
@@ -233,7 +269,7 @@ function ResultsDisplay({ results }) {
   }
 
   const exportToCsv = () => {
-    const sortedResults = sortResultsByOccupancy(results)
+    const sortedResults = sortResultsByOccupancy(filteredResults)
     const headers = ['Location Name', 'Address', 'Rating', 'Live Occupancy', 'Is Live', 'URL', 'Timestamp']
     const csvContent = [
       headers.join(','),
@@ -493,7 +529,7 @@ function ResultsDisplay({ results }) {
 
   const exportToHtml = async () => {
     try {
-      const sortedResults = sortResultsByOccupancy(results)
+      const sortedResults = sortResultsByOccupancy(filteredResults)
       // Erstelle Datenstruktur im erwarteten Format
       const reportData = {
         metadata: {
@@ -540,8 +576,119 @@ function ResultsDisplay({ results }) {
           <div className="text-center">
             <h3 className="card-title mb-2" style={{ fontSize: '1.25rem' }}>Scraping Ergebnisse</h3>
             <p className="card-description" style={{ fontSize: '0.875rem' }}>
-              {results.length} Location{results.length !== 1 ? 's' : ''} analysiert
+              {filteredResults.length} von {results.length} Location{results.length !== 1 ? 's' : ''} 
+              {searchTerm ? 'gefiltert' : 'analysiert'}
             </p>
+          </div>
+          
+          {/* Search Bar */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            width: '100%'
+          }}>
+            <div className="search-container" style={{
+              position: 'relative',
+              marginBottom: '1rem',
+              maxWidth: '400px',
+              width: '100%'
+            }}>
+              <div style={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <span style={{
+                  position: 'absolute',
+                  left: '0.75rem',
+                  color: 'var(--text-secondary)',
+                  fontSize: '1rem',
+                  pointerEvents: 'none',
+                  zIndex: 1
+                }}>
+                  🔍
+                </span>
+                
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Name, Adresse oder Auslastung durchsuchen..."
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 2.5rem 0.75rem 2.5rem',
+                    fontSize: '0.875rem',
+                    backgroundColor: 'var(--background-darker)',
+                    border: '1px solid rgba(209, 213, 219, 0.2)',
+                    borderRadius: 'var(--radius-lg)',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                    transition: 'all 0.2s ease',
+                    fontFamily: 'inherit'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'var(--accent-blue)'
+                    e.target.style.boxShadow = '0 0 0 3px rgba(104, 141, 177, 0.1)'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = 'rgba(209, 213, 219, 0.2)'
+                    e.target.style.boxShadow = 'none'
+                  }}
+                />
+                
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    style={{
+                      position: 'absolute',
+                      right: '0.75rem',
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-secondary)',
+                      fontSize: '1.125rem',
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s ease',
+                      zIndex: 1
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = 'rgba(156, 163, 175, 0.1)'
+                      e.target.style.color = 'var(--text-primary)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = 'transparent'
+                      e.target.style.color = 'var(--text-secondary)'
+                    }}
+                    title="Suche löschen"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              
+              {searchTerm && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: '0',
+                  right: '0',
+                  marginTop: '0.25rem',
+                  padding: '0.5rem 0.75rem',
+                  backgroundColor: 'var(--background-darker)',
+                  border: '1px solid rgba(209, 213, 219, 0.2)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: '0.75rem',
+                  color: 'var(--text-secondary)',
+                  zIndex: 10
+                }}>
+                  Suche nach: "{searchTerm}"
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Mobile-optimized export buttons */}
@@ -615,7 +762,7 @@ function ResultsDisplay({ results }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {results.map((result, index) => (
+        {filteredResults.map((result, index) => (
           <div 
             key={index} 
             className="p-4"
@@ -747,6 +894,14 @@ function ResultsDisplay({ results }) {
       {results.length === 0 && (
         <div className="text-center text-secondary py-8">
           <p>Noch keine Ergebnisse verfügbar</p>
+        </div>
+      )}
+      
+      {results.length > 0 && filteredResults.length === 0 && (
+        <div className="text-center text-secondary py-8">
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
+          <p style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Keine Treffer gefunden</p>
+          <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>Versuche einen anderen Suchbegriff</p>
         </div>
       )}
     </div>
