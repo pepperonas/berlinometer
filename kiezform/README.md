@@ -7,12 +7,13 @@ A comprehensive e-commerce and product verification system for a Berlin-based 3D
 - **Product Gallery**: Dynamic showcase with active/inactive filtering and category management
 - **Blockchain System**: SHA-256 hash-based blockchain for certificate ownership tracking
 - **Blockchain Explorer**: Redesigned visual interface with responsive grid layout and no collapsible sections
-- **Admin Dashboard**: Product management with active/inactive toggles and comprehensive controls
-- **Backend API**: Enhanced REST API with separate endpoints for active products and pricing
+- **Admin Dashboard**: Product management with active/inactive toggles, copy verification links, and comprehensive controls
+- **Backend API**: Enhanced REST API with multi-source owner name fallback and improved transfer handling
 - **Verification System**: QR codes maintain functionality for both active and inactive products
-- **Transfer System**: Enhanced ownership transfers showing price and real owner names  
+- **Transfer System**: Fixed E11000 duplicate key errors, shows real owner names instead of USR pseudonyms
 - **3D Print Integration**: STL file generation for QR codes (40x40x1mm format)
-- **Product Database**: MongoDB with isActive field and extended transfer information
+- **Product Database**: MongoDB with optimized indexes for transfer QR management
+- **Transfer QR Management**: List view displays real owner names with blockchain pseudonyms
 - **VALUE Section**: Comprehensive dual QR code verification system explanation
 - **SHARE Section**: Interactive QR code for site sharing with Web Share API
 - **Design System**: Unified CSS component library with 150+ design tokens
@@ -117,7 +118,7 @@ python -m http.server 8000
 
 Navigate to `/admin` and login with:
 - **Username**: admin
-- **Password**: F3antai.led-Armari#a-Redeliv+ery
+- **Password**: [REMOVED - Contact administrator for credentials]
 
 **Security Features:**
 - SHA-256 hashing with salt
@@ -662,7 +663,34 @@ Update email addresses in:
 
 ## 🏷️ Version History
 
-### v0.0.12 (Latest) - UI/UX Improvements & Product Management
+### v0.0.13 (Current) - Transfer System Fixes & Admin UI Improvements
+- ✅ **MongoDB Index Optimization**: Fixed E11000 duplicate key errors in transfer system
+  - Removed problematic unique constraint on `transferqrs.productId`
+  - Created intelligent partial index allowing only one active transfer QR per product
+  - Multiple expired/used/invalidated QRs now permitted per product
+  - Database command: `db.transferqrs.createIndex({"productId": 1, "status": 1}, {"partialFilterExpression": {"status": "active"}, "unique": true})`
+- ✅ **Transfer API Enhanced**: Multi-source owner name fallback system
+  - Primary: `product.owner?.name` (direct owner field)
+  - Fallback: `product.metadata?.owner` (metadata fallback)
+  - Final: `'Alexander König'` (default for existing products)
+  - Transfer pages now display real names instead of USR pseudonyms
+  - Fixed transfer.html URL parsing for ?token= parameter format
+- ✅ **Admin Interface Improvements**: Enhanced QR code management and user experience
+  - Removed share button from product list view (cleaned up UI)
+  - Added "📋 Copy Link" button to QR code dialogs
+  - Darkened green button gradient from `#00ff00` to `#008800` for better white text readability
+  - Transfer QR list view now displays real owner names with blockchain pseudonyms
+  - Format: "Owner: [Real Name]" + "Blockchain: [USR-XXXXXXXX]"
+- ✅ **Backend API Extensions**: Transfer codes endpoint enhanced
+  - New fields: `currentOwner` (USR pseudonym), `currentOwnerName` (real name)
+  - Admin API `/api/admin/transfer-codes` returns both identifiers
+  - Better separation between public blockchain IDs and private user data
+- ✅ **All Changes Deployed**: Direct VPS deployment workflow established
+  - Real-time deployment to production VPS (69.62.121.168)
+  - Code synchronization between local MacBook and production server
+  - PM2 process management with automatic restart after updates
+
+### v0.0.12 - UI/UX Improvements & Product Management
 - ✅ **Removed Price Toggle from Blockchain**: Prices no longer shown/toggleable on blockchain page for cleaner UX
 - ✅ **Enhanced Transfer Page Display**: 
   - Shows product price prominently (€ amount in green) only on red QR transfer pages

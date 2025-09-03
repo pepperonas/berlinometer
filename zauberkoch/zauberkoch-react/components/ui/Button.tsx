@@ -12,6 +12,8 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   rightIcon?: React.ReactNode;
   fullWidth?: boolean;
   animate?: boolean;
+  href?: string;
+  external?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -25,6 +27,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       rightIcon,
       fullWidth = false,
       animate = true,
+      href,
+      external = false,
       children,
       disabled,
       ...props

@@ -419,7 +419,7 @@ export function RegisterForm() {
                   <input
                     type="checkbox"
                     checked={values.acceptTerms}
-                    onChange={(e) => handleChange('acceptTerms')(e.target.checked.toString())}
+                    onChange={(e) => handleChange('acceptTerms')(e.target.checked)}
                     className="w-4 h-4 text-primary bg-background border-outline rounded focus:ring-primary focus:ring-2 mt-0.5"
                   />
                   <span className="text-sm text-on-surface leading-relaxed">
@@ -442,7 +442,7 @@ export function RegisterForm() {
                   <input
                     type="checkbox"
                     checked={values.acceptMarketing}
-                    onChange={(e) => handleChange('acceptMarketing')(e.target.checked.toString())}
+                    onChange={(e) => handleChange('acceptMarketing')(e.target.checked)}
                     className="w-4 h-4 text-primary bg-background border-outline rounded focus:ring-primary focus:ring-2 mt-0.5"
                   />
                   <span className="text-sm text-on-surface leading-relaxed">

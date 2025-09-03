@@ -9,7 +9,11 @@ import { PWAInstallProvider } from '@/contexts/PWAContext';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import { PWA_CONFIG, APP_CONFIG } from '@/lib/constants';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true
+});
 
 export const metadata: Metadata = {
   title: {
@@ -82,6 +86,14 @@ export const metadata: Metadata = {
     google: process.env.GOOGLE_VERIFICATION_ID,
   },
   category: 'food',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'ZauberKoch',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+  },
 };
 
 export const viewport: Viewport = {

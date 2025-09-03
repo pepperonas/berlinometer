@@ -68,11 +68,11 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
     validationSchema: {
       servings: {
         ...validationRules.required('Anzahl der Personen ist erforderlich'),
-        ...validationRules.custom((value) => {
+        validate: (value: string) => {
           const num = parseInt(value);
           if (num < 1 || num > 20) return 'Anzahl muss zwischen 1 und 20 liegen';
-          return null;
-        }),
+          return true;
+        },
       },
       cookingTime: {
         ...validationRules.required('Zubereitungszeit ist erforderlich'),

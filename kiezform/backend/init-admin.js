@@ -27,9 +27,10 @@ async function initializeAdmin() {
     await Admin.deleteMany({});
     console.log('Removed all existing admin users');
     
-    // Create new admin with correct password
+    // Create new admin with secure password
     const username = 'admin';
-    const password = 'F3antai.led-Armari#a-Redeliv+ery';
+    // WICHTIG: Ändere dieses Passwort vor dem Ausführen!
+    const password = process.env.ADMIN_PASSWORD || 'Sundari-Colde1r-X';
     const email = 'martin.pfeffer@celox.io';
     
     const hashedPassword = await bcrypt.hash(password, 12);

@@ -37,6 +37,9 @@
             <excludedPath path="/var/www/html/medical-ai-reports/frontend/node_modules" />
             <excludedPath local="true" path="$PROJECT_DIR$/xchange/files.json" />
             <excludedPath local="true" path="$PROJECT_DIR$/jpaulo-bau.de/fortivo-baugruppe" />
+            <excludedPath local="true" path="$PROJECT_DIR$/kiezform/CLAUDE.md" />
+            <excludedPath local="true" path="$PROJECT_DIR$/kiezform/README.md" />
+            <excludedPath local="true" path="$PROJECT_DIR$/kiezform/DEPLOYMENT-FIX-OWNER-NAMES.md" />
           </excludedPaths>
         </serverdata>
       </paths>

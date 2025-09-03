@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 KiezForm is an e-commerce and product verification system for a Berlin-based 3D-printed jewelry brand. The project combines a static frontend website with a complete backend API for product verification, blockchain-based ownership tracking, and admin management.
 
+**Current Version**: v0.0.13 - Transfer System fully operational, all E11000 errors resolved, real owner names displayed throughout admin interface.
+
 ## Common Development Commands
 
 ### Frontend Development
@@ -33,11 +35,32 @@ brew services start mongodb-community  # macOS
 
 ### Production Deployment
 ```bash
-# PM2 process management
+# PM2 process management on VPS (69.62.121.168)
 pm2 start backend/ecosystem.config.js
 pm2 status kiezform-api
 pm2 logs kiezform-api --lines 20
 pm2 restart kiezform-api
+
+# Direct deployment from MacBook (established workflow)
+rsync -avz backend/server.js root@69.62.121.168:/var/www/html/kiezform/backend/
+rsync -avz js/admin.js root@69.62.121.168:/var/www/html/kiezform/js/
+ssh root@69.62.121.168 "cd /var/www/html/kiezform/backend && pm2 restart kiezform-api"
+```
+
+### Critical Database Configuration (v0.0.13)
+```bash
+# MongoDB Transfer QR Index Fix (APPLIED ON VPS)
+# Problem: E11000 duplicate key error on productId
+# Solution: Partial unique index allowing only one active transfer QR per product
+
+# Remove problematic index:
+mongosh kiezform --eval 'db.transferqrs.dropIndex("productId_1")'
+
+# Create intelligent index:
+mongosh kiezform --eval 'db.transferqrs.createIndex({"productId": 1, "status": 1}, {"partialFilterExpression": {"status": "active"}, "unique": true})'
+
+# Verify fix:
+mongosh kiezform --eval 'db.transferqrs.getIndexes()'
 ```
 
 ### Database Management
@@ -112,8 +135,8 @@ NODE_ENV=production
 ```
 
 ### Admin Credentials
-- Username: `admin`
-- Password: `F3antai.led-Armari#a-Redeliv+ery`
+- Username: `admin`  
+- Password: **[REMOVED FOR SECURITY]** - Run `node backend/init-admin.js` to reset
 
 ### MongoDB Credentials
 - Database: `kiezform`
@@ -224,8 +247,74 @@ Use CSS variables for consistency:
 
 - **No build process**: Pure HTML/CSS/JS - can be served statically
 - **Industrial theme**: Dark backgrounds, ultra-thin typography, scanline effects
-- **Version**: Currently v0.0.12 (shown in admin panel)
+- **Version**: Currently v0.0.13 - Transfer system fully operational
 - **API routes**: All backend endpoints prefixed with `/api/`
 - **Clean URLs**: Nginx configured to serve `.html` files without extension
 - **Toast notifications**: Unified bottom-center positioning across all pages
 - **Blockchain sorting**: Always by timestamp (chronological), not block number
+
+## Recent Critical Updates (v0.0.13)
+
+### Transfer System Issues Resolved
+- ✅ **E11000 Duplicate Key Error**: Fixed MongoDB index configuration
+- ✅ **Owner Name Display**: Real names now shown instead of USR pseudonyms
+- ✅ **Transfer QR Management**: Multiple QRs per product supported (expired, used, active)
+- ✅ **URL Parsing**: Fixed transfer.html token parameter parsing
+
+### Admin Interface Enhancements
+- ✅ **Copy Verification Link**: New button in QR code dialogs
+- ✅ **Improved Button Visibility**: Darkened green buttons for better contrast
+- ✅ **Transfer List Enhancement**: Shows both real names and blockchain IDs
+- ✅ **UI Cleanup**: Removed unnecessary share buttons from product list
+
+### Backend API Improvements
+- ✅ **Multi-source Fallback**: Owner name resolution from multiple sources
+- ✅ **Enhanced Transfer Endpoint**: Better error handling and data structure
+- ✅ **Admin API Extensions**: Transfer codes now include both owner identifiers
+
+### Database State (Production VPS)
+```javascript
+// Current MongoDB indexes on transferqrs collection:
+[
+  { "_id": 1 },
+  { "qrToken": 1, "unique": true },
+  { 
+    "productId": 1, 
+    "status": 1, 
+    "unique": true,
+    "partialFilterExpression": { "status": "active" }
+  }
+]
+```
+
+### Deployment Status
+- **VPS**: 69.62.121.168 - All systems operational
+- **Backend**: PM2 kiezform-api running on port 3000
+- **Database**: MongoDB with optimized indexes
+- **Frontend**: Static files served by Nginx
+- **Code Sync**: Local MacBook ↔ VPS synchronized
+
+## Troubleshooting Learnings
+
+### Critical SSH/Server Identification
+- ⚠️ **Wrong Server Confusion**: 192.168.2.134 is the Raspberry Pi weather station, NOT KiezForm VPS
+- ✅ **Correct KiezForm VPS**: 69.62.121.168 (accessible via `ssh root@69.62.121.168`)
+- 🔧 **Connection Method**: Direct SSH without key files, password authentication works
+
+### Backend Service Issues
+- 🐛 **502 Bad Gateway**: Indicates PM2 backend service is down/disabled
+- 🔍 **Diagnosis**: `pm2 list | grep kiezform` shows service status
+- ⚡ **Fix**: `pm2 restart kiezform-api` resolves most backend issues
+- 📊 **Monitoring**: `pm2 logs kiezform-api --lines 10` for error tracking
+
+### Database vs Code Issues
+- 💡 **Insight**: Owner name problem was NOT in database data structure
+- ✅ **Reality**: Database had correct `owner.name` fields already populated  
+- 🎯 **Root Cause**: Backend API logic wasn't accessing existing data correctly
+- 🚀 **Solution**: Multi-source fallback resolved without data migration
+
+### MongoDB Index Management
+- ⚠️ **Dangerous Commands**: `dropIndex()` on production requires extreme caution
+- 🎯 **Partial Indexes**: Superior to simple unique constraints for complex business logic
+- 🔍 **Verification**: Always run `getIndexes()` after index changes
+- 📈 **Performance**: Partial indexes reduce storage and improve query speed

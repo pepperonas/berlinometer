@@ -35,7 +35,7 @@ const stagger = {
 
 export default function HomePage() {
   const { user } = useAuth();
-  const { canInstall, install } = usePWA();
+  const { isInstallable: canInstall, installApp: install } = usePWA();
 
   const features = [
     {
@@ -129,19 +129,19 @@ export default function HomePage() {
                 className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
               >
                 {user ? (
-                  <Link href="/recipes/generate">
+                  <Link href="/recipes/generate" className="inline-block">
                     <Button size="lg" leftIcon={<FiZap />}>
                       Rezept generieren
                     </Button>
                   </Link>
                 ) : (
                   <>
-                    <Link href="/auth/register">
+                    <Link href="/auth/register" className="inline-block">
                       <Button size="lg" leftIcon={<FiZap />}>
                         Kostenlos starten
                       </Button>
                     </Link>
-                    <Link href="/demo">
+                    <Link href="/demo" className="inline-block">
                       <Button variant="outline" size="lg" leftIcon={<FiPlay />}>
                         Demo ansehen
                       </Button>
@@ -320,7 +320,7 @@ export default function HomePage() {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {user ? (
-                  <Link href="/recipes/generate">
+                  <Link href="/recipes/generate" className="inline-block">
                     <Button 
                       size="lg" 
                       variant="secondary"
@@ -332,7 +332,7 @@ export default function HomePage() {
                   </Link>
                 ) : (
                   <>
-                    <Link href="/auth/register">
+                    <Link href="/auth/register" className="inline-block">
                       <Button 
                         size="lg" 
                         className="bg-white text-primary hover:bg-gray-100"
@@ -342,7 +342,7 @@ export default function HomePage() {
                         Kostenlos registrieren
                       </Button>
                     </Link>
-                    <Link href="/premium">
+                    <Link href="/premium" className="inline-block">
                       <Button 
                         size="lg" 
                         variant="outline" 
