@@ -81,6 +81,13 @@ interface DatabaseCollections {
     userId: string;
     createdAt: Date;
   }>;
+  saved_recipes: Collection<{
+    userId: string;
+    recipeId: string;
+    savedAt: Date;
+    tags: string[];
+    notes: string;
+  }>;
 }
 
 class DatabaseManager {
@@ -160,6 +167,7 @@ class DatabaseManager {
       webhook_logs: db.collection('webhook_logs'),
       payment_logs: db.collection('payment_logs'),
       recipe_generations: db.collection('recipe_generations'),
+      saved_recipes: db.collection('saved_recipes'),
     };
   }
 

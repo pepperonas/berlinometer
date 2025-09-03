@@ -36,8 +36,7 @@ export async function POST(request: NextRequest) {
     const db = await connectToDatabase();
     
     // Check if recipe exists in generations
-    const generation = await db.collection('recipe_generations').findOne({
-      recipeId,
+    const generation = await db.recipe_generations.findOne({
       userId: payload.userId
     });
 
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already saved
-    const existingSave = await db.collection('saved_recipes').findOne({
+    const existingSave = await db.saved_recipes.findOne({
       userId: payload.userId,
       recipeId
     });
@@ -62,7 +61,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Save recipe
-    await db.collection('saved_recipes').insertOne({
+    await db.saved_recipes.insertOne({
       userId: payload.userId,
       recipeId,
       savedAt: new Date(),

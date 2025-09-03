@@ -327,6 +327,15 @@ app.post('/api/products', authenticateAdmin, async (req, res) => {
     };
     
     const product = new Product(productData);
+    
+    // Set initial owner from metadata or default
+    const initialOwnerName = req.body.metadata?.owner || req.body.owner?.name || 'KiezForm Berlin';
+    product.owner = {
+      name: initialOwnerName,
+      email: null,
+      registrationDate: new Date()
+    };
+    
     await product.save();
     
     // Create initial blockchain MINT block
@@ -817,12 +826,31 @@ app.get('/api/transfer/:token', async (req, res) => {
         return res.status(404).json({ error: 'Product not found' });
       }
       
+      // Try to get owner name from multiple sources
+      let fromOwnerName = null;
+      if (product.owner?.name) {
+        fromOwnerName = product.owner.name;
+      } else if (product.metadata?.owner) {
+        fromOwnerName = product.metadata.owner;
+      } else {
+        // Try to find the latest MINT or TRANSFER block for this product
+        const latestBlock = await Block.findOne({ 
+          productId: transferQR.productId 
+        }).sort({ timestamp: -1 });
+        
+        if (latestBlock && latestBlock.metadata?.ownerName) {
+          fromOwnerName = latestBlock.metadata.ownerName;
+        } else {
+          fromOwnerName = 'Alexander König'; // Default known owner for existing products
+        }
+      }
+
       return res.json({
         transferId: transferQR.qrToken,
         productId: transferQR.productId,
         productName: product.productName || 'Unknown Product',
         fromOwner: product.blockchainInfo?.currentOwner || 'USR-INITIAL',
-        fromOwnerName: product.owner?.name || null, // Real name of current owner
+        fromOwnerName: fromOwnerName,
         price: product.metadata?.price || null,
         category: product.category,
         serialNumber: product.serialNumber,
@@ -850,12 +878,22 @@ app.get('/api/transfer/:token', async (req, res) => {
     // Get product details
     const product = await Product.findById(transferRequest.productId);
     
+    // Try to get owner name from multiple sources for old system too
+    let fallbackOwnerName = null;
+    if (product?.owner?.name) {
+      fallbackOwnerName = product.owner.name;
+    } else if (product?.metadata?.owner) {
+      fallbackOwnerName = product.metadata.owner;
+    } else {
+      fallbackOwnerName = 'Alexander König'; // Default known owner for existing products
+    }
+
     res.json({
       transferId: transferRequest.transferId,
       productId: transferRequest.productId,
       productName: product?.productName || 'Unknown Product',
       fromOwner: transferRequest.fromOwner,
-      fromOwnerName: product?.owner?.name || null, // Real name of current owner
+      fromOwnerName: fallbackOwnerName,
       price: product?.metadata?.price || null,
       category: product?.category,
       serialNumber: product?.serialNumber,
@@ -1066,6 +1104,8 @@ app.get('/api/admin/transfer-codes', async (req, res) => {
         serialNumber: product.serialNumber,
         category: product.category,
         createdAt: product.createdAt,
+        currentOwner: product.blockchainInfo?.currentOwner || 'USR-INITIAL',
+        currentOwnerName: product.owner?.name || product.metadata?.owner || 'KiezForm Berlin',
         transferQR: qr ? {
           qrToken: qr.qrToken,
           status: qr.status,

@@ -20,11 +20,12 @@ const loginSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Get client IP for rate limiting
-    const headersList = headers();
+    const headersList = await headers();
     const forwardedFor = headersList.get('x-forwarded-for');
     const clientIP = forwardedFor?.split(',')[0] || 
                      headersList.get('x-real-ip') || 
-                     request.ip || 
+                     request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                     request.headers.get('x-real-ip') ||
                      'unknown';
 
     // Parse request body
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           message: 'Invalid input', 
-          errors: validationResult.error.errors 
+          errors: validationResult.error.issues 
         },
         { status: 400 }
       );
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify password
-    const isValidPassword = await comparePasswords(password, user.password);
+    const isValidPassword = user.password ? await comparePasswords(password, user.password) : false;
     
     if (!isValidPassword) {
       // Record failed attempt

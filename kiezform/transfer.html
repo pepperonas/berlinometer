@@ -90,6 +90,21 @@ class TransferPage {
             const data = await response.json();
             
             if (response.ok) {
+                // If fromOwnerName is null, try to get it from the product API directly
+                if (!data.fromOwnerName && data.productId) {
+                    try {
+                        const productResponse = await fetch(`/api/verify/${data.productId}`);
+                        if (productResponse.ok) {
+                            const productData = await productResponse.json();
+                            if (productData.owner?.name) {
+                                data.fromOwnerName = productData.owner.name;
+                            }
+                        }
+                    } catch (productError) {
+                        console.log('Could not load product owner name:', productError);
+                    }
+                }
+                
                 this.showTransferForm(data);
             } else {
                 throw new Error(data.error || 'Transfer nicht gefunden');

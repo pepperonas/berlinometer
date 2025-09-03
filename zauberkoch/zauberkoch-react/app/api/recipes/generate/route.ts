@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     
     // Get user data
     const user = await collections.users.findOne({ 
-      _id: payload.userId 
+      id: payload.userId 
     }) as User | null;
 
     if (!user) {
@@ -86,14 +86,7 @@ export async function POST(request: NextRequest) {
     // Save generation record
     await collections.recipe_generations.insertOne({
       userId: payload.userId,
-      recipeId: recipe.id,
-      aiProvider: body.aiProvider,
       createdAt: new Date(),
-      ingredients: body.ingredients,
-      servings: body.servings,
-      cookingTime: body.cookingTime,
-      difficulty: body.difficulty,
-      preferences: body.preferences || [],
     });
 
     return NextResponse.json({
@@ -128,7 +121,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function generateRecipe(request: RecipeRequest, user: User): Promise<Recipe> {
-  const provider = AI_PROVIDERS.find(p => p.id === request.aiProvider) || AI_PROVIDERS[0];
+  const provider = AI_PROVIDERS[request.aiProvider as keyof typeof AI_PROVIDERS] || AI_PROVIDERS.openai;
   
   // Create prompt for AI
   const prompt = createRecipePrompt(request);
@@ -153,19 +146,17 @@ async function generateRecipe(request: RecipeRequest, user: User): Promise<Recip
     // Parse and structure the recipe
     const recipe: Recipe = {
       id: generateRecipeId(),
+      userId: user.id,
       title: response.title || 'Generiertes Rezept',
       description: response.description || '',
-      ingredients: response.ingredients || [],
-      instructions: response.instructions || [],
+      preparationTime: `${request.cookingTime} minutes`,
+      cost: 'Medium',
       servings: request.servings,
-      cookingTime: request.cookingTime,
-      difficulty: request.difficulty,
-      preferences: request.preferences || [],
-      nutritionalInfo: response.nutritionalInfo || null,
-      createdAt: new Date(),
-      createdBy: user.id,
-      aiProvider: request.aiProvider,
-      rating: null,
+      instructions: response.instructions ? response.instructions.join('\n\n') : '',
+      ingredients: response.ingredients || [],
+      isFavorite: false,
+      created: new Date(),
+      updated: new Date(),
     };
 
     return recipe;

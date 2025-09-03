@@ -1,116 +1,249 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 }
+  }
+};
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Willkommen bei ZauberKoch! 🍳
-          </h1>
-          <p className="text-muted-foreground">
-            Deine AI-gestützte Küche wartet auf dich
-          </p>
+    <div className="min-h-screen bg-surface">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-primary to-primary-dark text-white">
+        <div className="container py-12 lg:py-20">
+          <motion.div 
+            className="text-center lg:text-left max-w-4xl"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <motion.h1 
+              className="text-4xl lg:text-6xl font-bold mb-4 leading-tight"
+              variants={itemVariants}
+            >
+              Willkommen bei ZauberKoch! 🍳
+            </motion.h1>
+            <motion.p 
+              className="text-lg lg:text-xl text-primary-light mb-8 leading-relaxed"
+              variants={itemVariants}
+            >
+              Deine AI-gestützte Küche wartet auf dich. Entdecke unbegrenzte kulinarische Möglichkeiten mit der Kraft der künstlichen Intelligenz.
+            </motion.p>
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              variants={itemVariants}
+            >
+              <button className="btn btn-lg bg-white text-primary hover:bg-surface transition-all transform hover:scale-105">
+                Erstes Rezept erstellen
+              </button>
+              <button className="btn btn-lg btn-outline text-white border-white hover:bg-white hover:text-primary">
+                Features entdecken
+              </button>
+            </motion.div>
+          </motion.div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Main Content */}
+      <div className="container py-12 lg:py-16">
+        <motion.div 
+          className="mb-12"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <h2 className="text-2xl lg:text-3xl font-bold text-center mb-4">
+            Was möchtest du heute kochen?
+          </h2>
+          <p className="text-center text-on-surface-variant max-w-2xl mx-auto">
+            Wähle aus unseren beliebtesten Features oder entdecke neue kulinarische Abenteuer
+          </p>
+        </motion.div>
+
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-16"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
           {/* Rezept generieren */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-2xl mb-4">🤖</div>
-            <h2 className="text-xl font-semibold mb-2">Rezept generieren</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Lass die KI ein perfektes Rezept für dich erstellen
+          <motion.div 
+            className="card group cursor-pointer hover:transform hover:scale-105"
+            variants={itemVariants}
+            whileHover={{ y: -5 }}
+          >
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🤖</div>
+            <h3 className="text-xl lg:text-2xl font-bold mb-3 text-on-surface">Rezept generieren</h3>
+            <p className="text-on-surface-variant mb-6 leading-relaxed">
+              Lass die KI ein perfektes Rezept für dich erstellen basierend auf deinen Vorlieben
             </p>
-            <button className="w-full bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+            <button className="btn btn-primary w-full">
               Rezept erstellen
             </button>
-          </div>
+          </motion.div>
 
           {/* Meine Rezepte */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-2xl mb-4">📚</div>
-            <h2 className="text-xl font-semibold mb-2">Meine Rezepte</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+          <motion.div 
+            className="card group cursor-pointer hover:transform hover:scale-105"
+            variants={itemVariants}
+            whileHover={{ y: -5 }}
+          >
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📚</div>
+            <h3 className="text-xl lg:text-2xl font-bold mb-3 text-on-surface">Meine Rezepte</h3>
+            <p className="text-on-surface-variant mb-6 leading-relaxed">
               Verwalte und durchsuche deine gespeicherten Rezepte
             </p>
-            <button className="w-full bg-secondary text-secondary-foreground px-4 py-2 rounded-lg hover:bg-secondary/90 transition-colors">
+            <button className="btn btn-secondary w-full">
               Rezepte anzeigen
             </button>
-          </div>
+          </motion.div>
 
           {/* Favoriten */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-2xl mb-4">❤️</div>
-            <h2 className="text-xl font-semibold mb-2">Favoriten</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
+          <motion.div 
+            className="card group cursor-pointer hover:transform hover:scale-105"
+            variants={itemVariants}
+            whileHover={{ y: -5 }}
+          >
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">❤️</div>
+            <h3 className="text-xl lg:text-2xl font-bold mb-3 text-on-surface">Favoriten</h3>
+            <p className="text-on-surface-variant mb-6 leading-relaxed">
               Deine liebsten Rezepte auf einen Blick
             </p>
-            <button className="w-full bg-accent text-accent-foreground px-4 py-2 rounded-lg hover:bg-accent/90 transition-colors">
+            <button className="btn btn-outline w-full">
               Favoriten ansehen
             </button>
-          </div>
+          </motion.div>
 
           {/* Cocktails */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-2xl mb-4">🍹</div>
-            <h2 className="text-xl font-semibold mb-2">Cocktail-Rezepte</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Entdecke kreative Drink-Rezepte
+          <motion.div 
+            className="card group cursor-pointer hover:transform hover:scale-105"
+            variants={itemVariants}
+            whileHover={{ y: -5 }}
+          >
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🍹</div>
+            <h3 className="text-xl lg:text-2xl font-bold mb-3 text-on-surface">Cocktail-Rezepte</h3>
+            <p className="text-on-surface-variant mb-6 leading-relaxed">
+              Entdecke kreative Drink-Rezepte für jeden Anlass
             </p>
-            <button className="w-full bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors">
+            <button className="btn w-full" style={{ backgroundColor: '#FF6B35', color: 'white' }}>
               Cocktails mixen
             </button>
-          </div>
+          </motion.div>
 
           {/* Einstellungen */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <div className="text-2xl mb-4">⚙️</div>
-            <h2 className="text-xl font-semibold mb-2">Einstellungen</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-4">
-              Passe deine Präferenzen an
+          <motion.div 
+            className="card group cursor-pointer hover:transform hover:scale-105"
+            variants={itemVariants}
+            whileHover={{ y: -5 }}
+          >
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">⚙️</div>
+            <h3 className="text-xl lg:text-2xl font-bold mb-3 text-on-surface">Einstellungen</h3>
+            <p className="text-on-surface-variant mb-6 leading-relaxed">
+              Passe deine kulinarischen Präferenzen an
             </p>
-            <button className="w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+            <button className="btn btn-ghost w-full">
               Einstellungen öffnen
             </button>
-          </div>
+          </motion.div>
 
           {/* Premium */}
-          <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow text-white">
-            <div className="text-2xl mb-4">⭐</div>
-            <h2 className="text-xl font-semibold mb-2">Premium</h2>
-            <p className="text-purple-100 mb-4">
-              Unbegrenzte Rezepte und exklusive Features
-            </p>
-            <button className="w-full bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-purple-50 transition-colors font-medium">
-              Upgrade jetzt
-            </button>
-          </div>
-        </div>
+          <motion.div 
+            className="relative overflow-hidden rounded-2xl shadow-xl p-8 cursor-pointer hover:transform hover:scale-105"
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            }}
+            variants={itemVariants}
+            whileHover={{ y: -5 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/20"></div>
+            <div className="relative z-10">
+              <div className="text-4xl mb-4">⭐</div>
+              <h3 className="text-xl lg:text-2xl font-bold mb-3 text-white">Premium</h3>
+              <p className="text-white/90 mb-6 leading-relaxed">
+                Unbegrenzte Rezepte, exklusive KI-Features und Premium-Support
+              </p>
+              <button className="btn w-full bg-white/20 text-white border-white/30 hover:bg-white hover:text-gray-800">
+                Upgrade jetzt
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
 
         {/* Statistiken */}
-        <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Deine Küchen-Statistiken</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-primary">0</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Rezepte erstellt</div>
+        <motion.div 
+          className="card"
+          initial="hidden"
+          animate="visible"
+          variants={itemVariants}
+        >
+          <h2 className="text-2xl lg:text-3xl font-bold mb-8 text-center text-on-surface">
+            Deine Küchen-Statistiken
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            <div className="text-center p-4">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl lg:text-3xl font-bold text-primary">0</span>
+              </div>
+              <div className="text-sm lg:text-base font-medium text-on-surface-variant">Rezepte erstellt</div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-secondary">0</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Favoriten</div>
+            <div className="text-center p-4">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl lg:text-3xl font-bold text-error">0</span>
+              </div>
+              <div className="text-sm lg:text-base font-medium text-on-surface-variant">Favoriten</div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-orange-500">0</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Cocktails</div>
+            <div className="text-center p-4">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-orange-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl lg:text-3xl font-bold" style={{ color: '#FF6B35' }}>0</span>
+              </div>
+              <div className="text-sm lg:text-base font-medium text-on-surface-variant">Cocktails</div>
             </div>
-            <div>
-              <div className="text-2xl font-bold text-green-500">Free</div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">Account Status</div>
+            <div className="text-center p-4">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-base lg:text-lg font-bold text-success">Free</span>
+              </div>
+              <div className="text-sm lg:text-base font-medium text-on-surface-variant">Account Status</div>
             </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div 
+          className="mt-12 text-center"
+          initial="hidden"
+          animate="visible"
+          variants={itemVariants}
+        >
+          <h3 className="text-xl lg:text-2xl font-bold mb-6 text-on-surface">
+            Bereit zum Loslegen?
+          </h3>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="btn btn-primary btn-lg">
+              🍳 Erstes Rezept generieren
+            </button>
+            <button className="btn btn-outline btn-lg">
+              📖 Tutorial anschauen
+            </button>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

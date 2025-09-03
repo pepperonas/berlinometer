@@ -7,7 +7,6 @@ import {
   FiStar,
   FiZap,
   FiShield,
-  FiCrown,
   FiCheck,
   FiAlertCircle
 } from 'react-icons/fi';
@@ -226,7 +225,7 @@ export function PremiumModal({
                   Wähle deinen Plan
                 </h3>
                 <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                  {SUBSCRIPTION_PLANS.map((plan, index) => (
+                  {Object.values(SUBSCRIPTION_PLANS).map((plan, index) => (
                     <motion.div
                       key={plan.id}
                       initial={{ opacity: 0, y: 20 }}

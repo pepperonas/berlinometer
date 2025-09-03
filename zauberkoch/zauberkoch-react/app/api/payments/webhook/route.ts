@@ -58,11 +58,13 @@ export async function POST(request: NextRequest) {
 
     // Log webhook event
     await collections.webhook_logs.insertOne({
-      eventType: event.event_type,
-      eventId: event.id,
-      resourceId: event.resource?.id,
-      processedAt: new Date(),
-      payload: event,
+      type: event.event_type,
+      data: {
+        eventId: event.id,
+        resourceId: event.resource?.id,
+        payload: event,
+      },
+      timestamp: new Date(),
     });
 
     return NextResponse.json({ message: 'Webhook processed successfully' });

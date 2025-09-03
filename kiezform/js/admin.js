@@ -767,12 +767,6 @@ function displayProducts(products) {
                     </svg>
                     Edit
                 </button>
-                <button onclick="generateShareLink('${product.id}')" class="btn-action btn-secondary" title="Share Product">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
-                    </svg>
-                    Share
-                </button>
                 <button onclick="generateOwnerQR('${product.id}')" class="btn-action btn-secondary" title="Generate QR Code">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM13 3v8h8V3h-8zm6 6h-4V5h4v4zM3 21h8v-8H3v8zm2-6h4v4H5v-4z"/>
@@ -1192,6 +1186,8 @@ function generateOwnerQR(productId) {
             <div class="modal-actions">
                 <button type="button" onclick="downloadQR('${qrUrl}', '${product.id}')" class="btn-secondary">📥 Download QR</button>
                 <button type="button" onclick="downloadSTL('${product.id}', 'owner')" class="btn-stl" title="Download 3D printable STL file">🏗️ 3D Print (STL)</button>
+                <button type="button" onclick="copyVerificationLink('${product.id}')" class="btn-secondary">📋 Copy Link</button>
+                <button type="button" onclick="openVerificationPage('${product.id}')" class="btn-primary" style="background: linear-gradient(135deg, #008800 0%, #00aa00 100%); border-color: #008800;">🔗 Verifikations-Seite öffnen</button>
                 <button type="button" onclick="closeQRModal()">Close</button>
             </div>
         </div>
@@ -1431,7 +1427,8 @@ function renderTransferList() {
             <div class="transfer-item-info">
                 <div class="transfer-item-title">${escapeHtml(item.productName)}</div>
                 <div class="transfer-item-serial">${escapeHtml(item.serialNumber)}</div>
-                ${item.currentOwner ? `<div class="transfer-item-owner" style="color: #00ff00; font-size: 0.9rem; margin-top: 0.25rem;">Owner: ${escapeHtml(item.currentOwner)}</div>` : ''}
+                ${item.currentOwnerName ? `<div class="transfer-item-owner" style="color: #00ff00; font-size: 0.9rem; margin-top: 0.25rem;">Owner: ${escapeHtml(item.currentOwnerName)}</div>` : ''}
+                ${item.currentOwner ? `<div class="transfer-item-owner" style="color: #808080; font-size: 0.8rem; margin-top: 0.1rem;">Blockchain: ${escapeHtml(item.currentOwner)}</div>` : ''}
             </div>
             
             <div class="transfer-status ${item.overallStatus}">
@@ -1806,4 +1803,65 @@ function openTransferPage(qrToken) {
     // Open the transfer page with the QR token in a new tab
     const transferUrl = `/transfer?token=${qrToken}`;
     window.open(transferUrl, '_blank');
+}
+
+function openVerificationPage(productId) {
+    // Find the product to generate the same token as the QR code
+    const product = cachedProducts.find(p => p.id === productId);
+    if (!product) {
+        showToast('Product not found!', 'error');
+        return;
+    }
+    
+    // Extract owner name properly - same logic as generateOwnerQR
+    const ownerName = product.owner?.name || product.metadata?.owner || 'KiezForm Berlin';
+    
+    // Generate the same secure token as the QR code
+    const token = btoa(JSON.stringify({
+        productId: product.id,
+        owner: ownerName,
+        timestamp: Date.now()
+    })).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+    
+    // Open the owner verification page with token and product ID
+    const verificationUrl = `/owner-verify?token=${token}&product=${productId}`;
+    window.open(verificationUrl, '_blank');
+}
+
+function copyVerificationLink(productId) {
+    // Find the product to generate the same token as the QR code
+    const product = cachedProducts.find(p => p.id === productId);
+    if (!product) {
+        showToast('Product not found!', 'error');
+        return;
+    }
+    
+    // Extract owner name properly - same logic as generateOwnerQR
+    const ownerName = product.owner?.name || product.metadata?.owner || 'KiezForm Berlin';
+    
+    // Generate the same secure token as the QR code
+    const token = btoa(JSON.stringify({
+        productId: product.id,
+        owner: ownerName,
+        timestamp: Date.now()
+    })).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+    
+    // Create the full verification URL
+    const verificationUrl = `https://kiezform.de/owner-verify?token=${token}&product=${productId}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(verificationUrl).then(() => {
+        showToast('Verification link copied to clipboard!', 'success');
+    }).catch(err => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = verificationUrl;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('Verification link copied to clipboard!', 'success');
+    });
 }

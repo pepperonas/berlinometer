@@ -24,6 +24,11 @@ export interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
+  verifyEmail: (token: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  deleteAccount: (password: string) => Promise<void>;
   isLoading: boolean;
   isPremium: boolean;
 }
@@ -182,6 +187,7 @@ export interface RecipeRequest {
   cookingTime: number;
   difficulty: 'easy' | 'medium' | 'hard';
   preferences?: string[];
+  additionalRequests?: string;
   aiProvider: 'openai' | 'deepseek' | 'grok';
 }
 

@@ -7,14 +7,12 @@ import {
   FiX, 
   FiStar,
   FiZap,
-  FiInfinity,
   FiShield,
-  FiCrown,
   FiGift
 } from 'react-icons/fi';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import { SUBSCRIPTION_PLANS, PREMIUM_FEATURES } from '@/lib/constants';
+import { SUBSCRIPTION_PLANS } from '@/lib/constants';
 import type { SubscriptionPlan } from '@/types';
 
 interface PremiumPlanProps {
@@ -69,15 +67,8 @@ export function PremiumPlan({
   };
 
   const getYearlySavings = () => {
-    const monthlyPlan = SUBSCRIPTION_PLANS.find(p => p.id === 'monthly');
-    if (!monthlyPlan || plan.id !== 'yearly') return null;
-    
-    const yearlyTotal = plan.price;
-    const monthlyTotal = monthlyPlan.price * 12;
-    const savings = monthlyTotal - yearlyTotal;
-    const percentage = Math.round((savings / monthlyTotal) * 100);
-    
-    return { amount: savings, percentage };
+    // For now, only show premium plan without yearly savings calculation
+    return null;
   };
 
   const savings = getYearlySavings();
@@ -141,18 +132,18 @@ export function PremiumPlan({
             <div className={`text-3xl font-bold ${
               isFree ? 'text-info' : isPopular ? 'text-primary' : 'text-on-surface'
             }`}>
-              {formatPrice(plan.price, plan.interval)}
+              {formatPrice(plan.price, 'month')}
             </div>
             {!isFree && (
               <div className="text-sm text-on-surface-variant">
-                {plan.interval === 'year' ? 'Jährlich abgerechnet' : 'Monatlich abgerechnet'}
+                {'Monatlich abgerechnet'}
               </div>
             )}
           </div>
 
           {/* Description */}
           <p className="text-sm text-on-surface-variant">
-            {plan.description}
+            {plan.id === 'free' ? 'Ideal zum Ausprobieren' : 'Unbegrenzte Rezept-Generierung'}
           </p>
 
           {/* Current Plan Badge */}
@@ -173,49 +164,24 @@ export function PremiumPlan({
               Enthaltene Features:
             </h4>
             
-            {PREMIUM_FEATURES.map((feature, index) => {
-              const isIncluded = plan.features.includes(feature.key);
-              
-              return (
-                <motion.div
-                  key={feature.key}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`flex items-start gap-3 p-2 rounded-lg transition-colors ${
-                    isIncluded ? 'bg-success/5' : 'bg-surface-variant/30'
-                  }`}
-                >
-                  <div className="flex-shrink-0 mt-0.5">
-                    {getFeatureIcon(isIncluded)}
+            {plan.features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="flex items-start gap-3 p-2 rounded-lg transition-colors bg-success/5"
+              >
+                <div className="flex-shrink-0 mt-0.5">
+                  <FiCheck className="w-4 h-4 text-success" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900">
+                    {feature}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className={`text-sm font-medium ${
-                      isIncluded ? 'text-on-surface' : 'text-on-surface-variant'
-                    }`}>
-                      {feature.name}
-                    </div>
-                    <div className={`text-xs mt-1 ${
-                      isIncluded ? 'text-on-surface-variant' : 'text-on-surface-variant opacity-60'
-                    }`}>
-                      {feature.description}
-                    </div>
-                    {feature.limit && (
-                      <div className={`text-xs mt-1 font-medium ${
-                        isIncluded ? 'text-primary' : 'text-on-surface-variant opacity-60'
-                      }`}>
-                        {typeof feature.limit === 'number' && feature.limit > 0
-                          ? `${feature.limit} pro Tag`
-                          : feature.limit === -1
-                          ? 'Unbegrenzt'
-                          : feature.limit
-                        }
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
+                </div>
+              </motion.div>
+            ))}
           </div>
 
           {/* Action Button */}

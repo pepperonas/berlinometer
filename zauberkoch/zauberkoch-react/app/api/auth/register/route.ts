@@ -23,18 +23,19 @@ const registerSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   firstName: z.string().min(1, 'First name is required').max(50),
   lastName: z.string().min(1, 'Last name is required').max(50),
-  language: z.enum(['de', 'en']).default('de'),
+  language: z.enum(['de', 'en']).optional().default('de'),
   referralCode: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
   try {
     // Get client IP for rate limiting
-    const headersList = headers();
+    const headersList = await headers();
     const forwardedFor = headersList.get('x-forwarded-for');
     const clientIP = forwardedFor?.split(',')[0] || 
                      headersList.get('x-real-ip') || 
-                     request.ip || 
+                     request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                     request.headers.get('x-real-ip') ||
                      'unknown';
 
     // Check registration rate limiting
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
         { 
           success: false, 
           message: 'Invalid input', 
-          errors: validationResult.error.errors 
+          errors: validationResult.error.issues 
         },
         { status: 400 }
       );

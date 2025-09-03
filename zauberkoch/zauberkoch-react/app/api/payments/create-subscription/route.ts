@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId);
+    const plan = Object.values(SUBSCRIPTION_PLANS).find(p => p.id === planId);
     if (!plan || plan.id === 'free') {
       return NextResponse.json(
         { message: 'Ungültiger Plan' },
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Check if user already has an active subscription
     const collections = await connectToDatabase();
     const user = await collections.users.findOne({ 
-      _id: payload.userId 
+      id: payload.userId 
     });
 
     if (!user) {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       planId: plan.id,
       paypalSubscriptionId: subscriptionData.subscriptionId,
       status: 'pending',
-      createdAt: new Date(),
+      created: new Date(),
       approvalUrl: subscriptionData.approvalUrl,
     });
 
