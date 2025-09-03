@@ -54,6 +54,31 @@ export const AI_PROVIDERS = {
   },
 } as const;
 
+// Difficulty Levels
+export const DIFFICULTY_LEVELS = [
+  { id: 'easy', name: 'Einfach', description: 'Schnell und einfach zuzubereiten' },
+  { id: 'medium', name: 'Mittel', description: 'Mittlerer Aufwand erforderlich' },
+  { id: 'hard', name: 'Schwer', description: 'Fortgeschrittene Kochkenntnisse erforderlich' },
+] as const;
+
+// Cooking Times
+export const COOKING_TIMES = [
+  { id: '15', name: '15 Minuten', minutes: 15 },
+  { id: '30', name: '30 Minuten', minutes: 30 },
+  { id: '45', name: '45 Minuten', minutes: 45 },
+  { id: '60', name: '1 Stunde', minutes: 60 },
+  { id: '90', name: '1.5 Stunden', minutes: 90 },
+  { id: '120', name: '2 Stunden', minutes: 120 },
+  { id: '180', name: '3+ Stunden', minutes: 180 },
+] as const;
+
+// AI Providers as Array (for UI components)
+export const AI_PROVIDERS_ARRAY = [
+  { id: 'openai', ...AI_PROVIDERS.openai },
+  { id: 'deepseek', ...AI_PROVIDERS.deepseek },
+  { id: 'grok', ...AI_PROVIDERS.grok },
+] as const;
+
 // Recipe Categories & Options
 export const RECIPE_OPTIONS = {
   dietTypes: {

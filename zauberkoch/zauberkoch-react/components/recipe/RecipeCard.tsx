@@ -7,7 +7,7 @@ import {
   FiUsers, 
   FiBookmark, 
   FiStar,
-  FiChef,
+  FiCoffee,
   FiEye,
   FiHeart
 } from 'react-icons/fi';
@@ -141,7 +141,7 @@ export function RecipeCard({
             {/* Ingredients Preview */}
             <div className="mb-4">
               <h4 className="text-sm font-medium text-on-surface mb-2 flex items-center gap-1">
-                <FiChef size={14} />
+                <FiCoffee size={14} />
                 Hauptzutaten
               </h4>
               <div className="flex flex-wrap gap-1">

@@ -7,7 +7,7 @@ import {
   FiUsers, 
   FiBookmark, 
   FiStar,
-  FiChef,
+  FiCoffee,
   FiX,
   FiShare,
   FiPrinter,
@@ -130,7 +130,7 @@ export function RecipeDetail({
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <FiChef className="text-primary" size={24} />
+                    <FiCoffee className="text-primary" size={24} />
                     <h1 className="text-2xl font-bold text-on-surface">
                       {recipe.title}
                     </h1>
@@ -256,7 +256,7 @@ export function RecipeDetail({
                 {/* Ingredients */}
                 <div>
                   <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                    <FiChef className="text-primary" size={20} />
+                    <FiCoffee className="text-primary" size={20} />
                     Zutaten
                   </h2>
                   <Card className="shadow-sm">

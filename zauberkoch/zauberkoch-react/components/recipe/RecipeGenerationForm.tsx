@@ -3,7 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  FiChef, 
+  FiCoffee, 
   FiClock, 
   FiUsers, 
   FiSend, 
@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import useForm, { validationRules } from '@/hooks/useForm';
 import { useAuth } from '@/contexts/AuthContext';
-import { AI_PROVIDERS, COOKING_TIMES, DIFFICULTY_LEVELS } from '@/lib/constants';
+import { AI_PROVIDERS_ARRAY, COOKING_TIMES, DIFFICULTY_LEVELS } from '@/lib/constants';
 import type { RecipeRequest, Recipe, FoodPreference, AiProvider } from '@/types';
 
 interface RecipeGenerationFormData {
@@ -209,7 +209,7 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
-              <FiChef className="text-primary" />
+              <FiCoffee className="text-primary" />
               Rezept generieren
             </CardTitle>
             <div className="flex items-center gap-2">
@@ -219,7 +219,7 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                 className="px-3 py-1 border border-outline rounded-lg bg-surface text-sm"
                 disabled={isGenerating}
               >
-                {AI_PROVIDERS.map(provider => (
+                {AI_PROVIDERS_ARRAY.map(provider => (
                   <option key={provider.id} value={provider.id}>
                     {provider.name}
                   </option>
@@ -329,8 +329,8 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                   className="w-full px-3 py-2 border border-outline rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   {COOKING_TIMES.map(time => (
-                    <option key={time.value} value={time.value}>
-                      {time.label}
+                    <option key={time.id} value={time.id}>
+                      {time.name}
                     </option>
                   ))}
                 </select>
@@ -346,8 +346,8 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                   className="w-full px-3 py-2 border border-outline rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   {DIFFICULTY_LEVELS.map(level => (
-                    <option key={level.value} value={level.value}>
-                      {level.label} {level.emoji}
+                    <option key={level.id} value={level.id}>
+                      {level.name}
                     </option>
                   ))}
                 </select>
@@ -442,7 +442,7 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <FiChef className="text-primary" />
+                    <FiCoffee className="text-primary" />
                     {generatedRecipe.title}
                   </CardTitle>
                   <div className="flex items-center gap-2">

@@ -10,7 +10,7 @@ import {
   FiPlus,
   FiBookmark,
   FiClock,
-  FiChef
+  FiCoffee
 } from 'react-icons/fi';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -224,7 +224,7 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
           animate={{ opacity: 1, y: 0 }}
           className="text-center space-y-4"
         >
-          <FiChef size={48} className="text-primary mx-auto" />
+          <FiCoffee size={48} className="text-primary mx-auto" />
           <h1 className="text-2xl font-bold">Anmeldung erforderlich</h1>
           <p className="text-on-surface-variant">
             Melde dich an, um deine Rezepte zu sehen und zu verwalten.
