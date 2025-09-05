@@ -922,7 +922,8 @@ function takePhoto() {
         photoCtx.drawImage(canvas, 0, 0);
     } else {
         // Check if bokeh effect is active
-        const isBokeh = document.querySelector('[data-preset="bokeh"]').classList.contains('active');
+        const bokehElement = document.querySelector('[data-preset="bokeh"]');
+        const isBokeh = bokehElement && bokehElement.classList.contains('active');
         
         if (isBokeh) {
             // First draw the video without filters
