@@ -3,6 +3,7 @@
 import React, { InputHTMLAttributes, forwardRef, useState, useId } from 'react';
 import { cn } from '@/lib/utils';
 import { FiEye, FiEyeOff, FiAlertCircle } from 'react-icons/fi';
+import { motion } from 'framer-motion';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -38,27 +39,32 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
     
     const inputClasses = cn(
-      // Base styles
+      // Base dark theme styles
       'w-full',
       'px-4',
       'py-3',
       'text-base',
-      'bg-background',
+      'text-text-primary',
+      'bg-background-darker',
       'border',
       'rounded-lg',
       'transition-all',
-      'duration-200',
+      'duration-300',
       'placeholder:text-on-surface-variant',
       'focus:outline-none',
       'focus:ring-2',
       'focus:ring-offset-1',
+      'focus:ring-offset-background-dark',
+      
+      // Hover state
+      'hover:bg-surface hover:border-outline-variant',
       
       // States
       error 
-        ? 'border-error focus:ring-error focus:border-error' 
-        : 'border-outline focus:ring-primary focus:border-primary',
+        ? 'border-accent-red focus:ring-accent-red focus:border-accent-red bg-red-950/20' 
+        : 'border-outline focus:ring-accent-blue focus:border-accent-blue',
       
-      isFocused && !error && 'ring-2 ring-primary border-primary',
+      isFocused && !error && 'bg-surface ring-2 ring-accent-blue/30 border-accent-blue',
       
       // Icon spacing
       leftIcon && 'pl-12',
@@ -80,21 +86,28 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={containerClasses}>
         {label && (
-          <label 
+          <motion.label 
             htmlFor={inputId}
             className={cn(
               'block text-sm font-medium mb-2 transition-colors',
-              error ? 'text-error' : 'text-on-surface'
+              error ? 'text-accent-red' : 'text-text-primary'
             )}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
           >
             {label}
-            {props.required && <span className="text-error ml-1">*</span>}
-          </label>
+            {props.required && <span className="text-accent-red ml-1">*</span>}
+          </motion.label>
         )}
         
-        <div className="relative">
+        <div className="relative group">
           {leftIcon && (
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-on-surface-variant pointer-events-none">
+            <div className={cn(
+              "absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors duration-300",
+              isFocused ? "text-accent-blue" : "text-on-surface-variant",
+              error && "text-accent-red"
+            )}>
               {leftIcon}
             </div>
           )}
@@ -113,12 +126,29 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               props.onBlur?.(e);
             }}
             {...props}
+            style={{
+              ...props.style,
+              // Custom CSS properties for fine control
+              '--tw-ring-offset-color': 'var(--background-dark)',
+            } as React.CSSProperties}
           />
+          
+          {/* Gradient border effect on focus */}
+          <div className={cn(
+            "absolute inset-0 rounded-lg pointer-events-none transition-opacity duration-300",
+            "bg-gradient-to-r from-accent-blue via-primary-light to-accent-blue",
+            "opacity-0",
+            isFocused && !error && "opacity-20"
+          )} />
           
           {isPassword && (
             <button
               type="button"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors"
+              className={cn(
+                "absolute right-4 top-1/2 transform -translate-y-1/2 transition-all duration-300",
+                "text-on-surface-variant hover:text-accent-blue",
+                "hover:scale-110"
+              )}
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
             >
@@ -127,22 +157,33 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
           
           {rightIcon && !isPassword && (
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-on-surface-variant pointer-events-none">
+            <div className={cn(
+              "absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none transition-colors duration-300",
+              isFocused ? "text-accent-blue" : "text-on-surface-variant",
+              error && "text-accent-red"
+            )}>
               {rightIcon}
             </div>
           )}
         </div>
         
         {(error || helperText) && (
-          <div className="mt-2 flex items-start gap-1">
-            {error && <FiAlertCircle className="text-error flex-shrink-0 mt-0.5" size={16} />}
+          <motion.div 
+            className="mt-2 flex items-start gap-1"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {error && (
+              <FiAlertCircle className="text-accent-red flex-shrink-0 mt-0.5 animate-pulse" size={16} />
+            )}
             <p className={cn(
-              'text-sm',
-              error ? 'text-error' : 'text-on-surface-variant'
+              'text-sm transition-colors',
+              error ? 'text-accent-red' : 'text-text-secondary'
             )}>
               {error || helperText}
             </p>
-          </div>
+          </motion.div>
         )}
       </div>
     );

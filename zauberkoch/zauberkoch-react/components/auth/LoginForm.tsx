@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle } from 'react-icons/fi';
+import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle, FiUser, FiChefHat } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
+import { MdRestaurantMenu } from 'react-icons/md';
 import toast from 'react-hot-toast';
 
 import { Button } from '@/components/ui/Button';
@@ -41,9 +42,9 @@ export function LoginForm() {
     setFieldError,
   } = useForm<LoginFormData>({
     initialValues: {
-      email: '',
-      password: '',
-      rememberMe: false,
+      email: 'demo@zauberkoch.com',
+      password: 'demo123',
+      rememberMe: true,
     },
     validationSchema: {
       email: {
@@ -88,39 +89,66 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-8">
+    <div className="min-h-screen flex items-center justify-center px-4 py-8">
+      <div className="absolute inset-0 bg-gradient-to-br from-background-darker via-background-dark to-background-darker" />
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-accent-blue/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent-green/10 rounded-full blur-3xl" />
+      </div>
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
+        className="w-full max-w-md relative z-10"
       >
-        <Card className="shadow-xl border-0">
-          <CardHeader className="text-center pb-8">
+        <div className="card glass-effect shadow-xl border border-outline/20">
+          <div className="card-header text-center pb-6 border-b border-outline/20">
             <motion.div
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.1, duration: 0.3 }}
-              className="flex items-center justify-center gap-2 text-2xl font-bold text-primary mb-2"
+              className="mb-4"
             >
-              🍳 <span>ZauberKoch</span>
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <MdRestaurantMenu className="text-4xl text-accent-blue" />
+                <h1 className="text-3xl font-bold text-gradient">ZauberKoch</h1>
+              </div>
+              <p className="text-sm text-secondary">Deine KI-gestützte Rezept-Magie</p>
             </motion.div>
-            <CardTitle className="text-2xl font-bold">Willkommen zurück!</CardTitle>
-            <p className="text-on-surface-variant mt-2">
+            <h2 className="text-2xl font-semibold text-primary mb-2">Willkommen zurück!</h2>
+            <p className="text-secondary">
               Melde dich an und entdecke neue Rezepte
             </p>
-          </CardHeader>
+            
+            {/* Demo Account Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.3 }}
+              className="mt-4 p-3 alert-info rounded-lg"
+            >
+              <div className="flex items-center gap-2">
+                <FiUser className="text-accent-blue" />
+                <p className="text-sm font-medium">
+                  Demo-Account vorausgefüllt - einfach auf "Anmelden" klicken!
+                </p>
+              </div>
+            </motion.div>
+          </div>
 
-          <CardContent>
+          <div className="card-content p-6">
             {/* Redirect Message */}
             {message && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="mb-6 p-4 bg-info/10 border border-info/20 rounded-lg flex items-start gap-3"
+                className="mb-6 alert alert-info"
               >
-                <FiAlertCircle className="text-info flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-info font-medium">{message}</p>
+                <div className="flex items-start gap-3">
+                  <FiAlertCircle className="flex-shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium">{message}</p>
+                </div>
               </motion.div>
             )}
 
@@ -130,20 +158,30 @@ export function LoginForm() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2, duration: 0.3 }}
+                className="form-group"
               >
-                <Input
-                  id="email"
-                  type="email"
-                  label="E-Mail-Adresse"
-                  placeholder="deine@email.com"
-                  value={values.email}
-                  onChange={handleChange('email')}
-                  onBlur={handleBlur('email')}
-                  error={touched.email && errors.email ? errors.email : ''}
-                  leftIcon={<FiMail size={20} />}
-                  autoComplete="email"
-                  required
-                />
+                <label htmlFor="email" className="form-label">
+                  E-Mail-Adresse
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiMail className="text-on-surface-variant" />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    className="form-input pl-10"
+                    placeholder="deine@email.com"
+                    value={values.email}
+                    onChange={(e) => handleChange('email')(e.target.value)}
+                    onBlur={() => handleBlur('email')}
+                    autoComplete="email"
+                    required
+                  />
+                  {touched.email && errors.email && (
+                    <span className="form-error">{errors.email}</span>
+                  )}
+                </div>
               </motion.div>
 
               {/* Password Field */}
@@ -151,20 +189,41 @@ export function LoginForm() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3, duration: 0.3 }}
+                className="form-group"
               >
-                <Input
-                  id="password"
-                  type="password"
-                  label="Passwort"
-                  placeholder="••••••••"
-                  value={values.password}
-                  onChange={handleChange('password')}
-                  onBlur={handleBlur('password')}
-                  error={touched.password && errors.password ? errors.password : ''}
-                  leftIcon={<FiLock size={20} />}
-                  autoComplete="current-password"
-                  required
-                />
+                <label htmlFor="password" className="form-label">
+                  Passwort
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiLock className="text-on-surface-variant" />
+                  </div>
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    className="form-input pl-10 pr-10"
+                    placeholder="••••••••"
+                    value={values.password}
+                    onChange={(e) => handleChange('password')(e.target.value)}
+                    onBlur={() => handleBlur('password')}
+                    autoComplete="current-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <FiEyeOff className="text-on-surface-variant hover:text-primary transition-colors" />
+                    ) : (
+                      <FiEye className="text-on-surface-variant hover:text-primary transition-colors" />
+                    )}
+                  </button>
+                  {touched.password && errors.password && (
+                    <span className="form-error">{errors.password}</span>
+                  )}
+                </div>
               </motion.div>
 
               {/* Remember Me & Forgot Password */}
@@ -172,21 +231,21 @@ export function LoginForm() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.3 }}
-                className="flex items-center justify-between"
+                className="flex items-center justify-between mb-6"
               >
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="form-check">
                   <input
                     type="checkbox"
                     checked={values.rememberMe}
                     onChange={(e) => handleChange('rememberMe')(e.target.checked.toString())}
-                    className="w-4 h-4 text-primary bg-background border-outline rounded focus:ring-primary focus:ring-2"
+                    className="form-check-input"
                   />
-                  <span className="text-sm text-on-surface">Angemeldet bleiben</span>
+                  <span className="text-sm text-secondary ml-2">Angemeldet bleiben</span>
                 </label>
                 
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-primary hover:text-primary-dark transition-colors"
+                  className="text-sm text-accent-blue hover:text-primary-light transition-colors"
                 >
                   Passwort vergessen?
                 </Link>
@@ -198,15 +257,20 @@ export function LoginForm() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.3 }}
               >
-                <Button
+                <button
                   type="submit"
-                  size="lg"
-                  fullWidth
-                  loading={isSubmitting}
+                  className="btn btn-primary btn-lg btn-full"
                   disabled={isSubmitting}
                 >
-                  Anmelden
-                </Button>
+                  {isSubmitting ? (
+                    <>
+                      <span className="animate-spin">⚪</span>
+                      Anmelden...
+                    </>
+                  ) : (
+                    'Anmelden'
+                  )}
+                </button>
               </motion.div>
 
               {/* Divider */}
@@ -214,11 +278,11 @@ export function LoginForm() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.3 }}
-                className="relative flex items-center justify-center"
+                className="relative flex items-center justify-center my-6"
               >
-                <div className="border-t border-outline flex-grow"></div>
-                <span className="px-4 text-sm text-on-surface-variant bg-background">oder</span>
-                <div className="border-t border-outline flex-grow"></div>
+                <div className="divider flex-grow"></div>
+                <span className="px-4 text-sm text-secondary bg-card-background">oder</span>
+                <div className="divider flex-grow"></div>
               </motion.div>
 
               {/* Google Login */}
@@ -227,17 +291,15 @@ export function LoginForm() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7, duration: 0.3 }}
               >
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="lg"
-                  fullWidth
+                  className="btn btn-outline btn-lg btn-full"
                   onClick={handleGoogleLogin}
-                  leftIcon={<FcGoogle size={20} />}
                   disabled={isSubmitting}
                 >
+                  <FcGoogle size={20} />
                   Mit Google anmelden
-                </Button>
+                </button>
               </motion.div>
             </form>
 
@@ -248,18 +310,18 @@ export function LoginForm() {
               transition={{ delay: 0.8, duration: 0.3 }}
               className="mt-8 text-center"
             >
-              <p className="text-sm text-on-surface-variant">
+              <p className="text-sm text-secondary">
                 Noch kein Konto?{' '}
                 <Link
                   href="/auth/register"
-                  className="text-primary hover:text-primary-dark font-medium transition-colors"
+                  className="text-accent-blue hover:text-primary-light font-medium transition-colors"
                 >
                   Jetzt registrieren
                 </Link>
               </p>
             </motion.div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Additional Info */}
         <motion.div
@@ -268,13 +330,13 @@ export function LoginForm() {
           transition={{ delay: 1, duration: 0.3 }}
           className="mt-6 text-center"
         >
-          <p className="text-xs text-on-surface-variant">
+          <p className="text-xs text-secondary">
             Mit der Anmeldung akzeptierst du unsere{' '}
-            <Link href="/terms" className="text-primary hover:underline">
+            <Link href="/terms" className="text-accent-blue hover:underline">
               AGB
             </Link>{' '}
             und{' '}
-            <Link href="/privacy" className="text-primary hover:underline">
+            <Link href="/privacy" className="text-accent-blue hover:underline">
               Datenschutzerklärung
             </Link>
           </p>

@@ -29,6 +29,7 @@ This document lists all ports used by applications in this project.
 | 5060 | MRX Media Scraper     | xxxxxx             | `/xxxxx.js`                            |
 | 5063 | Medical AI Reports    | medical-ai-reports | `medical-ai-reports/backend/.env`      |
 | 5016 | Cicero Request Monitor| cicero             | `cicero/backend/server.js`             |
+| 5070 | Dart Counter PWA      | dart-snizzle       | `dart-snizzle/backend/server.js`       |
 | 5080 | Instagram Downloader  | instagram-dl       | `instagram-dl/backend/server.js`       |
 | 5081 | PDF Converter         | web2pdf            | `web2pdf/app.js`                       |
 | 5090 | Verification API      | kiezform-verification | `kiezform-verification/backend/server.js` |

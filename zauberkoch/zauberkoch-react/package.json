@@ -4,9 +4,9 @@
   "description": "ZauberKoch - AI-powered Recipe Generator (React PWA)",
   "main": "index.js",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3002",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3002",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "test": "jest",

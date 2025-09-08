@@ -364,6 +364,26 @@ export const validationRules = {
       message: message || 'Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten',
     },
   }),
+  
+  custom: (validator: (value: any, allValues?: Record<string, any>) => string | boolean) => ({
+    validate: validator,
+  }),
+  
+  number: (min?: number, max?: number, message?: string) => ({
+    validate: (value: string | number) => {
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+      if (isNaN(num)) {
+        return message || 'Bitte gib eine gültige Zahl ein';
+      }
+      if (min !== undefined && num < min) {
+        return `Der Wert muss mindestens ${min} sein`;
+      }
+      if (max !== undefined && num > max) {
+        return `Der Wert darf maximal ${max} sein`;
+      }
+      return true;
+    },
+  }),
 };
 
 export default useForm;

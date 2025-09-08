@@ -46,6 +46,50 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = validationResult.data;
 
+    // Check for demo user (bypass database for demo account)
+    if (email === 'demo@zauberkoch.com' && password === 'demo123') {
+      const demoUser = {
+        id: 'demo-user-001',
+        username: 'DemoUser',
+        email: 'demo@zauberkoch.com',
+        firstName: 'Demo',
+        lastName: 'User',
+        language: 'de',
+        premiumExpiration: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days premium
+        verified: true,
+        created: new Date(),
+      };
+
+      // Create tokens for demo user
+      const accessToken = await createAccessToken(demoUser);
+      const refreshToken = await createRefreshToken(demoUser.id);
+
+      const response = NextResponse.json({
+        success: true,
+        message: 'Demo login successful',
+        user: demoUser,
+      });
+
+      // Set cookies
+      response.cookies.set('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60, // 1 hour
+        path: '/',
+      });
+
+      response.cookies.set('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      });
+
+      return response;
+    }
+
     // Check rate limiting
     const rateLimitKey = `login:${clientIP}:${email}`;
     if (SecurityManager.isBlocked(rateLimitKey)) {

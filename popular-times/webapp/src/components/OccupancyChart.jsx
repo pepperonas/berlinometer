@@ -27,16 +27,7 @@ function OccupancyChart({ url, isExpanded }) {
       setIsLoading(true)
       setError(null)
       
-      // Deaktiviert: History-Feature temporär nicht verfügbar
-      setTimeout(() => {
-        setIsLoading(false)
-        setError('Historie-Feature temporär nicht verfügbar')
-      }, 500)
-      
-      return
-      
-      /*
-      const response = await fetch(`https://mrx3k1.de:5044/location-history`, {
+      const response = await fetch(`http://mrx3k1.de:5044/location-history`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +56,6 @@ function OccupancyChart({ url, isExpanded }) {
         
         setChartData(formattedData)
       }
-      */
     } catch (err) {
       console.error('Fehler beim Laden der Historie:', err)
       setError('Historie-Feature nicht verfügbar')

@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react'
+import OccupancyChart from './OccupancyChart'
 
 function ResultsDisplay({ results }) {
   const [searchTerm, setSearchTerm] = useState('')
+  const [expandedCard, setExpandedCard] = useState(null)
   const formatTimestamp = (timestamp) => {
     return new Date(timestamp).toLocaleString('de-DE', {
       year: 'numeric',
@@ -852,36 +854,79 @@ function ResultsDisplay({ results }) {
 
             {/* Mobile-optimized footer */}
             <div className="flex flex-col gap-2">
-              <a 
-                href={result.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-accent hover:underline"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem',
-                  backgroundColor: 'rgba(104, 141, 177, 0.1)',
-                  borderRadius: 'var(--radius)',
-                  textDecoration: 'none',
-                  transition: 'all 0.2s ease',
-                  fontSize: '0.875rem',
-                  fontWeight: '500'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.2)'
-                  e.target.style.transform = 'translateY(-1px)'
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.1)'
-                  e.target.style.transform = 'translateY(0)'
-                }}
-              >
-                <span>🔗</span>
-                <span>Google Maps öffnen</span>
-              </a>
+              <div className="flex gap-2">
+                <a 
+                  href={result.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-accent hover:underline"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    padding: '0.75rem',
+                    backgroundColor: 'rgba(104, 141, 177, 0.1)',
+                    borderRadius: 'var(--radius)',
+                    textDecoration: 'none',
+                    transition: 'all 0.2s ease',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    flex: 1
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.2)'
+                    e.target.style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.1)'
+                    e.target.style.transform = 'translateY(0)'
+                  }}
+                >
+                  <span>🔗</span>
+                  <span>Google Maps öffnen</span>
+                </a>
+                
+                <button
+                  onClick={() => setExpandedCard(expandedCard === index ? null : index)}
+                  className="btn btn-sm"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    padding: '0.75rem',
+                    backgroundColor: expandedCard === index ? 'rgba(225, 97, 98, 0.2)' : 'rgba(156, 182, 143, 0.1)',
+                    borderRadius: 'var(--radius)',
+                    border: 'none',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    flex: 1
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.backgroundColor = expandedCard === index ? 'rgba(225, 97, 98, 0.3)' : 'rgba(156, 182, 143, 0.2)'
+                    e.target.style.transform = 'translateY(-1px)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.backgroundColor = expandedCard === index ? 'rgba(225, 97, 98, 0.2)' : 'rgba(156, 182, 143, 0.1)'
+                    e.target.style.transform = 'translateY(0)'
+                  }}
+                >
+                  <span>{expandedCard === index ? '📉' : '📈'}</span>
+                  <span>{expandedCard === index ? 'Historie schließen' : 'Historie anzeigen'}</span>
+                </button>
+              </div>
+              
+              {/* Render OccupancyChart when expanded */}
+              {expandedCard === index && (
+                <OccupancyChart 
+                  url={result.url} 
+                  isExpanded={expandedCard === index}
+                />
+              )}
               
               <div className="text-xs text-secondary text-center" style={{ opacity: '0.7' }}>
                 ID: {index + 1}
