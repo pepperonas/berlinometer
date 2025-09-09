@@ -35,29 +35,38 @@ const Navigation = () => {
         style={{ backgroundColor: 'var(--card-background)' }}
       >
         <div className="p-6">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold" style={{ color: 'var(--accent-blue)' }}>
+          <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-8)' }}>
+            <h2 style={{ 
+              fontSize: '1.5rem', 
+              fontWeight: 'bold', 
+              color: 'var(--accent-blue)',
+              marginBottom: 'var(--spacing-2)'
+            }}>
               🎯 Dart Snizzle
             </h2>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <p style={{ 
+              fontSize: '0.875rem', 
+              color: 'var(--text-secondary)',
+              margin: 0 
+            }}>
               {user?.username}
             </p>
           </div>
 
-          <ul className="space-y-2">
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {navItems.map((item) => (
-              <li key={item.path}>
+              <li key={item.path} style={{ marginBottom: 'var(--spacing-2)' }}>
                 <Link
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`
-                    flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors
-                    ${location.pathname === item.path
-                      ? 'bg-blue-600 text-white'
-                      : 'hover:bg-opacity-20'
-                    }
-                  `}
                   style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--spacing-3)',
+                    padding: 'var(--spacing-3) var(--spacing-4)',
+                    borderRadius: 'var(--radius-lg)',
+                    transition: 'all var(--transition)',
+                    textDecoration: 'none',
                     backgroundColor: location.pathname === item.path 
                       ? 'var(--accent-blue)' 
                       : 'transparent',
@@ -65,9 +74,21 @@ const Navigation = () => {
                       ? 'white' 
                       : 'var(--text-primary)'
                   }}
+                  onMouseEnter={(e) => {
+                    if (location.pathname !== item.path) {
+                      e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.1)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (location.pathname !== item.path) {
+                      e.target.style.backgroundColor = 'transparent';
+                    }
+                  }}
                 >
-                  <span className="text-lg">{item.icon}</span>
-                  <span>{item.label.replace(/^[\\w\\s]+ /, '')}</span>
+                  <span style={{ fontSize: '1.125rem' }}>{item.icon}</span>
+                  <span style={{ fontSize: '1rem' }}>
+                    {item.label.replace(/^.+\s/, '')}
+                  </span>
                 </Link>
               </li>
             ))}

@@ -54,24 +54,31 @@ export interface Recipe {
   userId: string;
   title: string;
   description?: string;
-  preparationTime: string;
-  cost: string;
+  preparationTime?: string;
+  cookingTime?: string;
+  cost?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
   servings: number;
-  instructions: string;
+  instructions: string | string[];
   tips?: string;
   importantNotes?: string;
   ingredients: RecipeIngredient[];
   isFavorite: boolean;
   alcoholContent?: string;
+  nutritionalInfo?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
   created: Date;
   updated: Date;
 }
 
 export interface RecipeIngredient {
-  id: string;
   name: string;
-  quantity: string;
-  unit: string;
+  amount?: string;
+  unit?: string;
 }
 
 // User Settings for Recipe Generation

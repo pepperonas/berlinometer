@@ -8,7 +8,6 @@ export interface ValidationRule<T = any> {
   maxLength?: number | { value: number; message: string };
   pattern?: RegExp | { value: RegExp; message: string };
   validate?: (value: T) => string | boolean;
-  custom?: (value: T, allValues: Record<string, any>) => string | boolean;
 }
 
 export interface FieldConfig {
@@ -49,7 +48,7 @@ export interface UseFormReturn<T = Record<string, any>> {
   resetField: (name: keyof T) => void;
 }
 
-export function useForm<T extends Record<string, any>>({
+export function useFormV2<T extends Record<string, any>>({
   initialValues,
   validationSchema = {},
   validateOnChange = true,
@@ -120,16 +119,6 @@ export function useForm<T extends Record<string, any>>({
     // Custom validation function
     if (rules.validate) {
       const result = rules.validate(value);
-      if (typeof result === 'string') {
-        return result;
-      } else if (result === false) {
-        return `${String(name)} ist ungültig`;
-      }
-    }
-
-    // Cross-field validation
-    if (rules.custom) {
-      const result = rules.custom(value, state.values);
       if (typeof result === 'string') {
         return result;
       } else if (result === false) {
@@ -301,69 +290,4 @@ export function useForm<T extends Record<string, any>>({
   };
 }
 
-// Simplified validation helpers - no problematic functions
-export const validationRules = {
-  required: (message?: string) => ({
-    required: message || 'Dieses Feld ist erforderlich',
-  }),
-  
-  email: (message?: string) => ({
-    pattern: {
-      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-      message: message || 'Bitte gib eine gültige E-Mail-Adresse ein',
-    },
-  }),
-  
-  minLength: (length: number, message?: string) => ({
-    minLength: {
-      value: length,
-      message: message || `Mindestens ${length} Zeichen erforderlich`,
-    },
-  }),
-  
-  maxLength: (length: number, message?: string) => ({
-    maxLength: {
-      value: length,
-      message: message || `Maximal ${length} Zeichen erlaubt`,
-    },
-  }),
-  
-  password: (message?: string) => ({
-    minLength: 8,
-    validate: (value: string) => {
-      if (!/(?=.*[a-z])/.test(value)) {
-        return message || 'Passwort muss mindestens einen Kleinbuchstaben enthalten';
-      }
-      if (!/(?=.*[A-Z])/.test(value)) {
-        return message || 'Passwort muss mindestens einen Großbuchstaben enthalten';
-      }
-      if (!/(?=.*\d)/.test(value)) {
-        return message || 'Passwort muss mindestens eine Zahl enthalten';
-      }
-      if (!/(?=.*[!@#$%^&*])/.test(value)) {
-        return message || 'Passwort muss mindestens ein Sonderzeichen enthalten (!@#$%^&*)';
-      }
-      return true;
-    },
-  }),
-  
-  confirmPassword: (passwordField: string = 'password', message?: string) => ({
-    custom: (value: string, allValues: Record<string, any>) => {
-      if (value !== allValues[passwordField]) {
-        return message || 'Passwörter stimmen nicht überein';
-      }
-      return true;
-    },
-  }),
-  
-  username: (message?: string) => ({
-    minLength: 3,
-    maxLength: 20,
-    pattern: {
-      value: /^[a-zA-Z0-9_]+$/,
-      message: message || 'Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten',
-    },
-  }),
-};
-
-export default useForm;
+export default useFormV2;

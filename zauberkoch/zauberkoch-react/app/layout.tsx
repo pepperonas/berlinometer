@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { QueryProvider } from '@/contexts/QueryProvider';
 import { PWAInstallProvider } from '@/contexts/PWAContext';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
+import ClientHeader from '@/components/layout/ClientHeader';
 import { PWA_CONFIG, APP_CONFIG } from '@/lib/constants';
 
 const inter = Inter({ 
@@ -214,7 +215,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 
                 {/* Main application content */}
                 <div id="main-content" className="min-h-screen bg-background">
-                  {children}
+                  <main>
+                    {children}
+                  </main>
                 </div>
                 
                 {/* Toast notifications */}

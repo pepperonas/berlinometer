@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
 const containerVariants = {
@@ -24,6 +26,8 @@ const itemVariants = {
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-surface">
       {/* Hero Section */}
@@ -51,10 +55,15 @@ export default function DashboardPage() {
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
               variants={itemVariants}
             >
-              <button className="btn btn-lg bg-white text-primary hover:bg-surface transition-all transform hover:scale-105">
-                Erstes Rezept erstellen
-              </button>
-              <button className="btn btn-lg btn-outline text-white border-white hover:bg-white hover:text-primary">
+              <Link href="/recipes/generate">
+                <button className="btn btn-lg bg-white text-primary hover:bg-surface transition-all transform hover:scale-105">
+                  Erstes Rezept erstellen
+                </button>
+              </Link>
+              <button 
+                onClick={() => router.push('/recipes')}
+                className="btn btn-lg btn-outline text-white border-white hover:bg-white hover:text-primary"
+              >
                 Features entdecken
               </button>
             </motion.div>
@@ -95,9 +104,11 @@ export default function DashboardPage() {
             <p className="text-on-surface-variant mb-6 leading-relaxed">
               Lass die KI ein perfektes Rezept für dich erstellen basierend auf deinen Vorlieben
             </p>
-            <button className="btn btn-primary w-full">
-              Rezept erstellen
-            </button>
+            <Link href="/recipes/generate">
+              <button className="btn btn-primary w-full">
+                Rezept erstellen
+              </button>
+            </Link>
           </motion.div>
 
           {/* Meine Rezepte */}
@@ -111,9 +122,11 @@ export default function DashboardPage() {
             <p className="text-on-surface-variant mb-6 leading-relaxed">
               Verwalte und durchsuche deine gespeicherten Rezepte
             </p>
-            <button className="btn btn-secondary w-full">
-              Rezepte anzeigen
-            </button>
+            <Link href="/recipes">
+              <button className="btn btn-secondary w-full">
+                Rezepte anzeigen
+              </button>
+            </Link>
           </motion.div>
 
           {/* Favoriten */}
@@ -127,9 +140,11 @@ export default function DashboardPage() {
             <p className="text-on-surface-variant mb-6 leading-relaxed">
               Deine liebsten Rezepte auf einen Blick
             </p>
-            <button className="btn btn-outline w-full">
-              Favoriten ansehen
-            </button>
+            <Link href="/favorites">
+              <button className="btn btn-outline w-full">
+                Favoriten ansehen
+              </button>
+            </Link>
           </motion.div>
 
           {/* Cocktails */}
@@ -143,9 +158,11 @@ export default function DashboardPage() {
             <p className="text-on-surface-variant mb-6 leading-relaxed">
               Entdecke kreative Drink-Rezepte für jeden Anlass
             </p>
-            <button className="btn w-full" style={{ backgroundColor: '#FF6B35', color: 'white' }}>
-              Cocktails mixen
-            </button>
+            <Link href="/cocktails">
+              <button className="btn w-full" style={{ backgroundColor: '#FF6B35', color: 'white' }}>
+                Cocktails mixen
+              </button>
+            </Link>
           </motion.div>
 
           {/* Einstellungen */}
@@ -159,9 +176,11 @@ export default function DashboardPage() {
             <p className="text-on-surface-variant mb-6 leading-relaxed">
               Passe deine kulinarischen Präferenzen an
             </p>
-            <button className="btn btn-ghost w-full">
-              Einstellungen öffnen
-            </button>
+            <Link href="/settings">
+              <button className="btn btn-ghost w-full">
+                Einstellungen öffnen
+              </button>
+            </Link>
           </motion.div>
 
           {/* Premium */}
@@ -180,9 +199,11 @@ export default function DashboardPage() {
               <p className="text-white/90 mb-6 leading-relaxed">
                 Unbegrenzte Rezepte, exklusive KI-Features und Premium-Support
               </p>
-              <button className="btn w-full bg-white/20 text-white border-white/30 hover:bg-white hover:text-gray-800">
-                Upgrade jetzt
-              </button>
+              <Link href="/premium">
+                <button className="btn w-full bg-white/20 text-white border-white/30 hover:bg-white hover:text-gray-800">
+                  Upgrade jetzt
+                </button>
+              </Link>
             </div>
           </motion.div>
         </motion.div>
@@ -236,10 +257,15 @@ export default function DashboardPage() {
             Bereit zum Loslegen?
           </h3>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="btn btn-primary btn-lg">
-              🍳 Erstes Rezept generieren
-            </button>
-            <button className="btn btn-outline btn-lg">
+            <Link href="/recipes/generate">
+              <button className="btn btn-primary btn-lg">
+                🍳 Erstes Rezept generieren
+              </button>
+            </Link>
+            <button 
+              onClick={() => router.push('/help')}
+              className="btn btn-outline btn-lg"
+            >
               📖 Tutorial anschauen
             </button>
           </div>

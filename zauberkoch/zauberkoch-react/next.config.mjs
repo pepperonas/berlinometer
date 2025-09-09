@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  outputFileTracingRoot: '/Users/martin/WebstormProjects/mrx3k1/zauberkoch/zauberkoch-react',
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:3000', '127.0.0.1:3000', 'zauberkoch.local'],
+      allowedOrigins: ['localhost:3000', 'localhost:3002', '127.0.0.1:3000', '127.0.0.1:3002', 'zauberkoch.local'],
     },
   },
   // PWA configuration

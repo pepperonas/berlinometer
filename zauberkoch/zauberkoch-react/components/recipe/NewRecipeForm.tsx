@@ -19,73 +19,77 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
-import useForm, { validationRules } from '@/hooks/useForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { AI_PROVIDERS_ARRAY, COOKING_TIMES, DIFFICULTY_LEVELS } from '@/lib/constants';
 import type { RecipeRequest, Recipe, FoodPreference, AiProvider } from '@/types';
 
-interface RecipeGenerationFormData {
-  ingredients: string;
-  servings: string;
-  cookingTime: string;
-  difficulty: string;
-  preferences: string[];
-  additionalRequests: string;
-}
-
-interface RecipeGenerationFormProps {
+interface NewRecipeFormProps {
   onRecipeGenerated?: (recipe: Recipe) => void;
 }
 
-export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationFormProps) {
+function NewRecipeForm({ onRecipeGenerated }: NewRecipeFormProps) {
   const { user } = useAuth();
+  
+  // Form state - completely independent, no external form libraries
+  const [servings, setServings] = useState('2');
+  const [cookingTime, setCookingTime] = useState('30');
+  const [difficulty, setDifficulty] = useState('medium');
+  const [preferences, setPreferences] = useState<string[]>([]);
+  const [additionalRequests, setAdditionalRequests] = useState('');
+  
+  // UI state
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedRecipe, setGeneratedRecipe] = useState<Recipe | null>(null);
   const [selectedProvider, setSelectedProvider] = useState<AiProvider>('openai');
   const [availableIngredients, setAvailableIngredients] = useState<string[]>([]);
   const [currentIngredient, setCurrentIngredient] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  
+  // Validation errors - simple object
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
   const ingredientInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    values,
-    errors,
-    touched,
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    setFieldValue,
-    resetForm,
-  } = useForm<RecipeGenerationFormData>({
-    initialValues: {
-      ingredients: '',
-      servings: '2',
-      cookingTime: '30',
-      difficulty: 'medium',
-      preferences: [],
-      additionalRequests: '',
-    },
-    validationSchema: {
-      servings: {
-        ...validationRules.required('Anzahl der Personen ist erforderlich'),
-        ...validationRules.number(1, 20, 'Anzahl muss zwischen 1 und 20 liegen'),
-      },
-      cookingTime: {
-        ...validationRules.required('Zubereitungszeit ist erforderlich'),
-        ...validationRules.number(5, 240, 'Zubereitungszeit muss zwischen 5 und 240 Minuten liegen'),
-      },
-    },
-    onSubmit: handleRecipeGeneration,
-  });
+  // Simple validation function - no external dependencies
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    // Servings validation
+    const servingsNum = parseInt(servings);
+    if (!servings || isNaN(servingsNum)) {
+      newErrors.servings = 'Bitte gib eine gültige Zahl ein';
+    } else if (servingsNum < 1 || servingsNum > 20) {
+      newErrors.servings = 'Anzahl muss zwischen 1 und 20 liegen';
+    }
+    
+    // Cooking time validation
+    const cookingTimeNum = parseInt(cookingTime);
+    if (!cookingTime || isNaN(cookingTimeNum)) {
+      newErrors.cookingTime = 'Bitte gib eine gültige Zubereitungszeit ein';
+    } else if (cookingTimeNum < 5 || cookingTimeNum > 240) {
+      newErrors.cookingTime = 'Zubereitungszeit muss zwischen 5 und 240 Minuten liegen';
+    }
+    
+    // Ingredients validation
+    if (availableIngredients.length === 0) {
+      newErrors.ingredients = 'Bitte füge mindestens eine Zutat hinzu';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  async function handleRecipeGeneration(formData: RecipeGenerationFormData) {
+  // Form submission handler
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    
     if (!user) {
       toast.error('Bitte melde dich an, um Rezepte zu generieren');
       return;
     }
 
-    if (availableIngredients.length === 0) {
-      toast.error('Bitte füge mindestens eine Zutat hinzu');
+    if (!validateForm()) {
+      toast.error('Bitte korrigiere die Formularfehler');
       return;
     }
 
@@ -94,11 +98,11 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
     try {
       const request: RecipeRequest = {
         ingredients: availableIngredients,
-        servings: parseInt(formData.servings),
-        cookingTime: parseInt(formData.cookingTime),
-        difficulty: formData.difficulty as 'easy' | 'medium' | 'hard',
-        preferences: formData.preferences as FoodPreference[],
-        additionalRequests: formData.additionalRequests || undefined,
+        servings: parseInt(servings),
+        cookingTime: parseInt(cookingTime),
+        difficulty: difficulty as 'easy' | 'medium' | 'hard',
+        preferences: preferences as FoodPreference[],
+        additionalRequests: additionalRequests || undefined,
         aiProvider: selectedProvider,
       };
 
@@ -129,12 +133,17 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
     }
   }
 
+  // Ingredient management
   const addIngredient = () => {
     if (currentIngredient.trim() && !availableIngredients.includes(currentIngredient.trim())) {
       const newIngredient = currentIngredient.trim();
       setAvailableIngredients(prev => [...prev, newIngredient]);
       setCurrentIngredient('');
       ingredientInputRef.current?.focus();
+      // Clear ingredients error if it exists
+      if (errors.ingredients) {
+        setErrors(prev => ({ ...prev, ingredients: '' }));
+      }
     }
   };
 
@@ -149,18 +158,20 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
     }
   };
 
+  // Preferences management
   const togglePreference = (preference: FoodPreference) => {
-    const current = values.preferences;
+    const current = preferences;
     if (current.includes(preference)) {
-      setFieldValue('preferences', current.filter(p => p !== preference));
+      setPreferences(current.filter(p => p !== preference));
     } else {
-      setFieldValue('preferences', [...current, preference]);
+      setPreferences([...current, preference]);
     }
   };
 
+  // Recipe actions
   const handleRegenerateRecipe = () => {
     if (availableIngredients.length > 0) {
-      handleSubmit();
+      handleSubmit({ preventDefault: () => {} } as React.FormEvent);
     }
   };
 
@@ -263,6 +274,10 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                 </Button>
               </div>
 
+              {errors.ingredients && (
+                <p className="text-error text-sm">{errors.ingredients}</p>
+              )}
+
               <AnimatePresence>
                 <div className="flex flex-wrap gap-2">
                   {availableIngredients.map((ingredient, index) => (
@@ -301,19 +316,25 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
               transition={{ delay: 0.1 }}
               className="grid grid-cols-1 md:grid-cols-3 gap-4"
             >
-              <Input
-                id="servings"
-                type="number"
-                label="Portionen"
-                min="1"
-                max="20"
-                value={values.servings}
-                onChange={handleChange('servings')}
-                onBlur={handleBlur('servings')}
-                error={touched.servings && errors.servings ? errors.servings : ''}
-                leftIcon={<FiUsers size={20} />}
-                required
-              />
+              <div>
+                <Input
+                  id="servings"
+                  type="number"
+                  label="Portionen"
+                  min="1"
+                  max="20"
+                  value={servings}
+                  onChange={(e) => {
+                    setServings(e.target.value);
+                    if (errors.servings) {
+                      setErrors(prev => ({ ...prev, servings: '' }));
+                    }
+                  }}
+                  error={errors.servings || ''}
+                  leftIcon={<FiUsers size={20} />}
+                  required
+                />
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-on-surface mb-2">
@@ -321,8 +342,13 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                   Zubereitungszeit
                 </label>
                 <select
-                  value={values.cookingTime}
-                  onChange={(e) => setFieldValue('cookingTime', e.target.value)}
+                  value={cookingTime}
+                  onChange={(e) => {
+                    setCookingTime(e.target.value);
+                    if (errors.cookingTime) {
+                      setErrors(prev => ({ ...prev, cookingTime: '' }));
+                    }
+                  }}
                   className="w-full px-3 py-2 border border-outline rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   {COOKING_TIMES.map(time => (
@@ -331,6 +357,9 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                     </option>
                   ))}
                 </select>
+                {errors.cookingTime && (
+                  <p className="text-error text-sm mt-1">{errors.cookingTime}</p>
+                )}
               </div>
 
               <div>
@@ -338,8 +367,8 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                   Schwierigkeit
                 </label>
                 <select
-                  value={values.difficulty}
-                  onChange={(e) => setFieldValue('difficulty', e.target.value)}
+                  value={difficulty}
+                  onChange={(e) => setDifficulty(e.target.value)}
                   className="w-full px-3 py-2 border border-outline rounded-lg bg-surface focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 >
                   {DIFFICULTY_LEVELS.map(level => (
@@ -366,7 +395,7 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                     type="button"
                     onClick={() => togglePreference(pref.key)}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
-                      values.preferences.includes(pref.key)
+                      preferences.includes(pref.key)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'bg-surface hover:bg-surface-variant border-outline'
                     }`}
@@ -393,9 +422,8 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                     id="additionalRequests"
                     label="Zusätzliche Wünsche"
                     placeholder="z.B. besonders scharf, ohne Zwiebeln, mediterran..."
-                    value={values.additionalRequests}
-                    onChange={handleChange('additionalRequests')}
-                    onBlur={handleBlur('additionalRequests')}
+                    value={additionalRequests}
+                    onChange={(e) => setAdditionalRequests(e.target.value)}
                     helperText="Beschreibe besondere Wünsche oder Anforderungen für das Rezept"
                   />
                 </motion.div>
@@ -417,7 +445,7 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                 leftIcon={isGenerating ? <FiRefreshCw className="animate-spin" /> : <FiSend />}
               >
                 {isGenerating 
-                  ? `Rezept wird generiert mit ${AI_PROVIDERS.find(p => p.id === selectedProvider)?.name}...`
+                  ? `Rezept wird generiert mit ${AI_PROVIDERS_ARRAY.find(p => p.id === selectedProvider)?.name}...`
                   : 'Rezept generieren'
                 }
               </Button>
@@ -476,7 +504,7 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                     <FiUsers size={14} /> {generatedRecipe.servings} Portionen
                   </span>
                   <span className="flex items-center gap-1">
-                    <FiClock size={14} /> {generatedRecipe.cookingTime} Min
+                    <FiClock size={14} /> {generatedRecipe.cookingTime || generatedRecipe.preparationTime} Min
                   </span>
                   <span className="capitalize">
                     {DIFFICULTY_LEVELS.find(d => d.value === generatedRecipe.difficulty)?.emoji}{' '}
@@ -524,7 +552,10 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Zubereitung</h3>
                     <ol className="space-y-3">
-                      {generatedRecipe.instructions.map((instruction, index) => (
+                      {(Array.isArray(generatedRecipe.instructions) 
+                        ? generatedRecipe.instructions 
+                        : [generatedRecipe.instructions]
+                      ).map((instruction, index) => (
                         <motion.li
                           key={index}
                           initial={{ opacity: 0, x: 10 }}
@@ -577,7 +608,7 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
 
                 {/* AI Provider Info */}
                 <div className="text-xs text-on-surface-variant text-center">
-                  Generiert von {AI_PROVIDERS.find(p => p.id === selectedProvider)?.name}
+                  Generiert von {AI_PROVIDERS_ARRAY.find(p => p.id === selectedProvider)?.name}
                 </div>
               </CardContent>
             </Card>
@@ -588,4 +619,4 @@ export function RecipeGenerationForm({ onRecipeGenerated }: RecipeGenerationForm
   );
 }
 
-export default RecipeGenerationForm;
+export default NewRecipeForm;

@@ -293,12 +293,12 @@ export function LoginForm() {
               >
                 <button
                   type="button"
-                  className="btn btn-outline btn-lg btn-full"
-                  onClick={handleGoogleLogin}
-                  disabled={isSubmitting}
+                  className="btn btn-outline btn-lg btn-full opacity-50 cursor-not-allowed"
+                  disabled={true}
+                  title="Google OAuth ist offline nicht verfügbar"
                 >
                   <FcGoogle size={20} />
-                  Mit Google anmelden
+                  Mit Google anmelden (Offline)
                 </button>
               </motion.div>
             </form>

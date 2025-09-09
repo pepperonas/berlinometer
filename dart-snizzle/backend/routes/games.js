@@ -42,6 +42,42 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/games/:id
+// @desc    Get single game
+// @access  Private
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const game = await Game.findOne({
+      _id: req.params.id,
+      $or: [
+        { createdBy: req.user.id },
+        { 'players.user': req.user.id }
+      ]
+    })
+    .populate('players.player', 'name color')
+    .populate('winner', 'name')
+    .populate('createdBy', 'username');
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: 'Game not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      game
+    });
+  } catch (error) {
+    console.error('Get game error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching game'
+    });
+  }
+});
+
 // @route   POST /api/games
 // @desc    Create new game
 // @access  Private
@@ -313,6 +349,148 @@ router.put('/:id/abandon', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error abandoning game'
+    });
+  }
+});
+
+// @route   PUT /api/games/:id/undo-throw
+// @desc    Undo last throw
+// @access  Private
+router.put('/:id/undo-throw', protect, async (req, res) => {
+  try {
+    const game = await Game.findOne({
+      _id: req.params.id,
+      createdBy: req.user.id,
+      status: { $in: ['active', 'paused'] }
+    });
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: 'Game not found'
+      });
+    }
+
+    // Find the last active throw
+    let lastThrowFound = false;
+    let lastThrowPlayerIndex = -1;
+    let lastThrowIndex = -1;
+
+    for (let i = game.players.length - 1; i >= 0 && !lastThrowFound; i--) {
+      const player = game.players[i];
+      for (let j = player.throws.length - 1; j >= 0; j--) {
+        if (player.throws[j].status === 'active') {
+          lastThrowPlayerIndex = i;
+          lastThrowIndex = j;
+          lastThrowFound = true;
+          break;
+        }
+      }
+    }
+
+    if (!lastThrowFound) {
+      return res.status(400).json({
+        success: false,
+        message: 'No throws to undo'
+      });
+    }
+
+    // Mark throw as undone
+    const lastThrow = game.players[lastThrowPlayerIndex].throws[lastThrowIndex];
+    lastThrow.status = 'undone';
+    lastThrow.undoTimestamp = new Date();
+    lastThrow.undoneBy = req.user.id;
+
+    // Recalculate scores
+    game.players[lastThrowPlayerIndex].currentScore += lastThrow.total;
+    game.players[lastThrowPlayerIndex].dartsThrown -= 3;
+
+    // Adjust current player index (go back to previous player)
+    if (game.currentPlayerIndex > 0) {
+      game.currentPlayerIndex--;
+    } else {
+      game.currentPlayerIndex = game.players.length - 1;
+    }
+
+    await game.save();
+    await game.populate('players.player', 'name color');
+
+    res.json({
+      success: true,
+      message: 'Throw undone successfully',
+      game
+    });
+  } catch (error) {
+    console.error('Undo throw error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error undoing throw'
+    });
+  }
+});
+
+// @route   GET /api/games/:id/stats
+// @desc    Get live game statistics
+// @access  Private
+router.get('/:id/stats', protect, async (req, res) => {
+  try {
+    const game = await Game.findOne({
+      _id: req.params.id,
+      $or: [
+        { createdBy: req.user.id },
+        { 'players.user': req.user.id }
+      ]
+    }).populate('players.player', 'name color');
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: 'Game not found'
+      });
+    }
+
+    // Calculate live statistics
+    const stats = {
+      gameId: game._id,
+      gameMode: game.gameMode,
+      status: game.status,
+      totalThrows: 0,
+      players: []
+    };
+
+    game.players.forEach(player => {
+      const activeThrows = player.throws.filter(t => t.status === 'active');
+      const totalScore = activeThrows.reduce((sum, t) => sum + t.total, 0);
+      const averageScore = activeThrows.length > 0 ? (totalScore / activeThrows.length).toFixed(1) : '0.0';
+      const dartsThrown = activeThrows.length * 3;
+      
+      stats.totalThrows += activeThrows.length;
+      
+      stats.players.push({
+        name: player.player.name,
+        color: player.player.color,
+        currentScore: player.currentScore,
+        startingScore: player.startingScore,
+        dartsThrown: dartsThrown,
+        averageScore: parseFloat(averageScore),
+        throwsCount: activeThrows.length,
+        highestThrow: activeThrows.length > 0 ? Math.max(...activeThrows.map(t => t.total)) : 0,
+        recentThrows: activeThrows.slice(-5).map(t => ({
+          total: t.total,
+          timestamp: t.timestamp
+        }))
+      });
+    });
+
+    res.json({
+      success: true,
+      stats
+    });
+  } catch (error) {
+    console.error('Get game stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching game statistics'
     });
   }
 });

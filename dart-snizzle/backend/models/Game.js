@@ -23,6 +23,18 @@ const throwSchema = new mongoose.Schema({
   timestamp: {
     type: Date,
     default: Date.now
+  },
+  status: {
+    type: String,
+    enum: ['active', 'undone'],
+    default: 'active'
+  },
+  undoTimestamp: {
+    type: Date
+  },
+  undoneBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }
 });
 

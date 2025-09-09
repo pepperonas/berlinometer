@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import RecipeGenerationForm from '@/components/recipe/RecipeGenerationForm';
+import NewRecipeForm from '@/components/recipe/NewRecipeForm';
 
 export const metadata: Metadata = {
   title: 'Rezept generieren - ZauberKoch',
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function RecipeGeneratePage() {
-  return <RecipeGenerationForm />;
+  return <NewRecipeForm />;
 }

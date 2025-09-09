@@ -7,6 +7,7 @@
   --accent-blue: #688db1;
   --accent-green: #9cb68f;
   --accent-red: #e16162;
+  --accent-yellow: #ffc107;
   --text-primary: #d1d5db;
   --text-secondary: #9ca3af;
 
@@ -33,6 +34,9 @@
 
   /* Transitions */
   --transition: 0.3s ease;
+  
+  /* Borders */
+  --border-color: #4a5568;
 }
 
 * {
@@ -209,6 +213,83 @@ p {
   color: var(--text-secondary);
 }
 
+/* Select Dropdowns */
+.form-select {
+  width: 100%;
+  padding: var(--spacing-3);
+  border: 2px solid var(--background-darker);
+  border-radius: var(--radius);
+  background-color: var(--background-darker);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d1d5db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-3) center;
+  background-size: 1rem;
+  padding-right: calc(var(--spacing-3) + 1.5rem);
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+/* Custom Checkboxes */
+.form-checkbox {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.form-checkbox .checkmark {
+  position: relative;
+  height: 20px;
+  width: 20px;
+  background-color: var(--background-darker);
+  border: 2px solid var(--background-darker);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  margin-right: var(--spacing-2);
+}
+
+.form-checkbox:hover .checkmark {
+  border-color: var(--accent-blue);
+}
+
+.form-checkbox input:checked ~ .checkmark {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+
+.form-checkbox .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.form-checkbox input:checked ~ .checkmark:after {
+  display: block;
+}
+
 /* Grid Layouts */
 .grid {
   display: grid;
@@ -216,15 +297,34 @@ p {
 }
 
 .grid-2 {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-4);
 }
 
 .grid-3 {
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-4);
 }
 
 .grid-4 {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-4);
+}
+
+/* Main Layout Fix */
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 16rem;
+  background-color: var(--background-dark);
+  min-height: 100vh;
 }
 
 /* Flexbox Utilities */
@@ -254,6 +354,186 @@ p {
 
 .space-y-6 > * + * {
   margin-top: var(--spacing-6);
+}
+
+/* Spacing Utilities */
+.p-6 {
+  padding: var(--spacing-6);
+}
+
+.p-4 {
+  padding: var(--spacing-4);
+}
+
+.p-3 {
+  padding: var(--spacing-3);
+}
+
+.p-2 {
+  padding: var(--spacing-2);
+}
+
+.mb-4 {
+  margin-bottom: var(--spacing-4);
+}
+
+.mt-4 {
+  margin-top: var(--spacing-4);
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Chart Styling */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  padding: var(--spacing-2);
+  background-color: var(--card-background);
+  border-radius: var(--radius);
+  border: 1px solid rgba(104, 141, 177, 0.1);
+}
+
+.chart-container canvas {
+  max-height: 100% !important;
+}
+
+.chart-wrapper {
+  background: linear-gradient(135deg, var(--card-background) 0%, var(--background-darker) 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-4);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(104, 141, 177, 0.2);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 1px solid rgba(104, 141, 177, 0.1);
+}
+
+.chart-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-3);
+  margin-top: var(--spacing-3);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid rgba(104, 141, 177, 0.1);
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.chart-legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-sm);
+}
+
+/* Responsive Design Utilities */
+.block {
+  display: block;
+}
+
+.hidden {
+  display: none;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.relative {
+  position: relative;
+}
+
+.inset-0 {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.z-30 {
+  z-index: 30;
+}
+
+.z-40 {
+  z-index: 40;
+}
+
+.z-50 {
+  z-index: 50;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.transform {
+  transform: translateX(var(--transform-translate-x, 0)) 
+             translateY(var(--transform-translate-y, 0)) 
+             translateZ(0);
+}
+
+.translate-x-0 {
+  --transform-translate-x: 0;
+}
+
+.-translate-x-full {
+  --transform-translate-x: -100%;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+.bg-opacity-50 {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Responsive prefixes */
+@media (min-width: 768px) {
+  .md\\:hidden {
+    display: none;
+  }
+  
+  .md\\:block {
+    display: block;
+  }
+  
+  .md\\:translate-x-0 {
+    --transform-translate-x: 0;
+  }
 }
 
 /* Progress Bars */
@@ -323,6 +603,63 @@ p {
     padding: var(--spacing-4) var(--spacing-6);
     min-height: 48px; /* Larger touch target on mobile */
   }
+
+  /* Stack grid columns on mobile */
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-3);
+  }
+
+  /* Adjust padding for mobile */
+  .p-6 {
+    padding: var(--spacing-4) !important;
+  }
+
+  /* Smaller stat numbers on mobile */
+  .stat-number {
+    font-size: 2rem;
+  }
+
+  /* Responsive main content margin */
+  .main-content {
+    margin-left: 0;
+    padding-top: 60px; /* Account for mobile navigation */
+  }
+
+  /* Chart containers should be smaller on mobile */
+  .chart-container {
+    height: 250px !important;
+  }
+
+  /* Game mode grid responsive */
+  .game-mode-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Player cards in smaller grid */
+  .grid-3 .player-card {
+    max-width: none;
+  }
+
+  /* Form inputs full width on mobile */
+  .form-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Tablet optimizations */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
 }
 
 /* Touch-specific optimizations */
@@ -374,4 +711,15 @@ p {
 @keyframes slideUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
+}
+
+/* Pulse animation for current player indicator */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
 }
