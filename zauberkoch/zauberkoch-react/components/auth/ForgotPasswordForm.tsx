@@ -16,6 +16,26 @@ interface ForgotPasswordFormData {
   email: string;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 }
+  }
+};
+
 export function ForgotPasswordForm() {
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [sentEmail, setSentEmail] = useState('');
@@ -72,211 +92,293 @@ export function ForgotPasswordForm() {
 
   if (isEmailSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
-          <Card className="shadow-xl border-0">
-            <CardHeader className="text-center pb-6">
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.1, duration: 0.3 }}
-                className="flex justify-center mb-4"
+      <div className="min-h-screen bg-surface">
+        {/* Success Hero Background */}
+        <div className="bg-gradient-to-br from-success to-emerald-600 text-white">
+          <div className="container py-16 lg:py-20">
+            <motion.div 
+              className="text-center max-w-2xl mx-auto"
+              initial="hidden"
+              animate="visible"
+              variants={containerVariants}
+            >
+              <motion.div 
+                className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 px-4 py-2 rounded-full text-sm font-semibold mb-6"
+                variants={itemVariants}
               >
-                <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center">
-                  <FiCheckCircle className="text-success" size={32} />
-                </div>
+                ✅ E-Mail gesendet
               </motion.div>
-              <CardTitle className="text-2xl font-bold text-success">E-Mail gesendet!</CardTitle>
-              <p className="text-on-surface-variant mt-2">
-                Wir haben dir eine E-Mail mit einem Link zum Zurücksetzen deines Passworts gesendet.
-              </p>
-            </CardHeader>
-
-            <CardContent>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.3 }}
-                className="space-y-6"
+              
+              <motion.h1 
+                className="text-4xl lg:text-5xl font-bold mb-6 leading-tight"
+                variants={itemVariants}
               >
-                <div className="bg-surface-variant rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <FiMail className="text-info" size={20} />
+                Prüfe deine E-Mails
+              </motion.h1>
+              
+              <motion.p 
+                className="text-xl text-green-100 leading-relaxed"
+                variants={itemVariants}
+              >
+                Wir haben dir einen sicheren Link zum Zurücksetzen deines Passworts gesendet.
+              </motion.p>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Success Content */}
+        <div className="container py-16 lg:py-20">
+          <motion.div 
+            className="max-w-md mx-auto"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <motion.div 
+              className="card p-8 shadow-xl border border-outline/20"
+              variants={itemVariants}
+            >
+              <div className="text-center mb-8">
+                <motion.div
+                  className="w-16 h-16 bg-gradient-to-br from-success to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <FiCheckCircle className="text-white" size={32} />
+                </motion.div>
+                <h2 className="text-2xl font-bold text-success mb-2">E-Mail erfolgreich gesendet!</h2>
+                <p className="text-on-surface-variant">
+                  Folge den Anweisungen in der E-Mail, um dein Passwort zurückzusetzen.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-4 bg-gradient-to-br from-success/5 to-emerald-500/5 border border-success/20 rounded-xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-br from-success to-emerald-600 rounded-full flex items-center justify-center text-white text-sm">
+                      <FiMail />
+                    </div>
                     <div>
-                      <p className="font-medium text-on-surface">E-Mail gesendet an:</p>
-                      <p className="text-sm text-on-surface-variant">{sentEmail}</p>
+                      <p className="font-semibold text-sm">E-Mail gesendet an:</p>
+                      <p className="text-sm text-on-surface-variant break-all">{sentEmail}</p>
                     </div>
                   </div>
-                  <div className="text-sm text-on-surface-variant">
-                    <p className="mb-2">📬 <strong>Schau in deinen Posteingang</strong></p>
-                    <p className="mb-2">⏰ Der Link ist 1 Stunde gültig</p>
-                    <p className="mb-2">🗑️ Prüfe auch deinen Spam-Ordner</p>
+                  
+                  <div className="text-sm text-on-surface-variant space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-info">📬</span>
+                      <span><strong>Schau in deinen Posteingang</strong></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-warning">⏰</span>
+                      <span>Der Link ist 1 Stunde gültig</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-error">🗑️</span>
+                      <span>Prüfe auch deinen Spam-Ordner</span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  <Button
-                    size="lg"
-                    fullWidth
+                  <button
                     onClick={handleSendAgain}
-                    leftIcon={<FiSend />}
+                    className="w-full btn btn-primary py-3 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
                   >
+                    <FiSend className="mr-2" />
                     Erneut senden
-                  </Button>
+                  </button>
 
                   <Link href="/auth/login">
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      fullWidth
-                      leftIcon={<FiArrowLeft />}
-                    >
+                    <button className="w-full btn btn-outline py-3 border-2 hover:bg-primary hover:text-white">
+                      <FiArrowLeft className="mr-2" />
                       Zurück zur Anmeldung
-                    </Button>
+                    </button>
                   </Link>
                 </div>
 
                 <div className="text-center text-sm text-on-surface-variant">
                   <p>
-                    Probleme? <Link href="/contact" className="text-primary hover:underline">Kontaktiere unseren Support</Link>
+                    Probleme?{' '}
+                    <Link href="/contact" className="text-primary hover:text-primary-dark transition-colors font-medium">
+                      Kontaktiere unseren Support
+                    </Link>
                   </p>
                 </div>
-              </motion.div>
-            </CardContent>
-          </Card>
-        </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="shadow-xl border-0">
-          <CardHeader className="text-center pb-6">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-              className="flex items-center justify-center gap-2 text-2xl font-bold text-primary mb-2"
+    <div className="min-h-screen bg-surface">
+      {/* Hero Background */}
+      <div className="bg-gradient-to-br from-warning to-orange-500 text-white">
+        <div className="container py-16 lg:py-20">
+          <motion.div 
+            className="text-center max-w-2xl mx-auto"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <motion.div 
+              className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 px-4 py-2 rounded-full text-sm font-semibold mb-6"
+              variants={itemVariants}
             >
-              🍳 <span>ZauberKoch</span>
+              🔐 Passwort vergessen
             </motion.div>
-            <CardTitle className="text-2xl font-bold">Passwort vergessen?</CardTitle>
-            <p className="text-on-surface-variant mt-2">
-              Kein Problem! Gib deine E-Mail-Adresse ein und wir senden dir einen Link zum Zurücksetzen.
-            </p>
-          </CardHeader>
+            
+            <motion.h1 
+              className="text-4xl lg:text-5xl font-bold mb-6 leading-tight"
+              variants={itemVariants}
+            >
+              Kein Problem!
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl text-orange-100 leading-relaxed"
+              variants={itemVariants}
+            >
+              Gib deine E-Mail-Adresse ein und wir senden dir einen sicheren Link zum Zurücksetzen deines Passworts.
+            </motion.p>
+          </motion.div>
+        </div>
+      </div>
 
-          <CardContent>
+      {/* Reset Form */}
+      <div className="container py-16 lg:py-20">
+        <motion.div 
+          className="max-w-md mx-auto"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.div 
+            className="card p-8 shadow-xl border border-outline/20"
+            variants={itemVariants}
+          >
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2, duration: 0.3 }}
+                className="space-y-2"
+                variants={itemVariants}
               >
-                <Input
-                  id="email"
-                  type="email"
-                  label="E-Mail-Adresse"
-                  placeholder="deine@email.com"
-                  value={values.email}
-                  onChange={handleChange('email')}
-                  onBlur={handleBlur('email')}
-                  error={touched.email && errors.email ? errors.email : ''}
-                  helperText="Wir senden dir einen sicheren Link zum Zurücksetzen"
-                  leftIcon={<FiMail size={20} />}
-                  autoComplete="email"
-                  autoFocus
-                  required
-                />
+                <label htmlFor="email" className="block text-sm font-semibold text-on-surface">
+                  E-Mail-Adresse <span className="text-error">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiMail className="text-on-surface-variant" />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-0 ${
+                      touched.email && errors.email
+                        ? 'border-error bg-error/5 focus:border-error'
+                        : 'border-outline/30 bg-surface-variant/30 focus:border-primary focus:bg-surface'
+                    }`}
+                    placeholder="deine@email.com"
+                    value={values.email}
+                    onChange={(e) => handleChange('email')(e.target.value)}
+                    onBlur={() => handleBlur('email')}
+                    autoComplete="email"
+                    autoFocus
+                    required
+                  />
+                  {touched.email && errors.email && (
+                    <motion.span 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="block text-sm text-error mt-1 font-medium"
+                    >
+                      {errors.email}
+                    </motion.span>
+                  )}
+                  <p className="text-xs text-on-surface-variant mt-1">Wir senden dir einen sicheren Reset-Link</p>
+                </div>
               </motion.div>
 
               {/* Submit Button */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.3 }}
+                variants={itemVariants}
               >
-                <Button
+                <button
                   type="submit"
-                  size="lg"
-                  fullWidth
-                  loading={isSubmitting}
+                  className="w-full btn btn-primary btn-lg py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
                   disabled={isSubmitting}
-                  leftIcon={<FiSend />}
                 >
-                  Reset-Link senden
-                </Button>
+                  {isSubmitting ? (
+                    <>
+                      <span className="animate-spin mr-2">⚪</span>
+                      Sende E-Mail...
+                    </>
+                  ) : (
+                    <>
+                      <FiSend className="mr-2" />
+                      Reset-Link senden
+                    </>
+                  )}
+                </button>
               </motion.div>
 
               {/* Back to Login */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.3 }}
+                variants={itemVariants}
               >
                 <Link href="/auth/login">
-                  <Button
+                  <button
                     type="button"
-                    variant="ghost"
-                    size="lg"
-                    fullWidth
-                    leftIcon={<FiArrowLeft />}
+                    className="w-full btn btn-outline py-3 border-2 hover:bg-primary hover:text-white"
                   >
+                    <FiArrowLeft className="mr-2" />
                     Zurück zur Anmeldung
-                  </Button>
+                  </button>
                 </Link>
               </motion.div>
             </form>
 
-            {/* Additional Info */}
+            {/* Security Info */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.3 }}
-              className="mt-8 bg-info/5 border border-info/20 rounded-lg p-4"
+              className="mt-8 p-4 bg-gradient-to-br from-info/5 to-blue-500/5 border border-info/20 rounded-xl"
+              variants={itemVariants}
             >
-              <h4 className="font-medium text-info mb-2">💡 Sicherheitshinweis</h4>
-              <ul className="text-sm text-info space-y-1">
-                <li>• Der Reset-Link ist nur 1 Stunde gültig</li>
-                <li>• Verwende ihn nur, wenn du ihn angefordert hast</li>
-                <li>• Teile den Link niemals mit anderen</li>
-                <li>• Bei Problemen kontaktiere unseren Support</li>
-              </ul>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-info to-blue-600 rounded-full flex items-center justify-center text-white text-sm mt-0.5">
+                  💡
+                </div>
+                <div>
+                  <h4 className="font-semibold text-info mb-2">Sicherheitshinweis</h4>
+                  <ul className="text-sm text-on-surface-variant space-y-1">
+                    <li>• Der Reset-Link ist nur 1 Stunde gültig</li>
+                    <li>• Verwende ihn nur, wenn du ihn angefordert hast</li>
+                    <li>• Teile den Link niemals mit anderen</li>
+                    <li>• Bei Problemen kontaktiere unseren Support</li>
+                  </ul>
+                </div>
+              </div>
             </motion.div>
 
             {/* Register Link */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.3 }}
               className="mt-6 text-center"
+              variants={itemVariants}
             >
               <p className="text-sm text-on-surface-variant">
                 Noch kein Konto?{' '}
                 <Link
                   href="/auth/register"
-                  className="text-primary hover:text-primary-dark font-medium transition-colors"
+                  className="text-primary hover:text-primary-dark font-semibold transition-colors"
                 >
                   Jetzt registrieren
                 </Link>
               </p>
             </motion.div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }

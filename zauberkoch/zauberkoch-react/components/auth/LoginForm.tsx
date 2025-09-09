@@ -22,6 +22,26 @@ interface LoginFormData {
   rememberMe: boolean;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 }
+  }
+};
+
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,64 +109,76 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="absolute inset-0 bg-gradient-to-br from-background-darker via-background-dark to-background-darker" />
-      <div className="absolute inset-0">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-accent-blue/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-96 h-96 bg-accent-green/10 rounded-full blur-3xl" />
-      </div>
-      
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
-      >
-        <div className="card glass-effect shadow-xl border border-outline/20">
-          <div className="card-header text-center pb-6 border-b border-outline/20">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-              className="mb-4"
+    <div className="min-h-screen bg-surface">
+      {/* Hero Background */}
+      <div className="bg-gradient-to-br from-primary to-primary-dark text-white">
+        <div className="container py-16 lg:py-20">
+          <motion.div 
+            className="text-center max-w-2xl mx-auto"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <motion.div 
+              className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 px-4 py-2 rounded-full text-sm font-semibold mb-6"
+              variants={itemVariants}
             >
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <MdRestaurantMenu className="text-4xl text-accent-blue" />
-                <h1 className="text-3xl font-bold text-gradient">ZauberKoch</h1>
-              </div>
-              <p className="text-sm text-secondary">Deine KI-gestützte Rezept-Magie</p>
+              🔑 Willkommen zurück
             </motion.div>
-            <h2 className="text-2xl font-semibold text-primary mb-2">Willkommen zurück!</h2>
-            <p className="text-secondary">
-              Melde dich an und entdecke neue Rezepte
-            </p>
             
+            <motion.h1 
+              className="text-4xl lg:text-5xl font-bold mb-6 leading-tight"
+              variants={itemVariants}
+            >
+              Anmelden bei ZauberKoch
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl text-primary-light leading-relaxed"
+              variants={itemVariants}
+            >
+              Melde dich an und entdecke neue kulinarische Abenteuer mit KI-gestützten Rezepten.
+            </motion.p>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Login Form */}
+      <div className="container py-16 lg:py-20">
+        <motion.div 
+          className="max-w-md mx-auto"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.div 
+            className="card p-8 shadow-xl border border-outline/20"
+            variants={itemVariants}
+          >
             {/* Demo Account Info */}
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.3 }}
-              className="mt-4 p-3 alert-info rounded-lg"
+              className="mb-6 p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/20"
+              variants={itemVariants}
             >
-              <div className="flex items-center gap-2">
-                <FiUser className="text-accent-blue" />
-                <p className="text-sm font-medium">
-                  Demo-Account vorausgefüllt - einfach auf "Anmelden" klicken!
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm">
+                  <FiUser />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Demo-Account vorausgefüllt</p>
+                  <p className="text-xs text-on-surface-variant">Einfach auf "Anmelden" klicken!</p>
+                </div>
               </div>
             </motion.div>
-          </div>
 
-          <div className="card-content p-6">
             {/* Redirect Message */}
             {message && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="mb-6 alert alert-info"
+                className="mb-6 p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20"
+                variants={itemVariants}
               >
                 <div className="flex items-start gap-3">
-                  <FiAlertCircle className="flex-shrink-0 mt-0.5" />
+                  <FiAlertCircle className="flex-shrink-0 mt-0.5 text-amber-600" />
                   <p className="text-sm font-medium">{message}</p>
                 </div>
               </motion.div>
@@ -155,12 +187,10 @@ export function LoginForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2, duration: 0.3 }}
-                className="form-group"
+                className="space-y-2"
+                variants={itemVariants}
               >
-                <label htmlFor="email" className="form-label">
+                <label htmlFor="email" className="block text-sm font-semibold text-on-surface">
                   E-Mail-Adresse
                 </label>
                 <div className="relative">
@@ -170,7 +200,11 @@ export function LoginForm() {
                   <input
                     id="email"
                     type="email"
-                    className="form-input pl-10"
+                    className={`w-full pl-10 pr-4 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-0 ${
+                      touched.email && errors.email
+                        ? 'border-error bg-error/5 focus:border-error'
+                        : 'border-outline/30 bg-surface-variant/30 focus:border-primary focus:bg-surface'
+                    }`}
                     placeholder="deine@email.com"
                     value={values.email}
                     onChange={(e) => handleChange('email')(e.target.value)}
@@ -179,19 +213,23 @@ export function LoginForm() {
                     required
                   />
                   {touched.email && errors.email && (
-                    <span className="form-error">{errors.email}</span>
+                    <motion.span 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="block text-sm text-error mt-1 font-medium"
+                    >
+                      {errors.email}
+                    </motion.span>
                   )}
                 </div>
               </motion.div>
 
               {/* Password Field */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3, duration: 0.3 }}
-                className="form-group"
+                className="space-y-2"
+                variants={itemVariants}
               >
-                <label htmlFor="password" className="form-label">
+                <label htmlFor="password" className="block text-sm font-semibold text-on-surface">
                   Passwort
                 </label>
                 <div className="relative">
@@ -201,7 +239,11 @@ export function LoginForm() {
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
-                    className="form-input pl-10 pr-10"
+                    className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 transition-all duration-300 focus:outline-none focus:ring-0 ${
+                      touched.password && errors.password
+                        ? 'border-error bg-error/5 focus:border-error'
+                        : 'border-outline/30 bg-surface-variant/30 focus:border-primary focus:bg-surface'
+                    }`}
                     placeholder="••••••••"
                     value={values.password}
                     onChange={(e) => handleChange('password')(e.target.value)}
@@ -221,31 +263,35 @@ export function LoginForm() {
                     )}
                   </button>
                   {touched.password && errors.password && (
-                    <span className="form-error">{errors.password}</span>
+                    <motion.span 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="block text-sm text-error mt-1 font-medium"
+                    >
+                      {errors.password}
+                    </motion.span>
                   )}
                 </div>
               </motion.div>
 
               {/* Remember Me & Forgot Password */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.3 }}
-                className="flex items-center justify-between mb-6"
+                className="flex items-center justify-between"
+                variants={itemVariants}
               >
-                <label className="form-check">
+                <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={values.rememberMe}
                     onChange={(e) => handleChange('rememberMe')(e.target.checked.toString())}
-                    className="form-check-input"
+                    className="w-4 h-4 text-primary border-outline/30 rounded focus:ring-primary focus:ring-2"
                   />
-                  <span className="text-sm text-secondary ml-2">Angemeldet bleiben</span>
+                  <span className="text-sm text-on-surface-variant">Angemeldet bleiben</span>
                 </label>
                 
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-accent-blue hover:text-primary-light transition-colors"
+                  className="text-sm text-primary hover:text-primary-dark transition-colors font-medium"
                 >
                   Passwort vergessen?
                 </Link>
@@ -253,51 +299,47 @@ export function LoginForm() {
 
               {/* Submit Button */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.3 }}
+                variants={itemVariants}
               >
                 <button
                   type="submit"
-                  className="btn btn-primary btn-lg btn-full"
+                  className="w-full btn btn-primary btn-lg py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
-                      <span className="animate-spin">⚪</span>
+                      <span className="animate-spin mr-2">⚪</span>
                       Anmelden...
                     </>
                   ) : (
-                    'Anmelden'
+                    <>
+                      🔓 Anmelden
+                    </>
                   )}
                 </button>
               </motion.div>
 
               {/* Divider */}
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.3 }}
-                className="relative flex items-center justify-center my-6"
+                className="relative flex items-center justify-center py-4"
+                variants={itemVariants}
               >
-                <div className="divider flex-grow"></div>
-                <span className="px-4 text-sm text-secondary bg-card-background">oder</span>
-                <div className="divider flex-grow"></div>
+                <div className="flex-grow border-t border-outline/30"></div>
+                <span className="px-4 text-sm text-on-surface-variant bg-surface">oder</span>
+                <div className="flex-grow border-t border-outline/30"></div>
               </motion.div>
 
               {/* Google Login */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.3 }}
+                variants={itemVariants}
               >
                 <button
                   type="button"
-                  className="btn btn-outline btn-lg btn-full opacity-50 cursor-not-allowed"
+                  className="w-full btn btn-outline py-4 opacity-50 cursor-not-allowed border-2"
                   disabled={true}
                   title="Google OAuth ist offline nicht verfügbar"
                 >
-                  <FcGoogle size={20} />
+                  <FcGoogle size={20} className="mr-2" />
                   Mit Google anmelden (Offline)
                 </button>
               </motion.div>
@@ -305,43 +347,39 @@ export function LoginForm() {
 
             {/* Sign Up Link */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.3 }}
               className="mt-8 text-center"
+              variants={itemVariants}
             >
-              <p className="text-sm text-secondary">
+              <p className="text-sm text-on-surface-variant">
                 Noch kein Konto?{' '}
                 <Link
                   href="/auth/register"
-                  className="text-accent-blue hover:text-primary-light font-medium transition-colors"
+                  className="text-primary hover:text-primary-dark font-semibold transition-colors"
                 >
                   Jetzt registrieren
                 </Link>
               </p>
             </motion.div>
-          </div>
-        </div>
 
-        {/* Additional Info */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1, duration: 0.3 }}
-          className="mt-6 text-center"
-        >
-          <p className="text-xs text-secondary">
-            Mit der Anmeldung akzeptierst du unsere{' '}
-            <Link href="/terms" className="text-accent-blue hover:underline">
-              AGB
-            </Link>{' '}
-            und{' '}
-            <Link href="/privacy" className="text-accent-blue hover:underline">
-              Datenschutzerklärung
-            </Link>
-          </p>
+            {/* Terms & Privacy */}
+            <motion.div
+              className="mt-6 text-center"
+              variants={itemVariants}
+            >
+              <p className="text-xs text-on-surface-variant">
+                Mit der Anmeldung akzeptierst du unsere{' '}
+                <Link href="/terms" className="text-primary hover:text-primary-dark transition-colors">
+                  AGB
+                </Link>{' '}
+                und{' '}
+                <Link href="/privacy" className="text-primary hover:text-primary-dark transition-colors">
+                  Datenschutzerklärung
+                </Link>
+              </p>
+            </motion.div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 }

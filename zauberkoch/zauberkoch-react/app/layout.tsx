@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { QueryProvider } from '@/contexts/QueryProvider';
 import { PWAInstallProvider } from '@/contexts/PWAContext';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
-import ClientHeader from '@/components/layout/ClientHeader';
+import Header from '@/components/layout/Header';
 import { PWA_CONFIG, APP_CONFIG } from '@/lib/constants';
 
 const inter = Inter({ 
@@ -215,6 +215,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 
                 {/* Main application content */}
                 <div id="main-content" className="min-h-screen bg-background">
+                  <Header />
                   <main>
                     {children}
                   </main>

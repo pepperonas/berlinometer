@@ -157,22 +157,43 @@ const GamePlay = () => {
     return Object.values(currentThrow).reduce((sum, dart) => sum + (dart.value * dart.multiplier), 0);
   };
 
-  const handleDirectInput = () => {
+  const handleDirectInput = async () => {
     const score = parseInt(directInput) || 0;
     if (score < 0 || score > 180) {
       setError('Wurfpunkte müssen zwischen 0 und 180 liegen');
       return;
     }
 
-    // Set the total score as dart1 and clear others
-    setCurrentThrow({
+    // Create the throw object with direct input score
+    const throwData = {
       dart1: { value: score, multiplier: 1 },
       dart2: { value: 0, multiplier: 1 },
       dart3: { value: 0, multiplier: 1 }
-    });
-    setCurrentDart(1);
-    setDirectInput('');
-    setError('');
+    };
+
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Submit throw directly to API
+      const response = await api.post(`/games/${gameId}/throw`, throwData);
+      setGame(response.data.game);
+      
+      // Clear input and reset state
+      setDirectInput('');
+      setCurrentThrow({
+        dart1: { value: 0, multiplier: 1 },
+        dart2: { value: 0, multiplier: 1 },
+        dart3: { value: 0, multiplier: 1 }
+      });
+      setCurrentDart(1);
+      
+    } catch (error) {
+      setError('Fehler beim Speichern des Wurfs');
+      console.error('Error submitting direct input throw:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const resetThrow = () => {
@@ -834,19 +855,24 @@ const GamePlay = () => {
               {/* Manual Input */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2)', alignItems: 'center', justifyContent: 'center' }}>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className="form-input"
                   placeholder="Punkte eingeben..."
                   value={directInput}
-                  onChange={(e) => setDirectInput(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    if (value === '' || (parseInt(value) >= 0 && parseInt(value) <= 180)) {
+                      setDirectInput(value);
+                    }
+                  }}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && directInput.trim()) {
                       e.preventDefault();
                       handleDirectInput();
                     }
                   }}
-                  min="0"
-                  max="180"
                   autoFocus
                   style={{ 
                     width: '200px', 
@@ -856,7 +882,9 @@ const GamePlay = () => {
                     borderRadius: '12px',
                     border: '2px solid var(--accent-blue)',
                     backgroundColor: 'var(--card-background)',
-                    color: 'var(--text-primary)'
+                    color: 'var(--text-primary)',
+                    appearance: 'none',
+                    MozAppearance: 'textfield'
                   }}
                 />
                 <div style={{ 

@@ -13,6 +13,26 @@ import { useAuth } from '@/contexts/AuthContext';
 
 type VerificationState = 'idle' | 'verifying' | 'success' | 'error' | 'expired';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5 }
+  }
+};
+
 export function EmailVerificationForm() {
   const searchParams = useSearchParams();
   const { user, resendVerificationEmail } = useAuth();
@@ -75,19 +95,63 @@ export function EmailVerificationForm() {
     }
   };
 
+  const getHeroConfig = () => {
+    switch (verificationState) {
+      case 'success':
+        return {
+          gradient: 'from-success to-emerald-600',
+          badge: '✅ Erfolgreich verifiziert',
+          title: 'Willkommen bei ZauberKoch!',
+          subtitle: 'Deine E-Mail wurde erfolgreich verifiziert. Du kannst jetzt alle Features nutzen.',
+          textColor: 'text-green-100'
+        };
+      case 'error':
+        return {
+          gradient: 'from-error to-red-600',
+          badge: '❌ Verifizierung fehlgeschlagen',
+          title: 'Etwas ist schiefgelaufen',
+          subtitle: 'Wir konnten deine E-Mail nicht verifizieren. Keine Sorge, wir helfen dir weiter.',
+          textColor: 'text-red-100'
+        };
+      case 'expired':
+        return {
+          gradient: 'from-warning to-orange-500',
+          badge: '⏰ Link abgelaufen',
+          title: 'Neuer Link erforderlich',
+          subtitle: 'Der Verifizierungslink ist abgelaufen. Wir senden dir gerne einen neuen zu.',
+          textColor: 'text-orange-100'
+        };
+      case 'verifying':
+        return {
+          gradient: 'from-info to-blue-600',
+          badge: '🔄 Verarbeitung läuft',
+          title: 'Einen Moment bitte...',
+          subtitle: 'Wir verifizieren gerade deine E-Mail-Adresse.',
+          textColor: 'text-blue-100'
+        };
+      default:
+        return {
+          gradient: 'from-primary to-primary-dark',
+          badge: '📧 E-Mail-Verifizierung',
+          title: 'Bestätige deine E-Mail',
+          subtitle: 'Um alle Features zu nutzen, musst du deine E-Mail-Adresse verifizieren.',
+          textColor: 'text-primary-light'
+        };
+    }
+  };
+
+  const heroConfig = getHeroConfig();
+
   const renderContent = () => {
     switch (verificationState) {
       case 'verifying':
         return (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
             className="text-center"
+            variants={itemVariants}
           >
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                <FiRotateCw className="text-primary animate-spin" size={32} />
-              </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-info to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <FiRotateCw className="text-white animate-spin" size={32} />
             </div>
             <h2 className="text-2xl font-bold mb-4">Verifizierung läuft...</h2>
             <p className="text-on-surface-variant">
@@ -99,23 +163,21 @@ export function EmailVerificationForm() {
       case 'success':
         return (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
             className="text-center"
+            variants={itemVariants}
           >
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center">
-                <FiCheckCircle className="text-success" size={32} />
-              </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-success to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <FiCheckCircle className="text-white" size={32} />
             </div>
             <h2 className="text-2xl font-bold text-success mb-4">Erfolgreich verifiziert! 🎉</h2>
-            <p className="text-on-surface-variant mb-6">
+            <p className="text-on-surface-variant mb-8">
               Deine E-Mail-Adresse wurde erfolgreich verifiziert. Du kannst jetzt alle Features von ZauberKoch nutzen.
             </p>
             <Link href="/recipes">
-              <Button size="lg" rightIcon={<FiArrowRight />}>
+              <button className="btn btn-primary btn-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]">
+                <FiArrowRight className="mr-2" />
                 Zu den Rezepten
-              </Button>
+              </button>
             </Link>
           </motion.div>
         );
@@ -123,33 +185,38 @@ export function EmailVerificationForm() {
       case 'error':
         return (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
             className="text-center"
+            variants={itemVariants}
           >
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center">
-                <FiAlertCircle className="text-error" size={32} />
-              </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-error to-red-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <FiAlertCircle className="text-white" size={32} />
             </div>
             <h2 className="text-2xl font-bold text-error mb-4">Verifizierung fehlgeschlagen</h2>
-            <p className="text-on-surface-variant mb-6">{errorMessage}</p>
+            <p className="text-on-surface-variant mb-8">{errorMessage}</p>
             <div className="space-y-3">
               {user && (
-                <Button
-                  size="lg"
-                  fullWidth
+                <button
                   onClick={handleResendVerification}
-                  loading={isResending}
-                  leftIcon={<FiMail />}
+                  className="w-full btn btn-primary py-3 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
+                  disabled={isResending}
                 >
-                  Neue E-Mail senden
-                </Button>
+                  {isResending ? (
+                    <>
+                      <span className="animate-spin mr-2">⚪</span>
+                      Sende E-Mail...
+                    </>
+                  ) : (
+                    <>
+                      <FiMail className="mr-2" />
+                      Neue E-Mail senden
+                    </>
+                  )}
+                </button>
               )}
               <Link href="/auth/login">
-                <Button variant="outline" size="lg" fullWidth>
+                <button className="w-full btn btn-outline py-3 border-2 hover:bg-primary hover:text-white">
                   Zur Anmeldung
-                </Button>
+                </button>
               </Link>
             </div>
           </motion.div>
@@ -158,35 +225,40 @@ export function EmailVerificationForm() {
       case 'expired':
         return (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
             className="text-center"
+            variants={itemVariants}
           >
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-warning/10 rounded-full flex items-center justify-center">
-                <FiAlertCircle className="text-warning" size={32} />
-              </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-warning to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <FiAlertCircle className="text-white" size={32} />
             </div>
             <h2 className="text-2xl font-bold text-warning mb-4">Link abgelaufen</h2>
-            <p className="text-on-surface-variant mb-6">
+            <p className="text-on-surface-variant mb-8">
               Der Verifizierungslink ist abgelaufen. Wir senden dir gerne einen neuen Link zu.
             </p>
             <div className="space-y-3">
               {user && (
-                <Button
-                  size="lg"
-                  fullWidth
+                <button
                   onClick={handleResendVerification}
-                  loading={isResending}
-                  leftIcon={<FiMail />}
+                  className="w-full btn btn-primary py-3 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]"
+                  disabled={isResending}
                 >
-                  Neuen Link senden
-                </Button>
+                  {isResending ? (
+                    <>
+                      <span className="animate-spin mr-2">⚪</span>
+                      Sende Link...
+                    </>
+                  ) : (
+                    <>
+                      <FiMail className="mr-2" />
+                      Neuen Link senden
+                    </>
+                  )}
+                </button>
               )}
               <Link href="/auth/login">
-                <Button variant="outline" size="lg" fullWidth>
+                <button className="w-full btn btn-outline py-3 border-2 hover:bg-primary hover:text-white">
                   Zur Anmeldung
-                </Button>
+                </button>
               </Link>
             </div>
           </motion.div>
@@ -195,17 +267,14 @@ export function EmailVerificationForm() {
       default:
         return (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
             className="text-center"
+            variants={itemVariants}
           >
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-info/10 rounded-full flex items-center justify-center">
-                <FiMail className="text-info" size={32} />
-              </div>
+            <div className="w-16 h-16 bg-gradient-to-br from-info to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <FiMail className="text-white" size={32} />
             </div>
             <h2 className="text-2xl font-bold mb-4">E-Mail verifizieren</h2>
-            <p className="text-on-surface-variant mb-6">
+            <p className="text-on-surface-variant mb-8">
               {user ? 
                 'Wir haben dir eine Verifizierungs-E-Mail gesendet. Klicke auf den Link in der E-Mail, um dein Konto zu aktivieren.' :
                 'Bitte melde dich an, um deine E-Mail-Adresse zu verifizieren.'
@@ -213,38 +282,58 @@ export function EmailVerificationForm() {
             </p>
 
             {user ? (
-              <div className="space-y-4">
-                <div className="bg-surface-variant rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <FiMail className="text-info" size={20} />
+              <div className="space-y-6">
+                <div className="p-4 bg-gradient-to-br from-info/5 to-blue-500/5 border border-info/20 rounded-xl">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 bg-gradient-to-br from-info to-blue-600 rounded-full flex items-center justify-center text-white text-sm">
+                      <FiMail />
+                    </div>
                     <div className="text-left">
-                      <p className="font-medium text-on-surface">E-Mail gesendet an:</p>
-                      <p className="text-sm text-on-surface-variant">{user.email}</p>
+                      <p className="font-semibold text-sm">E-Mail gesendet an:</p>
+                      <p className="text-sm text-on-surface-variant break-all">{user.email}</p>
                     </div>
                   </div>
-                  <div className="text-sm text-on-surface-variant text-left">
-                    <p className="mb-2">📬 <strong>Prüfe deinen Posteingang</strong></p>
-                    <p className="mb-2">⏰ Der Link ist 24 Stunden gültig</p>
-                    <p>🗑️ Schau auch in den Spam-Ordner</p>
+                  
+                  <div className="text-sm text-on-surface-variant space-y-2 text-left">
+                    <div className="flex items-center gap-2">
+                      <span className="text-info">📬</span>
+                      <span><strong>Prüfe deinen Posteingang</strong></span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-warning">⏰</span>
+                      <span>Der Link ist 24 Stunden gültig</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-error">🗑️</span>
+                      <span>Schau auch in den Spam-Ordner</span>
+                    </div>
                   </div>
                 </div>
 
-                <Button
-                  size="lg"
-                  fullWidth
+                <button
                   onClick={handleResendVerification}
-                  loading={isResending}
-                  leftIcon={<FiMail />}
-                  variant="outline"
+                  className="w-full btn btn-outline py-3 border-2 hover:bg-primary hover:text-white"
+                  disabled={isResending}
                 >
-                  E-Mail erneut senden
-                </Button>
+                  {isResending ? (
+                    <>
+                      <span className="animate-spin mr-2">⚪</span>
+                      Sende E-Mail...
+                    </>
+                  ) : (
+                    <>
+                      <FiMail className="mr-2" />
+                      E-Mail erneut senden
+                    </>
+                  )}
+                </button>
               </div>
             ) : (
               <Link href="/auth/login">
-                <Button size="lg" rightIcon={<FiArrowRight />}>
+                <button className="btn btn-primary btn-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]">
+                  <FiArrowRight className="mr-2" />
                   Zur Anmeldung
-                </Button>
+                </button>
               </Link>
             )}
           </motion.div>
@@ -253,42 +342,69 @@ export function EmailVerificationForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 px-4 py-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="shadow-xl border-0">
-          <CardHeader className="text-center pb-6">
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.3 }}
-              className="flex items-center justify-center gap-2 text-2xl font-bold text-primary mb-4"
+    <div className="min-h-screen bg-surface">
+      {/* Dynamic Hero Background */}
+      <div className={`bg-gradient-to-br ${heroConfig.gradient} text-white`}>
+        <div className="container py-16 lg:py-20">
+          <motion.div 
+            className="text-center max-w-2xl mx-auto"
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+          >
+            <motion.div 
+              className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 px-4 py-2 rounded-full text-sm font-semibold mb-6"
+              variants={itemVariants}
             >
-              🍳 <span>ZauberKoch</span>
+              {heroConfig.badge}
             </motion.div>
-          </CardHeader>
+            
+            <motion.h1 
+              className="text-4xl lg:text-5xl font-bold mb-6 leading-tight"
+              variants={itemVariants}
+            >
+              {heroConfig.title}
+            </motion.h1>
+            
+            <motion.p 
+              className={`text-xl leading-relaxed ${heroConfig.textColor}`}
+              variants={itemVariants}
+            >
+              {heroConfig.subtitle}
+            </motion.p>
+          </motion.div>
+        </div>
+      </div>
 
-          <CardContent>
+      {/* Content */}
+      <div className="container py-16 lg:py-20">
+        <motion.div 
+          className="max-w-md mx-auto"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          <motion.div 
+            className="card p-8 shadow-xl border border-outline/20"
+            variants={itemVariants}
+          >
             {renderContent()}
 
             {/* Help Section */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.3 }}
               className="mt-8 text-center"
+              variants={itemVariants}
             >
               <p className="text-sm text-on-surface-variant">
-                Probleme? <Link href="/contact" className="text-primary hover:underline">Kontaktiere unseren Support</Link>
+                Probleme?{' '}
+                <Link href="/contact" className="text-primary hover:text-primary-dark transition-colors font-medium">
+                  Kontaktiere unseren Support
+                </Link>
               </p>
             </motion.div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </motion.div>
+        </motion.div>
+      </div>
     </div>
   );
 }

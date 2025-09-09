@@ -174,13 +174,24 @@ router.put('/preferences', protect, async (req, res) => {
   try {
     const { preferences } = req.body;
 
-    req.user.preferences = { ...req.user.preferences, ...preferences };
-    await req.user.save();
+    // Use findByIdAndUpdate to avoid parallel save issues
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { 
+        $set: { 
+          preferences: { ...req.user.preferences, ...preferences }
+        }
+      },
+      { 
+        new: true,
+        runValidators: true
+      }
+    );
 
     res.json({
       success: true,
       message: 'Preferences updated successfully',
-      preferences: req.user.preferences
+      preferences: updatedUser.preferences
     });
   } catch (error) {
     console.error('Update preferences error:', error);

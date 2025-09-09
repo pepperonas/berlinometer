@@ -36,6 +36,24 @@
   margin: 0 auto;
 }
 
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Numeric input without spinners */
+input[inputmode="numeric"] {
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+}
+
 .score-display {
   font-size: 3rem;
   font-weight: bold;
@@ -76,10 +94,6 @@
 /* Player cards */
 .player-card {
   transition: all 0.3s ease;
-}
-
-.player-card:hover {
-  transform: translateY(-4px);
 }
 
 .player-avatar {

@@ -9,7 +9,8 @@ import {
   FiStar,
   FiCoffee,
   FiEye,
-  FiHeart
+  FiHeart,
+  FiShare2
 } from 'react-icons/fi';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -21,6 +22,7 @@ interface RecipeCardProps {
   onView?: (recipe: Recipe) => void;
   onSave?: (recipe: Recipe) => void;
   onRate?: (recipe: Recipe, rating: number) => void;
+  onShare?: (recipe: Recipe) => void;
   isSaved?: boolean;
   className?: string;
 }
@@ -30,6 +32,7 @@ export function RecipeCard({
   onView, 
   onSave, 
   onRate, 
+  onShare,
   isSaved = false,
   className = ''
 }: RecipeCardProps) {
@@ -46,6 +49,11 @@ export function RecipeCard({
   const handleRateRecipe = (rating: number, e: React.MouseEvent) => {
     e.stopPropagation();
     onRate?.(recipe, rating);
+  };
+
+  const handleShareRecipe = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onShare?.(recipe);
   };
 
   const difficultyConfig = DIFFICULTY_LEVELS.find(d => d.value === recipe.difficulty);
@@ -224,6 +232,13 @@ export function RecipeCard({
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleShareRecipe}
+                  leftIcon={<FiShare2 size={14} />}
+                  title="Rezept teilen"
+                />
                 <Button
                   variant="ghost"
                   size="sm"

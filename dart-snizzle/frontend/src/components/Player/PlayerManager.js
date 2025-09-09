@@ -8,6 +8,30 @@ const PlayerManager = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Color palette with 20 distinct colors
+  const colorPalette = [
+    '#688db1', // Accent Blue (default)
+    '#9cb68f', // Accent Green  
+    '#e16162', // Accent Red
+    '#f4a261', // Orange
+    '#2a9d8f', // Teal
+    '#e76f51', // Coral
+    '#264653', // Dark Green
+    '#e9c46a', // Yellow
+    '#e63946', // Bright Red
+    '#f77f00', // Bright Orange
+    '#fcbf49', // Golden
+    '#003049', // Navy
+    '#d62828', // Crimson
+    '#8e44ad', // Purple
+    '#3498db', // Light Blue
+    '#1abc9c', // Turquoise
+    '#6f1d1b', // Burgundy
+    '#99582a', // Brown
+    '#432818', // Dark Brown
+    '#bb9457'  // Light Brown
+  ];
+
   useEffect(() => {
     fetchPlayers();
   }, []);
@@ -103,21 +127,67 @@ const PlayerManager = () => {
               />
             </div>
             <div>
-              <label className="form-label">Player Color</label>
-              <div style={{ display: 'flex', gap: 'var(--spacing-2)', alignItems: 'center' }}>
-                <input
-                  type="color"
-                  value={newPlayer.color}
-                  onChange={(e) => setNewPlayer({ ...newPlayer, color: e.target.value })}
-                  style={{ width: '60px', height: '44px', cursor: 'pointer' }}
+              <label className="form-label">Spieler Farbe</label>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(10, 1fr)', 
+                gap: 'var(--spacing-2)',
+                padding: 'var(--spacing-3)',
+                backgroundColor: 'var(--background-darker)',
+                borderRadius: '8px',
+                border: '1px solid var(--border-color)'
+              }}>
+                {colorPalette.map((color, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setNewPlayer({ ...newPlayer, color })}
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      backgroundColor: color,
+                      border: newPlayer.color === color ? '3px solid var(--text-primary)' : '2px solid transparent',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      boxShadow: newPlayer.color === color 
+                        ? '0 0 0 2px var(--accent-blue)' 
+                        : '0 2px 4px rgba(0, 0, 0, 0.2)'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (newPlayer.color !== color) {
+                        e.target.style.transform = 'scale(1.1)';
+                        e.target.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (newPlayer.color !== color) {
+                        e.target.style.transform = 'scale(1)';
+                        e.target.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+                      }
+                    }}
+                    title={color}
+                  />
+                ))}
+              </div>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 'var(--spacing-2)', 
+                marginTop: 'var(--spacing-2)',
+                fontSize: '0.875rem',
+                color: 'var(--text-secondary)'
+              }}>
+                <div
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    backgroundColor: newPlayer.color,
+                    borderRadius: '4px',
+                    border: '1px solid var(--border-color)'
+                  }}
                 />
-                <input
-                  type="text"
-                  className="form-input"
-                  value={newPlayer.color}
-                  onChange={(e) => setNewPlayer({ ...newPlayer, color: e.target.value })}
-                  pattern="^#[0-9A-Fa-f]{6}$"
-                />
+                Gewählte Farbe: {newPlayer.color}
               </div>
             </div>
           </div>
@@ -153,12 +223,46 @@ const PlayerManager = () => {
                       onChange={(e) => setEditingPlayer({ ...editingPlayer, name: e.target.value })}
                       maxLength={30}
                     />
-                    <input
-                      type="color"
-                      value={editingPlayer.color}
-                      onChange={(e) => setEditingPlayer({ ...editingPlayer, color: e.target.value })}
-                      style={{ width: '100%', height: '40px', cursor: 'pointer' }}
-                    />
+                    <div style={{ 
+                      display: 'grid', 
+                      gridTemplateColumns: 'repeat(10, 1fr)', 
+                      gap: 'var(--spacing-1)',
+                      padding: 'var(--spacing-2)',
+                      backgroundColor: 'var(--background-darker)',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border-color)'
+                    }}>
+                      {colorPalette.map((color, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => setEditingPlayer({ ...editingPlayer, color })}
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            backgroundColor: color,
+                            border: editingPlayer.color === color ? '2px solid var(--text-primary)' : '1px solid transparent',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            boxShadow: editingPlayer.color === color 
+                              ? '0 0 0 1px var(--accent-blue)' 
+                              : '0 1px 2px rgba(0, 0, 0, 0.2)'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (editingPlayer.color !== color) {
+                              e.target.style.transform = 'scale(1.1)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (editingPlayer.color !== color) {
+                              e.target.style.transform = 'scale(1)';
+                            }
+                          }}
+                          title={color}
+                        />
+                      ))}
+                    </div>
                     <div style={{ display: 'flex', gap: 'var(--spacing-2)' }}>
                       <button 
                         className="btn btn-primary"

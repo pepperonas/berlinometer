@@ -83,112 +83,79 @@ const Navigation = () => {
 
   return (
     <>
-      {/* Modern Mobile Menu Button */}
-      <div className="md:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="modern-menu-btn"
-          style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            border: 'none',
-            background: 'linear-gradient(135deg, var(--accent-blue), #5a7aa1)',
-            color: 'white',
-            fontSize: '1.25rem',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(104, 141, 177, 0.3)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-2px) scale(1.05)';
-            e.target.style.boxShadow = '0 6px 20px rgba(104, 141, 177, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0) scale(1)';
-            e.target.style.boxShadow = '0 4px 12px rgba(104, 141, 177, 0.3)';
-          }}
-        >
-          <div
-            className="menu-icon"
-            style={{
-              transition: 'transform 0.3s ease',
-              transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)'
-            }}
-          >
-            {isMenuOpen ? '✕' : '☰'}
-          </div>
-        </button>
-      </div>
+      {/* Simple Menu Button */}
+      <button 
+        className="md:hidden fixed top-4 left-4 z-50"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+        style={{
+          width: '40px',
+          height: '40px',
+          border: 'none',
+          background: 'var(--card-background)',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '4px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}
+      >
+        <div style={{ width: '18px', height: '2px', backgroundColor: 'var(--text-primary)', borderRadius: '1px', transition: 'all 0.2s', transform: isMenuOpen ? 'rotate(45deg) translateY(3px)' : 'none' }}></div>
+        <div style={{ width: '18px', height: '2px', backgroundColor: 'var(--text-primary)', borderRadius: '1px', transition: 'all 0.2s', opacity: isMenuOpen ? '0' : '1' }}></div>
+        <div style={{ width: '18px', height: '2px', backgroundColor: 'var(--text-primary)', borderRadius: '1px', transition: 'all 0.2s', transform: isMenuOpen ? 'rotate(-45deg) translateY(-3px)' : 'none' }}></div>
+      </button>
 
-      {/* Enhanced Navigation Sidebar */}
+      {/* Material Design Navigation Drawer */}
       <nav className={`
-        fixed top-0 left-0 h-full w-64 transform transition-all duration-300 z-40
+        fixed top-0 left-0 h-full w-64 transform transition-transform duration-300 z-40
         ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         md:translate-x-0 md:block
       `}
         style={{ 
-          background: 'linear-gradient(180deg, var(--card-background) 0%, rgba(52, 56, 69, 0.95) 100%)',
-          borderRight: '1px solid rgba(104, 141, 177, 0.1)',
-          backdropFilter: 'blur(10px)'
+          background: 'var(--card-background)',
+          borderRight: '1px solid var(--border-color)',
+          boxShadow: '0 8px 10px rgba(0, 0, 0, 0.14), 0 3px 14px rgba(0, 0, 0, 0.12), 0 5px 5px rgba(0, 0, 0, 0.2)'
         }}
       >
         <div className="p-6">
-          {/* Enhanced Header */}
+          {/* Material Design Header */}
           <div style={{ 
-            textAlign: 'center', 
-            marginBottom: 'var(--spacing-8)',
-            padding: 'var(--spacing-4)',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, rgba(104, 141, 177, 0.1), rgba(156, 182, 143, 0.05))',
-            border: '1px solid rgba(104, 141, 177, 0.1)'
+            padding: 'var(--spacing-6) var(--spacing-4)',
+            borderBottom: '1px solid var(--border-color)',
+            marginBottom: 'var(--spacing-4)'
           }}>
             <div style={{
-              fontSize: '2rem',
-              marginBottom: 'var(--spacing-2)',
-              filter: 'drop-shadow(0 2px 4px rgba(104, 141, 177, 0.3))'
+              fontSize: '1.75rem',
+              marginBottom: 'var(--spacing-2)'
             }}>
               🎯
             </div>
             <h2 style={{ 
-              fontSize: '1.5rem', 
-              fontWeight: 'bold', 
-              background: 'linear-gradient(135deg, var(--accent-blue), var(--accent-green))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              fontSize: '1.25rem', 
+              fontWeight: '500', 
+              color: 'var(--text-primary)',
               marginBottom: 'var(--spacing-2)',
-              letterSpacing: '0.5px'
+              margin: 0
             }}>
               Dart Snizzle
             </h2>
             <div style={{ 
               fontSize: '0.875rem', 
-              color: 'var(--text-secondary)',
-              padding: 'var(--spacing-1) var(--spacing-3)',
-              backgroundColor: 'rgba(104, 141, 177, 0.1)',
-              borderRadius: '20px',
-              display: 'inline-block',
-              border: '1px solid rgba(104, 141, 177, 0.2)'
+              color: 'var(--text-secondary)'
             }}>
-              👤 {user?.username}
+              {user?.username}
             </div>
           </div>
 
-          {/* Enhanced Navigation Menu */}
+          {/* Material Design Navigation Menu */}
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {navItems.map((item, index) => (
               <li 
                 key={item.path} 
                 style={{ 
-                  marginBottom: 'var(--spacing-2)',
-                  animation: `slideIn 0.3s ease-out ${index * 0.05}s both`
+                  marginBottom: '4px'
                 }}
               >
                 {item.isGameLink ? (
@@ -200,102 +167,42 @@ const Navigation = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 'var(--spacing-3)',
-                      padding: 'var(--spacing-3) var(--spacing-4)',
-                      borderRadius: '12px',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      padding: '12px 16px',
+                      borderRadius: '0 24px 24px 0',
+                      transition: 'background-color 0.15s ease',
                       textDecoration: 'none',
-                      position: 'relative',
-                      overflow: 'hidden',
+                      margin: '0 0 0 -16px',
                       backgroundColor: (location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) 
                         ? 'var(--accent-blue)' 
                         : 'transparent',
                       color: (location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) 
                         ? 'white' 
-                        : 'var(--text-primary)',
-                      border: (location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) 
-                        ? '1px solid rgba(255, 255, 255, 0.2)' 
-                        : '1px solid transparent',
-                      boxShadow: (location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) 
-                        ? '0 4px 12px rgba(104, 141, 177, 0.3)' 
-                        : 'none',
-                      transform: (location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) ? 'translateX(4px)' : 'translateX(0)'
+                        : 'var(--text-primary)'
                     }}
                     onMouseEnter={(e) => {
                       if (!(location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game')))) {
-                        e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.15)';
-                        e.target.style.transform = 'translateX(8px) scale(1.02)';
-                        e.target.style.border = '1px solid rgba(104, 141, 177, 0.3)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(104, 141, 177, 0.2)';
-                        
-                        // Icon bounce effect
-                        const icon = e.target.querySelector('.nav-icon');
-                        if (icon) {
-                          icon.style.transform = 'scale(1.2) rotate(5deg)';
-                        }
+                        e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.08)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!(location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game')))) {
                         e.target.style.backgroundColor = 'transparent';
-                        e.target.style.transform = 'translateX(0) scale(1)';
-                        e.target.style.border = '1px solid transparent';
-                        e.target.style.boxShadow = 'none';
-                        
-                        // Reset icon
-                        const icon = e.target.querySelector('.nav-icon');
-                        if (icon) {
-                          icon.style.transform = 'scale(1) rotate(0deg)';
-                        }
                       }
                     }}
                   >
-                    {/* Background gradient effect for active item */}
-                    {(location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) && (
-                      <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
-                        borderRadius: '12px',
-                        pointerEvents: 'none'
-                      }} />
-                    )}
-                    
                     <span 
-                      className="nav-icon"
                       style={{ 
-                        fontSize: '1.25rem',
-                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
-                        zIndex: 1
+                        fontSize: '1.25rem'
                       }}
                     >
                       {item.icon}
                     </span>
                     <span style={{ 
-                      fontSize: '1rem',
-                      fontWeight: (location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) ? '600' : '500',
-                      position: 'relative',
-                      zIndex: 1,
-                      letterSpacing: '0.3px'
+                      fontSize: '0.875rem',
+                      fontWeight: (location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) ? '500' : '400'
                     }}>
                       {item.label.replace(/^.+\s/, '')}
                     </span>
-                  
-                      {/* Active indicator */}
-                      {(location.pathname === item.path || (item.isGameLink && location.pathname.includes('/game'))) && (
-                        <div style={{
-                          position: 'absolute',
-                          right: 'var(--spacing-3)',
-                          width: '6px',
-                          height: '6px',
-                          backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                          borderRadius: '50%',
-                          animation: 'pulse 2s infinite'
-                        }} />
-                      )}
                     </a>
                 ) : (
                   <Link
@@ -306,118 +213,56 @@ const Navigation = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 'var(--spacing-3)',
-                      padding: 'var(--spacing-3) var(--spacing-4)',
-                      borderRadius: '12px',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      padding: '12px 16px',
+                      borderRadius: '0 24px 24px 0',
+                      transition: 'background-color 0.15s ease',
                       textDecoration: 'none',
-                      position: 'relative',
-                      overflow: 'hidden',
+                      margin: '0 0 0 -16px',
                       backgroundColor: location.pathname === item.path 
                         ? 'var(--accent-blue)' 
                         : 'transparent',
                       color: location.pathname === item.path 
                         ? 'white' 
-                        : 'var(--text-primary)',
-                      border: location.pathname === item.path 
-                        ? '1px solid rgba(255, 255, 255, 0.2)' 
-                        : '1px solid transparent',
-                      boxShadow: location.pathname === item.path 
-                        ? '0 4px 12px rgba(104, 141, 177, 0.3)' 
-                        : 'none',
-                      transform: location.pathname === item.path ? 'translateX(4px)' : 'translateX(0)'
+                        : 'var(--text-primary)'
                     }}
                     onMouseEnter={(e) => {
                       if (location.pathname !== item.path) {
-                        e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.15)';
-                        e.target.style.transform = 'translateX(8px) scale(1.02)';
-                        e.target.style.border = '1px solid rgba(104, 141, 177, 0.3)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(104, 141, 177, 0.2)';
-                        
-                        // Icon bounce effect
-                        const icon = e.target.querySelector('.nav-icon');
-                        if (icon) {
-                          icon.style.transform = 'scale(1.2) rotate(5deg)';
-                        }
+                        e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.08)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (location.pathname !== item.path) {
                         e.target.style.backgroundColor = 'transparent';
-                        e.target.style.transform = 'translateX(0) scale(1)';
-                        e.target.style.border = '1px solid transparent';
-                        e.target.style.boxShadow = 'none';
-                        
-                        // Reset icon
-                        const icon = e.target.querySelector('.nav-icon');
-                        if (icon) {
-                          icon.style.transform = 'scale(1) rotate(0deg)';
-                        }
                       }
                     }}
                   >
-                    {/* Background gradient effect for active item */}
-                    {location.pathname === item.path && (
-                      <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05))',
-                        borderRadius: '12px',
-                        pointerEvents: 'none'
-                      }} />
-                    )}
-                    
                     <span 
-                      className="nav-icon"
                       style={{ 
-                        fontSize: '1.25rem',
-                        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
-                        zIndex: 1
+                        fontSize: '1.25rem'
                       }}
                     >
                       {item.icon}
                     </span>
                     <span style={{ 
-                      fontSize: '1rem',
-                      fontWeight: location.pathname === item.path ? '600' : '500',
-                      position: 'relative',
-                      zIndex: 1,
-                      letterSpacing: '0.3px'
+                      fontSize: '0.875rem',
+                      fontWeight: location.pathname === item.path ? '500' : '400'
                     }}>
                       {item.label.replace(/^.+\s/, '')}
                     </span>
-                    
-                    {/* Active indicator */}
-                    {location.pathname === item.path && (
-                      <div style={{
-                        position: 'absolute',
-                        right: 'var(--spacing-3)',
-                        width: '6px',
-                        height: '6px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                        borderRadius: '50%',
-                        animation: 'pulse 2s infinite'
-                      }} />
-                    )}
                   </Link>
                 )}
               </li>
             ))}
           </ul>
 
-          {/* Enhanced Bottom Section */}
-          <div className="absolute bottom-6 left-6 right-6">
+          {/* Material Design Bottom Section */}
+          <div className="absolute bottom-6 left-4 right-4">
             {user?.status === 'pending' && (
               <div 
-                className="mb-4 p-3 rounded-lg text-sm text-center"
+                className="mb-4 p-3 rounded text-sm text-center"
                 style={{ 
-                  background: 'linear-gradient(135deg, var(--accent-red), #c54c4d)',
-                  color: 'white',
-                  border: '1px solid rgba(255, 255, 255, 0.2)',
-                  boxShadow: '0 4px 12px rgba(225, 97, 98, 0.3)'
+                  backgroundColor: 'var(--accent-red)',
+                  color: 'white'
                 }}
               >
                 ⏳ Account Pending
@@ -426,40 +271,30 @@ const Navigation = () => {
             
             <button
               onClick={logout}
-              className="modern-logout-btn"
               style={{
                 width: '100%',
-                padding: 'var(--spacing-3) var(--spacing-4)',
-                borderRadius: '12px',
-                border: '2px solid rgba(104, 141, 177, 0.3)',
-                background: 'rgba(104, 141, 177, 0.1)',
+                padding: '12px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                background: 'transparent',
                 color: 'var(--text-primary)',
-                fontSize: '1rem',
-                fontWeight: '600',
+                fontSize: '0.875rem',
+                fontWeight: '400',
                 cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'background-color 0.15s ease',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: 'var(--spacing-2)',
-                letterSpacing: '0.3px'
+                justifyContent: 'flex-start',
+                gap: 'var(--spacing-3)'
               }}
               onMouseEnter={(e) => {
-                e.target.style.background = 'linear-gradient(135deg, rgba(225, 97, 98, 0.15), rgba(225, 97, 98, 0.1))';
-                e.target.style.borderColor = 'rgba(225, 97, 98, 0.5)';
-                e.target.style.color = 'var(--accent-red)';
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 6px 20px rgba(225, 97, 98, 0.2)';
+                e.target.style.backgroundColor = 'rgba(225, 97, 98, 0.08)';
               }}
               onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(104, 141, 177, 0.1)';
-                e.target.style.borderColor = 'rgba(104, 141, 177, 0.3)';
-                e.target.style.color = 'var(--text-primary)';
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
+                e.target.style.backgroundColor = 'transparent';
               }}
             >
-              <span style={{ fontSize: '1.125rem' }}>🚪</span>
+              <span style={{ fontSize: '1.25rem' }}>🚪</span>
               Logout
             </button>
           </div>
@@ -529,14 +364,10 @@ const Navigation = () => {
                   }}
                   onClick={() => handleGameSelect(game._id)}
                   onMouseEnter={(e) => {
-                    e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.1)';
-                    e.target.style.borderColor = 'var(--accent-blue)';
-                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.backgroundColor = 'rgba(104, 141, 177, 0.08)';
                   }}
                   onMouseLeave={(e) => {
                     e.target.style.backgroundColor = 'var(--card-background)';
-                    e.target.style.borderColor = 'var(--border-color)';
-                    e.target.style.transform = 'translateY(0)';
                   }}
                 >
                   <div style={{ 

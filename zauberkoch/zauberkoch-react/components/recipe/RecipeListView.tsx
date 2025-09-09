@@ -10,7 +10,13 @@ import {
   FiPlus,
   FiBookmark,
   FiClock,
-  FiCoffee
+  FiCoffee,
+  FiCalendar,
+  FiUsers,
+  FiStar,
+  FiTrendingUp,
+  FiTag,
+  FiX
 } from 'react-icons/fi';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -20,6 +26,7 @@ import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import RecipeCard from '@/components/recipe/RecipeCard';
 import RecipeDetail from '@/components/recipe/RecipeDetail';
+import ShareRecipeModal from '@/components/recipe/ShareRecipeModal';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Recipe, FoodPreference } from '@/types';
 
@@ -28,8 +35,23 @@ interface RecipeListViewProps {
 }
 
 type ViewMode = 'grid' | 'list';
-type SortBy = 'created' | 'rating' | 'cookingTime' | 'difficulty';
+type SortBy = 'created' | 'rating' | 'cookingTime' | 'difficulty' | 'title' | 'servings';
 type FilterBy = 'all' | 'vegetarian' | 'vegan' | 'gluten_free' | 'quick' | 'easy';
+
+interface AdvancedFilters {
+  category: string;
+  difficultyLevel: string;
+  maxCookingTime: number;
+  minServings: number;
+  maxServings: number;
+  aiProvider: string;
+  dateRange: {
+    from: Date | null;
+    to: Date | null;
+  };
+  hasNutritionalInfo: boolean;
+  minRating: number;
+}
 
 export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
   const { user } = useAuth();
@@ -37,11 +59,27 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
   const [savedRecipes, setSavedRecipes] = useState<Set<string>>(new Set());
   const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [shareRecipe, setShareRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('created');
   const [filterBy, setFilterBy] = useState<FilterBy>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({
+    category: 'all',
+    difficultyLevel: 'all',
+    maxCookingTime: 180,
+    minServings: 1,
+    maxServings: 12,
+    aiProvider: 'all',
+    dateRange: {
+      from: null,
+      to: null
+    },
+    hasNutritionalInfo: false,
+    minRating: 0
+  });
 
   useEffect(() => {
     if (user) {
@@ -52,7 +90,7 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
 
   useEffect(() => {
     applyFiltersAndSearch();
-  }, [recipes, searchTerm, sortBy, filterBy, savedRecipes, showSavedOnly]);
+  }, [recipes, searchTerm, sortBy, filterBy, advancedFilters, savedRecipes, showSavedOnly]);
 
   const loadRecipes = async () => {
     try {
@@ -99,11 +137,15 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
       filtered = filtered.filter(recipe =>
         recipe.title.toLowerCase().includes(search) ||
         recipe.description?.toLowerCase().includes(search) ||
-        recipe.ingredients.some(ing => ing.name.toLowerCase().includes(search))
+        recipe.ingredients.some(ing => ing.name.toLowerCase().includes(search)) ||
+        recipe.category?.toLowerCase().includes(search) ||
+        (Array.isArray(recipe.instructions) 
+          ? recipe.instructions.some(instruction => instruction.toLowerCase().includes(search))
+          : recipe.instructions.toLowerCase().includes(search))
       );
     }
 
-    // Apply category filter
+    // Apply basic category filter
     if (filterBy !== 'all') {
       filtered = filtered.filter(recipe => {
         switch (filterBy) {
@@ -114,7 +156,7 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
           case 'gluten_free':
             return recipe.preferences?.includes('gluten_free');
           case 'quick':
-            return recipe.cookingTime <= 30;
+            return (parseInt(recipe.preparationTime || '0') + parseInt(recipe.cookingTime || '0')) <= 30;
           case 'easy':
             return recipe.difficulty === 'easy';
           default:
@@ -123,18 +165,74 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
       });
     }
 
+    // Apply advanced filters
+    // Category filter
+    if (advancedFilters.category !== 'all') {
+      filtered = filtered.filter(recipe => recipe.category === advancedFilters.category);
+    }
+
+    // Difficulty filter
+    if (advancedFilters.difficultyLevel !== 'all') {
+      filtered = filtered.filter(recipe => recipe.difficulty === advancedFilters.difficultyLevel);
+    }
+
+    // Cooking time filter
+    filtered = filtered.filter(recipe => {
+      const totalTime = parseInt(recipe.preparationTime || '0') + parseInt(recipe.cookingTime || '0');
+      return totalTime <= advancedFilters.maxCookingTime;
+    });
+
+    // Servings filter
+    filtered = filtered.filter(recipe => 
+      recipe.servings >= advancedFilters.minServings && 
+      recipe.servings <= advancedFilters.maxServings
+    );
+
+    // AI provider filter
+    if (advancedFilters.aiProvider !== 'all') {
+      filtered = filtered.filter(recipe => recipe.aiProvider === advancedFilters.aiProvider);
+    }
+
+    // Date range filter
+    if (advancedFilters.dateRange.from) {
+      filtered = filtered.filter(recipe => 
+        new Date(recipe.created) >= advancedFilters.dateRange.from!
+      );
+    }
+    if (advancedFilters.dateRange.to) {
+      filtered = filtered.filter(recipe => 
+        new Date(recipe.created) <= advancedFilters.dateRange.to!
+      );
+    }
+
+    // Nutritional info filter
+    if (advancedFilters.hasNutritionalInfo) {
+      filtered = filtered.filter(recipe => recipe.nutritionalInfo);
+    }
+
+    // Rating filter
+    if (advancedFilters.minRating > 0) {
+      filtered = filtered.filter(recipe => (recipe.rating || 0) >= advancedFilters.minRating);
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'created':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          return new Date(b.created).getTime() - new Date(a.created).getTime();
         case 'rating':
           return (b.rating || 0) - (a.rating || 0);
         case 'cookingTime':
-          return a.cookingTime - b.cookingTime;
+          const aTime = parseInt(a.preparationTime || '0') + parseInt(a.cookingTime || '0');
+          const bTime = parseInt(b.preparationTime || '0') + parseInt(b.cookingTime || '0');
+          return aTime - bTime;
         case 'difficulty':
           const difficultyOrder = { easy: 1, medium: 2, hard: 3 };
           return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+        case 'title':
+          return a.title.localeCompare(b.title);
+        case 'servings':
+          return a.servings - b.servings;
         default:
           return 0;
       }
@@ -214,6 +312,14 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
     toast('Rezept-Regenerierung wird in der nächsten Version verfügbar sein!', {
       icon: '🔄',
     });
+  };
+
+  const handleShareRecipe = (recipe: Recipe) => {
+    if (!user) {
+      toast.error('Du musst angemeldet sein, um Rezepte zu teilen');
+      return;
+    }
+    setShareRecipe(recipe);
   };
 
   if (!user) {
@@ -308,6 +414,8 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
                     <option value="rating">Beste Bewertung</option>
                     <option value="cookingTime">Schnellste zuerst</option>
                     <option value="difficulty">Einfachste zuerst</option>
+                    <option value="title">Alphabetisch</option>
+                    <option value="servings">Nach Portionen</option>
                   </select>
 
                   <select
@@ -322,6 +430,15 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
                     <option value="quick">⚡ Schnell (≤30 Min)</option>
                     <option value="easy">😊 Einfach</option>
                   </select>
+
+                  <Button
+                    variant={showAdvancedFilters ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    leftIcon={<FiFilter />}
+                  >
+                    Erweitert
+                  </Button>
 
                   <div className="flex items-center gap-1">
                     <Button
@@ -339,6 +456,246 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Advanced Filters */}
+              <AnimatePresence>
+                {showAdvancedFilters && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="pt-4 mt-4 border-t border-outline/20"
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {/* Category Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-on-surface mb-2">
+                          <FiTag className="inline mr-1" />
+                          Kategorie
+                        </label>
+                        <select
+                          value={advancedFilters.category}
+                          onChange={(e) => setAdvancedFilters(prev => ({ ...prev, category: e.target.value }))}
+                          className="w-full px-3 py-2 border border-outline rounded-lg bg-surface text-sm"
+                        >
+                          <option value="all">Alle Kategorien</option>
+                          <option value="hauptgericht">🍽️ Hauptgericht</option>
+                          <option value="vorspeise">🥗 Vorspeise</option>
+                          <option value="dessert">🍰 Dessert</option>
+                          <option value="snack">🥨 Snack</option>
+                          <option value="getraenk">🥤 Getränk</option>
+                          <option value="beilage">🍚 Beilage</option>
+                        </select>
+                      </div>
+
+                      {/* Difficulty Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-on-surface mb-2">
+                          <FiStar className="inline mr-1" />
+                          Schwierigkeit
+                        </label>
+                        <select
+                          value={advancedFilters.difficultyLevel}
+                          onChange={(e) => setAdvancedFilters(prev => ({ ...prev, difficultyLevel: e.target.value }))}
+                          className="w-full px-3 py-2 border border-outline rounded-lg bg-surface text-sm"
+                        >
+                          <option value="all">Alle Schwierigkeiten</option>
+                          <option value="easy">😊 Einfach</option>
+                          <option value="medium">🤔 Mittel</option>
+                          <option value="hard">🔥 Schwer</option>
+                        </select>
+                      </div>
+
+                      {/* AI Provider Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-on-surface mb-2">
+                          <FiCoffee className="inline mr-1" />
+                          KI-Provider
+                        </label>
+                        <select
+                          value={advancedFilters.aiProvider}
+                          onChange={(e) => setAdvancedFilters(prev => ({ ...prev, aiProvider: e.target.value }))}
+                          className="w-full px-3 py-2 border border-outline rounded-lg bg-surface text-sm"
+                        >
+                          <option value="all">Alle Provider</option>
+                          <option value="openai">🤖 OpenAI</option>
+                          <option value="deepseek">🧠 DeepSeek</option>
+                          <option value="grok">⚡ Grok</option>
+                        </select>
+                      </div>
+
+                      {/* Cooking Time Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-on-surface mb-2">
+                          <FiClock className="inline mr-1" />
+                          Max. Zubereitungszeit: {advancedFilters.maxCookingTime} Min
+                        </label>
+                        <input
+                          type="range"
+                          min="15"
+                          max="180"
+                          step="15"
+                          value={advancedFilters.maxCookingTime}
+                          onChange={(e) => setAdvancedFilters(prev => ({ ...prev, maxCookingTime: Number(e.target.value) }))}
+                          className="w-full accent-primary"
+                        />
+                        <div className="flex justify-between text-xs text-on-surface-variant mt-1">
+                          <span>15 Min</span>
+                          <span>3h</span>
+                        </div>
+                      </div>
+
+                      {/* Servings Range Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-on-surface mb-2">
+                          <FiUsers className="inline mr-1" />
+                          Portionen: {advancedFilters.minServings}-{advancedFilters.maxServings}
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="range"
+                            min="1"
+                            max="12"
+                            value={advancedFilters.minServings}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              setAdvancedFilters(prev => ({ 
+                                ...prev, 
+                                minServings: value,
+                                maxServings: Math.max(value, prev.maxServings)
+                              }));
+                            }}
+                            className="flex-1 accent-primary"
+                          />
+                          <input
+                            type="range"
+                            min="1"
+                            max="12"
+                            value={advancedFilters.maxServings}
+                            onChange={(e) => {
+                              const value = Number(e.target.value);
+                              setAdvancedFilters(prev => ({ 
+                                ...prev, 
+                                maxServings: value,
+                                minServings: Math.min(value, prev.minServings)
+                              }));
+                            }}
+                            className="flex-1 accent-primary"
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-on-surface-variant mt-1">
+                          <span>1</span>
+                          <span>12</span>
+                        </div>
+                      </div>
+
+                      {/* Rating Filter */}
+                      <div>
+                        <label className="block text-sm font-medium text-on-surface mb-2">
+                          <FiStar className="inline mr-1" />
+                          Min. Bewertung: {advancedFilters.minRating} ⭐
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="5"
+                          step="0.5"
+                          value={advancedFilters.minRating}
+                          onChange={(e) => setAdvancedFilters(prev => ({ ...prev, minRating: Number(e.target.value) }))}
+                          className="w-full accent-primary"
+                        />
+                        <div className="flex justify-between text-xs text-on-surface-variant mt-1">
+                          <span>0 ⭐</span>
+                          <span>5 ⭐</span>
+                        </div>
+                      </div>
+
+                      {/* Date Range Filter */}
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-on-surface mb-2">
+                          <FiCalendar className="inline mr-1" />
+                          Zeitraum
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="date"
+                            value={advancedFilters.dateRange.from ? advancedFilters.dateRange.from.toISOString().split('T')[0] : ''}
+                            onChange={(e) => setAdvancedFilters(prev => ({ 
+                              ...prev, 
+                              dateRange: { 
+                                ...prev.dateRange, 
+                                from: e.target.value ? new Date(e.target.value) : null 
+                              } 
+                            }))}
+                            className="flex-1 px-3 py-2 border border-outline rounded-lg bg-surface text-sm"
+                          />
+                          <span className="text-on-surface-variant">bis</span>
+                          <input
+                            type="date"
+                            value={advancedFilters.dateRange.to ? advancedFilters.dateRange.to.toISOString().split('T')[0] : ''}
+                            onChange={(e) => setAdvancedFilters(prev => ({ 
+                              ...prev, 
+                              dateRange: { 
+                                ...prev.dateRange, 
+                                to: e.target.value ? new Date(e.target.value) : null 
+                              } 
+                            }))}
+                            className="flex-1 px-3 py-2 border border-outline rounded-lg bg-surface text-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Additional Options */}
+                      <div>
+                        <label className="block text-sm font-medium text-on-surface mb-2">
+                          Zusätzliche Filter
+                        </label>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 text-sm">
+                            <input
+                              type="checkbox"
+                              checked={advancedFilters.hasNutritionalInfo}
+                              onChange={(e) => setAdvancedFilters(prev => ({ ...prev, hasNutritionalInfo: e.target.checked }))}
+                              className="rounded border-outline accent-primary"
+                            />
+                            Mit Nährwerten
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Filter Reset */}
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline/20">
+                      <div className="text-sm text-on-surface-variant">
+                        {filteredRecipes.length} von {recipes.length} Rezepten gefunden
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setAdvancedFilters({
+                            category: 'all',
+                            difficultyLevel: 'all',
+                            maxCookingTime: 180,
+                            minServings: 1,
+                            maxServings: 12,
+                            aiProvider: 'all',
+                            dateRange: { from: null, to: null },
+                            hasNutritionalInfo: false,
+                            minRating: 0
+                          });
+                          setFilterBy('all');
+                          setSearchTerm('');
+                        }}
+                        leftIcon={<FiX />}
+                      >
+                        Filter zurücksetzen
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </CardContent>
           </Card>
         </motion.div>
@@ -442,6 +799,7 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
                     onView={setSelectedRecipe}
                     onSave={handleSaveRecipe}
                     onRate={handleRateRecipe}
+                    onShare={handleShareRecipe}
                     isSaved={savedRecipes.has(recipe.id)}
                     className={viewMode === 'list' ? 'max-w-none' : ''}
                   />
@@ -461,6 +819,13 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
         onRate={handleRateRecipe}
         onRegenerate={handleRegenerateRecipe}
         isSaved={selectedRecipe ? savedRecipes.has(selectedRecipe.id) : false}
+      />
+
+      {/* Share Recipe Modal */}
+      <ShareRecipeModal
+        recipe={shareRecipe}
+        isOpen={shareRecipe !== null}
+        onClose={() => setShareRecipe(null)}
       />
     </div>
   );
