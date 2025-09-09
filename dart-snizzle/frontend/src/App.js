@@ -12,6 +12,8 @@ import Register from './components/Auth/Register';
 import Dashboard from './components/Dashboard/Dashboard';
 import GameSetup from './components/Game/GameSetup';
 import GamePlay from './components/Game/GamePlay';
+import GameHistory from './components/GameHistory/GameHistory';
+import GameDetails from './components/GameDetails/GameDetails';
 import PlayerManager from './components/Player/PlayerManager';
 import Statistics from './components/Stats/Statistics';
 import Settings from './components/Settings/Settings';
@@ -77,6 +79,18 @@ const AppContent = () => {
           <Route path="/game/:gameId" element={
             <ProtectedRoute>
               <GamePlay />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/history" element={
+            <ProtectedRoute>
+              <GameHistory />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/game-details/:gameId" element={
+            <ProtectedRoute>
+              <GameDetails />
             </ProtectedRoute>
           } />
           

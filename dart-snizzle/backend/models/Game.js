@@ -238,16 +238,28 @@ gameSchema.methods.start = function() {
   this.startedAt = new Date();
   
   // Initialize player scores based on game mode
-  const startingScore = this.gameMode === '301' ? 301 : 
-                       this.gameMode === '501' ? 501 : 
-                       this.gameMode === '701' ? 701 : 
-                       this.customSettings?.startingScore || 501;
+  let startingScore;
+  switch (this.gameMode) {
+    case '301':
+      startingScore = 301;
+      break;
+    case '501':
+      startingScore = 501;
+      break;
+    case '701':
+      startingScore = 701;
+      break;
+    default:
+      startingScore = this.customSettings?.startingScore || 501;
+      break;
+  }
   
   this.players.forEach(player => {
     player.startingScore = startingScore;
     player.currentScore = startingScore;
   });
   
+  console.log(`Game ${this._id} started with mode ${this.gameMode} and starting score ${startingScore}`);
   return this.save();
 };
 

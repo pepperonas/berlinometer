@@ -65,6 +65,27 @@ router.get('/:id', protect, async (req, res) => {
       });
     }
 
+    // Auto-fix incorrect starting scores for existing games
+    let needsFix = false;
+    const correctStartingScore = game.gameMode === '301' ? 301 : 
+                               game.gameMode === '501' ? 501 : 
+                               game.gameMode === '701' ? 701 : 
+                               game.customSettings?.startingScore || 501;
+
+    game.players.forEach(playerGame => {
+      if (playerGame.startingScore !== correctStartingScore) {
+        const scoreDifference = correctStartingScore - playerGame.startingScore;
+        playerGame.startingScore = correctStartingScore;
+        playerGame.currentScore += scoreDifference;
+        needsFix = true;
+      }
+    });
+
+    if (needsFix) {
+      await game.save();
+      console.log(`Auto-fixed game ${game._id} scores to ${correctStartingScore}`);
+    }
+
     res.json({
       success: true,
       game
@@ -105,6 +126,23 @@ router.post('/', protect, async (req, res) => {
       });
     }
 
+    // Determine correct starting score based on game mode
+    let startingScore;
+    switch (gameMode) {
+      case '301':
+        startingScore = 301;
+        break;
+      case '501':
+        startingScore = 501;
+        break;
+      case '701':
+        startingScore = 701;
+        break;
+      default:
+        startingScore = customSettings?.startingScore || 501;
+        break;
+    }
+
     // Create game
     const game = new Game({
       gameMode,
@@ -114,8 +152,8 @@ router.post('/', protect, async (req, res) => {
       players: players.map(player => ({
         player: player._id,
         user: req.user.id,
-        startingScore: 0,
-        currentScore: 0,
+        startingScore: startingScore,
+        currentScore: startingScore,
         throws: []
       }))
     });
@@ -203,8 +241,8 @@ router.post('/:id/throw', protect, async (req, res) => {
       });
     }
 
-    // Calculate total
-    const total = dart1.value + dart2.value + dart3.value;
+    // Calculate total including multipliers
+    const total = (dart1.value * dart1.multiplier) + (dart2.value * dart2.multiplier) + (dart3.value * dart3.multiplier);
 
     // Add throw
     await game.addThrow({
@@ -523,6 +561,38 @@ router.get('/room/:code', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error joining game'
+    });
+  }
+});
+
+// @route   DELETE /api/games/:id
+// @desc    Delete game
+// @access  Private
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const game = await Game.findOne({
+      _id: req.params.id,
+      createdBy: req.user.id
+    });
+
+    if (!game) {
+      return res.status(404).json({
+        success: false,
+        message: 'Game not found'
+      });
+    }
+
+    await Game.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: 'Game deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete game error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting game'
     });
   }
 });

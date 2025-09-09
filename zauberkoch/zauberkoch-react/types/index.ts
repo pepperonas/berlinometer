@@ -54,6 +54,7 @@ export interface Recipe {
   userId: string;
   title: string;
   description?: string;
+  category?: string;
   preparationTime?: string;
   cookingTime?: string;
   cost?: string;
@@ -61,6 +62,8 @@ export interface Recipe {
   servings: number;
   instructions: string | string[];
   tips?: string;
+  cookingTips?: string;
+  servingTips?: string;
   importantNotes?: string;
   ingredients: RecipeIngredient[];
   isFavorite: boolean;
@@ -70,6 +73,7 @@ export interface Recipe {
     protein: number;
     carbs: number;
     fat: number;
+    fiber?: number;
   };
   created: Date;
   updated: Date;
@@ -79,6 +83,8 @@ export interface RecipeIngredient {
   name: string;
   amount?: string;
   unit?: string;
+  preparation?: string;
+  category?: string;
 }
 
 // User Settings for Recipe Generation

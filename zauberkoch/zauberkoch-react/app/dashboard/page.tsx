@@ -33,6 +33,26 @@ export default function DashboardPage() {
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary to-primary-dark text-white">
         <div className="container py-12 lg:py-20">
+          {/* Simple Navigation */}
+          <nav className="mb-8">
+            <div className="flex items-center justify-between">
+              <Link href="/" className="flex items-center gap-2 font-bold text-2xl text-white">
+                🍳 ZauberKoch
+              </Link>
+              <div className="flex items-center gap-4">
+                <Link href="/auth/login" className="text-white hover:text-primary-light transition-colors">
+                  Anmelden
+                </Link>
+                <Link href="/recipes" className="text-white hover:text-primary-light transition-colors">
+                  Rezepte
+                </Link>
+                <Link href="/recipes/generate" className="bg-white text-primary px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                  Generieren
+                </Link>
+              </div>
+            </div>
+          </nav>
+
           <motion.div 
             className="text-center lg:text-left max-w-4xl"
             initial="hidden"

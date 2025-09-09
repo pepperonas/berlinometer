@@ -39,6 +39,83 @@
   --border-color: #4a5568;
 }
 
+/* Enhanced Navigation Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Navigation specific styles */
+.modern-menu-btn {
+  position: relative;
+}
+
+.modern-menu-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent);
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modern-menu-btn:hover::before {
+  opacity: 1;
+}
+
+.modern-logout-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.modern-logout-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(225, 97, 98, 0.1), transparent);
+  transform: rotate(-45deg);
+  transition: transform 0.6s ease;
+  opacity: 0;
+}
+
+.modern-logout-btn:hover::before {
+  transform: rotate(-45deg) translateX(100%);
+  opacity: 1;
+}
+
 * {
   margin: 0;
   padding: 0;

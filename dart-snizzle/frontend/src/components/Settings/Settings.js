@@ -23,6 +23,7 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -109,6 +110,32 @@ const Settings = () => {
     } catch (error) {
       setError('Failed to delete account');
       console.error('Error deleting account:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetData = async (type) => {
+    try {
+      setLoading(true);
+      setError('');
+      setMessage('');
+      
+      if (type === 'games') {
+        await api.delete('/users/reset/games');
+        setMessage('Alle Spiele wurden erfolgreich gelöscht');
+      } else if (type === 'players') {
+        await api.delete('/users/reset/players');
+        setMessage('Alle Spieler wurden erfolgreich gelöscht');
+      } else if (type === 'all') {
+        await api.delete('/users/reset/all');
+        setMessage('Alle Daten wurden erfolgreich zurückgesetzt');
+      }
+      
+      setShowResetConfirm(null);
+    } catch (error) {
+      console.error('Error resetting data:', error);
+      setError(`Fehler beim Zurücksetzen der Daten: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
@@ -324,6 +351,166 @@ const Settings = () => {
           </p>
         </div>
       </div>
+
+      {/* Data Reset Options */}
+      <div className="card">
+        <h3 style={{ color: 'var(--accent-red)' }}>⚠️ Daten zurücksetzen</h3>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--spacing-4)' }}>
+          Diese Optionen löschen dauerhaft Daten aus deinem Account. Diese Aktionen können nicht rückgängig gemacht werden.
+        </p>
+        
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          gap: 'var(--spacing-3)' 
+        }}>
+          <div style={{ 
+            padding: 'var(--spacing-4)', 
+            backgroundColor: 'var(--background-darker)', 
+            borderRadius: 'var(--radius)',
+            border: '1px solid var(--border-color)'
+          }}>
+            <h4 style={{ marginBottom: 'var(--spacing-2)' }}>🎯 Alle Spiele löschen</h4>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-3)' }}>
+              Löscht alle Spiele und Spielhistorien. Spieler bleiben erhalten.
+            </p>
+            <button
+              className="btn"
+              style={{
+                width: '100%',
+                backgroundColor: 'var(--accent-red)',
+                color: 'white',
+                border: '1px solid var(--accent-red)'
+              }}
+              onClick={() => setShowResetConfirm('games')}
+              disabled={loading}
+            >
+              Alle Spiele löschen
+            </button>
+          </div>
+
+          <div style={{ 
+            padding: 'var(--spacing-4)', 
+            backgroundColor: 'var(--background-darker)', 
+            borderRadius: 'var(--radius)',
+            border: '1px solid var(--border-color)'
+          }}>
+            <h4 style={{ marginBottom: 'var(--spacing-2)' }}>👥 Alle Spieler löschen</h4>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-3)' }}>
+              Löscht alle erstellten Spieler. Spiele werden ebenfalls gelöscht.
+            </p>
+            <button
+              className="btn"
+              style={{
+                width: '100%',
+                backgroundColor: 'var(--accent-red)',
+                color: 'white',
+                border: '1px solid var(--accent-red)'
+              }}
+              onClick={() => setShowResetConfirm('players')}
+              disabled={loading}
+            >
+              Alle Spieler löschen
+            </button>
+          </div>
+
+          <div style={{ 
+            padding: 'var(--spacing-4)', 
+            backgroundColor: 'var(--background-darker)', 
+            borderRadius: 'var(--radius)',
+            border: '2px solid var(--accent-red)'
+          }}>
+            <h4 style={{ marginBottom: 'var(--spacing-2)', color: 'var(--accent-red)' }}>🚨 Komplett zurücksetzen</h4>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-3)' }}>
+              Löscht alle Daten: Spiele, Spieler und Statistiken.
+            </p>
+            <button
+              className="btn"
+              style={{
+                width: '100%',
+                backgroundColor: 'var(--accent-red)',
+                color: 'white',
+                border: '1px solid var(--accent-red)'
+              }}
+              onClick={() => setShowResetConfirm('all')}
+              disabled={loading}
+            >
+              ALLES LÖSCHEN
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div className="card" style={{ 
+            maxWidth: '500px',
+            margin: 'var(--spacing-4)',
+            backgroundColor: 'var(--background-dark)',
+            border: '3px solid var(--accent-red)'
+          }}>
+            <h3 style={{ color: 'var(--accent-red)', marginBottom: 'var(--spacing-3)' }}>
+              🚨 ACHTUNG - Unwiderrufliche Aktion
+            </h3>
+            <p style={{ marginBottom: 'var(--spacing-4)', fontSize: '1.1rem' }}>
+              {showResetConfirm === 'games' && 'Du bist dabei, ALLE SPIELE dauerhaft zu löschen. Alle Spielhistorien und Statistiken gehen verloren.'}
+              {showResetConfirm === 'players' && 'Du bist dabei, ALLE SPIELER dauerhaft zu löschen. Dadurch werden auch alle zugehörigen Spiele gelöscht.'}
+              {showResetConfirm === 'all' && 'Du bist dabei, ALLE DATEN dauerhaft zu löschen. Spiele, Spieler, Statistiken - alles wird unwiderruflich gelöscht!'}
+            </p>
+            <div style={{ 
+              padding: 'var(--spacing-3)',
+              backgroundColor: 'rgba(225, 97, 98, 0.1)',
+              borderRadius: '6px',
+              marginBottom: 'var(--spacing-4)',
+              border: '1px solid var(--accent-red)'
+            }}>
+              <p style={{ 
+                margin: 0, 
+                fontWeight: 'bold',
+                color: 'var(--accent-red)'
+              }}>
+                ⚠️ Diese Aktion kann NICHT rückgängig gemacht werden!
+              </p>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              gap: 'var(--spacing-3)', 
+              justifyContent: 'flex-end' 
+            }}>
+              <button
+                className="btn btn-outline"
+                onClick={() => setShowResetConfirm(null)}
+              >
+                Abbrechen
+              </button>
+              <button
+                className="btn"
+                style={{
+                  backgroundColor: 'var(--accent-red)',
+                  color: 'white',
+                  border: '1px solid var(--accent-red)'
+                }}
+                onClick={() => handleResetData(showResetConfirm)}
+                disabled={loading}
+              >
+                {loading ? 'Lösche...' : '🗑️ Endgültig löschen'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Game = require('../models/Game');
+const Player = require('../models/Player');
 const { protect } = require('../middleware/auth');
 
 // @route   GET /api/users/search
@@ -185,6 +187,74 @@ router.put('/preferences', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error updating preferences'
+    });
+  }
+});
+
+// @route   DELETE /api/users/reset/games
+// @desc    Delete all user's games
+// @access  Private
+router.delete('/reset/games', protect, async (req, res) => {
+  try {
+    const result = await Game.deleteMany({ createdBy: req.user.id });
+
+    res.json({
+      success: true,
+      message: `Deleted ${result.deletedCount} games successfully`
+    });
+  } catch (error) {
+    console.error('Reset games error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting games'
+    });
+  }
+});
+
+// @route   DELETE /api/users/reset/players
+// @desc    Delete all user's players and associated games
+// @access  Private
+router.delete('/reset/players', protect, async (req, res) => {
+  try {
+    // First delete all games created by this user
+    const gameResult = await Game.deleteMany({ createdBy: req.user.id });
+    
+    // Then delete all players created by this user
+    const playerResult = await Player.deleteMany({ createdBy: req.user.id });
+
+    res.json({
+      success: true,
+      message: `Deleted ${playerResult.deletedCount} players and ${gameResult.deletedCount} games successfully`
+    });
+  } catch (error) {
+    console.error('Reset players error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting players and games'
+    });
+  }
+});
+
+// @route   DELETE /api/users/reset/all
+// @desc    Delete all user's data (games and players)
+// @access  Private
+router.delete('/reset/all', protect, async (req, res) => {
+  try {
+    // Delete all games created by this user
+    const gameResult = await Game.deleteMany({ createdBy: req.user.id });
+    
+    // Delete all players created by this user
+    const playerResult = await Player.deleteMany({ createdBy: req.user.id });
+
+    res.json({
+      success: true,
+      message: `Complete reset successful: Deleted ${playerResult.deletedCount} players and ${gameResult.deletedCount} games`
+    });
+  } catch (error) {
+    console.error('Reset all data error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error performing complete reset'
     });
   }
 });

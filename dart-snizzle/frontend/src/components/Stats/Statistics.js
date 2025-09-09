@@ -82,7 +82,6 @@ const Statistics = () => {
     const totalGames = games.length;
     const totalPlayers = players.length;
     
-    console.log('Calculating stats for', totalGames, 'games and', totalPlayers, 'players');
     
     // Calculate averages and totals
     let totalThrows = 0;
@@ -101,12 +100,6 @@ const Statistics = () => {
         const playerId = playerGame.player?._id || playerGame.player;
         const playerName = playerGame.player?.name || 'Unknown';
         
-        console.log(`Processing player ${playerIndex + 1} in game ${gameIndex + 1}:`, {
-          playerId,
-          playerName,
-          throws: playerGame.throws?.length || 0,
-          winner: game.winner
-        });
         
         if (!playerStats[playerId]) {
           playerStats[playerId] = {
@@ -125,25 +118,13 @@ const Statistics = () => {
         const winnerId = game.winner?._id || game.winner;
         const isWinner = winnerId && (winnerId === playerId || winnerId.toString() === playerId.toString());
         
-        console.log(`Winner comparison for ${playerName}:`, {
-          winnerId,
-          playerId,
-          winnerIdString: winnerId ? winnerId.toString() : null,
-          playerIdString: playerId ? playerId.toString() : null,
-          isWinner
-        });
-           
         if (isWinner) {
           playerStats[playerId].gamesWon++;
-          console.log(`✅ Player ${playerName} won game ${gameIndex + 1}`);
-        } else {
-          console.log(`❌ Player ${playerName} did NOT win game ${gameIndex + 1}`);
         }
         
         // Add throws and scores - only count active throws
         if (playerGame.throws && playerGame.throws.length > 0) {
           const activeThrows = playerGame.throws.filter(t => !t.status || t.status !== 'undone');
-          console.log(`Player ${playerName} has ${activeThrows.length} active throws out of ${playerGame.throws.length} total`);
           
           playerStats[playerId].totalThrows += activeThrows.length;
           totalThrows += activeThrows.length;
@@ -161,7 +142,6 @@ const Statistics = () => {
       });
     });
 
-    console.log('Final player stats:', playerStats);
 
     return {
       totalGames,

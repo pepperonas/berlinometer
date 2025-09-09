@@ -802,15 +802,41 @@ const GamePlay = () => {
             </div>
           </div>
 
-          {/* Direct Input Mode */}
+          {/* Smart Direct Input Mode */}
           {inputMode === 'direct' && (
             <div style={{ marginTop: 'var(--spacing-4)' }}>
-              <h4>Gesamtpunkte des Wurfs eingeben:</h4>
-              <div style={{ display: 'flex', gap: 'var(--spacing-3)', alignItems: 'center', marginTop: 'var(--spacing-3)' }}>
+              <h4>🎯 Schnelle Punkteingabe</h4>
+              
+              {/* Quick Score Buttons */}
+              <div style={{ marginTop: 'var(--spacing-3)', marginBottom: 'var(--spacing-3)' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-2)' }}>Häufige Würfe:</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))', gap: 'var(--spacing-2)', marginBottom: 'var(--spacing-3)' }}>
+                  {[180, 140, 100, 85, 81, 60, 57, 50, 45, 41, 26, 25, 20, 19, 18, 0].map(score => (
+                    <button
+                      key={score}
+                      className="btn btn-outline"
+                      onClick={() => {
+                        setDirectInput(score.toString());
+                        setTimeout(() => handleDirectInput(), 100);
+                      }}
+                      style={{ 
+                        padding: 'var(--spacing-2)', 
+                        fontSize: '0.875rem',
+                        backgroundColor: score >= 100 ? 'rgba(156, 182, 143, 0.2)' : score === 0 ? 'rgba(225, 97, 98, 0.2)' : 'transparent'
+                      }}
+                    >
+                      {score}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Manual Input */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-2)', alignItems: 'center', justifyContent: 'center' }}>
                 <input
                   type="number"
                   className="form-input"
-                  placeholder="0-180 Punkte"
+                  placeholder="Punkte eingeben..."
                   value={directInput}
                   onChange={(e) => setDirectInput(e.target.value)}
                   onKeyPress={(e) => {
@@ -821,94 +847,225 @@ const GamePlay = () => {
                   }}
                   min="0"
                   max="180"
-                  style={{ width: '150px' }}
-                  autoFocus={inputMode === 'direct'}
+                  autoFocus
+                  style={{ 
+                    width: '200px', 
+                    textAlign: 'center', 
+                    fontSize: '1.4rem',
+                    padding: 'var(--spacing-3)',
+                    borderRadius: '12px',
+                    border: '2px solid var(--accent-blue)',
+                    backgroundColor: 'var(--card-background)',
+                    color: 'var(--text-primary)'
+                  }}
                 />
-                <button
-                  className="btn btn-primary"
-                  onClick={handleDirectInput}
-                  disabled={loading || !directInput}
-                >
-                  ✅ Übernehmen
-                </button>
+                <div style={{ 
+                  fontSize: '0.875rem', 
+                  color: 'var(--text-secondary)',
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 'var(--spacing-1)'
+                }}>
+                  <span>⌨️</span>
+                  <span>Drücke Enter zum Bestätigen</span>
+                </div>
               </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: 'var(--spacing-2)' }}>
-                Gib die Gesamtpunktzahl für alle 3 Darts ein (0-180). <strong>Enter-Taste</strong> zum Bestätigen.
-              </p>
             </div>
           )}
           
-          {/* Current Throw Display */}
+          {/* Compact Dart Input */}
           {inputMode === 'buttons' && (
             <>
-            <div className="throw-input" style={{ marginTop: 'var(--spacing-4)' }}>
-            {[1, 2, 3].map(dartNum => (
-              <div
-                key={dartNum}
-                className="card"
-                style={{
-                  backgroundColor: currentDart === dartNum ? 'var(--accent-blue)' : 'var(--background-darker)',
-                  color: currentDart === dartNum ? 'white' : 'var(--text-primary)',
-                  textAlign: 'center',
-                  padding: 'var(--spacing-3)'
-                }}
-              >
-                <h4>Dart {dartNum}</h4>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-                  {currentThrow[`dart${dartNum}`].multiplier > 1 && 
-                    `${currentThrow[`dart${dartNum}`].multiplier}x`}
-                  {currentThrow[`dart${dartNum}`].value || '-'}
-                </div>
-                <div style={{ fontSize: '0.875rem', marginTop: 'var(--spacing-1)' }}>
-                  = {currentThrow[`dart${dartNum}`].value * currentThrow[`dart${dartNum}`].multiplier}
+            <div style={{ marginTop: 'var(--spacing-4)' }}>
+              <h4>🎯 Einzeldart-Eingabe</h4>
+              
+              {/* Compact Dart Display */}
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: '1fr 1fr 1fr auto', 
+                gap: 'var(--spacing-3)', 
+                alignItems: 'center',
+                backgroundColor: 'var(--background-darker)',
+                padding: 'var(--spacing-3)',
+                borderRadius: '8px',
+                marginTop: 'var(--spacing-3)',
+                marginBottom: 'var(--spacing-3)'
+              }}>
+                {[1, 2, 3].map(dartNum => (
+                  <div
+                    key={dartNum}
+                    onClick={() => setCurrentDart(dartNum)}
+                    style={{
+                      backgroundColor: currentDart === dartNum ? 'var(--accent-blue)' : 'var(--card-background)',
+                      color: currentDart === dartNum ? 'white' : 'var(--text-primary)',
+                      textAlign: 'center',
+                      padding: 'var(--spacing-2)',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      border: currentDart === dartNum ? '2px solid var(--accent-blue)' : '1px solid var(--border-color)',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ fontSize: '0.75rem', color: currentDart === dartNum ? 'white' : 'var(--text-secondary)' }}>Dart {dartNum}</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 'bold', marginTop: '2px' }}>
+                      {currentThrow[`dart${dartNum}`].multiplier > 1 && 
+                        <span style={{ fontSize: '0.875rem' }}>{currentThrow[`dart${dartNum}`].multiplier}×</span>}
+                      {currentThrow[`dart${dartNum}`].value || '-'}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', marginTop: '2px', color: currentDart === dartNum ? 'rgba(255,255,255,0.8)' : 'var(--text-secondary)' }}>
+                      = {currentThrow[`dart${dartNum}`].value * currentThrow[`dart${dartNum}`].multiplier}
+                    </div>
+                  </div>
+                ))}
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Gesamt</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>
+                    {calculateTotal()}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Multiplier Buttons */}
-          <div style={{ marginTop: 'var(--spacing-4)' }}>
-            <label className="form-label">Multiplikator für Dart {currentDart}:</label>
-            <div style={{ display: 'flex', gap: 'var(--spacing-2)', marginTop: 'var(--spacing-2)' }}>
-              {[1, 2, 3].map(mult => (
-                <button
-                  key={mult}
-                  className={`btn ${currentThrow[`dart${currentDart}`].multiplier === mult ? 'btn-primary' : 'btn-outline'}`}
-                  onClick={() => handleMultiplierChange(mult)}
-                >
-                  {mult === 1 ? 'Single' : mult === 2 ? 'Double' : 'Triple'}
-                </button>
-              ))}
+              {/* Quick Action Buttons */}
+              <div style={{ marginBottom: 'var(--spacing-3)' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-2)' }}>Schnelle Aktionen:</div>
+                <div style={{ display: 'flex', gap: 'var(--spacing-2)', flexWrap: 'wrap' }}>
+                  <button
+                    className="btn btn-outline"
+                    onClick={() => {
+                      const dartKey = `dart${currentDart}`;
+                      setCurrentThrow(prev => ({
+                        ...prev,
+                        [dartKey]: { value: 20, multiplier: 3 }
+                      }));
+                      if (currentDart < 3) setCurrentDart(currentDart + 1);
+                    }}
+                    style={{ fontSize: '0.875rem', backgroundColor: 'rgba(156, 182, 143, 0.2)' }}
+                  >
+                    T20 (60)
+                  </button>
+                  <button
+                    className="btn btn-outline"
+                    onClick={() => {
+                      const dartKey = `dart${currentDart}`;
+                      setCurrentThrow(prev => ({
+                        ...prev,
+                        [dartKey]: { value: 25, multiplier: 2 }
+                      }));
+                      if (currentDart < 3) setCurrentDart(currentDart + 1);
+                    }}
+                    style={{ fontSize: '0.875rem', backgroundColor: 'rgba(225, 97, 98, 0.2)' }}
+                  >
+                    Bull (50)
+                  </button>
+                  <button
+                    className="btn btn-outline"
+                    onClick={() => {
+                      const dartKey = `dart${currentDart}`;
+                      setCurrentThrow(prev => ({
+                        ...prev,
+                        [dartKey]: { value: 20, multiplier: 1 }
+                      }));
+                      if (currentDart < 3) setCurrentDart(currentDart + 1);
+                    }}
+                    style={{ fontSize: '0.875rem' }}
+                  >
+                    20er
+                  </button>
+                  <button
+                    className="btn btn-outline"
+                    onClick={() => {
+                      const dartKey = `dart${currentDart}`;
+                      setCurrentThrow(prev => ({
+                        ...prev,
+                        [dartKey]: { value: 0, multiplier: 1 }
+                      }));
+                      if (currentDart < 3) setCurrentDart(currentDart + 1);
+                    }}
+                    style={{ fontSize: '0.875rem', backgroundColor: 'rgba(156, 163, 175, 0.2)' }}
+                  >
+                    Miss
+                  </button>
+                  {currentDart > 1 && (
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => {
+                        const prevDart = currentDart - 1;
+                        const prevKey = `dart${prevDart}`;
+                        setCurrentThrow(prev => ({
+                          ...prev,
+                          [prevKey]: { value: 0, multiplier: 1 }
+                        }));
+                        setCurrentDart(prevDart);
+                      }}
+                      style={{ fontSize: '0.875rem', color: 'var(--accent-red)' }}
+                    >
+                      ↶ Undo
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Compact Multiplier & Number Input */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 'var(--spacing-3)' }}>
+                {/* Multiplier */}
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-2)' }}>
+                    Dart {currentDart} Multiplikator:
+                  </div>
+                  <div style={{ display: 'flex', gap: 'var(--spacing-1)' }}>
+                    {[1, 2, 3].map(mult => (
+                      <button
+                        key={mult}
+                        className={`btn ${currentThrow[`dart${currentDart}`].multiplier === mult ? 'btn-primary' : 'btn-outline'}`}
+                        onClick={() => handleMultiplierChange(mult)}
+                        style={{ flex: 1, fontSize: '0.875rem', padding: 'var(--spacing-2)' }}
+                      >
+                        {mult}×
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Number Input */}
+                <div>
+                  <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: 'var(--spacing-2)' }}>
+                    Zahlen:
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                    {[...Array(21)].map((_, i) => (
+                      <button
+                        key={i}
+                        className="btn btn-outline"
+                        onClick={() => handleScoreInput(i)}
+                        disabled={loading}
+                        style={{ 
+                          fontSize: '0.75rem', 
+                          padding: '8px 4px',
+                          backgroundColor: i === 20 ? 'rgba(156, 182, 143, 0.2)' : 'transparent'
+                        }}
+                      >
+                        {i}
+                      </button>
+                    ))}
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => handleScoreInput(25)}
+                      disabled={loading}
+                      style={{ 
+                        fontSize: '0.75rem', 
+                        padding: '8px 4px',
+                        backgroundColor: 'rgba(225, 97, 98, 0.2)',
+                        color: 'var(--accent-red)',
+                        gridColumn: 'span 1'
+                      }}
+                    >
+                      25
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-
-          {/* Score Buttons */}
-          <div className="quick-scores" style={{ marginTop: 'var(--spacing-4)' }}>
-            {[...Array(21)].map((_, i) => (
-              <button
-                key={i}
-                className="quick-score-btn btn btn-outline"
-                onClick={() => handleScoreInput(i)}
-                disabled={loading}
-              >
-                {i}
-              </button>
-            ))}
-            <button
-              className="quick-score-btn btn btn-outline"
-              onClick={() => handleScoreInput(25)}
-              disabled={loading}
-            >
-              Bull
-            </button>
-            <button
-              className="quick-score-btn btn btn-danger"
-              onClick={() => handleScoreInput(0)}
-              disabled={loading}
-            >
-              Miss
-            </button>
-          </div>
             </>
           )}
 

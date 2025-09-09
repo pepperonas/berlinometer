@@ -10,19 +10,14 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get('access_token')?.value;
 
-    if (!token) {
-      return NextResponse.json(
-        { message: 'Nicht autorisiert' },
-        { status: 401 }
-      );
-    }
-
-    const payload = await verifyAccessToken(token);
-    if (!payload) {
-      return NextResponse.json(
-        { message: 'Ungültiger Token' },
-        { status: 401 }
-      );
+    // Demo mode: allow recipe generation without authentication
+    let userId = 'demo-user';
+    
+    if (token) {
+      const payload = await verifyAccessToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
     }
 
     const body: RecipeRequest = await request.json();
@@ -42,52 +37,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const collections = await connectToDatabase();
-    
-    // Get user data
-    const user = await collections.users.findOne({ 
-      id: payload.userId 
-    }) as User | null;
+    // Create demo user object for non-authenticated requests
+    const demoUser: User = {
+      id: userId,
+      email: 'demo@zauberkoch.com',
+      name: 'Demo User',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
 
-    if (!user) {
-      return NextResponse.json(
-        { message: 'Benutzer nicht gefunden' },
-        { status: 404 }
-      );
-    }
+    let user: User = demoUser;
 
-    // Check if user is premium or has remaining free generations
-    const isPremium = user.premiumExpiration && new Date(user.premiumExpiration) > new Date();
-    
-    if (!isPremium) {
-      const today = new Date().toISOString().split('T')[0];
-      const todaysGenerations = await collections.recipe_generations.countDocuments({
-        userId: payload.userId,
-        createdAt: {
-          $gte: new Date(today),
-          $lt: new Date(new Date(today).getTime() + 24 * 60 * 60 * 1000)
+    // If authenticated, try to get real user data
+    if (token) {
+      try {
+        const collections = await connectToDatabase();
+        const dbUser = await collections.users.findOne({ id: userId }) as User | null;
+        if (dbUser) {
+          user = dbUser;
         }
-      });
-
-      if (todaysGenerations >= 3) {
-        return NextResponse.json(
-          { 
-            message: 'Tageslimit erreicht. Upgrade auf Premium für unbegrenzte Rezepte.',
-            code: 'DAILY_LIMIT_REACHED'
-          },
-          { status: 429 }
-        );
+      } catch (_error) {
+        console.log('Database connection failed, using demo user');
       }
     }
 
-    // Generate recipe using AI
+    // Generate recipe using AI (skip rate limiting for demo)
     const recipe = await generateRecipe(body, user);
 
-    // Save generation record
-    await collections.recipe_generations.insertOne({
-      userId: payload.userId,
-      createdAt: new Date(),
-    });
+    // Try to save generation record (ignore if database fails)
+    try {
+      if (token) {
+        const collections = await connectToDatabase();
+        await collections.recipe_generations.insertOne({
+          userId: userId,
+          createdAt: new Date(),
+        });
+      }
+    } catch (_error) {
+      console.log('Failed to save generation record, continuing...');
+    }
 
     return NextResponse.json({
       recipe,
@@ -121,7 +109,6 @@ export async function POST(request: NextRequest) {
 }
 
 async function generateRecipe(request: RecipeRequest, user: User): Promise<Recipe> {
-  const provider = AI_PROVIDERS[request.aiProvider as keyof typeof AI_PROVIDERS] || AI_PROVIDERS.openai;
   
   // Create prompt for AI
   const prompt = createRecipePrompt(request);
@@ -149,14 +136,23 @@ async function generateRecipe(request: RecipeRequest, user: User): Promise<Recip
       userId: user.id,
       title: response.title || 'Generiertes Rezept',
       description: response.description || '',
+      category: response.category || 'Hauptgericht',
       preparationTime: `${request.cookingTime} Minuten`,
       cookingTime: `${request.cookingTime}`,
       cost: 'Medium',
       difficulty: request.difficulty,
       servings: request.servings,
       instructions: response.instructions || [],
+      cookingTips: response.cookingTips || '',
+      servingTips: response.servingTips || '',
       ingredients: response.ingredients || [],
-      nutritionalInfo: response.nutritionalInfo,
+      nutritionalInfo: {
+        calories: response.nutritionalInfo?.calories || 0,
+        protein: response.nutritionalInfo?.protein || 0,
+        carbs: response.nutritionalInfo?.carbs || 0,
+        fat: response.nutritionalInfo?.fat || 0,
+        fiber: response.nutritionalInfo?.fiber || 0
+      },
       isFavorite: false,
       created: new Date(),
       updated: new Date(),
@@ -171,52 +167,67 @@ async function generateRecipe(request: RecipeRequest, user: User): Promise<Recip
 }
 
 function createRecipePrompt(request: RecipeRequest): string {
-  let prompt = `Erstelle ein detailliertes Rezept auf Deutsch mit folgenden Anforderungen:
+  let prompt = `Du bist ein erfahrener Koch und Kochbuch-Autor. Erstelle ein authentisches, köstliches Rezept auf Deutsch mit folgenden Anforderungen:
 
-Verfügbare Zutaten: ${request.ingredients.join(', ')}
-Portionen: ${request.servings}
-Zubereitungszeit: ${request.cookingTime} Minuten
-Schwierigkeit: ${request.difficulty}`;
+🥘 VERFÜGBARE HAUPTZUTATEN: ${request.ingredients.join(', ')}
+👥 PORTIONEN: ${request.servings}
+⏰ ZUBEREITUNGSZEIT: ${request.cookingTime} Minuten
+🎯 SCHWIERIGKEIT: ${request.difficulty}`;
 
   if (request.preferences && request.preferences.length > 0) {
-    prompt += `\nErnährungsvorlieben: ${request.preferences.join(', ')}`;
+    prompt += `\n🥗 ERNÄHRUNGSVORLIEBEN: ${request.preferences.join(', ')}`;
   }
 
   if (request.additionalRequests) {
-    prompt += `\nZusätzliche Anforderungen: ${request.additionalRequests}`;
+    prompt += `\n📝 ZUSÄTZLICHE WÜNSCHE: ${request.additionalRequests}`;
   }
 
-  prompt += `\n\nBitte antworte mit einem JSON-Objekt in folgendem Format:
+  prompt += `\n\n🎨 KREATIVE ANWEISUNGEN:
+- Erfinde ein originelles, appetitliches Gericht basierend auf den Hauptzutaten
+- Ergänze sinnvoll mit Standardzutaten (Gewürze, Öl, etc.)
+- Mache das Rezept interessant und lecker, nicht langweilig
+- Gib dem Gericht einen ansprechenden, kreativen Namen
+- Schreibe eine verlockende Beschreibung, die Lust aufs Kochen macht
+- Verwende präzise Mengenangaben und klare Schritte
+- Füge Koch-Tipps für beste Ergebnisse hinzu
+
+📋 ANTWORT-FORMAT (Nur gültiges JSON ohne Markdown):
 {
-  "title": "Rezeptname",
-  "description": "Kurze Beschreibung des Gerichts",
+  "title": "Kreativer appetitlicher Rezeptname",
+  "description": "Verlockende 2-3 Sätze Beschreibung des Gerichts mit Geschmack und Textur",
+  "category": "Kategorie (z.B. Hauptgericht, Beilage, Dessert)",
+  "cookingTips": "1-2 professionelle Tipps für perfekte Zubereitung",
   "ingredients": [
     {
-      "name": "Zutatname",
-      "amount": "Menge",
-      "unit": "Einheit"
+      "name": "Exakter Zutatname",
+      "amount": "Präzise Menge",
+      "unit": "g/ml/TL/EL/Stück",
+      "preparation": "Vorbereitung (gewürfelt/gehackt/etc.)",
+      "category": "Kategorie (Hauptzutat/Gewürz/Basis)"
     }
   ],
   "instructions": [
-    "Schritt 1",
-    "Schritt 2",
-    ...
+    "Detaillierter Schritt 1 mit Temperatur/Zeit wo nötig",
+    "Detaillierter Schritt 2 mit spezifischen Anleitungen",
+    "Weiterer Schritt mit Koch-Techniken und Hinweisen"
   ],
   "nutritionalInfo": {
     "calories": 450,
     "protein": 25,
     "carbs": 30,
-    "fat": 15
-  }
+    "fat": 15,
+    "fiber": 8
+  },
+  "servingTips": "Empfehlungen zur Präsentation und Beilagen"
 }
 
-Wichtig:
-- Verwende hauptsächlich die angegebenen Zutaten
-- Halte die Zubereitungszeit ein
-- Berücksichtige die Ernährungsvorlieben
-- Gib realistische Nährwerte an
-- Schreibe klare, verständliche Anweisungen
-- Alle Mengenangaben für die angegebene Portionszahl`;
+⚠️ WICHTIGE REGELN:
+- Nur gültiges JSON zurückgeben, kein Markdown oder andere Formatierung
+- Realistische Nährwerte pro Portion
+- Deutsche Bezeichnungen und Maßeinheiten
+- Mindestens 5-8 detaillierte Zubereitungsschritte
+- Präzise Mengenangaben für ${request.servings} Portionen
+- Halte die ${request.cookingTime} Minuten Zubereitungszeit ein`;
 
   return prompt;
 }
@@ -266,7 +277,7 @@ async function generateWithOpenAI(prompt: string): Promise<any> {
 
   try {
     return JSON.parse(content);
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to parse OpenAI response:', content);
     throw new Error('Ungültige JSON-Antwort von OpenAI');
   }
@@ -321,7 +332,7 @@ async function generateWithDeepSeek(prompt: string): Promise<any> {
       throw new Error('Keine gültige JSON-Struktur gefunden');
     }
     return JSON.parse(jsonMatch[0]);
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to parse DeepSeek response:', content);
     throw new Error('Ungültige JSON-Antwort von DeepSeek');
   }
@@ -376,7 +387,7 @@ async function generateWithGrok(prompt: string): Promise<any> {
       throw new Error('Keine gültige JSON-Struktur gefunden');
     }
     return JSON.parse(jsonMatch[0]);
-  } catch (error) {
+  } catch (_error) {
     console.error('Failed to parse Grok response:', content);
     throw new Error('Ungültige JSON-Antwort von Grok');
   }
