@@ -1,8 +1,31 @@
 {
   "name": "popular-times",
-  "private": true,
   "version": "2.0.0",
-  "homepage": "/webapp/popular-times",
+  "description": "A modern web application for analyzing Google Maps location occupancy data in real-time",
+  "homepage": "https://github.com/pepperonas/popular-times#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pepperonas/popular-times.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pepperonas/popular-times/issues"
+  },
+  "author": {
+    "name": "Martin Pfeffer",
+    "email": "martinpaush@gmail.com",
+    "url": "https://github.com/pepperonas"
+  },
+  "license": "MIT",
+  "keywords": [
+    "google-maps",
+    "occupancy",
+    "scraping",
+    "react",
+    "analytics",
+    "foot-traffic",
+    "popular-times",
+    "business-intelligence"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,177 +1,275 @@
-# Popular Times Web Application
+# Popular Times - Google Maps Occupancy Analyzer
 
-A modern React web application for analyzing Google Maps location occupancy data in real-time.
+A modern web application for analyzing Google Maps location occupancy data in real-time. Extract live foot traffic data from Google Maps places to understand when locations are busiest.
 
-## Features
+![Popular Times Screenshot](popular-times.jpg)
 
-- 🎨 **Modern Dark Theme**: Professional dark UI with Material Design colors
-- 📱 **Responsive Design**: Works on desktop and mobile devices
-- 🔄 **Real-time Progress**: Live progress updates during scraping
-- 📊 **Data Export**: Export results to JSON and CSV formats
-- 🚀 **Fast Scraping**: Optimized Python backend with Playwright
-- 🌐 **Production Ready**: Configured for deployment on VPS
+## ✨ Features
 
-## Architecture
+- 🎯 **Real-time Scraping**: Extract live occupancy data from Google Maps
+- 🎨 **Modern Dark UI**: Professional interface with Material Design
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile
+- 🔄 **Live Progress**: Real-time progress updates during data extraction
+- 📊 **Multiple Export Formats**: Export results to JSON and CSV
+- 🚀 **High Performance**: Optimized Python backend with Playwright
+- 🔍 **Batch Processing**: Analyze multiple locations simultaneously
+- 📈 **Historical Data**: Capture popular times charts when available
+
+## 🏗️ Architecture
 
 ### Frontend (React + Vite)
-- **Framework**: React 19 with Vite
+- **Framework**: React 19 with Vite build system
 - **Styling**: Custom CSS with CSS variables for theming
-- **API Communication**: Fetch API with streaming support
-- **Build Target**: `/var/www/html/popular-times/`
+- **API Communication**: Fetch API with Server-Sent Events for streaming
+- **State Management**: React hooks for local state
 
 ### Backend (Python Flask)
 - **Framework**: Flask with CORS support
-- **Scraping**: Playwright for Google Maps data extraction
-- **API**: RESTful endpoints with streaming responses
-- **Port**: 5044 (production: proxied via nginx)
+- **Web Scraping**: Playwright for automated Google Maps data extraction
+- **API Design**: RESTful endpoints with streaming responses
+- **Database**: Optional MySQL integration for data persistence
 
-## Quick Start
+## 🚀 Quick Start
 
-### Development
+### Prerequisites
 
-1. **Install dependencies**:
+- **Node.js** 18+ and npm
+- **Python** 3.8+
+- **Git**
+
+### Installation
+
+1. **Clone the repository**:
    ```bash
-   # Frontend
-   cd webapp
-   npm install
-   
-   # Backend
+   git clone https://github.com/pepperonas/popular-times.git
+   cd popular-times
+   ```
+
+2. **Install backend dependencies**:
+   ```bash
    pip install -r requirements.txt
    python -m playwright install chromium
    ```
 
-2. **Start development servers**:
+3. **Install frontend dependencies**:
    ```bash
-   # Backend (Terminal 1)
+   cd webapp
+   npm install
+   cd ..
+   ```
+
+### Development
+
+1. **Start the backend server**:
+   ```bash
    python server.py
-   
-   # Frontend (Terminal 2)
+   ```
+   The API will be available at `http://localhost:5044`
+
+2. **Start the frontend development server** (in a new terminal):
+   ```bash
    cd webapp
    npm run dev
    ```
+   The web app will be available at `http://localhost:3000`
 
-3. **Access the app**: http://localhost:3000
+### Production Build
 
-### Production Deployment
-
-1. **Build the application**:
+1. **Build the React application**:
    ```bash
    cd webapp
    npm run build
    ```
 
-2. **Deploy to VPS**:
-   ```bash
-   ./deploy.sh
-   ```
+2. **Deploy using your preferred method** (static hosting, Docker, etc.)
 
-3. **Access the app**: https://mrx3k1.de/popular-times
+## 📖 Usage
 
-## API Endpoints
+### Web Interface
 
-- `GET /` - Service information
-- `GET /health` - Health check
-- `POST /scrape` - Scrape Google Maps locations (streaming)
+1. Open the application in your browser
+2. Enter Google Maps URLs for the locations you want to analyze
+3. Click "Start Scraping" to begin data extraction
+4. Monitor real-time progress as data is collected
+5. Export results in JSON or CSV format when complete
 
-### Scrape Request Format
+### Supported URL Formats
+
+The application accepts various Google Maps URL formats:
+```
+https://www.google.com/maps/place/Location+Name/@lat,lng,zoom
+https://maps.google.com/maps/place/Location+Name
+https://goo.gl/maps/shortcode
+```
+
+### Example Data Output
+
+```json
+{
+  "location_name": "Café Example",
+  "address": "123 Main St, City",
+  "live_occupancy": "Moderately busy",
+  "occupancy_percent": 65,
+  "popular_times": {
+    "Monday": [0, 0, 0, 10, 20, 30, 50, 70, 60, 40, 30, 35, 45, 55, 65, 70, 75, 80, 60, 40, 20, 10, 5, 0],
+    // ... other days
+  },
+  "scraped_at": "2025-01-15T14:30:00Z"
+}
+```
+
+## 🔌 API Reference
+
+### Endpoints
+
+#### `GET /`
+Returns service information and health status.
+
+#### `GET /health`
+Health check endpoint for monitoring.
+
+#### `POST /scrape`
+Scrapes Google Maps locations with real-time progress streaming.
+
+**Request Body:**
 ```json
 {
   "urls": [
-    "https://www.google.de/maps/place/...",
-    "https://www.google.de/maps/place/..."
+    "https://www.google.com/maps/place/Location+One",
+    "https://www.google.com/maps/place/Location+Two"
   ]
 }
 ```
 
-### Streaming Response Format
+**Streaming Response:**
 ```json
 {"type": "progress", "progress": 50, "current": 1, "total": 2, "location": "Processing location 1/2"}
 {"type": "result", "data": {"location_name": "...", "live_occupancy": "...", ...}}
-{"type": "complete", "timestamp": "2025-06-26T..."}
+{"type": "complete", "timestamp": "2025-01-15T14:30:00Z"}
 ```
 
-## Configuration
+## ⚙️ Configuration
 
 ### Environment Variables
-- `VITE_API_URL`: API base URL (default: http://localhost:5044)
 
-### Deployment Configuration
-- **Frontend Path**: `/var/www/html/popular-times/`
-- **Backend Path**: `/opt/popular-times/`
-- **Service Name**: `popular-times-api`
-- **Nginx Proxy**: `/api/popular-times` → `http://localhost:5044`
+Create a `.env` file for backend configuration:
+```bash
+# Optional: Database configuration for data persistence
+MYSQL_HOST=localhost
+MYSQL_USER=your_username
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=popular_times_db
+MYSQL_PORT=3306
+```
 
-## Design System
+Create `webapp/.env.local` for frontend configuration:
+```bash
+# API URL for development
+VITE_API_URL=http://localhost:5044
+```
 
-### Color Palette
-- **Background Dark**: `#2B2E3B`
-- **Background Darker**: `#252830`
-- **Card Background**: `#343845`
-- **Accent Blue**: `#688db1`
-- **Accent Green**: `#9cb68f`
-- **Accent Red**: `#e16162`
-- **Text Primary**: `#d1d5db`
-- **Text Secondary**: `#9ca3af`
-
-### Typography
-- **Font Family**: System fonts (Apple System, Segoe UI, Roboto, etc.)
-- **Hierarchy**: Clear h1-h4 with consistent spacing
-- **Sizes**: Normal (1rem), Small (0.875rem), Extra Small (0.75rem)
-
-### Components
-- **Cards**: Rounded containers with subtle shadows
-- **Buttons**: Primary, Secondary, Outline, Danger variants
-- **Forms**: Consistent input styling with focus states
-- **Progress**: Animated gradient progress bars
-- **Status**: Color-coded badges for live/data indicators
-
-## File Structure
+## 📁 Project Structure
 
 ```
 popular-times/
-├── maps-playwrite-scraper/     # Original Python scraper
-│   ├── gmaps-scraper-fast-robust.py
-│   ├── occupancy_data_*.json
-│   └── urls.txt
-├── webapp/                     # React frontend
-│   ├── public/                 # Static assets
+├── webapp/                     # React frontend application
+│   ├── public/                 # Static assets and PWA files
 │   ├── src/
-│   │   ├── components/         # React components
-│   │   ├── App.jsx            # Main app component
-│   │   ├── App.css            # App-specific styles
-│   │   ├── index.css          # Global styles & theme
-│   │   └── main.jsx           # App entry point
-│   ├── package.json
-│   └── vite.config.js
-├── server.py                   # Flask backend server
+│   │   ├── components/         # Reusable React components
+│   │   ├── App.jsx            # Main application component
+│   │   ├── App.css            # Application-specific styles
+│   │   ├── index.css          # Global styles and CSS variables
+│   │   └── main.jsx           # Application entry point
+│   ├── package.json           # Frontend dependencies
+│   └── vite.config.js         # Vite build configuration
+├── server.py                   # Flask backend API server
 ├── requirements.txt            # Python dependencies
-├── deploy.sh                   # Deployment script
-└── README.md                   # This file
+├── .env.example               # Example environment configuration
+├── .gitignore                 # Git ignore patterns
+└── README.md                  # Project documentation
 ```
 
-## Development Notes
+## 🎨 Design System
 
-- **Playwright**: Uses Chromium for scraping with resource blocking for performance
-- **Rate Limiting**: 3-5 second delays between requests to be respectful
-- **Error Handling**: Comprehensive error handling with user feedback
-- **Responsive**: Mobile-first design with breakpoints
-- **Accessibility**: Focus states and keyboard navigation support
+The application features a modern dark theme with carefully selected colors:
 
-## Troubleshooting
+- **Background**: Dark navy (`#2B2E3B`) with subtle variations
+- **Cards**: Elevated surfaces with soft shadows
+- **Accents**: Blue (`#688db1`), Green (`#9cb68f`), Red (`#e16162`)
+- **Typography**: System font stack for optimal readability
+- **Components**: Consistent button styles, forms, and progress indicators
+
+## 🛠️ Development Notes
+
+- **Rate Limiting**: Implements 3-5 second delays between requests to respect Google's servers
+- **Error Handling**: Comprehensive error handling with user-friendly feedback
+- **Performance**: Resource blocking in Playwright for faster scraping
+- **Responsive Design**: Mobile-first approach with CSS Grid and Flexbox
+- **Accessibility**: Proper focus states and keyboard navigation
+
+## 🐛 Troubleshooting
 
 ### Common Issues
 
-1. **CORS Errors**: Ensure Flask-CORS is properly configured
-2. **Playwright Issues**: Run `playwright install chromium` 
-3. **Service Not Starting**: Check systemd logs with `journalctl -u popular-times-api`
-4. **Nginx 502**: Verify backend is running on port 5044
+| Issue | Solution |
+|-------|----------|
+| **Playwright browser not found** | Run `python -m playwright install chromium` |
+| **CORS errors in development** | Ensure Flask-CORS is installed and configured |
+| **Module not found errors** | Verify all dependencies are installed: `pip install -r requirements.txt` |
+| **Port already in use** | Change the port in `server.py` or kill the existing process |
+| **Build failures** | Clear `node_modules` and reinstall: `rm -rf node_modules && npm install` |
 
-### Logs
+### Debug Mode
 
-- **Backend Logs**: `journalctl -u popular-times-api -f`
-- **Nginx Logs**: `/var/log/nginx/error.log`
-- **Frontend**: Browser DevTools Console
+Enable debug logging by setting the log level:
+```python
+logging.basicConfig(level=logging.DEBUG)
+```
 
-## License
+## 🤝 Contributing
 
-Private project for personal use.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+### Development Setup
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes and add tests if applicable
+4. Run the application locally to test
+5. Commit your changes: `git commit -am 'Add feature'`
+6. Push to the branch: `git push origin feature-name`
+7. Submit a Pull Request
+
+## 📄 License
+
+MIT License
+
+Copyright (c) 2025 Martin Pfeffer
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## 👨‍💻 Author
+
+**Martin Pfeffer**
+- Email: martinpaush@gmail.com
+- GitHub: [@pepperonas](https://github.com/pepperonas)
+
+---
+
+⭐ Star this repository if you find it helpful!

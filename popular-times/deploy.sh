@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Popular Times Deployment Script
-# Deploys the React webapp and Python backend to VPS
+# Example deployment script - customize for your server setup
 
 set -e
 
 echo "🚀 Starting Popular Times Deployment..."
 
-# Configuration
-VPS_HOST="mrx3k1.de"
-VPS_USER="root"
+# Configuration - UPDATE THESE VALUES FOR YOUR SETUP
+VPS_HOST="your-server.com"
+VPS_USER="your-username"
 APP_NAME="popular-times"
 LOCAL_BUILD_DIR="webapp/build"
 REMOTE_WEB_DIR="/var/www/html/popular-times/webapp"
@@ -106,6 +106,9 @@ print_status "Deployment Summary:"
 echo "  ✅ React app built and deployed"
 echo "  ✅ Python backend deployed"
 echo "  ✅ Systemd service configured"
-echo "  ✅ Nginx proxy configured"
+echo "  ✅ Nginx proxy configured (if applicable)"
 echo ""
 echo "🌐 Access your app at: https://$VPS_HOST/popular-times"
+echo ""
+echo "📝 Note: This is an example deployment script."
+echo "   Customize the configuration variables above for your specific setup."
