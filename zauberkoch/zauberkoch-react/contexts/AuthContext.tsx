@@ -11,7 +11,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    console.warn('useAuth used outside of AuthProvider, returning default values');
+    return {
+      user: null,
+      isLoading: false,
+      login: async () => ({ success: false, error: 'Auth context not available' }),
+      register: async () => ({ success: false, error: 'Auth context not available' }),
+      logout: async () => {},
+      checkAuthStatus: async () => {}
+    };
   }
   return context;
 }
@@ -38,6 +46,18 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
 
       if (response.ok) {
         const userData = await response.json();
+        // Parse date fields from JSON
+        if (userData.user) {
+          if (userData.user.premiumExpiration) {
+            userData.user.premiumExpiration = new Date(userData.user.premiumExpiration);
+          }
+          if (userData.user.created) {
+            userData.user.created = new Date(userData.user.created);
+          }
+          if (userData.user.lastSeen) {
+            userData.user.lastSeen = new Date(userData.user.lastSeen);
+          }
+        }
         setUser(userData.user);
       } else {
         setUser(null);
@@ -69,6 +89,18 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
         throw new Error(data.message || 'Login failed');
       }
 
+      // Parse date fields from JSON
+      if (data.user) {
+        if (data.user.premiumExpiration) {
+          data.user.premiumExpiration = new Date(data.user.premiumExpiration);
+        }
+        if (data.user.created) {
+          data.user.created = new Date(data.user.created);
+        }
+        if (data.user.lastSeen) {
+          data.user.lastSeen = new Date(data.user.lastSeen);
+        }
+      }
       setUser(data.user);
       toast.success('Successfully logged in!');
       router.push('/dashboard');
@@ -167,6 +199,18 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
         throw new Error(data.message || 'Profile update failed');
       }
 
+      // Parse date fields from JSON
+      if (data.user) {
+        if (data.user.premiumExpiration) {
+          data.user.premiumExpiration = new Date(data.user.premiumExpiration);
+        }
+        if (data.user.created) {
+          data.user.created = new Date(data.user.created);
+        }
+        if (data.user.lastSeen) {
+          data.user.lastSeen = new Date(data.user.lastSeen);
+        }
+      }
       setUser(data.user);
       toast.success('Profile updated successfully!');
     } catch (error) {
@@ -340,6 +384,25 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     }
   };
 
+  // Helper function to check if user is premium (handles demo user and date parsing)
+  const checkUserPremium = (user: User | null): boolean => {
+    if (!user) return false;
+    
+    // Demo user always has premium
+    if (user.id === 'demo-user-001' || user.email === 'demo@zauberkoch.com') {
+      return true;
+    }
+    
+    // Handle date parsing for premium expiration
+    if (!user.premiumExpiration) return false;
+    
+    const premiumDate = typeof user.premiumExpiration === 'string' 
+      ? new Date(user.premiumExpiration)
+      : user.premiumExpiration;
+    
+    return premiumDate > new Date();
+  };
+
   const contextValue: AuthContextType = {
     user,
     login,
@@ -348,7 +411,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     loginWithGoogle,
     updateUser,
     isLoading,
-    isPremium: user ? isPremiumUser(user) : false,
+    isPremium: checkUserPremium(user),
     // Additional methods
     requestPasswordReset,
     resetPassword,
@@ -400,16 +463,35 @@ export function usePremium() {
   const { user, isPremium } = useAuth();
   
   const checkPremiumAccess = (feature: string): boolean => {
-    if (!user) return false;
-    if (isPremium) return true;
+    if (!user) {
+      console.log(`Premium feature attempted without user: ${feature}`);
+      return false;
+    }
+    
+    // Demo user always has premium access
+    if (user.id === 'demo-user-001' || user.email === 'demo@zauberkoch.com') {
+      console.log(`Demo user accessing premium feature: ${feature}`);
+      return true;
+    }
+    
+    if (isPremium) {
+      console.log(`Premium user accessing feature: ${feature}, User: ${user.email}`);
+      return true;
+    }
     
     // Log feature access attempt for analytics
-    console.log(`Premium feature attempted: ${feature}, User: ${user.email}`);
+    console.log(`Premium feature blocked: ${feature}, User: ${user.email}, isPremium: ${isPremium}`);
     return false;
   };
   
   const showUpgradePrompt = (feature: string) => {
-    toast.error(`This feature requires premium access. Upgrade your account to use ${feature}.`, {
+    // Don't show upgrade prompt for demo user
+    if (user && (user.id === 'demo-user-001' || user.email === 'demo@zauberkoch.com')) {
+      console.log('Skipping upgrade prompt for demo user');
+      return;
+    }
+    
+    toast.error(`Daily limit reached. Upgrade to premium for unlimited ${feature.toLowerCase()}.`, {
       duration: 5000,
     });
   };

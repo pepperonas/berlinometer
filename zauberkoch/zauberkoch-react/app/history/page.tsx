@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { FiClock, FiCalendar, FiTrendingUp, FiSearch, FiFilter, FiUsers, FiChef, FiCoffee, FiActivity, FiBarChart3, FiZap, FiStar, FiEye, FiRefreshCw } from 'react-icons/fi';
+import { FiClock, FiCalendar, FiTrendingUp, FiSearch, FiFilter, FiUsers, FiUser, FiCoffee, FiActivity, FiBarChart3, FiZap, FiStar, FiEye, FiRefreshCw } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Recipe, ApiLog } from '@/types';
 
@@ -86,44 +86,49 @@ export default function HistoryPage() {
         fetch('/api/history/logs', { credentials: 'include' })
       ]);
 
-      const recipes: Recipe[] = recipesRes.ok ? await recipesRes.json() : [];
-      const apiLogs: ApiLog[] = apiLogsRes.ok ? await apiLogsRes.json() : [];
+      const recipesData = recipesRes.ok ? await recipesRes.json() : { recipes: [] };
+      const apiLogsData = apiLogsRes.ok ? await apiLogsRes.json() : { logs: [] };
+      
+      const recipes: Recipe[] = Array.isArray(recipesData) ? recipesData : (recipesData.recipes || []);
+      const historyRecipes: Recipe[] = Array.isArray(apiLogsData) ? apiLogsData : (apiLogsData.recipes || []);
+      const apiLogs: ApiLog[] = Array.isArray(apiLogsData) ? [] : (apiLogsData.logs || []);
 
       // Convert to unified history entries
       const entries: HistoryEntry[] = [
         ...recipes.map(recipe => ({
           id: recipe.id,
           type: 'recipe' as const,
-          date: new Date(recipe.created),
-          title: recipe.title,
-          description: recipe.description || `${recipe.servings} Portionen • ${recipe.category || 'Unbekannt'}`,
-          category: recipe.category,
-          isFavorite: recipe.isFavorite,
+          date: new Date(recipe.createdAt || recipe.created),
+          title: recipe.title || recipe.name || 'Unnamed Recipe',
+          description: recipe.description || `${recipe.servings || 4} Portionen • ${recipe.cookingTime || 'Unknown time'}`,
+          category: recipe.type || recipe.category || 'recipe',
+          isFavorite: recipe.saved || recipe.isFavorite,
           data: recipe
         })),
-        ...apiLogs.map(log => ({
-          id: log.id,
+        ...historyRecipes.map(recipe => ({
+          id: recipe.id,
           type: 'generation' as const,
-          date: new Date(log.created),
-          title: log.focusPhrase || 'Rezept Generierung',
-          description: `${log.apiProvider.toUpperCase()} • ${log.executionTime}ms • ${log.type}`,
-          apiProvider: log.apiProvider,
-          executionTime: log.executionTime,
-          recipeType: log.type,
-          data: log
+          date: new Date(recipe.createdAt || recipe.created),
+          title: recipe.title || 'Rezept Generierung',
+          description: recipe.description || `${recipe.type || 'recipe'} • ${recipe.cookingTime}`,
+          apiProvider: 'openai' as const,
+          executionTime: 2000,
+          recipeType: recipe.type === 'cocktail' ? 'cocktail' : 'food',
+          data: recipe
         }))
       ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
       setHistoryEntries(entries);
 
-      // Calculate statistics
+      // Calculate statistics with defensive programming
+      const safeApiLogs = Array.isArray(apiLogs) ? apiLogs : [];
       const stats: HistoryStats = {
         totalRecipes: recipes.length,
-        totalGenerations: apiLogs.length,
+        totalGenerations: safeApiLogs.length,
         favoriteRecipes: recipes.filter(r => r.isFavorite).length,
-        averageExecutionTime: apiLogs.length > 0 ? 
-          Math.round(apiLogs.reduce((sum, log) => sum + log.executionTime, 0) / apiLogs.length) : 0,
-        mostUsedProvider: getMostUsedProvider(apiLogs),
+        averageExecutionTime: safeApiLogs.length > 0 ? 
+          Math.round(safeApiLogs.reduce((sum, log) => sum + (log.executionTime || 0), 0) / safeApiLogs.length) : 0,
+        mostUsedProvider: getMostUsedProvider(safeApiLogs),
         recipesThisWeek: getRecipesInPeriod(recipes, 7),
         recipesThisMonth: getRecipesInPeriod(recipes, 30),
         topCategory: getTopCategory(recipes)
@@ -138,18 +143,36 @@ export default function HistoryPage() {
   };
 
   const getMostUsedProvider = (logs: ApiLog[]): string => {
+    if (!Array.isArray(logs) || logs.length === 0) {
+      return 'openai';
+    }
+
     const counts = logs.reduce((acc, log) => {
-      acc[log.apiProvider] = (acc[log.apiProvider] || 0) + 1;
+      const provider = log?.apiProvider || 'openai';
+      acc[provider] = (acc[provider] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    return Object.entries(counts).reduce((a, b) => counts[a[0]] > counts[b[0]] ? a : b)?.[0] || 'openai';
+    const entries = Object.entries(counts);
+    if (entries.length === 0) {
+      return 'openai';
+    }
+
+    return entries.reduce((a, b) => counts[a[0]] > counts[b[0]] ? a : b)[0] || 'openai';
   };
 
   const getRecipesInPeriod = (recipes: Recipe[], days: number): number => {
+    if (!Array.isArray(recipes) || recipes.length === 0) {
+      return 0;
+    }
+
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
-    return recipes.filter(r => new Date(r.created) >= cutoff).length;
+    return recipes.filter(r => {
+      const recipeDate = r?.created || r?.createdAt;
+      if (!recipeDate) return false;
+      return new Date(recipeDate) >= cutoff;
+    }).length;
   };
 
   const getTopCategory = (recipes: Recipe[]): string => {
@@ -313,7 +336,7 @@ export default function HistoryPage() {
               <div className="card p-6 shadow-lg border border-outline/20 bg-gradient-to-br from-success/5 to-emerald-500/5">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-success to-emerald-600 rounded-full flex items-center justify-center text-white">
-                    <FiChef className="w-6 h-6" />
+                    <FiUser className="w-6 h-6" />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg">{stats.totalRecipes}</h3>
@@ -467,7 +490,7 @@ export default function HistoryPage() {
                           : `bg-gradient-to-br from-info to-blue-600 ${entry.apiProvider ? getProviderColor(entry.apiProvider) : ''}`
                       }`}>
                         {entry.type === 'recipe' ? (
-                          <FiChef className="w-8 h-8" />
+                          <FiUser className="w-8 h-8" />
                         ) : (
                           <span className="text-2xl">
                             {entry.apiProvider ? getProviderIcon(entry.apiProvider) : '🤖'}
@@ -510,7 +533,7 @@ export default function HistoryPage() {
                           }`}>
                             {entry.type === 'recipe' ? (
                               <>
-                                <FiChef className="w-3 h-3" />
+                                <FiUser className="w-3 h-3" />
                                 Rezept
                               </>
                             ) : (
@@ -532,7 +555,7 @@ export default function HistoryPage() {
                             <span className="inline-flex items-center gap-1">
                               {entry.recipeType === 'food' ? (
                                 <>
-                                  <FiChef className="w-3 h-3" />
+                                  <FiUser className="w-3 h-3" />
                                   Essen
                                 </>
                               ) : (

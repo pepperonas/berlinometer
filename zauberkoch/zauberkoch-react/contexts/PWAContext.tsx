@@ -28,7 +28,17 @@ const PWAContext = createContext<PWAContextType | undefined>(undefined);
 export function usePWA(): PWAContextType {
   const context = useContext(PWAContext);
   if (!context) {
-    throw new Error('usePWA must be used within a PWAInstallProvider');
+    console.warn('usePWA used outside of PWAInstallProvider, returning default values');
+    return {
+      isInstalled: false,
+      canInstall: false,
+      isOnline: true,
+      isStandalone: false,
+      installPrompt: null,
+      install: async () => {},
+      isUpdateAvailable: false,
+      updateApp: async () => {}
+    };
   }
   return context;
 }
@@ -122,9 +132,8 @@ export function PWAInstallProvider({ children }: PWAInstallProviderProps): JSX.E
                   if (navigator.serviceWorker.controller) {
                     // New version available
                     setIsUpdateAvailable(true);
-                    toast.success('New version available! Click to update.', {
+                    toast.success('New version available! Refresh to update.', {
                       duration: 8000,
-                      onClick: updateApp,
                     });
                   }
                 }
@@ -132,8 +141,11 @@ export function PWAInstallProvider({ children }: PWAInstallProviderProps): JSX.E
             }
           });
         } catch (error) {
-          console.error('Service Worker registration failed:', error);
+          console.warn('Service Worker registration failed:', error);
+          // Don't block the app if service worker fails
         }
+      } else {
+        console.warn('Service Worker not supported in this browser');
       }
     };
 

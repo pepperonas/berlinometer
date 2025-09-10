@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { FiHeart, FiSearch, FiFilter, FiGrid, FiList, FiClock, FiUsers, FiChef, FiStar, FiCalendar, FiTrendingUp, FiEye, FiBookmark, FiShare2 } from 'react-icons/fi';
+import { FiHeart, FiSearch, FiFilter, FiGrid, FiList, FiClock, FiUsers, FiUser, FiStar, FiCalendar, FiTrendingUp, FiEye, FiBookmark, FiShare2 } from 'react-icons/fi';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Recipe, RecipeFilters, SortOption } from '@/types';
 import toast from 'react-hot-toast';
@@ -79,8 +79,10 @@ export default function FavoritesPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setFavorites(data);
-        calculateStats(data);
+        // Defensive check: ensure data is an array
+        const safeData = Array.isArray(data) ? data : [];
+        setFavorites(safeData);
+        calculateStats(safeData);
       } else {
         console.error('Failed to fetch favorites');
         toast.error('Fehler beim Laden der Favoriten');
@@ -94,7 +96,10 @@ export default function FavoritesPage() {
   };
 
   const calculateStats = (recipes: Recipe[]) => {
-    const categoryCounts = recipes.reduce((acc, recipe) => {
+    // Defensive check: ensure recipes is an array
+    const safeRecipes = Array.isArray(recipes) ? recipes : [];
+    
+    const categoryCounts = safeRecipes.reduce((acc, recipe) => {
       const category = recipe.category || 'Unbekannt';
       acc[category] = (acc[category] || 0) + 1;
       return acc;
@@ -105,12 +110,12 @@ export default function FavoritesPage() {
 
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const favoritesThisMonth = recipes.filter(recipe => 
+    const favoritesThisMonth = safeRecipes.filter(recipe => 
       new Date(recipe.created) >= thisMonth
     ).length;
 
     const stats: FavoriteStats = {
-      totalFavorites: recipes.length,
+      totalFavorites: safeRecipes.length,
       categoryCounts,
       averageRating: 4.5, // Mock rating - would come from actual rating system
       favoritesThisMonth,
@@ -121,7 +126,9 @@ export default function FavoritesPage() {
   };
 
   const filterAndSortFavorites = () => {
-    let filtered = [...favorites];
+    // Defensive check: ensure favorites is an array
+    const safeFavorites = Array.isArray(favorites) ? favorites : [];
+    let filtered = [...safeFavorites];
 
     // Search filter
     if (searchTerm) {
@@ -203,7 +210,9 @@ export default function FavoritesPage() {
   };
 
   const getAvailableCategories = () => {
-    const categories = [...new Set(favorites.map(r => r.category).filter(Boolean))];
+    // Defensive check: ensure favorites is an array
+    const safeFavorites = Array.isArray(favorites) ? favorites : [];
+    const categories = [...new Set(safeFavorites.map(r => r.category).filter(Boolean))];
     return categories.sort();
   };
 
@@ -360,7 +369,7 @@ export default function FavoritesPage() {
             </motion.div>
           )}
 
-          {favorites.length === 0 ? (
+          {(Array.isArray(favorites) ? favorites : []).length === 0 ? (
             /* Empty State */
             <motion.div className="card p-12 shadow-lg border border-outline/20 text-center" variants={itemVariants}>
               <div className="w-20 h-20 bg-gradient-to-br from-error/10 to-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -375,7 +384,7 @@ export default function FavoritesPage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/recipes/generate">
                   <button className="btn btn-primary btn-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-[1.02]">
-                    <FiChef className="mr-2" />
+                    <FiUser className="mr-2" />
                     Erstes Rezept generieren
                   </button>
                 </Link>
@@ -439,7 +448,7 @@ export default function FavoritesPage() {
                       <option value="all">Alle Zeiten</option>
                       <option value="quick">Schnell (≤30 Min)</option>
                       <option value="medium">Mittel (30-60 Min)</option>
-                      <option value="long">Lang (>60 Min)</option>
+                      <option value="long">Lang (&gt;60 Min)</option>
                     </select>
 
                     <select
@@ -485,7 +494,7 @@ export default function FavoritesPage() {
                 {/* Filter summary */}
                 <div className="mt-4 pt-4 border-t border-outline/20">
                   <div className="flex items-center justify-between text-sm text-on-surface-variant">
-                    <span>{filteredFavorites.length} von {favorites.length} Favoriten</span>
+                    <span>{filteredFavorites.length} von {(Array.isArray(favorites) ? favorites : []).length} Favoriten</span>
                     {(searchTerm || categoryFilter !== 'all' || difficultyFilter !== 'all' || timeFilter !== 'all') && (
                       <button
                         onClick={() => {

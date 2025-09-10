@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
         firstName: 'Demo',
         lastName: 'User',
         language: 'de',
-        premiumExpiration: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days premium
+        premiumExpiration: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year premium for demo
         verified: true,
         created: new Date(),
       };
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Set cookies
-      response.cookies.set('accessToken', accessToken, {
+      response.cookies.set('access_token', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         path: '/',
       });
 
-      response.cookies.set('refreshToken', refreshToken, {
+      response.cookies.set('refresh_token', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Set cookies
-    response.cookies.set('accessToken', accessToken, {
+    response.cookies.set('access_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
-    response.cookies.set('refreshToken', refreshToken, {
+    response.cookies.set('refresh_token', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',

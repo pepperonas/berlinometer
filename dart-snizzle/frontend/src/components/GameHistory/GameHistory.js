@@ -142,7 +142,7 @@ const GameHistory = () => {
           </div>
           <button
             className="btn btn-primary"
-            onClick={() => navigate('/setup')}
+            onClick={() => navigate('/game-setup')}
           >
             ➕ Neues Spiel
           </button>
@@ -243,7 +243,7 @@ const GameHistory = () => {
           </p>
           <button
             className="btn btn-primary"
-            onClick={() => navigate('/setup')}
+            onClick={() => navigate('/game-setup')}
           >
             Erstes Spiel starten
           </button>

@@ -8,7 +8,7 @@ import {
   FiUsers, 
   FiStar, 
   FiHeart,
-  FiChef,
+  FiUser,
   FiCoffee,
   FiCheck,
   FiArrowRight,
@@ -324,7 +324,7 @@ export default function SharedRecipeView({ shareCode }: SharedRecipeViewProps) {
               {recipe.tips && (
                 <div className="card p-6 shadow-lg border border-outline/20 bg-gradient-to-br from-info/5 to-blue-500/5 border-info/20">
                   <h3 className="text-xl font-semibold text-info mb-4 flex items-center gap-2">
-                    <FiChef className="w-5 h-5" />
+                    <FiUser className="w-5 h-5" />
                     Koch-Tipp
                   </h3>
                   <p className="text-info/80">{recipe.tips}</p>
@@ -379,7 +379,7 @@ export default function SharedRecipeView({ shareCode }: SharedRecipeViewProps) {
             <div className="card p-8 shadow-lg border border-outline/20 bg-gradient-to-br from-primary/5 to-primary-dark/5 text-center">
               <div className="max-w-2xl mx-auto">
                 <div className="w-16 h-16 bg-primary text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FiChef className="w-8 h-8" />
+                  <FiUser className="w-8 h-8" />
                 </div>
                 <h3 className="text-2xl font-bold text-primary mb-4">Erstelle deine eigenen Rezepte</h3>
                 <p className="text-on-surface-variant mb-6">

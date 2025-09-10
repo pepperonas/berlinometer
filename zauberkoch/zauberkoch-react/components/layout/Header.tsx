@@ -29,6 +29,8 @@ export function Header() {
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   
   const router = useRouter();
+  
+  // Use hooks (now with built-in defensive fallbacks)
   const { user, logout, isPremium } = useAuth();
   const { theme, setTheme, effectiveTheme } = useTheme();
   const { canInstall, install, isOnline } = usePWA();
@@ -52,7 +54,7 @@ export function Header() {
     system: FiMonitor,
   };
 
-  const ThemeIcon = themeIcons[theme];
+  const ThemeIcon = themeIcons[theme] || FiSun;
 
   // Navigation items
   const navigationItems = [
@@ -163,7 +165,7 @@ export function Header() {
                     className="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-variant transition-colors"
                   >
                     <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium">
-                      {getInitials(`${user.firstName} ${user.lastName}`)}
+                      {user ? getInitials(`${user.firstName || ''} ${user.lastName || ''}`) : 'U'}
                     </div>
                     {isPremium && (
                       <span className="text-xs bg-secondary text-white px-2 py-0.5 rounded-full">
@@ -180,8 +182,10 @@ export function Header() {
                       className="absolute right-0 mt-2 w-48 bg-surface border border-outline rounded-lg shadow-lg overflow-hidden z-50"
                     >
                       <div className="px-4 py-3 border-b border-outline">
-                        <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
-                        <p className="text-xs text-on-surface-variant">{user.email}</p>
+                        <p className="text-sm font-medium">
+                          {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Benutzer' : 'Benutzer'}
+                        </p>
+                        <p className="text-xs text-on-surface-variant">{user?.email || ''}</p>
                       </div>
                       
                       <Link

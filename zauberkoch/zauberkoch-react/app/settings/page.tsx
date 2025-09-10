@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,6 +31,72 @@ export default function SettingsPage() {
   const [difficulty, setDifficulty] = useState('medium');
   const [aiProvider, setAiProvider] = useState('openai');
   const [notifications, setNotifications] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+
+  // Load settings on component mount
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch('/api/user/settings', {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const settings = await response.json();
+        setDietaryPreferences(settings.dietaryPreferences || []);
+        setDifficulty(settings.difficulty || 'medium');
+        setAiProvider(settings.aiProvider || 'openai');
+        setNotifications(settings.notifications !== false);
+      } else {
+        console.error('Failed to load settings');
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveSettings = async () => {
+    if (!user) return;
+    
+    setIsSaving(true);
+    setSaveMessage('');
+    
+    try {
+      const response = await fetch('/api/user/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          dietaryPreferences,
+          difficulty,
+          aiProvider,
+          notifications,
+        }),
+      });
+
+      if (response.ok) {
+        setSaveMessage('✅ Einstellungen erfolgreich gespeichert!');
+        setTimeout(() => setSaveMessage(''), 3000);
+      } else {
+        setSaveMessage('❌ Fehler beim Speichern der Einstellungen');
+        setTimeout(() => setSaveMessage(''), 3000);
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      setSaveMessage('❌ Fehler beim Speichern der Einstellungen');
+      setTimeout(() => setSaveMessage(''), 3000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handlePreferenceToggle = (preference: string) => {
     setDietaryPreferences(prev => 
@@ -39,6 +105,17 @@ export default function SettingsPage() {
         : [...prev, preference]
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-on-surface-variant">Einstellungen werden geladen...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-surface">
@@ -270,9 +347,30 @@ export default function SettingsPage() {
             className="card p-8 shadow-lg border border-outline/20 bg-gradient-to-br from-surface-variant/50 to-surface-variant/20 text-center"
             variants={itemVariants}
           >
+            {saveMessage && (
+              <div className={`mb-6 p-4 rounded-lg ${
+                saveMessage.includes('✅') 
+                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                  : 'bg-red-100 text-red-800 border border-red-200'
+              }`}>
+                {saveMessage}
+              </div>
+            )}
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button className="btn btn-primary btn-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
-                ✅ Einstellungen speichern
+              <button 
+                onClick={saveSettings}
+                disabled={isSaving}
+                className="btn btn-primary btn-lg px-8 py-4 shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:transform-none disabled:cursor-not-allowed"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2 inline-block"></div>
+                    Speichern...
+                  </>
+                ) : (
+                  '✅ Einstellungen speichern'
+                )}
               </button>
               <Link href="/dashboard">
                 <button className="btn btn-outline btn-lg px-8 py-4 border-2 hover:bg-primary hover:text-white">

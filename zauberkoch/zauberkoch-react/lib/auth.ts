@@ -290,6 +290,8 @@ export async function verifyGoogleToken(token: string): Promise<GoogleUserInfo |
   }
 }
 
+// User Limits & Premium Checks are in separate server-only file: ./user-limits.ts
+
 // Middleware helper
 export async function getAuthenticatedUser(request: Request): Promise<User | null> {
   try {

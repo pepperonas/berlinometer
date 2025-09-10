@@ -24,6 +24,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Check for demo user (bypass database for demo account)
+    if (payload.userId === 'demo-user-001') {
+      const demoUser = {
+        id: 'demo-user-001',
+        username: 'DemoUser',
+        email: 'demo@zauberkoch.com',
+        firstName: 'Demo',
+        lastName: 'User',
+        language: 'de',
+        premiumExpiration: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year premium for demo
+        verified: true,
+        created: new Date(),
+      };
+
+      return NextResponse.json({
+        success: true,
+        user: demoUser,
+      });
+    }
+
     // Get user data from database
     const collections = await connectToDatabase();
     const userRepository = new UserRepository(collections);

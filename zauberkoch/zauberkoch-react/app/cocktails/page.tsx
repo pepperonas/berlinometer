@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiWine, FiCoffee, FiZap, FiSettings, FiStar, FiClock, FiDroplet, FiGlass, FiShuffle, FiCheck, FiHeart, FiBookOpen, FiLoader } from 'react-icons/fi';
+import { FiCoffee, FiZap, FiSettings, FiStar, FiClock, FiDroplet, FiShuffle, FiCheck, FiHeart, FiBookOpen, FiLoader } from 'react-icons/fi';
 import { useAuth, usePremium } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -104,20 +104,33 @@ export default function CocktailsPage() {
       const response = await fetch('/api/user/settings', {
         credentials: 'include',
       });
+      
       if (response.ok) {
-        const settings = await response.json();
-        setFormData(prev => ({
-          ...prev,
-          drinkType: settings.rgTypeDrink || 'all',
-          style: settings.rgStyleDrink || 'classic',
-          diversity: settings.sliderDiversityDrink || 3,
-          complexity: settings.sliderComplexityDrink || 2,
-          alcoholContent: settings.sliderAlcoholContentDrink || 3,
-          glasses: settings.sliderGlassesDrink || 1,
-          isFruity: settings.cbxFruityDrink || false,
-          isDessert: settings.cbxDessertDrink || false,
-          api: settings.rgApi || 'openai'
-        }));
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const text = await response.text();
+          if (text.trim()) {
+            try {
+              const settings = JSON.parse(text);
+              setFormData(prev => ({
+                ...prev,
+                drinkType: settings.rgTypeDrink || 'all',
+                style: settings.rgStyleDrink || 'classic',
+                diversity: settings.sliderDiversityDrink || 3,
+                complexity: settings.sliderComplexityDrink || 2,
+                alcoholContent: settings.sliderAlcoholContentDrink || 3,
+                glasses: settings.sliderGlassesDrink || 1,
+                isFruity: settings.cbxFruityDrink || false,
+                isDessert: settings.cbxDessertDrink || false,
+                api: settings.rgApi || 'openai'
+              }));
+            } catch (parseError) {
+              console.warn('Failed to parse user settings JSON:', parseError);
+            }
+          }
+        }
+      } else {
+        console.warn('Failed to load user settings:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error loading user settings:', error);
@@ -125,10 +138,14 @@ export default function CocktailsPage() {
   };
 
   const handleInputChange = (field: keyof CocktailGenerationForm, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    try {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    } catch (error) {
+      console.error('Error updating form data:', error);
+    }
   };
 
   const generateCocktail = async () => {
@@ -154,10 +171,45 @@ export default function CocktailsPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'Cocktail-Generierung fehlgeschlagen');
+        const contentType = response.headers.get('content-type');
+        let errorMessage = 'Cocktail-Generierung fehlgeschlagen';
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const errorText = await response.text();
+            if (errorText.trim()) {
+              const errorData = JSON.parse(errorText);
+              errorMessage = errorData.message || errorMessage;
+            }
+          } catch (parseError) {
+            console.warn('Failed to parse error response:', parseError);
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned non-JSON response');
+      }
+
+      const responseText = await response.text();
+      if (!responseText.trim()) {
+        throw new Error('Server returned empty response');
+      }
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse cocktail response:', parseError);
+        throw new Error('Invalid server response format');
+      }
+
+      if (!data.cocktail) {
+        throw new Error('No cocktail data received from server');
       }
 
       setGeneratedCocktail(data.cocktail);
@@ -296,7 +348,7 @@ export default function CocktailsPage() {
               className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 px-4 py-2 rounded-full text-sm font-semibold mb-6"
               variants={itemVariants}
             >
-              <FiWine className="w-4 h-4" />
+              <FiCoffee className="w-4 h-4" />
               KI-Cocktail-Generator
             </motion.div>
             
@@ -355,14 +407,24 @@ export default function CocktailsPage() {
                           ].map(option => (
                             <button
                               key={option.value}
-                              onClick={() => handleInputChange('drinkType', option.value)}
-                              className={`p-3 rounded-xl border-2 transition-all text-left ${
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleInputChange('drinkType', option.value);
+                              }}
+                              className={`p-3 rounded-xl border-2 transition-all text-left cursor-pointer hover:shadow-md active:scale-95 ${
                                 formData.drinkType === option.value
                                   ? 'border-purple-600 bg-purple-50 text-purple-600'
-                                  : 'border-outline/30 hover:border-outline/50'
+                                  : 'border-outline/30 hover:border-outline/50 hover:bg-surface-variant/50'
                               }`}
+                              style={{ 
+                                pointerEvents: 'auto',
+                                touchAction: 'manipulation',
+                                userSelect: 'none'
+                              }}
                             >
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 pointer-events-none">
                                 <span className="text-lg">{option.icon}</span>
                                 <span className="text-sm font-medium">{option.label}</span>
                               </div>
@@ -383,14 +445,24 @@ export default function CocktailsPage() {
                           ].map(option => (
                             <button
                               key={option.value}
-                              onClick={() => handleInputChange('style', option.value)}
-                              className={`p-3 rounded-xl border-2 transition-all text-left ${
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleInputChange('style', option.value);
+                              }}
+                              className={`p-3 rounded-xl border-2 transition-all text-left cursor-pointer hover:shadow-md active:scale-95 ${
                                 formData.style === option.value
                                   ? 'border-purple-600 bg-purple-50 text-purple-600'
-                                  : 'border-outline/30 hover:border-outline/50'
+                                  : 'border-outline/30 hover:border-outline/50 hover:bg-surface-variant/50'
                               }`}
+                              style={{ 
+                                pointerEvents: 'auto',
+                                touchAction: 'manipulation',
+                                userSelect: 'none'
+                              }}
                             >
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 pointer-events-none">
                                 <span className="text-lg">{option.icon}</span>
                                 <span className="text-sm font-medium">{option.label}</span>
                               </div>
@@ -578,7 +650,7 @@ export default function CocktailsPage() {
                   </div>
                   <div className="card p-6 shadow-lg border border-outline/20 bg-gradient-to-br from-purple-50 to-pink-50">
                     <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center text-white mb-4">
-                      <FiGlass className="w-6 h-6" />
+                      <FiDroplet className="w-6 h-6" />
                     </div>
                     <h3 className="font-bold mb-2">Perfekte Balance</h3>
                     <p className="text-sm text-on-surface-variant">
@@ -631,7 +703,7 @@ export default function CocktailsPage() {
                     {/* Meta Information */}
                     <div className="flex flex-wrap gap-4 mb-6 text-sm">
                       <span className="flex items-center gap-1">
-                        <FiGlass className="w-4 h-4 text-purple-600" />
+                        <FiDroplet className="w-4 h-4 text-purple-600" />
                         {generatedCocktail.glassType}
                       </span>
                       <span className="flex items-center gap-1">

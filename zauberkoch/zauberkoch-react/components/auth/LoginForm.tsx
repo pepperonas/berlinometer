@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle, FiUser, FiChefHat } from 'react-icons/fi';
+import { FiMail, FiLock, FiEye, FiEyeOff, FiAlertCircle, FiUser } from 'react-icons/fi';
 import { FcGoogle } from 'react-icons/fc';
 import { MdRestaurantMenu } from 'react-icons/md';
 import toast from 'react-hot-toast';
