@@ -5,12 +5,13 @@ import { motion, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'outlined' | 'elevated' | 'filled' | 'glass';
+  variant?: 'default' | 'elevated' | 'glass' | 'minimal' | 'interactive' | 'glow';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   hoverable?: boolean;
   animate?: boolean;
   clickable?: boolean;
   glow?: boolean;
+  blur?: boolean;
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -23,58 +24,29 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       animate = true,
       clickable = false,
       glow = false,
+      blur = false,
       children,
       ...props
     },
     ref
   ) => {
-    const baseClasses = `
-      rounded-lg
-      transition-all
-      duration-300
-      ease-out
-      relative
-      overflow-hidden
-    `;
+    const baseClasses = 'card';
 
-    // Variant styles with dark theme
+    // Variant styles using new CSS classes
     const variantClasses = {
-      default: `
-        bg-card-background
-        border border-outline/20
-        shadow-md
-        ${hoverable ? 'hover:shadow-xl hover:border-accent-blue/20' : ''}
-      `,
-      outlined: `
-        bg-transparent
-        border-2 border-outline/40
-        ${hoverable ? 'hover:border-accent-blue/60 hover:bg-card-background/50' : ''}
-      `,
-      elevated: `
-        bg-card-background
-        shadow-xl
-        border border-outline/10
-        ${hoverable ? 'hover:shadow-2xl hover:translate-y-[-4px]' : ''}
-      `,
-      filled: `
-        bg-surface-variant
-        border-0
-        ${hoverable ? 'hover:bg-surface' : ''}
-      `,
-      glass: `
-        bg-card-background/40
-        backdrop-blur-xl
-        border border-white/10
-        shadow-xl
-        ${hoverable ? 'hover:bg-card-background/60 hover:shadow-2xl' : ''}
-      `,
+      default: '',
+      elevated: 'card-elevated',
+      glass: 'card-glass',
+      minimal: 'card-minimal',
+      interactive: 'card-interactive',
+      glow: 'card-glow',
     };
 
     // Padding styles
     const paddingClasses = {
-      none: '',
+      none: 'p-0',
       sm: 'p-4',
-      md: 'p-6',
+      md: '', // Default padding from CSS
       lg: 'p-8',
     };
 
@@ -82,12 +54,9 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       baseClasses,
       variantClasses[variant],
       paddingClasses[padding],
-      clickable && `
-        cursor-pointer
-        select-none
-        active:scale-[0.98]
-      `,
-      glow && 'shadow-[0_0_30px_rgba(104,141,177,0.3)]',
+      clickable && 'card-interactive',
+      glow && 'card-glow',
+      blur && 'backdrop-blur-xl',
       className
     );
 

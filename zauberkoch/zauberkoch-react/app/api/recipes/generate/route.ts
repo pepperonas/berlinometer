@@ -22,12 +22,33 @@ export async function POST(request: NextRequest) {
 
     const body: RecipeRequest = await request.json();
     
-    // Validate request
-    if (!body.ingredients || body.ingredients.length === 0) {
-      return NextResponse.json(
-        { message: 'Mindestens eine Zutat ist erforderlich' },
-        { status: 400 }
-      );
+    // Smart ingredients handling - generate based on goals if no ingredients provided
+    let ingredients = body.ingredients || [];
+    if (ingredients.length === 0) {
+      // Generate default ingredients based on goals and diet type
+      const goalBasedIngredients: { [key: string]: string[] } = {
+        'weight-loss': ['Gemüse', 'Salat', 'mageres Protein'],
+        'weight-gain': ['Nüsse', 'Vollkornprodukte', 'gesunde Fette'],
+        'muscle-building': ['Hähnchenbrust', 'Eier', 'Quinoa'],
+        'healthy-eating': ['Vollkornprodukte', 'frisches Gemüse', 'Obst']
+      };
+      
+      // Add ingredients based on selected goals
+      if (body.goals && body.goals.length > 0) {
+        body.goals.forEach(goal => {
+          if (goalBasedIngredients[goal]) {
+            ingredients.push(...goalBasedIngredients[goal]);
+          }
+        });
+      }
+      
+      // Fallback: add universal ingredients if still empty
+      if (ingredients.length === 0) {
+        ingredients = ['Hauptzutat nach Wahl', 'Gemüse', 'Gewürze'];
+      }
+      
+      // Remove duplicates
+      ingredients = [...new Set(ingredients)];
     }
 
     if (!body.servings || body.servings < 1 || body.servings > 20) {
@@ -61,8 +82,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Update body with generated ingredients
+    const updatedBody = { ...body, ingredients };
+    
     // Generate recipe using AI (skip rate limiting for demo)
-    const recipe = await generateRecipe(body, user);
+    const recipe = await generateRecipe(updatedBody, user);
 
     // Try to save generation record (ignore if database fails)
     try {

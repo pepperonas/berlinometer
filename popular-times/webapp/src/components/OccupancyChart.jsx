@@ -27,7 +27,7 @@ function OccupancyChart({ url, isExpanded }) {
       setIsLoading(true)
       setError(null)
       
-      const response = await fetch(`http://mrx3k1.de:5044/location-history`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/location-history`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

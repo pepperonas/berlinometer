@@ -139,10 +139,15 @@ export default function CocktailsPage() {
 
   const handleInputChange = (field: keyof CocktailGenerationForm, value: any) => {
     try {
-      setFormData(prev => ({
-        ...prev,
-        [field]: value
-      }));
+      console.log('🔧 handleInputChange called:', { field, value });
+      setFormData(prev => {
+        const newData = {
+          ...prev,
+          [field]: value
+        };
+        console.log('📊 Form data updated:', newData);
+        return newData;
+      });
     } catch (error) {
       console.error('Error updating form data:', error);
     }
@@ -392,6 +397,13 @@ export default function CocktailsPage() {
                     Cocktail-Einstellungen
                   </h2>
 
+                  {/* Debug Info */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="bg-yellow-100 p-4 rounded-lg mb-6 text-sm text-black">
+                      <strong>Debug Info:</strong> drinkType: {formData.drinkType}, style: {formData.style}
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Left Column */}
                     <div className="space-y-6">
@@ -405,30 +417,38 @@ export default function CocktailsPage() {
                             { value: 'non_alcoholic', label: 'Alkoholfrei', icon: '🥤' },
                             { value: 'low_alcohol', label: 'Wenig Alkohol', icon: '🍷' }
                           ].map(option => (
-                            <button
+                            <div
                               key={option.value}
-                              type="button"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                console.log('🎯 DrinkType Button clicked:', option.value);
                                 handleInputChange('drinkType', option.value);
                               }}
-                              className={`p-3 rounded-xl border-2 transition-all text-left cursor-pointer hover:shadow-md active:scale-95 ${
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                console.log('🖱️ DrinkType Mouse down:', option.value);
+                              }}
+                              className={`p-3 rounded-xl border-2 cursor-pointer transition-all select-none ${
                                 formData.drinkType === option.value
                                   ? 'border-purple-600 bg-purple-50 text-purple-600'
-                                  : 'border-outline/30 hover:border-outline/50 hover:bg-surface-variant/50'
+                                  : 'border-gray-300 hover:border-purple-300 hover:bg-purple-25'
                               }`}
                               style={{ 
+                                position: 'relative',
+                                zIndex: 100,
+                                backgroundColor: formData.drinkType === option.value ? '#f3e8ff' : 'white',
+                                borderColor: formData.drinkType === option.value ? '#7c3aed' : '#d1d5db',
                                 pointerEvents: 'auto',
                                 touchAction: 'manipulation',
                                 userSelect: 'none'
                               }}
                             >
-                              <div className="flex items-center gap-2 pointer-events-none">
+                              <div className="flex items-center gap-2">
                                 <span className="text-lg">{option.icon}</span>
                                 <span className="text-sm font-medium">{option.label}</span>
                               </div>
-                            </button>
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -443,30 +463,38 @@ export default function CocktailsPage() {
                             { value: 'exotic', label: 'Exotisch', icon: '🌺' },
                             { value: 'simple', label: 'Einfach', icon: '🧊' }
                           ].map(option => (
-                            <button
+                            <div
                               key={option.value}
-                              type="button"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                console.log('🎯 Style Button clicked:', option.value);
                                 handleInputChange('style', option.value);
                               }}
-                              className={`p-3 rounded-xl border-2 transition-all text-left cursor-pointer hover:shadow-md active:scale-95 ${
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                console.log('🖱️ Style Mouse down:', option.value);
+                              }}
+                              className={`p-3 rounded-xl border-2 cursor-pointer transition-all select-none ${
                                 formData.style === option.value
                                   ? 'border-purple-600 bg-purple-50 text-purple-600'
-                                  : 'border-outline/30 hover:border-outline/50 hover:bg-surface-variant/50'
+                                  : 'border-gray-300 hover:border-purple-300 hover:bg-purple-25'
                               }`}
                               style={{ 
+                                position: 'relative',
+                                zIndex: 100,
+                                backgroundColor: formData.style === option.value ? '#f3e8ff' : 'white',
+                                borderColor: formData.style === option.value ? '#7c3aed' : '#d1d5db',
                                 pointerEvents: 'auto',
                                 touchAction: 'manipulation',
                                 userSelect: 'none'
                               }}
                             >
-                              <div className="flex items-center gap-2 pointer-events-none">
+                              <div className="flex items-center gap-2">
                                 <span className="text-lg">{option.icon}</span>
                                 <span className="text-sm font-medium">{option.label}</span>
                               </div>
-                            </button>
+                            </div>
                           ))}
                         </div>
                       </div>

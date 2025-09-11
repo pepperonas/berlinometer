@@ -13,7 +13,7 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
   const fetchDefaultLocations = async () => {
     try {
       setIsLoading(true)
-      const response = await fetch(`https://mrx3k1.de/api/popular-times/default-locations`)
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/default-locations`)
       
       if (!response.ok) {
         throw new Error(`Failed to fetch locations: ${response.status}`)

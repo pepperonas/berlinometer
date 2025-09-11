@@ -15,10 +15,18 @@ export function useAuth(): AuthContextType {
     return {
       user: null,
       isLoading: false,
-      login: async () => ({ success: false, error: 'Auth context not available' }),
-      register: async () => ({ success: false, error: 'Auth context not available' }),
+      isPremium: false,
+      login: async () => {},
+      register: async () => {},
       logout: async () => {},
-      checkAuthStatus: async () => {}
+      loginWithGoogle: async () => {},
+      updateUser: async () => {},
+      requestPasswordReset: async () => {},
+      resetPassword: async () => {},
+      verifyEmail: async () => {},
+      resendVerificationEmail: async () => {},
+      changePassword: async () => {},
+      deleteAccount: async () => {}
     };
   }
   return context;

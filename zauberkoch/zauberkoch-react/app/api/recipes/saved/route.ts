@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const cookieHeader = headersList.get('cookie');
     const accessToken = cookieHeader
       ?.split(';')
-      ?.find(c => c.trim().startsWith('accessToken='))
+      ?.find(c => c.trim().startsWith('access_token='))
       ?.split('=')[1];
 
     if (!accessToken) {

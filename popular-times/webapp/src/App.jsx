@@ -61,7 +61,7 @@ function App() {
     const loadExistingResults = async () => {
       try {
         console.log('Attempting to load existing results...')
-        const response = await fetch('/popular-times/latest_results.json')
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/latest-scraping`)
         console.log('Response status:', response.status, response.statusText)
         
         if (response.ok) {
@@ -80,6 +80,9 @@ function App() {
           let resultsArray = []
           if (Array.isArray(data)) {
             resultsArray = data
+          } else if (data && data.data && Array.isArray(data.data.results)) {
+            // API format: {data: {results: [...]}}
+            resultsArray = data.data.results
           } else if (data && Array.isArray(data.results)) {
             resultsArray = data.results
           } else if (data && data.locations && Array.isArray(data.locations)) {
@@ -129,7 +132,7 @@ function App() {
     setBatchInfo(null)
     
     try {
-      const response = await fetch(`https://mrx3k1.de/api/popular-times/scrape`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/scrape`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -214,13 +217,7 @@ function App() {
           maxWidth: '800px', 
           margin: '0 auto',
           padding: '0'
-        }}>
-          <DefaultLocations 
-            onStartScraping={handleStartScraping}
-            isScrapingActive={isScrapingActive}
-            onShowAbout={() => setShowAboutDialog(true)}
-          />
-          
+        }}>          
           {isScrapingActive && (
             <ProgressBar 
               progress={progress}
@@ -235,6 +232,12 @@ function App() {
               <ResultsDisplay results={results} />
             </>
           )}
+          
+          <DefaultLocations 
+            onStartScraping={handleStartScraping}
+            isScrapingActive={isScrapingActive}
+            onShowAbout={() => setShowAboutDialog(true)}
+          />
         </div>
 
       </div>

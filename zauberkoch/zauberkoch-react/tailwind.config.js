@@ -9,60 +9,137 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Dark Theme Colors (Primary)
+        // Modern Color System
+        primary: {
+          50: 'var(--primary-50)',
+          100: 'var(--primary-100)',
+          200: 'var(--primary-200)',
+          300: 'var(--primary-300)',
+          400: 'var(--primary-400)',
+          500: 'var(--primary-500)',
+          600: 'var(--primary-600)',
+          700: 'var(--primary-700)',
+          800: 'var(--primary-800)',
+          900: 'var(--primary-900)',
+          950: 'var(--primary-950)',
+          DEFAULT: 'var(--primary)',
+          hover: 'var(--primary-hover)',
+          active: 'var(--primary-active)',
+        },
+        secondary: {
+          50: 'var(--secondary-50)',
+          100: 'var(--secondary-100)',
+          200: 'var(--secondary-200)',
+          300: 'var(--secondary-300)',
+          400: 'var(--secondary-400)',
+          500: 'var(--secondary-500)',
+          600: 'var(--secondary-600)',
+          700: 'var(--secondary-700)',
+          800: 'var(--secondary-800)',
+          900: 'var(--secondary-900)',
+          950: 'var(--secondary-950)',
+          DEFAULT: 'var(--secondary)',
+          hover: 'var(--secondary-hover)',
+          active: 'var(--secondary-active)',
+        },
+        neutral: {
+          50: 'var(--neutral-50)',
+          100: 'var(--neutral-100)',
+          200: 'var(--neutral-200)',
+          300: 'var(--neutral-300)',
+          400: 'var(--neutral-400)',
+          500: 'var(--neutral-500)',
+          600: 'var(--neutral-600)',
+          700: 'var(--neutral-700)',
+          800: 'var(--neutral-800)',
+          900: 'var(--neutral-900)',
+          950: 'var(--neutral-950)',
+        },
+        success: {
+          50: 'var(--success-50)',
+          500: 'var(--success-500)',
+          600: 'var(--success-600)',
+          900: 'var(--success-900)',
+          DEFAULT: 'var(--success)',
+          hover: 'var(--success-hover)',
+          bg: 'var(--success-bg)',
+        },
+        warning: {
+          50: 'var(--warning-50)',
+          500: 'var(--warning-500)',
+          600: 'var(--warning-600)',
+          900: 'var(--warning-900)',
+          DEFAULT: 'var(--warning)',
+          hover: 'var(--warning-hover)',
+          bg: 'var(--warning-bg)',
+        },
+        error: {
+          50: 'var(--error-50)',
+          500: 'var(--error-500)',
+          600: 'var(--error-600)',
+          900: 'var(--error-900)',
+          DEFAULT: 'var(--error)',
+          hover: 'var(--error-hover)',
+          bg: 'var(--error-bg)',
+        },
+        info: {
+          50: 'var(--info-50)',
+          500: 'var(--info-500)',
+          600: 'var(--info-600)',
+          900: 'var(--info-900)',
+          DEFAULT: 'var(--info)',
+          hover: 'var(--info-hover)',
+          bg: 'var(--info-bg)',
+        },
+        // Background System
         background: {
           DEFAULT: 'var(--background)',
-          dark: 'var(--background-dark)',
-          darker: 'var(--background-darker)',
+          secondary: 'var(--background-secondary)',
+          tertiary: 'var(--background-tertiary)',
         },
         surface: {
           DEFAULT: 'var(--surface)',
+          secondary: 'var(--surface-secondary)',
+          tertiary: 'var(--surface-tertiary)',
           hover: 'var(--surface-hover)',
-          variant: 'var(--surface-variant)',
+          active: 'var(--surface-active)',
         },
-        primary: {
-          DEFAULT: 'var(--primary)',
-          dark: 'var(--primary-dark)', 
-          light: 'var(--primary-light)',
+        card: {
+          DEFAULT: 'var(--card-background)',
+          elevated: 'var(--card-background-elevated)',
+          border: 'var(--card-border)',
         },
-        secondary: {
-          DEFAULT: 'var(--secondary)',
-          dark: 'var(--secondary-dark)',
-          light: 'var(--secondary-light)',
+        // Text System
+        text: {
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          tertiary: 'var(--text-tertiary)',
+          quaternary: 'var(--text-quaternary)',
+          inverse: 'var(--text-inverse)',
         },
-        // Status colors
-        success: 'var(--success)',
-        warning: 'var(--warning)',
-        error: 'var(--error)',
-        info: 'var(--info)',
-        // Text colors
-        'on-background': 'var(--on-background)',
-        'on-surface': 'var(--on-surface)',
-        'on-surface-variant': 'var(--on-surface-variant)',
-        'on-outline': 'var(--on-outline)',
-        // Border colors
+        // Border System
+        border: {
+          primary: 'var(--border-primary)',
+          secondary: 'var(--border-secondary)',
+          interactive: 'var(--border-interactive)',
+          focus: 'var(--border-focus)',
+        },
+        // Legacy Support
+        'accent-blue': 'var(--accent-blue)',
+        'accent-green': 'var(--accent-green)',
+        'accent-red': 'var(--accent-red)',
         outline: {
           DEFAULT: 'var(--outline)',
           variant: 'var(--outline-variant)',
         },
-        // Card background
-        card: {
-          DEFAULT: 'var(--card-background)',
-        },
-        // Accent colors
-        accent: {
-          blue: 'var(--accent-blue)',
-          green: 'var(--accent-green)', 
-          red: 'var(--accent-red)',
-        },
-        // Text colors
-        text: {
-          primary: 'var(--text-primary)',
-          secondary: 'var(--text-secondary)',
-        }
+        'on-background': 'var(--on-background)',
+        'on-surface': 'var(--on-surface)',
+        'on-surface-variant': 'var(--on-surface-variant)',
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: 'var(--font-family-sans)',
+        mono: 'var(--font-family-mono)',
+        serif: 'var(--font-family-serif)',
       },
       fontSize: {
         'xs': 'var(--font-size-xs)',

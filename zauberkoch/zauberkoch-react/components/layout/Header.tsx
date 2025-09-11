@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import { 
   FiMenu, 
   FiX, 
@@ -23,17 +24,35 @@ import { usePWA } from '@/contexts/PWAContext';
 import { Button } from '@/components/ui/Button';
 import { cn, getInitials } from '@/lib/utils';
 
-export function Header() {
+// Client-side only wrapper to prevent hydration issues
+function HeaderContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
   const router = useRouter();
   
-  // Use hooks (now with built-in defensive fallbacks)
-  const { user, logout, isPremium } = useAuth();
-  const { theme, setTheme, effectiveTheme } = useTheme();
-  const { canInstall, install, isOnline } = usePWA();
+  // ALL HOOKS MUST BE CALLED UNCONDITIONALLY
+  const authData = useAuth();
+  const themeData = useTheme();
+  const pwaData = usePWA();
+  
+  // Ensure component only renders client-side to avoid hydration issues
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // Extract data from hooks with fallbacks
+  const user = authData?.user || null;
+  const logout = authData?.logout || (async () => {});
+  const isPremium = authData?.isPremium || false;
+  const theme = themeData?.theme || 'light';
+  const setTheme = themeData?.setTheme || (() => {});
+  const effectiveTheme = themeData?.effectiveTheme || 'light';
+  const canInstall = pwaData?.canInstall || false;
+  const install = pwaData?.install || (async () => {});
+  const isOnline = pwaData?.isOnline ?? true;
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
@@ -58,11 +77,30 @@ export function Header() {
 
   // Navigation items
   const navigationItems = [
-    { href: '/recipes', label: 'Rezepte', auth: true },
-    { href: '/cocktails', label: 'Cocktails', auth: true },
-    { href: '/favorites', label: 'Favoriten', auth: true },
-    { href: '/history', label: 'Verlauf', auth: true },
+    { href: '/dashboard', label: 'Dashboard', auth: true, icon: '🏠' },
+    { href: '/recipes/generate', label: 'Generator', auth: true, icon: '🎨' },
+    { href: '/recipes', label: 'Meine Rezepte', auth: true, icon: '📚' },
+    { href: '/favorites', label: 'Favoriten', auth: true, icon: '⭐' },
+    { href: '/cocktails', label: 'Cocktails', auth: true, icon: '🍸' },
   ];
+
+  // Don't render anything until client-side
+  if (!isClient) {
+    return (
+      <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-outline">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
+              🍳 <span>ZauberKoch</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-success" />
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-outline">
@@ -80,8 +118,9 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-on-surface hover:text-primary transition-colors font-medium"
+                  className="flex items-center gap-2 text-on-surface hover:text-primary transition-colors font-medium px-3 py-2 rounded-lg hover:bg-surface-variant/50"
                 >
+                  <span className="text-sm">{item.icon}</span>
                   {item.label}
                 </Link>
               )
@@ -265,22 +304,66 @@ export function Header() {
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden border-t border-outline bg-surface"
           >
-            <nav className="py-4 space-y-2">
+            <nav className="py-4 space-y-1">
+              {user && (
+                <div className="px-4 pb-4 mb-4 border-b border-outline/20">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium">
+                      {user ? getInitials(`${user.firstName || ''} ${user.lastName || ''}`) : 'U'}
+                    </div>
+                    <div>
+                      <p className="font-medium text-sm">
+                        {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Benutzer' : 'Benutzer'}
+                      </p>
+                      <p className="text-xs text-on-surface-variant">{user?.email || ''}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {navigationItems.map((item) => (
                 (!item.auth || user) && (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={toggleMenu}
-                    className="block px-4 py-2 text-on-surface hover:bg-surface-variant rounded-lg transition-colors"
+                    className="flex items-center gap-3 mx-2 px-4 py-3 text-on-surface hover:bg-surface-variant rounded-lg transition-colors"
                   >
-                    {item.label}
+                    <span className="text-lg">{item.icon}</span>
+                    <span className="font-medium">{item.label}</span>
                   </Link>
                 )
               ))}
               
+              {user && (
+                <div className="px-4 pt-4 mt-4 border-t border-outline/20 space-y-2">
+                  <Link href="/profile" onClick={toggleMenu}>
+                    <div className="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-surface-variant rounded-lg transition-colors">
+                      <FiUser size={18} />
+                      <span>Profil</span>
+                    </div>
+                  </Link>
+                  <Link href="/settings" onClick={toggleMenu}>
+                    <div className="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-surface-variant rounded-lg transition-colors">
+                      <FiSettings size={18} />
+                      <span>Einstellungen</span>
+                    </div>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      toggleMenu();
+                      handleLogout();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-error hover:bg-error/10 rounded-lg transition-colors"
+                  >
+                    <FiLogOut size={18} />
+                    <span>Abmelden</span>
+                  </button>
+                </div>
+              )}
+              
               {!user && (
-                <div className="px-4 pt-4 border-t border-outline">
+                <div className="px-4 pt-4 border-t border-outline/20">
                   <div className="flex flex-col gap-2">
                     <Link href="/auth/login" onClick={toggleMenu}>
                       <Button variant="ghost" size="sm" fullWidth>
@@ -303,4 +386,6 @@ export function Header() {
   );
 }
 
-export default Header;
+// Export the HeaderContent as the main Header component
+export { HeaderContent as Header };
+export default HeaderContent;

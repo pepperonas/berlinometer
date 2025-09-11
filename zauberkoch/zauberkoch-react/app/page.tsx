@@ -39,66 +39,114 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-primary to-primary-dark text-white">
-        <div className="container py-12 lg:py-16">
+      <div className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-900 via-background to-primary-950" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(99,102,241,0.1),transparent_70%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(237,112,20,0.08),transparent_70%)]" />
+        
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 w-2 h-2 bg-primary-400 rounded-full animate-pulse opacity-60" />
+        <div className="absolute top-40 right-20 w-3 h-3 bg-secondary-400 rounded-full animate-bounce opacity-40" />
+        <div className="absolute bottom-32 left-20 w-4 h-4 bg-primary-300 rounded-full animate-ping opacity-30" />
+        
+        <div className="container relative z-10 py-20">
           <motion.div 
-            className="text-center lg:text-left max-w-4xl mx-auto"
+            className="text-center max-w-5xl mx-auto"
             initial="hidden"
             animate="visible"
             variants={containerVariants}
           >
+            <motion.div
+              className="inline-flex items-center gap-2 bg-primary-500/10 text-primary-300 border border-primary-400/20 px-4 py-2 rounded-full text-sm font-semibold mb-8"
+              variants={itemVariants}
+            >
+              ✨ Powered by AI
+            </motion.div>
+            
             <motion.h1 
-              className="text-3xl lg:text-5xl font-bold mb-4 leading-tight"
+              className="text-4xl sm:text-5xl lg:text-7xl font-black mb-6 leading-tight"
               variants={itemVariants}
             >
-              Willkommen bei ZauberKoch! 🍳
+              <span className="bg-gradient-to-r from-white via-primary-200 to-primary-400 bg-clip-text text-transparent">
+                Willkommen bei
+              </span>
+              <br />
+              <span className="bg-gradient-to-r from-primary-400 to-secondary-400 bg-clip-text text-transparent">
+                ZauberKoch
+              </span>
+              <span className="text-4xl lg:text-6xl">🍳</span>
             </motion.h1>
+            
             <motion.p 
-              className="text-lg lg:text-xl text-primary-light mb-6 leading-relaxed"
+              className="text-xl lg:text-2xl text-neutral-300 mb-8 leading-relaxed max-w-3xl mx-auto"
               variants={itemVariants}
             >
-              Deine AI-gestützte Küche wartet auf dich. Entdecke unbegrenzte kulinarische Möglichkeiten mit der Kraft der künstlichen Intelligenz.
+              Deine AI-gestützte Küche wartet auf dich. Entdecke unbegrenzte kulinarische 
+              <span className="text-secondary-400 font-semibold"> Möglichkeiten</span> mit der 
+              Kraft der künstlichen Intelligenz.
             </motion.p>
 
             {/* AI Chat Input */}
             <motion.form 
               onSubmit={handleChatSubmit}
-              className="bg-surface-variant/20 backdrop-blur-sm rounded-lg p-4 mb-6 border border-white/20"
+              className="relative max-w-2xl mx-auto mb-8"
               variants={itemVariants}
             >
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Was möchtest du heute kochen? Z.B. 'Pasta mit Tomaten und Basilikum'"
-                  className="flex-1 px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30"
-                />
-                <button
-                  type="submit"
-                  disabled={!chatInput.trim()}
-                  className="px-6 py-3 bg-white text-primary rounded-lg hover:bg-surface transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-semibold"
-                >
-                  <FiSend className="w-4 h-4" />
-                  Rezept erstellen
-                </button>
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-secondary-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all opacity-50" />
+                <div className="relative flex gap-3 p-3 bg-surface/80 backdrop-blur-xl rounded-2xl border border-primary-400/20">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Was möchtest du heute kochen? Z.B. 'Pasta mit Tomaten und Basilikum'"
+                    className="flex-1 px-6 py-4 rounded-xl bg-background/50 border border-border-primary text-text-primary placeholder-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 transition-all"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!chatInput.trim()}
+                    className="btn btn-primary px-6 py-4 rounded-xl shadow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-semibold min-w-fit"
+                  >
+                    <FiSend className="w-5 h-5" />
+                    <span className="hidden sm:block">Erstellen</span>
+                  </button>
+                </div>
               </div>
             </motion.form>
 
             <motion.div 
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center"
               variants={itemVariants}
             >
               <Link href="/recipes/generate">
-                <button className="btn btn-lg bg-white text-primary hover:bg-surface transition-all transform hover:scale-105">
-                  Generator öffnen
+                <button className="btn btn-primary btn-lg px-8 py-4 text-lg shadow-primary hover:shadow-2xl">
+                  🎨 Generator öffnen
                 </button>
               </Link>
               <Link href="/dashboard">
-                <button className="btn btn-lg btn-outline text-white border-white hover:bg-white hover:text-primary">
-                  Features entdecken
+                <button className="btn btn-outline btn-lg px-8 py-4 text-lg border-2 border-primary-400 text-primary-300 hover:bg-primary-500 hover:text-white hover:border-primary-500">
+                  ✨ Features entdecken
                 </button>
               </Link>
+            </motion.div>
+            
+            <motion.div 
+              className="mt-8 flex flex-col sm:flex-row gap-6 justify-center text-sm text-neutral-400"
+              variants={itemVariants}
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-success-500 rounded-full"></span>
+                Kostenlos starten
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-success-500 rounded-full"></span>
+                Keine Kreditkarte erforderlich
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-success-500 rounded-full"></span>
+                3 Rezepte täglich gratis
+              </div>
             </motion.div>
           </motion.div>
         </div>

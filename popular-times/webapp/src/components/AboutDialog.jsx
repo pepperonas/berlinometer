@@ -176,7 +176,7 @@ Das Projekt zeigt, dass robustes Web Scraping möglich ist, wenn man:
 
 **Endresultat**: Eine ultra-performante Web-App mit 1200% Performance-Steigerung, 100% Location-Namen Erfolgsquote und modernem Dark Theme Design.
 
-**Live Demo**: https://mrx3k1.de/popular-times/
+**Live Demo**: https://berlinometer.de/ und https://mrx3k1.de/popular-times/
 
 ---
 

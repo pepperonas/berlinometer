@@ -24,6 +24,7 @@ import toast from 'react-hot-toast';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import Breadcrumbs from '@/components/ui/Breadcrumbs';
 import RecipeCard from '@/components/recipe/RecipeCard';
 import RecipeDetail from '@/components/recipe/RecipeDetail';
 import ShareRecipeModal from '@/components/recipe/ShareRecipeModal';
@@ -98,6 +99,12 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
       const response = await fetch(endpoint);
       
       if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('Bitte melde dich an, um deine Rezepte zu sehen');
+          // Redirect to login page
+          window.location.href = '/auth/login';
+          return;
+        }
         throw new Error('Fehler beim Laden der Rezepte');
       }
       
@@ -105,7 +112,9 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
       setRecipes(data.recipes || []);
     } catch (error: any) {
       console.error('Error loading recipes:', error);
-      toast.error(error?.message || 'Fehler beim Laden der Rezepte');
+      if (error.message !== 'Fehler beim Laden der Rezepte') {
+        toast.error(error?.message || 'Fehler beim Laden der Rezepte');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -116,10 +125,14 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
       const response = await fetch('/api/recipes/saved/ids');
       if (response.ok) {
         const data = await response.json();
-        setSavedRecipes(new Set(data.savedRecipeIds || []));
+        setSavedRecipes(new Set(data.savedIds || []));
+      } else if (response.status === 401) {
+        // User not authenticated, clear saved recipes
+        setSavedRecipes(new Set());
       }
     } catch (error) {
       console.error('Error loading saved recipes:', error);
+      setSavedRecipes(new Set());
     }
   };
 
@@ -363,6 +376,14 @@ export function RecipeListView({ showSavedOnly = false }: RecipeListViewProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Breadcrumbs */}
+        <Breadcrumbs 
+          items={[
+            { label: 'Start', href: '/', icon: '🏠' },
+            { label: showSavedOnly ? 'Favoriten' : 'Meine Rezepte', icon: showSavedOnly ? '⭐' : '📚' }
+          ]}
+          className="mb-6"
+        />
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
