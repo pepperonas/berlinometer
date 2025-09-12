@@ -2,3 +2,7 @@ flask==2.3.3
 flask-cors==4.0.0
 playwright==1.40.0
 asyncio
+PyJWT==2.8.0
+bcrypt==4.1.2
+mysql-connector-python==8.0.33
+python-dotenv==1.0.0

@@ -72,3 +72,101 @@ BEGIN
     VALUES (v_location_id, p_occupancy_percent, p_usual_percent, p_is_live_data, p_raw_text);
 END$$
 DELIMITER ;
+
+-- User Management Tables
+
+-- Table for user accounts
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT FALSE,  -- Manual activation by admin
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL,
+    INDEX idx_username (username),
+    INDEX idx_email (email),
+    INDEX idx_active (is_active)
+);
+
+-- Table for user filter preferences
+CREATE TABLE IF NOT EXISTS user_filters (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    filter_type ENUM(
+        'location_name_contains',
+        'location_name_equals', 
+        'address_contains',
+        'rating_min',
+        'occupancy_max',
+        'occupancy_min',
+        'exclude_location',
+        'only_live_data'
+    ) NOT NULL,
+    filter_value VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_filters (user_id, is_active),
+    INDEX idx_filter_type (filter_type)
+);
+
+-- Table for user sessions (JWT token management)
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token_hash VARCHAR(255) NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_sessions (user_id, is_active),
+    INDEX idx_token (token_hash),
+    INDEX idx_expires (expires_at)
+);
+
+-- Table for user's saved locations
+CREATE TABLE IF NOT EXISTS user_locations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    location_id INT NOT NULL,
+    display_order INT DEFAULT 0,  -- Order in which locations appear for user
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (location_id) REFERENCES locations(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_location (user_id, location_id),
+    INDEX idx_user_locations (user_id, is_active),
+    INDEX idx_display_order (user_id, display_order)
+);
+
+-- View for active user filters
+CREATE VIEW user_active_filters AS
+SELECT 
+    uf.user_id,
+    u.username,
+    uf.filter_type,
+    uf.filter_value,
+    uf.created_at
+FROM user_filters uf
+INNER JOIN users u ON uf.user_id = u.id
+WHERE uf.is_active = TRUE AND u.is_active = TRUE
+ORDER BY uf.user_id, uf.filter_type;
+
+-- View for user's saved locations with details
+CREATE VIEW user_saved_locations AS
+SELECT 
+    ul.user_id,
+    u.username,
+    l.id as location_id,
+    l.google_maps_url,
+    l.name,
+    l.address,
+    ul.display_order,
+    ul.created_at as saved_at
+FROM user_locations ul
+INNER JOIN users u ON ul.user_id = u.id
+INNER JOIN locations l ON ul.location_id = l.id
+WHERE ul.is_active = TRUE AND u.is_active = TRUE
+ORDER BY ul.user_id, ul.display_order;

@@ -6,15 +6,19 @@ import json
 import logging
 import os
 import random
+import re
 import sys
 import time
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import mysql.connector
 from mysql.connector import pooling
 from dotenv import load_dotenv
+import jwt
+import bcrypt
+from functools import wraps
 
 # Load environment variables
 load_dotenv()
@@ -1541,6 +1545,9 @@ async def scrape_live_occupancy_single(url, attempt_num, location_name_from_csv=
 app = Flask(__name__)
 CORS(app)
 
+# JWT Configuration
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'popular-times-secret-key-change-in-production')
+
 # MySQL Connection Pool
 try:
     db_config = {
@@ -1562,6 +1569,301 @@ try:
 except Exception as e:
     logger.error(f"❌ Failed to create MySQL connection pool: {e}")
     db_pool = None
+
+# Authentication Helper Functions
+def hash_password(password):
+    """Hash a password using bcrypt"""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password, password_hash):
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+
+def generate_jwt_token(user_id, username):
+    """Generate JWT token for user"""
+    payload = {
+        'user_id': user_id,
+        'username': username,
+        'exp': datetime.utcnow() + timedelta(days=7)  # 7 days expiration
+    }
+    return jwt.encode(payload, app.config['JWT_SECRET_KEY'], algorithm='HS256')
+
+def verify_jwt_token(token):
+    """Verify and decode JWT token"""
+    try:
+        payload = jwt.decode(token, app.config['JWT_SECRET_KEY'], algorithms=['HS256'])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+def token_required(f):
+    """Decorator to require JWT token authentication"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'error': 'No token provided'}), 401
+        
+        if token.startswith('Bearer '):
+            token = token[7:]
+        
+        payload = verify_jwt_token(token)
+        if not payload:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+        
+        request.current_user = payload
+        return f(*args, **kwargs)
+    return decorated
+
+def apply_user_filters(results, filters):
+    """Apply user filters to scraping results"""
+    if not filters:
+        return results
+    
+    filtered_results = []
+    
+    for result in results:
+        location_name = (result.get('location_name') or '').lower()
+        address = (result.get('address') or '').lower()
+        rating = result.get('rating')
+        live_occupancy = result.get('live_occupancy')
+        is_live_data = result.get('is_live_data', False)
+        
+        # Parse rating if it's a string
+        if isinstance(rating, str):
+            try:
+                rating_parts = rating.split(' ')
+                rating = float(rating_parts[0]) if rating_parts else 0
+            except:
+                rating = 0
+        elif not isinstance(rating, (int, float)):
+            rating = 0
+        
+        # Parse occupancy percentage if it's a string
+        occupancy_percent = 0
+        if isinstance(live_occupancy, str):
+            try:
+                # Extract percentage from strings like "25% busy" or "Low 10%"
+                percent_match = re.search(r'(\d+)%', live_occupancy)
+                if percent_match:
+                    occupancy_percent = int(percent_match.group(1))
+            except:
+                occupancy_percent = 0
+        elif isinstance(live_occupancy, (int, float)):
+            occupancy_percent = live_occupancy
+        
+        # Apply filters
+        include_result = True
+        
+        for filter_item in filters:
+            filter_type = filter_item['type']
+            filter_value = filter_item['value'].lower() if isinstance(filter_item['value'], str) else filter_item['value']
+            
+            if filter_type == 'location_name_contains':
+                if filter_value not in location_name:
+                    include_result = False
+                    break
+            
+            elif filter_type == 'location_name_equals':
+                if filter_value != location_name:
+                    include_result = False
+                    break
+            
+            elif filter_type == 'address_contains':
+                if filter_value not in address:
+                    include_result = False
+                    break
+            
+            elif filter_type == 'rating_min':
+                try:
+                    min_rating = float(filter_value)
+                    if rating < min_rating:
+                        include_result = False
+                        break
+                except:
+                    continue
+            
+            elif filter_type == 'occupancy_max':
+                try:
+                    max_occupancy = float(filter_value)
+                    if occupancy_percent > max_occupancy:
+                        include_result = False
+                        break
+                except:
+                    continue
+            
+            elif filter_type == 'occupancy_min':
+                try:
+                    min_occupancy = float(filter_value)
+                    if occupancy_percent < min_occupancy:
+                        include_result = False
+                        break
+                except:
+                    continue
+            
+            elif filter_type == 'exclude_location':
+                if filter_value in location_name or filter_value in address:
+                    include_result = False
+                    break
+            
+            elif filter_type == 'only_live_data':
+                if filter_value.lower() in ['true', '1', 'yes'] and not is_live_data:
+                    include_result = False
+                    break
+        
+        if include_result:
+            filtered_results.append(result)
+    
+    return filtered_results
+
+def get_user_filters_for_request():
+    """Get active filters for authenticated user, return empty list if not authenticated"""
+    try:
+        # Check if Authorization header is present
+        token = request.headers.get('Authorization')
+        if not token:
+            return []
+        
+        if token.startswith('Bearer '):
+            token = token[7:]
+        
+        payload = verify_jwt_token(token)
+        if not payload:
+            return []
+        
+        user_id = payload['user_id']
+        
+        if not db_pool:
+            return []
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute(
+                "SELECT filter_type, filter_value FROM user_filters WHERE user_id = %s AND is_active = TRUE",
+                (user_id,)
+            )
+            filters = cursor.fetchall()
+            
+            filter_list = []
+            for filter_type, filter_value in filters:
+                filter_list.append({
+                    'type': filter_type,
+                    'value': filter_value
+                })
+            
+            return filter_list
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Error getting user filters: {e}")
+        return []
+
+def get_user_location_urls_for_request():
+    """Get user's saved location URLs for authenticated user, return empty list if not authenticated or no locations"""
+    try:
+        # Check if Authorization header is present
+        token = request.headers.get('Authorization')
+        if not token:
+            return []
+        
+        if token.startswith('Bearer '):
+            token = token[7:]
+        
+        payload = verify_jwt_token(token)
+        if not payload:
+            return []
+        
+        user_id = payload['user_id']
+        
+        if not db_pool:
+            return []
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("""
+                SELECT l.google_maps_url 
+                FROM user_locations ul
+                INNER JOIN locations l ON ul.location_id = l.id
+                WHERE ul.user_id = %s AND ul.is_active = TRUE
+                ORDER BY ul.display_order, ul.created_at
+            """, (user_id,))
+            
+            location_urls = [row[0] for row in cursor.fetchall()]
+            return location_urls
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Error getting user location URLs: {e}")
+        return []
+
+def normalize_google_maps_url(url):
+    """Normalize Google Maps URL by extracting the base location identifier"""
+    if not url:
+        return ""
+    
+    # Extract the place name and coordinates from the URL
+    # Pattern: /place/Name/@lat,lng,zoom
+    import re
+    
+    # Try to match the place name
+    place_match = re.search(r'/place/([^/@]+)', url)
+    if place_match:
+        place_name = place_match.group(1).replace('+', ' ').strip()
+        return place_name.lower()
+    
+    # Fallback: use the entire URL up to the first @ or ?
+    clean_url = url.split('@')[0].split('?')[0]
+    return clean_url.lower()
+
+def filter_results_by_user_preferences(results):
+    """Filter results based on user's saved locations. If no locations saved, return all results."""
+    try:
+        user_location_urls = get_user_location_urls_for_request()
+        
+        # If user has no saved locations, show all results
+        if not user_location_urls:
+            logger.info(f"🔓 User has no saved locations - showing all {len(results)} results")
+            return results
+        
+        # Normalize user location URLs for comparison
+        normalized_user_urls = [normalize_google_maps_url(url) for url in user_location_urls]
+        
+        # Filter results to only include user's saved locations
+        filtered_results = []
+        for result in results:
+            # Check if this result's URL matches any of the user's saved locations
+            result_url = result.get('url', result.get('google_maps_url', ''))
+            normalized_result_url = normalize_google_maps_url(result_url)
+            
+            # Check for matches
+            for i, normalized_user_url in enumerate(normalized_user_urls):
+                if normalized_result_url and normalized_user_url and normalized_result_url in normalized_user_url or normalized_user_url in normalized_result_url:
+                    filtered_results.append(result)
+                    logger.debug(f"✅ Matched: '{result.get('location_name', 'N/A')}' - User URL: {user_location_urls[i][:50]}... Result URL: {result_url[:50]}...")
+                    break
+        
+        logger.info(f"🔒 User has {len(user_location_urls)} saved locations - filtered to {len(filtered_results)} results")
+        if len(filtered_results) == 0 and len(user_location_urls) > 0:
+            logger.warning(f"⚠️ No matches found. User URLs: {[url[:50] for url in user_location_urls]}")
+            logger.warning(f"⚠️ Sample result URLs: {[result.get('url', '')[:50] for result in results[:3]]}")
+        
+        return filtered_results
+        
+    except Exception as e:
+        logger.error(f"Error filtering results by user preferences: {e}")
+        return results  # Return original results on error
 
 def save_scraping_data(results, search_params=None):
     """
@@ -1934,76 +2236,12 @@ async def process_urls_stream(urls):
 
 @app.route('/scrape', methods=['POST'])
 def scrape_locations():
-    """Endpoint to scrape Google Maps locations with streaming progress"""
-    try:
-        data = request.get_json()
-
-        if not data or 'urls' not in data:
-            return jsonify({'error': 'URLs array is required'}), 400
-
-        urls = data['urls']
-
-        if not isinstance(urls, list) or len(urls) == 0:
-            return jsonify({'error': 'URLs must be a non-empty array'}), 400
-
-        # Validate URLs
-        valid_urls = []
-        for url in urls:
-            if isinstance(url, str) and url.strip().startswith('https://'):
-                valid_urls.append(url.strip())
-
-        if len(valid_urls) == 0:
-            return jsonify({'error': 'No valid URLs provided'}), 400
-
-        logger.info(f"🚀 Starting CONCURRENT BATCH scraping for {len(valid_urls)} URLs")
-        logger.info(
-            f"⚡ Performance-Features: Batch-Processing (3er-Batches), Concurrent Execution (max 2 parallel)")
-        logger.info(
-            f"🔧 Enhanced: Resource blocking, Browser context reuse, Exponential backoff retries")
-
-        def generate_stream():
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-
-                async def run_processing():
-                    async for response in process_urls_stream(valid_urls):
-                        yield response
-
-                async_gen = run_processing()
-
-                try:
-                    while True:
-                        try:
-                            response = loop.run_until_complete(async_gen.__anext__())
-                            yield response
-                            # Force flush for immediate transmission
-                            sys.stdout.flush()
-                        except StopAsyncIteration:
-                            break
-                except Exception as e:
-                    logger.error(f"Stream processing error: {e}")
-                    yield create_error_response(str(e))
-                finally:
-                    loop.close()
-
-            except Exception as e:
-                logger.error(f"Generate stream error: {e}")
-                yield create_error_response(str(e))
-
-        return Response(
-            generate_stream(),
-            mimetype='text/plain',
-            headers={
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-                'X-Accel-Buffering': 'no',  # Disable nginx buffering
-            }
-        )
-
-    except Exception as e:
-        logger.error(f"Scrape endpoint error: {e}")
-        return jsonify({'error': str(e)}), 500
+    """Endpoint disabled - only automatic scraping is allowed"""
+    return jsonify({
+        'success': False,
+        'error': 'Manual scraping has been disabled. Locations are automatically scraped every 20-30 minutes.',
+        'message': 'Please use the latest-scraping endpoint to get current results.'
+    }), 403
 
 
 async def run_gmaps_location_finder_script(address):
@@ -2145,68 +2383,12 @@ def get_default_locations():
 
 @app.route('/find-locations', methods=['POST'])
 def find_locations():
-    """Endpoint to find locations near an address using gmaps-location-finder.py script"""
-    try:
-        data = request.get_json()
-
-        if not data or 'address' not in data:
-            return jsonify({'error': 'Address is required'}), 400
-
-        address = data['address']
-
-        if not isinstance(address, str) or not address.strip():
-            return jsonify({'error': 'Valid address string is required'}), 400
-
-        logger.info(f"Finding locations near: {address}")
-
-        # Use the external gmaps-location-finder.py script
-        logger.info("Using external gmaps-location-finder.py script")
-
-        # Run the external script
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        try:
-            locations = loop.run_until_complete(run_gmaps_location_finder_script(address.strip()))
-            urls = [location['url'] for location in locations]
-
-            logger.info(f"Found {len(locations)} locations from gmaps-location-finder.py script")
-
-            if len(locations) == 0:
-                logger.warning("No locations found, falling back to integrated finder")
-                # Fallback zur integrierten Funktion
-                locations = loop.run_until_complete(
-                    find_locations_near_address_enhanced(address.strip()))
-                urls = [location['url'] for location in locations]
-                logger.info(f"Fallback found {len(locations)} locations")
-
-            # Speichere auch die Location-Finder-Ergebnisse
-            if len(locations) > 0:
-                logger.info("💾 Speichere Location-Finder-Ergebnisse...")
-                location_results = [{
-                    'location_name': loc['name'],
-                    'url': loc['url'],
-                    'address': address,
-                    'timestamp': datetime.now().isoformat()
-                } for loc in locations]
-                save_scraping_data(location_results, {"address": address, "type": "location_finder"})
-            
-            return jsonify({
-                'success': True,
-                'address': address,
-                'count': len(locations),
-                'locations': locations,
-                'urls': urls,
-                'timestamp': datetime.now().isoformat(),
-                'source': 'gmaps-location-finder.py' if len(locations) > 0 else 'fallback'
-            })
-
-        finally:
-            loop.close()
-
-    except Exception as e:
-        logger.error(f"Location finder error: {e}")
-        return jsonify({'error': str(e)}), 500
+    """Endpoint disabled - only automatic scraping is allowed"""
+    return jsonify({
+        'success': False,
+        'error': 'Manual location finding has been disabled. Locations are automatically scraped every 20-30 minutes.',
+        'message': 'Please use your saved locations or contact admin to add new locations to the automatic scraping.'
+    }), 403
 
 
 @app.route('/latest-scraping', methods=['GET'])
@@ -2284,12 +2466,45 @@ def get_latest_scraping():
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
-        logger.info(f"✅ Letztes Scraping geladen: {latest_file} ({data.get('total_locations', 0)} Locations)")
+        # Apply user location preferences first (primary filtering)
+        original_count = len(data.get('results', []))
+        
+        if 'results' in data:
+            # First filter by user's saved locations
+            data['results'] = filter_results_by_user_preferences(data['results'])
+            location_filtered_count = len(data['results'])
+            
+            # Then apply additional user filters
+            user_filters = get_user_filters_for_request()
+            if user_filters:
+                data['results'] = apply_user_filters(data['results'], user_filters)
+                final_count = len(data['results'])
+                logger.info(f"🔍 Applied location filter: {original_count} → {location_filtered_count}, then {len(user_filters)} user filters: {location_filtered_count} → {final_count} locations")
+            else:
+                final_count = location_filtered_count
+                logger.info(f"🔍 Applied location filter only: {original_count} → {final_count} locations")
+        else:
+            location_filtered_count = original_count
+            final_count = original_count
+        
+        logger.info(f"✅ Letztes Scraping geladen: {latest_file} ({original_count} Locations, {final_count} after all filters)")
+        
+        # Check if user is authenticated
+        user_location_urls = get_user_location_urls_for_request()
+        user_filters = get_user_filters_for_request() if 'user_filters' not in locals() else user_filters
         
         return jsonify({
             'success': True,
             'filename': latest_file,
             'data': data,
+            'filter_info': {
+                'user_authenticated': len(user_location_urls) > 0 or len(user_filters) > 0,
+                'user_locations_count': len(user_location_urls),
+                'user_filters_applied': len(user_filters),
+                'original_count': original_count,
+                'location_filtered_count': location_filtered_count,
+                'final_count': final_count
+            },
             'debug_info': {
                 'file_count': len(json_files),
                 'all_files': json_files[:5]  # Nur erste 5 für Debug
@@ -2351,6 +2566,656 @@ def health_check():
         'database': 'connected' if db_pool else 'disconnected'
     })
 
+
+# Authentication Endpoints
+@app.route('/auth/register', methods=['POST'])
+def register():
+    """User registration endpoint"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '').strip()
+        
+        # Validation
+        if not username or not email or not password:
+            return jsonify({'error': 'Username, email, and password are required'}), 400
+        
+        if len(username) < 3:
+            return jsonify({'error': 'Username must be at least 3 characters'}), 400
+        
+        if len(password) < 6:
+            return jsonify({'error': 'Password must be at least 6 characters'}), 400
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # Check if username or email already exists
+            cursor.execute("SELECT id FROM users WHERE username = %s OR email = %s", (username, email))
+            if cursor.fetchone():
+                return jsonify({'error': 'Username or email already exists'}), 409
+            
+            # Hash password and create user
+            password_hash = hash_password(password)
+            cursor.execute(
+                "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s)",
+                (username, email, password_hash)
+            )
+            conn.commit()
+            
+            return jsonify({
+                'message': 'User registered successfully. Account activation pending.',
+                'username': username
+            }), 201
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Registration error: {e}")
+        return jsonify({'error': 'Registration failed'}), 500
+
+@app.route('/auth/login', methods=['POST'])
+def login():
+    """User login endpoint"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+        
+        if not username or not password:
+            return jsonify({'error': 'Username and password are required'}), 400
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # Get user by username or email
+            cursor.execute(
+                "SELECT id, username, password_hash, is_active FROM users WHERE username = %s OR email = %s",
+                (username, username)
+            )
+            user = cursor.fetchone()
+            
+            if not user:
+                return jsonify({'error': 'Invalid credentials'}), 401
+            
+            user_id, user_username, password_hash, is_active = user
+            
+            if not verify_password(password, password_hash):
+                return jsonify({'error': 'Invalid credentials'}), 401
+            
+            if not is_active:
+                return jsonify({'error': 'Account not activated. Please contact admin.'}), 403
+            
+            # Update last login
+            cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user_id,))
+            conn.commit()
+            
+            # Generate JWT token
+            token = generate_jwt_token(user_id, user_username)
+            
+            return jsonify({
+                'message': 'Login successful',
+                'token': token,
+                'user': {
+                    'id': user_id,
+                    'username': user_username
+                }
+            }), 200
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Login error: {e}")
+        return jsonify({'error': 'Login failed'}), 500
+
+@app.route('/auth/profile', methods=['GET'])
+@token_required
+def get_profile():
+    """Get user profile"""
+    try:
+        user_id = request.current_user['user_id']
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute(
+                "SELECT username, email, created_at, last_login FROM users WHERE id = %s",
+                (user_id,)
+            )
+            user = cursor.fetchone()
+            
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            
+            username, email, created_at, last_login = user
+            
+            return jsonify({
+                'user': {
+                    'id': user_id,
+                    'username': username,
+                    'email': email,
+                    'created_at': created_at.isoformat() if created_at else None,
+                    'last_login': last_login.isoformat() if last_login else None
+                }
+            }), 200
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Profile error: {e}")
+        return jsonify({'error': 'Failed to get profile'}), 500
+
+# User Filter Management Endpoints
+@app.route('/filters', methods=['GET'])
+@token_required
+def get_user_filters():
+    """Get all filters for the current user"""
+    try:
+        user_id = request.current_user['user_id']
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute(
+                "SELECT id, filter_type, filter_value, is_active, created_at FROM user_filters WHERE user_id = %s ORDER BY filter_type, created_at",
+                (user_id,)
+            )
+            filters = cursor.fetchall()
+            
+            filter_list = []
+            for filter_data in filters:
+                filter_id, filter_type, filter_value, is_active, created_at = filter_data
+                filter_list.append({
+                    'id': filter_id,
+                    'type': filter_type,
+                    'value': filter_value,
+                    'active': bool(is_active),
+                    'created_at': created_at.isoformat() if created_at else None
+                })
+            
+            return jsonify({
+                'filters': filter_list,
+                'count': len(filter_list)
+            }), 200
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Get filters error: {e}")
+        return jsonify({'error': 'Failed to get filters'}), 500
+
+@app.route('/filters', methods=['POST'])
+@token_required
+def create_user_filter():
+    """Create a new filter for the current user"""
+    try:
+        user_id = request.current_user['user_id']
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        filter_type = data.get('type', '').strip()
+        filter_value = data.get('value', '').strip()
+        
+        # Validate filter type
+        valid_types = [
+            'location_name_contains', 'location_name_equals', 'address_contains',
+            'rating_min', 'occupancy_max', 'occupancy_min', 'exclude_location', 'only_live_data'
+        ]
+        
+        if not filter_type or filter_type not in valid_types:
+            return jsonify({'error': f'Invalid filter type. Must be one of: {", ".join(valid_types)}'}), 400
+        
+        if not filter_value:
+            return jsonify({'error': 'Filter value is required'}), 400
+        
+        # Validate numeric values for rating and occupancy filters
+        if filter_type in ['rating_min', 'occupancy_max', 'occupancy_min']:
+            try:
+                numeric_value = float(filter_value)
+                if filter_type == 'rating_min' and not (0 <= numeric_value <= 5):
+                    return jsonify({'error': 'Rating must be between 0 and 5'}), 400
+                if filter_type in ['occupancy_max', 'occupancy_min'] and not (0 <= numeric_value <= 100):
+                    return jsonify({'error': 'Occupancy must be between 0 and 100'}), 400
+            except ValueError:
+                return jsonify({'error': f'{filter_type} requires a numeric value'}), 400
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # Check for duplicate filters
+            cursor.execute(
+                "SELECT id FROM user_filters WHERE user_id = %s AND filter_type = %s AND filter_value = %s",
+                (user_id, filter_type, filter_value)
+            )
+            if cursor.fetchone():
+                return jsonify({'error': 'Filter already exists'}), 409
+            
+            # Create new filter
+            cursor.execute(
+                "INSERT INTO user_filters (user_id, filter_type, filter_value) VALUES (%s, %s, %s)",
+                (user_id, filter_type, filter_value)
+            )
+            conn.commit()
+            filter_id = cursor.lastrowid
+            
+            return jsonify({
+                'message': 'Filter created successfully',
+                'filter': {
+                    'id': filter_id,
+                    'type': filter_type,
+                    'value': filter_value,
+                    'active': True
+                }
+            }), 201
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Create filter error: {e}")
+        return jsonify({'error': 'Failed to create filter'}), 500
+
+@app.route('/filters/<int:filter_id>', methods=['PUT'])
+@token_required
+def update_user_filter(filter_id):
+    """Update a user filter"""
+    try:
+        user_id = request.current_user['user_id']
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # Check if filter exists and belongs to user
+            cursor.execute(
+                "SELECT filter_type, filter_value, is_active FROM user_filters WHERE id = %s AND user_id = %s",
+                (filter_id, user_id)
+            )
+            existing_filter = cursor.fetchone()
+            
+            if not existing_filter:
+                return jsonify({'error': 'Filter not found'}), 404
+            
+            # Update fields that are provided
+            update_fields = []
+            update_values = []
+            
+            if 'value' in data:
+                filter_value = data['value'].strip()
+                if not filter_value:
+                    return jsonify({'error': 'Filter value cannot be empty'}), 400
+                update_fields.append('filter_value = %s')
+                update_values.append(filter_value)
+            
+            if 'active' in data:
+                is_active = bool(data['active'])
+                update_fields.append('is_active = %s')
+                update_values.append(is_active)
+            
+            if not update_fields:
+                return jsonify({'error': 'No valid fields to update'}), 400
+            
+            # Perform update
+            update_values.extend([filter_id, user_id])
+            cursor.execute(
+                f"UPDATE user_filters SET {', '.join(update_fields)} WHERE id = %s AND user_id = %s",
+                update_values
+            )
+            conn.commit()
+            
+            # Get updated filter
+            cursor.execute(
+                "SELECT filter_type, filter_value, is_active, created_at FROM user_filters WHERE id = %s AND user_id = %s",
+                (filter_id, user_id)
+            )
+            updated_filter = cursor.fetchone()
+            
+            filter_type, filter_value, is_active, created_at = updated_filter
+            
+            return jsonify({
+                'message': 'Filter updated successfully',
+                'filter': {
+                    'id': filter_id,
+                    'type': filter_type,
+                    'value': filter_value,
+                    'active': bool(is_active),
+                    'created_at': created_at.isoformat() if created_at else None
+                }
+            }), 200
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Update filter error: {e}")
+        return jsonify({'error': 'Failed to update filter'}), 500
+
+@app.route('/filters/<int:filter_id>', methods=['DELETE'])
+@token_required
+def delete_user_filter(filter_id):
+    """Delete a user filter"""
+    try:
+        user_id = request.current_user['user_id']
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+        
+        try:
+            # Check if filter exists and belongs to user
+            cursor.execute(
+                "SELECT id FROM user_filters WHERE id = %s AND user_id = %s",
+                (filter_id, user_id)
+            )
+            if not cursor.fetchone():
+                return jsonify({'error': 'Filter not found'}), 404
+            
+            # Delete filter
+            cursor.execute(
+                "DELETE FROM user_filters WHERE id = %s AND user_id = %s",
+                (filter_id, user_id)
+            )
+            conn.commit()
+            
+            return jsonify({'message': 'Filter deleted successfully'}), 200
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
+    except Exception as e:
+        logger.error(f"Delete filter error: {e}")
+        return jsonify({'error': 'Failed to delete filter'}), 500
+
+# User Location Management Endpoints
+@app.route('/user-locations', methods=['GET'])
+@token_required
+def get_user_locations():
+    """Get all saved locations for the current user"""
+    try:
+        user_id = request.current_user.get('user_id')
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        connection = db_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        
+        query = """
+            SELECT 
+                ul.id,
+                l.id as location_id,
+                l.google_maps_url,
+                l.name,
+                l.address,
+                ul.display_order,
+                ul.created_at as saved_at,
+                (SELECT COUNT(*) FROM occupancy_history 
+                 WHERE location_id = l.id 
+                 AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 HOUR)) as recent_readings
+            FROM user_locations ul
+            INNER JOIN locations l ON ul.location_id = l.id
+            WHERE ul.user_id = %s AND ul.is_active = TRUE
+            ORDER BY ul.display_order, ul.created_at
+        """
+        
+        cursor.execute(query, (user_id,))
+        locations = cursor.fetchall()
+        
+        # Convert datetime objects to ISO format
+        for location in locations:
+            if location['saved_at']:
+                location['saved_at'] = location['saved_at'].isoformat()
+        
+        cursor.close()
+        connection.close()
+        
+        return jsonify({
+            'success': True,
+            'locations': locations,
+            'count': len(locations)
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting user locations: {e}")
+        return jsonify({'error': 'Failed to get user locations'}), 500
+
+@app.route('/user-locations', methods=['POST'])
+@token_required
+def save_user_location():
+    """Save a location to user's preferences"""
+    try:
+        user_id = request.current_user.get('user_id')
+        data = request.json
+        
+        # Validate required fields
+        google_maps_url = data.get('google_maps_url')
+        name = data.get('name')
+        address = data.get('address')
+        
+        if not google_maps_url or not name:
+            return jsonify({'error': 'URL and name are required'}), 400
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        connection = db_pool.get_connection()
+        cursor = connection.cursor()
+        
+        # First, ensure the location exists in the locations table
+        cursor.execute("""
+            INSERT INTO locations (google_maps_url, name, address)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE 
+                name = VALUES(name),
+                address = COALESCE(VALUES(address), address)
+        """, (google_maps_url, name, address))
+        
+        # Get the location ID
+        cursor.execute("SELECT id FROM locations WHERE google_maps_url = %s", (google_maps_url,))
+        location_id = cursor.fetchone()[0]
+        
+        # Get the next display order for this user
+        cursor.execute("""
+            SELECT COALESCE(MAX(display_order), -1) + 1 
+            FROM user_locations 
+            WHERE user_id = %s
+        """, (user_id,))
+        next_order = cursor.fetchone()[0]
+        
+        # Add to user's saved locations
+        cursor.execute("""
+            INSERT INTO user_locations (user_id, location_id, display_order)
+            VALUES (%s, %s, %s)
+            ON DUPLICATE KEY UPDATE 
+                is_active = TRUE,
+                display_order = VALUES(display_order)
+        """, (user_id, location_id, next_order))
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Location saved successfully',
+            'location_id': location_id
+        })
+        
+    except mysql.connector.IntegrityError as e:
+        if 'Duplicate entry' in str(e):
+            return jsonify({'error': 'Location already saved'}), 409
+        return jsonify({'error': 'Failed to save location'}), 500
+    except Exception as e:
+        logger.error(f"Error saving user location: {e}")
+        return jsonify({'error': 'Failed to save location'}), 500
+
+@app.route('/user-locations/<int:location_id>', methods=['DELETE'])
+@token_required
+def remove_user_location(location_id):
+    """Remove a location from user's saved locations"""
+    try:
+        user_id = request.current_user.get('user_id')
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        connection = db_pool.get_connection()
+        cursor = connection.cursor()
+        
+        # Soft delete the user location
+        cursor.execute("""
+            UPDATE user_locations 
+            SET is_active = FALSE 
+            WHERE user_id = %s AND location_id = %s
+        """, (user_id, location_id))
+        
+        if cursor.rowcount == 0:
+            cursor.close()
+            connection.close()
+            return jsonify({'error': 'Location not found'}), 404
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Location removed successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error removing user location: {e}")
+        return jsonify({'error': 'Failed to remove location'}), 500
+
+@app.route('/user-locations/reorder', methods=['PUT'])
+@token_required
+def reorder_user_locations():
+    """Update the display order of user's saved locations"""
+    try:
+        user_id = request.current_user.get('user_id')
+        data = request.json
+        location_ids = data.get('location_ids', [])
+        
+        if not location_ids:
+            return jsonify({'error': 'Location IDs are required'}), 400
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        connection = db_pool.get_connection()
+        cursor = connection.cursor()
+        
+        # Update display order for each location
+        for index, location_id in enumerate(location_ids):
+            cursor.execute("""
+                UPDATE user_locations 
+                SET display_order = %s 
+                WHERE user_id = %s AND location_id = %s AND is_active = TRUE
+            """, (index, user_id, location_id))
+        
+        connection.commit()
+        cursor.close()
+        connection.close()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Location order updated successfully'
+        })
+        
+    except Exception as e:
+        logger.error(f"Error reordering user locations: {e}")
+        return jsonify({'error': 'Failed to reorder locations'}), 500
+
+@app.route('/user-locations/scrape', methods=['POST'])
+@token_required
+def scrape_user_locations():
+    """Scrape only the user's saved locations"""
+    try:
+        user_id = request.current_user.get('user_id')
+        
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+        
+        # Get user's saved locations
+        connection = db_pool.get_connection()
+        cursor = connection.cursor(dictionary=True)
+        
+        cursor.execute("""
+            SELECT l.google_maps_url, l.name
+            FROM user_locations ul
+            INNER JOIN locations l ON ul.location_id = l.id
+            WHERE ul.user_id = %s AND ul.is_active = TRUE
+            ORDER BY ul.display_order
+        """, (user_id,))
+        
+        locations = cursor.fetchall()
+        cursor.close()
+        connection.close()
+        
+        if not locations:
+            return jsonify({'error': 'No saved locations found'}), 404
+        
+        # Prepare the locations for scraping
+        urls_to_scrape = [
+            {'url': loc['google_maps_url'], 'name': loc['name']} 
+            for loc in locations
+        ]
+        
+        # Use the existing scraping logic
+        request.json = {'locations': urls_to_scrape}
+        return scrape_locations()
+        
+    except Exception as e:
+        logger.error(f"Error scraping user locations: {e}")
+        return jsonify({'error': 'Failed to scrape user locations'}), 500
 
 @app.route('/', methods=['GET'])
 def root():
