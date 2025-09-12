@@ -1,0 +1,255 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  street    String?
+  city      String?
+  postalCode String?
+  country   String?  @default("DE")
+  
+  // Tax information
+  vatId            String?
+  taxNumber        String?
+  commercialRegister String?
+  
+  // Bank information
+  iban             String?
+  bic              String?
+  bankName         String?
+  bankAccountHolder String?
+  
+  // Contact
+  contactPerson    String?
+  website          String?
+  
+  // Subscription
+  plan      String   @default("STARTER") // STARTER, PROFESSIONAL, BUSINESS, ENTERPRISE
+  isActive  Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  users     User[]
+  customers Customer[]
+  invoices  Invoice[]
+  quotes    Quote[]
+  products  Product[]
+  projects  Project[]
+  
+  @@map("tenants")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      String   @default("USER") // ADMIN, USER
+  isActive  Boolean  @default(true)
+  
+  // Tenant relation
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  // Authentication
+  lastLoginAt   DateTime?
+  emailVerifiedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("users")
+}
+
+model Customer {
+  id            String   @id @default(cuid())
+  customerNumber String
+  name          String
+  email         String?
+  phone         String?
+  
+  // Address
+  street        String?
+  city          String?
+  postalCode    String?
+  country       String?  @default("DE")
+  
+  // Tax information
+  vatId         String?
+  
+  // Contact
+  contactPerson String?
+  notes         String?
+  
+  // E-Rechnung specific
+  leitwegId     String?
+  peppolId      String?
+  
+  // Tenant relation
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  invoices      Invoice[]
+  quotes        Quote[]
+  
+  @@unique([tenantId, customerNumber])
+  @@map("customers")
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String
+  date          DateTime
+  dueDate       DateTime
+  
+  // Amounts
+  subtotal      Float
+  total         Float
+  
+  // Payment
+  paymentMethod String?
+  paymentTerms  String?
+  
+  // Status
+  status        String   @default("DRAFT") // DRAFT, SENT, PAID, OVERDUE, CANCELLED
+  sentAt        DateTime?
+  paidAt        DateTime?
+  
+  // Notes
+  notes         String?
+  
+  // Metadata (for E-Rechnung tracking)
+  metadata      String?  // JSON field for flexible data
+  
+  // Relations
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  items         InvoiceItem[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([tenantId, invoiceNumber])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  description String
+  quantity    Float
+  price       Float
+  total       Float
+  taxRate     Float   @default(19.0)
+  unit        String?
+  
+  // Relations
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("invoice_items")
+}
+
+model Quote {
+  id          String   @id @default(cuid())
+  quoteNumber String
+  date        DateTime
+  validUntil  DateTime
+  
+  // Amounts
+  subtotal    Float
+  total       Float
+  
+  // Status
+  status      String   @default("DRAFT") // DRAFT, SENT, ACCEPTED, REJECTED, EXPIRED
+  
+  // Notes
+  notes       String?
+  
+  // Relations
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([tenantId, quoteNumber])
+  @@map("quotes")
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  unit        String? @default("Stk")
+  taxRate     Float   @default(19.0)
+  
+  // Inventory
+  stock       Float?
+  minStock    Float?
+  
+  // Status
+  isActive    Boolean @default(true)
+  
+  // Relations
+  tenantId    String
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("products")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED
+  
+  // Dates
+  startDate   DateTime?
+  endDate     DateTime?
+  
+  // Budget
+  budget      Float?
+  
+  // Relations
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("projects")
+}

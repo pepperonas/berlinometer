@@ -205,6 +205,67 @@
             100% { opacity: 1; transform: scale(1); }
         }
 
+        .log-entry-compact {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr 0.8fr 0.5fr;
+            gap: var(--spacing-2);
+            padding: var(--spacing-2) var(--spacing-3);
+            background: var(--surface-1);
+            border-radius: var(--radius);
+            margin-bottom: var(--spacing-1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.875rem;
+            border-left: 3px solid transparent;
+        }
+
+        .log-entry-compact:hover {
+            background: var(--surface-2);
+            border-left-color: var(--accent-blue);
+        }
+
+        .log-entry-compact.external {
+            border-left-color: var(--accent-green);
+        }
+
+        .log-entry-compact.local {
+            border-left-color: var(--accent-yellow);
+            opacity: 0.7;
+        }
+
+        .log-details {
+            margin-top: var(--spacing-2);
+            padding: var(--spacing-3);
+            background: var(--surface-2);
+            border-radius: var(--radius);
+            font-family: monospace;
+            font-size: 0.75rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .log-details.expanded {
+            max-height: 300px;
+        }
+
+        .log-status {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .log-status.external {
+            background: var(--accent-green);
+            color: var(--text-primary);
+        }
+
+        .log-status.local {
+            background: var(--accent-yellow);
+            color: var(--background);
+        }
+
         .warning {
             background: rgba(255, 193, 7, 0.1);
             border-left: 4px solid #ffc107;
@@ -419,9 +480,28 @@
                 </div>
             </div>
             <div class="request-log" id="requestLog">
-                <div class="log-entry">
-                    <div class="log-timestamp">Initialisierung...</div>
-                    <div class="log-data">Starte Live-Traffic-Monitoring...</div>
+                <div class="log-header" style="
+                    display: grid; 
+                    grid-template-columns: 1fr 1.2fr 1fr 0.8fr 0.5fr; 
+                    gap: var(--spacing-2); 
+                    padding: var(--spacing-2) var(--spacing-3); 
+                    background: var(--surface-2); 
+                    border-radius: var(--radius); 
+                    margin-bottom: var(--spacing-2);
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    color: var(--text-secondary);
+                ">
+                    <div>ZEIT</div>
+                    <div>IP / ORT</div>
+                    <div>ANFRAGE</div>
+                    <div>STATUS</div>
+                    <div></div>
+                </div>
+                <div class="log-list" id="logList">
+                    <div class="log-entry-compact" style="padding: var(--spacing-3); text-align: center; color: var(--text-secondary);">
+                        Initialisierung... Starte Live-Traffic-Monitoring...
+                    </div>
                 </div>
             </div>
         </div>
@@ -437,28 +517,78 @@
         let autoRefreshInterval = null;
         let lastLogCheck = Date.now();
         
-        function addLogEntry(message, data = null) {
+        function addLogEntry(message, data = null, logType = 'info') {
             const timestamp = new Date().toLocaleTimeString('de-DE');
             const entry = {
+                id: Date.now() + Math.random(),
                 timestamp,
                 message,
-                data: data ? JSON.stringify(data, null, 2) : null
+                data: data ? (typeof data === 'string' ? data : JSON.stringify(data, null, 2)) : null,
+                type: logType
             };
             requestLog.push(entry);
+            
+            // Keep only last 50 entries for performance
+            if (requestLog.length > 50) {
+                requestLog = requestLog.slice(-50);
+            }
+            
             updateLogDisplay();
         }
 
         function updateLogDisplay() {
-            const logContainer = document.getElementById('requestLog');
-            logContainer.innerHTML = requestLog.map(entry => `
-                <div class="log-entry">
-                    <div class="log-timestamp">${entry.timestamp}</div>
-                    <div class="log-data">
-                        <strong>${entry.message}</strong>
-                        ${entry.data ? `<div class="json-viewer">${entry.data}</div>` : ''}
+            const logListContainer = document.getElementById('logList');
+            if (!logListContainer) return;
+            
+            logListContainer.innerHTML = requestLog.map(entry => createLogEntryHTML(entry)).reverse().join('');
+        }
+
+        function createLogEntryHTML(entry) {
+            // Extract key info from message and data
+            const ip = entry.message.match(/IP: ([^\s]+)/)?.[1] || 'Unknown';
+            const method = entry.message.includes('GET') ? 'GET' : entry.message.includes('POST') ? 'POST' : 'REQ';
+            const url = entry.message.split(' ').find(part => part.startsWith('/')) || 'Unknown';
+            const location = entry.message.match(/\(([^,)]+,[^)]+)\)/)?.[1] || 'Unknown';
+            
+            // Check if IP is local/internal
+            const isLocal = ip === '::1' || ip === '127.0.0.1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.16.') || ip.includes('localhost');
+            const isExternal = !isLocal && ip !== 'Unknown';
+            
+            let statusClass = 'local';
+            let statusText = 'LOKAL';
+            
+            if (isExternal) {
+                statusClass = 'external';
+                statusText = 'EXTERN';
+            }
+            
+            return `
+                <div class="log-entry-compact ${statusClass}" onclick="toggleLogDetails('${entry.id}')">
+                    <div style="color: var(--text-secondary); font-family: monospace;">${entry.timestamp}</div>
+                    <div>
+                        <div style="font-family: monospace; color: var(--text-primary);">${ip}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">${location}</div>
+                    </div>
+                    <div>
+                        <span style="background: var(--surface-2); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">${method}</span>
+                        <span style="color: var(--text-secondary); font-size: 0.75rem;">${url}</span>
+                    </div>
+                    <div class="log-status ${statusClass}">${statusText}</div>
+                    <div style="color: var(--text-secondary);">▼</div>
+                    <div class="log-details" id="details-${entry.id}">
+                        <div><strong>Vollständige Nachricht:</strong></div>
+                        <div style="margin: var(--spacing-2) 0;">${entry.message}</div>
+                        ${entry.data ? `<div><strong>Details:</strong></div><div style="white-space: pre-wrap; margin-top: var(--spacing-2);">${entry.data}</div>` : ''}
                     </div>
                 </div>
-            `).reverse().join('');
+            `;
+        }
+
+        function toggleLogDetails(entryId) {
+            const details = document.getElementById(`details-${entryId}`);
+            if (details) {
+                details.classList.toggle('expanded');
+            }
         }
 
         function updateConnectionDetails(data) {

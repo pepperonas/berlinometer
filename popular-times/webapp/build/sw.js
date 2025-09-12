@@ -57,6 +57,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip API requests and dynamic content
+  if (event.request.url.includes('/api/') || 
+      event.request.url.includes('/default-locations') ||
+      event.request.url.includes('/latest_results.json') ||
+      event.request.url.includes('localhost:')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {

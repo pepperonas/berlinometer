@@ -6,6 +6,26 @@ const os = require('os');
 const app = express();
 const PORT = process.env.PORT || 3010;
 
+// Trust proxy für korrekte IP-Erkennung hinter Nginx
+app.set('trust proxy', true);
+
+// Hilfsfunktion für korrekte IP-Extraktion
+function getClientIP(req) {
+    const xRealIP = req.headers['x-real-ip'];
+    const xForwardedFor = req.headers['x-forwarded-for'];
+    
+    if (xRealIP) {
+        return xRealIP;
+    }
+    
+    if (xForwardedFor) {
+        // X-Forwarded-For kann mehrere IPs enthalten, nimm die erste (Client)
+        return xForwardedFor.split(',')[0].trim();
+    }
+    
+    return req.ip || req.connection.remoteAddress;
+}
+
 // Middleware für JSON und statische Dateien
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
@@ -91,11 +111,58 @@ async function getLocationData(ip) {
     }
 }
 
-// Enhanced Logging-Funktion mit Location-Tracking
+// Helper function to determine if request should be logged
+function shouldLogRequest(req) {
+    const userAgent = req.headers['user-agent'] || '';
+    const path = req.path || req.url;
+    const clientIP = getClientIP(req);
+    
+    // Only filter for tor-check specific requests
+    const isTorCheckRequest = path.startsWith('/tor-check');
+    
+    if (!isTorCheckRequest) {
+        // Log all non-tor-check requests (hauptseite, andere apps)
+        return true;
+    }
+    
+    // For tor-check requests, skip normal browser page loads
+    const isBrowserRequest = userAgent.includes('Mozilla') || userAgent.includes('Chrome') || 
+                            userAgent.includes('Safari') || userAgent.includes('Firefox');
+    
+    const isTorCheckPageLoad = path === '/tor-check/' || path === '/tor-check' || path.endsWith('.html');
+    
+    // Skip browser requests to tor-check main page
+    if (isTorCheckPageLoad && isBrowserRequest) {
+        return false;
+    }
+    
+    // Log API calls, but skip browser requests to monitoring APIs (logs, locations, visitor-map)
+    if (path.startsWith('/tor-check/api/')) {
+        const isMonitoringAPI = path.includes('/logs') || path.includes('/locations') || path.includes('/visitor-map');
+        if (isMonitoringAPI && isBrowserRequest) {
+            return false; // Don't log browser requests to monitoring APIs
+        }
+        return true; // Log other API calls (like /api/client-info, /api/geoip)
+    }
+    
+    // Log external tools, scanners, bots on tor-check
+    if (userAgent.includes('nmap') || userAgent.includes('curl') || userAgent.includes('wget') || 
+        userAgent.includes('scanner') || userAgent === '' || userAgent.includes('bot')) {
+        return true;
+    }
+    
+    return false;
+}
+
+// Enhanced Logging-Funktion mit Location-Tracking und Filterung
 async function logRequest(req, additionalInfo = {}) {
+    // Check if this request should be logged
+    if (!shouldLogRequest(req)) {
+        return; // Skip logging
+    }
+    
     const timestamp = new Date().toISOString();
-    // Korrekte IP-Erkennung durch Nginx Reverse Proxy
-    const clientIP = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+    const clientIP = getClientIP(req);
     
     // Hole Location-Daten für die IP (async, aber blockiert nicht die Response)
     let locationData = null;
@@ -172,7 +239,7 @@ async function logRequest(req, additionalInfo = {}) {
 // Synchrone Version für Middleware (ohne Location-Lookup)
 function logRequestSync(req, additionalInfo = {}) {
     const timestamp = new Date().toISOString();
-    const clientIP = req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+    const clientIP = getClientIP(req);
     
     const logEntry = {
         timestamp,
@@ -207,7 +274,7 @@ app.use((req, res, next) => {
 app.get('/api/client-info', (req, res) => {
     const clientInfo = {
         timestamp: new Date().toISOString(),
-        ip: req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress,
+        ip: getClientIP(req),
         ips: {
             direct: req.connection.remoteAddress,
             forwarded: req.headers['x-forwarded-for'],
@@ -226,7 +293,7 @@ app.get('/api/client-info', (req, res) => {
             // Tor-Indikatoren basierend auf Headers und IP-Eigenschaften
             torBrowser: req.headers['user-agent']?.includes('Tor Browser'),
             suspiciousHeaders: checkSuspiciousHeaders(req.headers),
-            possibleExitNode: checkPossibleExitNode(req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress)
+            possibleExitNode: checkPossibleExitNode(getClientIP(req))
         },
         fingerprint: {
             userAgent: req.headers['user-agent'],
@@ -295,30 +362,21 @@ app.get('/api/ip-proxy/:service', async (req, res) => {
     }
 });
 
-// API-Endpunkt für GeoIP-Informationen (simuliert)
+// API-Endpunkt für echte GeoIP-Informationen
 app.get('/api/geoip', async (req, res) => {
     try {
-        const ip = req.ip || req.connection.remoteAddress;
+        const ip = getClientIP(req);
         
-        // Hier könntest du echte GeoIP-Services integrieren
-        // Für Demo-Zwecke: Mock-Daten
-        const geoInfo = {
-            ip: ip,
-            country: 'Unknown',
-            city: 'Unknown',
-            region: 'Unknown',
-            org: 'Unknown',
-            timezone: 'Unknown',
-            isTor: false // Würde durch echte Tor-Exit-Node-Liste bestimmt
-        };
+        // Hole echte GeoIP-Daten
+        const locationData = await getLocationData(ip);
 
         logRequest(req, {
             type: 'geoip-api',
-            geoInfo,
+            locationData,
             message: 'GeoIP API Aufruf'
         });
 
-        res.json(geoInfo);
+        res.json(locationData);
         
     } catch (error) {
         console.error('GeoIP Fehler:', error);
