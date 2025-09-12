@@ -87,11 +87,12 @@ function HeaderContent() {
   // Don't render anything until client-side
   if (!isClient) {
     return (
-      <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-outline">
+      <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-xl border-b border-outline shadow-sm transition-all duration-300">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
-              🍳 <span>ZauberKoch</span>
+            <Link href="/" className="flex items-center gap-3 font-bold text-xl text-primary hover:scale-105 transition-transform duration-200">
+              <span className="text-2xl filter drop-shadow-sm">🍳</span>
+              <span className="bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent">ZauberKoch</span>
             </Link>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-success" />
@@ -103,7 +104,7 @@ function HeaderContent() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-outline">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-xl border-b border-outline shadow-sm transition-all duration-300">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -120,8 +121,8 @@ function HeaderContent() {
                   href={item.href}
                   className="flex items-center gap-2 text-on-surface hover:text-primary transition-colors font-medium px-3 py-2 rounded-lg hover:bg-surface-variant/50"
                 >
-                  <span className="text-sm">{item.icon}</span>
-                  {item.label}
+                  <span className="text-base filter drop-shadow-sm">{item.icon}</span>
+                  <span className="font-medium">{item.label}</span>
                 </Link>
               )
             ))}
@@ -131,8 +132,8 @@ function HeaderContent() {
           <div className="flex items-center gap-2">
             {/* Connection Status */}
             <div className={cn(
-              'w-2 h-2 rounded-full',
-              isOnline ? 'bg-success' : 'bg-error'
+              'w-2 h-2 rounded-full shadow-sm transition-all duration-300',
+              isOnline ? 'bg-success shadow-success/30' : 'bg-error shadow-error/30 animate-pulse'
             )} />
 
             {/* PWA Install Button */}
@@ -203,12 +204,12 @@ function HeaderContent() {
                     onClick={toggleUserMenu}
                     className="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-variant transition-colors"
                   >
-                    <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-sm font-medium">
+                    <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-full flex items-center justify-center text-sm font-medium shadow-md hover:shadow-lg transition-shadow duration-200">
                       {user ? getInitials(`${user.firstName || ''} ${user.lastName || ''}`) : 'U'}
                     </div>
                     {isPremium && (
-                      <span className="text-xs bg-secondary text-white px-2 py-0.5 rounded-full">
-                        Premium
+                      <span className="text-xs bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-2 py-1 rounded-full shadow-sm font-medium">
+                        ⭐ Premium
                       </span>
                     )}
                   </button>

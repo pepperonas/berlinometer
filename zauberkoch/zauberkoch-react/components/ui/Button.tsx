@@ -65,7 +65,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       sizeClasses[size],
       variantClasses[variant],
       fullWidth && 'btn-full',
-      glow && 'shadow-[0_0_30px_rgba(99,102,241,0.4)]',
+      glow && 'card-glow',
       'group', // For hover effects on children
       className
     );

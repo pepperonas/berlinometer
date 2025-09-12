@@ -8,21 +8,28 @@
     "dev": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["dart", "counter", "pwa", "mongodb", "express"],
+  "keywords": [
+    "dart",
+    "counter",
+    "pwa",
+    "mongodb",
+    "express"
+  ],
   "author": "Martin Pfeffer",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2",
+    "axios": "^1.12.0",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "mongoose": "^7.5.0",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
+    "express": "^4.18.2",
+    "express-rate-limit": "^6.10.0",
     "express-validator": "^7.0.1",
-    "morgan": "^1.10.0",
     "helmet": "^7.0.0",
-    "compression": "^1.7.4",
-    "express-rate-limit": "^6.10.0"
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.5.0",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"

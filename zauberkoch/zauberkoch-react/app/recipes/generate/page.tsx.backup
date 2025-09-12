@@ -168,7 +168,7 @@ export default function RecipeGeneratePage() {
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse"></span>
-                3 Rezepte täglich gratis
+                3 Rezepte taeglich gratis
               </div>
             </div>
           </motion.div>
@@ -224,7 +224,7 @@ export default function RecipeGeneratePage() {
                 </span>
                 <br />
                 <span className="bg-gradient-to-r from-secondary-400 to-primary-400 bg-clip-text text-transparent">
-                  für jeden Geschmack
+                  fuer jeden Geschmack
                 </span>
                 <span className="text-5xl lg:text-6xl ml-4">🎨</span>
               </motion.h1>
@@ -235,7 +235,7 @@ export default function RecipeGeneratePage() {
               >
                 Konfiguriere deine <span className="text-primary font-semibold">Vorlieben</span> und 
                 <span className="text-secondary font-semibold"> KI-Technologie</span> erstellt 
-                maßgeschneiderte Rezepte für dich.
+                massgeschneiderte Rezepte für dich.
               </motion.p>
             </div>
             
@@ -250,7 +250,7 @@ export default function RecipeGeneratePage() {
               </div>
               <div className="flex items-center gap-2 text-sm text-text-tertiary">
                 <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse"></span>
-                Personalisierte Ernährung
+                Personalisierte Ernaehrung
               </div>
               <div className="flex items-center gap-2 text-sm text-text-tertiary">
                 <span className="w-2 h-2 bg-success-500 rounded-full animate-pulse"></span>
@@ -267,7 +267,7 @@ export default function RecipeGeneratePage() {
           >
             {/* Form Sections */}
             <div className="space-y-16">
-              {/* Ernährungstyp */}
+              {/* Ernaehrungstyp */}
               <motion.div
                 variants={itemVariants}
                 className="card card-glass p-8 border border-primary/20 hover:border-primary/40 transition-all duration-500 group"
@@ -285,8 +285,8 @@ export default function RecipeGeneratePage() {
                     icon: opt.icon,
                     description: opt.description
                   }))}
-                  label="Ernährungsweise"
-                  description="Wähle deine bevorzugte Ernährungsform"
+                  label="Ernaehrungsweise"
+                  description="Waehle deine bevorzugte Ernaehrungsform"
                   layout="horizontal"
                   size="lg"
                 />
@@ -311,7 +311,7 @@ export default function RecipeGeneratePage() {
                     description: opt.description
                   }))}
                   label="Dein Ziel 💕"
-                  description="Was möchtest du mit deiner Ernährung erreichen?"
+                  description="Was moechtest du mit deiner Ernaehrung erreichen?"
                   layout="grid"
                   size="md"
                   minSelections={1}
@@ -349,7 +349,7 @@ export default function RecipeGeneratePage() {
                       </div>
                       <h3 className="text-2xl font-bold text-text-primary">Rezept-Einstellungen</h3>
                     </div>
-                    <p className="text-text-secondary">Passe deine Vorlieben an deine Bedürfnisse an</p>
+                    <p className="text-text-secondary">Passe deine Vorlieben an deine Beduerfnisse an</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -374,7 +374,7 @@ export default function RecipeGeneratePage() {
                 </div>
               </motion.div>
 
-              {/* Wünsche-Feld */}
+              {/* Wuensche-Feld */}
               <motion.div
                 variants={itemVariants}
                 className="card card-glass p-8 border border-warning/20 hover:border-warning/40 transition-all duration-500 group"
@@ -383,23 +383,23 @@ export default function RecipeGeneratePage() {
                 {/* Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-transparent to-secondary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <TagInput
-                  label="Deine Wünsche"
+                  label="Deine Wuensche"
                   icon="🔥"
                   value={formData.wishes}
                   onChange={(wishes) => updateField('wishes', wishes)}
                   placeholder="z. B. Pasta, Thai, scharf, oder Omas Auflauf…"
-                  description="Beschreibe, was du dir wünschst - Zutaten, Stil, Geschmack..."
+                  description="Beschreibe, was du dir wuenschst - Zutaten, Stil, Geschmack..."
                   suggestions={WISHES_SUGGESTIONS}
                   maxTags={5}
                 />
               </motion.div>
 
-              {/* Länderküche und Mahlzeit */}
+              {/* Laenderkueche und Mahlzeit */}
               <motion.div
                 variants={itemVariants}
                 className="grid grid-cols-1 lg:grid-cols-2 gap-8"
               >
-                {/* Länderküche */}
+                {/* Laenderkueche */}
                 <div className="card card-glass p-8 border border-primary/15 hover:border-primary/30 transition-all duration-300 group">
                   {/* Glow Effect */}
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/3 via-transparent to-info/3 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -407,7 +407,7 @@ export default function RecipeGeneratePage() {
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">🌍</span>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Länderküche</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">Laenderkueche</h3>
                         <p className="text-sm text-gray-600">Aus welcher Region soll das Rezept stammen?</p>
                       </div>
                     </div>
@@ -441,7 +441,7 @@ export default function RecipeGeneratePage() {
                       description: opt.description
                     }))}
                     label="Mahlzeit"
-                    description="Für welche Tageszeit?"
+                    description="Fuer welche Tageszeit?"
                     layout="vertical"
                     size="sm"
                   />
@@ -462,7 +462,7 @@ export default function RecipeGeneratePage() {
                       Bereit für dein perfektes Rezept?
                     </h3>
                     <p className="text-text-secondary max-w-md mx-auto">
-                      Unsere KI erstellt in Sekunden ein maßgeschneidertes Rezept basierend auf deinen Einstellungen.
+                      Unsere KI erstellt in Sekunden ein massgeschneidertes Rezept basierend auf deinen Einstellungen.
                     </p>
                   </div>
                   
@@ -625,7 +625,7 @@ export default function RecipeGeneratePage() {
                     </div>
                     <div>
                       <h3 className="text-3xl font-black text-text-primary">Einkaufsliste</h3>
-                      <p className="text-text-secondary text-lg">Für {recipe.servings} köstliche Portionen</p>
+                      <p className="text-text-secondary text-lg">Für {recipe.servings} koestliche Portionen</p>
                     </div>
                   </div>
                 </div>
@@ -667,13 +667,12 @@ export default function RecipeGeneratePage() {
                   ) : (
                     <div className="text-center py-12">
                       <div className="text-4xl mb-4">📝</div>
-                      <p className="text-on-surface-variant text-lg">Keine Zutaten verfügbar</p>
+                      <p className="text-on-surface-variant text-lg">Keine Zutaten verfuegbar</p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Enhanced Instructions Section */}
               <motion.div
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -687,7 +686,7 @@ export default function RecipeGeneratePage() {
                       <span className="text-white text-2xl">👨‍🍳</span>
                     </div>
                     <div>
-                      <h3 className="text-3xl font-black text-text-primary">Schritt-für-Schritt Anleitung</h3>
+                      <h3 className="text-3xl font-black text-text-primary">Schritt-fuer-Schritt Anleitung</h3>
                       <p className="text-text-secondary text-lg">Folge dieser Anleitung für perfekte Ergebnisse</p>
                     </div>
                   </div>
@@ -716,7 +715,7 @@ export default function RecipeGeneratePage() {
                   ) : (
                     <div className="text-center py-12">
                       <div className="text-4xl mb-4">📋</div>
-                      <p className="text-on-surface-variant text-lg">Keine Anweisungen verfügbar</p>
+                      <p className="text-on-surface-variant text-lg">Keine Anweisungen verfuegbar</p>
                     </div>
                   )}
                 </div>
@@ -732,7 +731,7 @@ export default function RecipeGeneratePage() {
                       </div>
                       <h3 className="text-2xl font-bold text-primary">Profi-Tipps</h3>
                     </div>
-                    <p className="text-primary/80 ml-14 text-sm">Für perfekte Ergebnisse</p>
+                    <p className="text-primary/80 ml-14 text-sm">Fuer perfekte Ergebnisse</p>
                   </div>
                   <div className="p-6 bg-white/50 dark:bg-surface/30 rounded-xl border border-primary/20">
                     <p className="text-on-surface leading-relaxed text-lg font-medium">{recipe.cookingTips}</p>
@@ -766,9 +765,9 @@ export default function RecipeGeneratePage() {
                       <div className="w-10 h-10 bg-gradient-to-br from-info to-info-dark rounded-full flex items-center justify-center">
                         <span className="text-white text-lg">📈</span>
                       </div>
-                      <h3 className="text-2xl font-bold text-on-surface">Nährwerte pro Portion</h3>
+                      <h3 className="text-2xl font-bold text-on-surface">Naehrwerte pro Portion</h3>
                     </div>
-                    <p className="text-on-surface-variant ml-14">Detaillierte Nährwertangaben</p>
+                    <p className="text-on-surface-variant ml-14">Detaillierte Naehrwertangaben</p>
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -818,7 +817,7 @@ export default function RecipeGeneratePage() {
                     className="inline-flex items-center gap-3 bg-success/20 text-success border border-success/30 px-6 py-3 rounded-full text-sm font-bold backdrop-blur-xl"
                   >
                     <span className="text-lg animate-spin">✨</span>
-                    <span>Powered by OpenAI GPT-4 • Personalisiert für dich</span>
+                    <span>Powered by OpenAI GPT-4 • Personalisiert fuer dich</span>
                     <span className="text-lg animate-spin">⚡</span>
                   </motion.div>
                   

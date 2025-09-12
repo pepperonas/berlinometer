@@ -671,8 +671,8 @@ export default function RecipeGeneratePage() {
                     </div>
                   )}
                 </div>
-              </div>
-
+              </motion.div>
+              
               <motion.div
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -719,7 +719,7 @@ export default function RecipeGeneratePage() {
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Cooking Tips */}
               {recipe.cookingTips && (
