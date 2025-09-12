@@ -1,19 +1,20 @@
 # Popular Times - Google Maps Occupancy Analyzer
 
-A modern web application for analyzing Google Maps location occupancy data in real-time. Extract live foot traffic data from Google Maps places to understand when locations are busiest.
+A modern web application for analyzing Google Maps location occupancy data with automated scraping and user authentication. View real-time foot traffic data from Google Maps places with personalized location preferences.
 
 ![Popular Times Screenshot](popular-times.jpg)
 
 ## ✨ Features
 
-- 🎯 **Real-time Scraping**: Extract live occupancy data from Google Maps
+- 🔐 **User Authentication**: Secure user registration and login system
+- 📍 **Personal Location Lists**: Save and manage your favorite locations
+- ⏰ **Automated Scraping**: Automatic data collection every 20-30 minutes
 - 🎨 **Modern Dark UI**: Professional interface with Material Design
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile
-- 🔄 **Live Progress**: Real-time progress updates during data extraction
-- 📊 **Multiple Export Formats**: Export results to JSON and CSV
-- 🚀 **High Performance**: Optimized Python backend with Playwright
-- 🔍 **Batch Processing**: Analyze multiple locations simultaneously
-- 📈 **Historical Data**: Capture popular times charts when available
+- 🔍 **Smart Filtering**: Results filtered based on your saved locations
+- 📊 **Live Occupancy Data**: Real-time foot traffic information
+- 📈 **Historical Data**: Popular times charts when available
+- 🚀 **High Performance**: Optimized Python backend with MySQL database
 
 ## 🏗️ Architecture
 
@@ -24,10 +25,11 @@ A modern web application for analyzing Google Maps location occupancy data in re
 - **State Management**: React hooks for local state
 
 ### Backend (Python Flask)
-- **Framework**: Flask with CORS support
+- **Framework**: Flask with CORS support and JWT authentication
 - **Web Scraping**: Playwright for automated Google Maps data extraction
-- **API Design**: RESTful endpoints with streaming responses
-- **Database**: Optional MySQL integration for data persistence
+- **Database**: MySQL for user management and location preferences
+- **Authentication**: JWT tokens with bcrypt password hashing
+- **API Design**: RESTful endpoints for user management and data access
 
 ## 🚀 Quick Start
 
@@ -35,6 +37,7 @@ A modern web application for analyzing Google Maps location occupancy data in re
 
 - **Node.js** 18+ and npm
 - **Python** 3.8+
+- **MySQL** 8.0+ database server
 - **Git**
 
 ### Installation
@@ -51,7 +54,23 @@ A modern web application for analyzing Google Maps location occupancy data in re
    python -m playwright install chromium
    ```
 
-3. **Install frontend dependencies**:
+3. **Set up the database**:
+   ```bash
+   # Create MySQL database
+   mysql -u root -p -e "CREATE DATABASE popular_times_db;"
+   
+   # Import the database schema
+   mysql -u root -p popular_times_db < database_schema.sql
+   ```
+
+4. **Configure environment variables**:
+   ```bash
+   # Copy and edit the environment file
+   cp .env.example .env
+   # Edit .env with your database credentials
+   ```
+
+5. **Install frontend dependencies**:
    ```bash
    cd webapp
    npm install
@@ -85,13 +104,26 @@ A modern web application for analyzing Google Maps location occupancy data in re
 
 ## 📖 Usage
 
-### Web Interface
+### User Authentication
 
-1. Open the application in your browser
-2. Enter Google Maps URLs for the locations you want to analyze
-3. Click "Start Scraping" to begin data extraction
-4. Monitor real-time progress as data is collected
-5. Export results in JSON or CSV format when complete
+1. **Register**: Create a new account (admin activation required)
+2. **Login**: Access your personalized dashboard
+3. **My Locations**: Add and manage your favorite locations
+4. **Profile**: Update your account settings
+
+### Location Management
+
+1. **Add Locations**: Search and save Google Maps locations
+2. **Organize**: Drag and drop to reorder your location list
+3. **Filter Results**: See only results from your saved locations
+4. **Auto-Sync**: New locations are automatically scraped in the background
+
+### Viewing Results
+
+- **Automatic Updates**: Data refreshes every 20-30 minutes automatically
+- **Live Data**: View real-time occupancy percentages when available
+- **Personalized**: Results filtered based on your location preferences
+- **Mood Barometer**: Visual overview of overall occupancy levels
 
 ### Supported URL Formats
 
@@ -120,33 +152,54 @@ https://goo.gl/maps/shortcode
 
 ## 🔌 API Reference
 
-### Endpoints
+### Authentication Endpoints
 
-#### `GET /`
-Returns service information and health status.
-
-#### `GET /health`
-Health check endpoint for monitoring.
-
-#### `POST /scrape`
-Scrapes Google Maps locations with real-time progress streaming.
+#### `POST /register`
+Register a new user account.
 
 **Request Body:**
 ```json
 {
-  "urls": [
-    "https://www.google.com/maps/place/Location+One",
-    "https://www.google.com/maps/place/Location+Two"
-  ]
+  "username": "user123",
+  "email": "user@example.com",
+  "password": "securepassword"
 }
 ```
 
-**Streaming Response:**
+#### `POST /login`
+Authenticate user and receive JWT token.
+
+**Request Body:**
 ```json
-{"type": "progress", "progress": 50, "current": 1, "total": 2, "location": "Processing location 1/2"}
-{"type": "result", "data": {"location_name": "...", "live_occupancy": "...", ...}}
-{"type": "complete", "timestamp": "2025-01-15T14:30:00Z"}
+{
+  "username": "user123",
+  "password": "securepassword"
+}
 ```
+
+### Location Management Endpoints
+
+#### `GET /user-locations`
+Get user's saved locations (requires authentication).
+
+#### `POST /user-locations`
+Add a new location to user's list (requires authentication).
+
+**Request Body:**
+```json
+{
+  "google_maps_url": "https://www.google.com/maps/place/Location+Name",
+  "display_name": "Custom Location Name"
+}
+```
+
+#### `DELETE /user-locations/{id}`
+Remove a location from user's list (requires authentication).
+
+### Data Endpoints
+
+#### `GET /latest-scraping`
+Get the latest scraping results, filtered by user's locations if authenticated.
 
 ## ⚙️ Configuration
 
@@ -154,10 +207,10 @@ Scrapes Google Maps locations with real-time progress streaming.
 
 Create a `.env` file for backend configuration:
 ```bash
-# Optional: Database configuration for data persistence
+# Required: Database configuration
 MYSQL_HOST=localhost
 MYSQL_USER=your_username
-MYSQL_PASSWORD=your_password
+MYSQL_PASSWORD=your_secure_password
 MYSQL_DATABASE=popular_times_db
 MYSQL_PORT=3306
 ```
@@ -175,17 +228,23 @@ popular-times/
 ├── webapp/                     # React frontend application
 │   ├── public/                 # Static assets and PWA files
 │   ├── src/
-│   │   ├── components/         # Reusable React components
+│   │   ├── components/         # React components
+│   │   │   ├── AuthDialog.jsx  # Login/register modal
+│   │   │   ├── UserProfile.jsx # User profile management
+│   │   │   ├── UserLocations.jsx # Location management
+│   │   │   └── ...            # Other UI components
+│   │   ├── contexts/          # React contexts
+│   │   │   └── AuthContext.jsx # Authentication state
 │   │   ├── App.jsx            # Main application component
-│   │   ├── App.css            # Application-specific styles
 │   │   ├── index.css          # Global styles and CSS variables
 │   │   └── main.jsx           # Application entry point
 │   ├── package.json           # Frontend dependencies
 │   └── vite.config.js         # Vite build configuration
 ├── server.py                   # Flask backend API server
+├── database_schema.sql         # MySQL database schema
 ├── requirements.txt            # Python dependencies
 ├── .env.example               # Example environment configuration
-├── .gitignore                 # Git ignore patterns
+├── .gitignore                 # Git ignore patterns (includes .env)
 └── README.md                  # Project documentation
 ```
 
@@ -201,9 +260,12 @@ The application features a modern dark theme with carefully selected colors:
 
 ## 🛠️ Development Notes
 
-- **Rate Limiting**: Implements 3-5 second delays between requests to respect Google's servers
-- **Error Handling**: Comprehensive error handling with user-friendly feedback
-- **Performance**: Resource blocking in Playwright for faster scraping
+- **Security**: JWT authentication with bcrypt password hashing and secure session management
+- **Database**: MySQL with proper indexing and foreign key constraints
+- **Automated Scraping**: Background scraping runs every 20-30 minutes via scheduled tasks
+- **Smart Filtering**: URL normalization for intelligent location matching
+- **User Experience**: Personalized results based on saved location preferences
+- **Performance**: Optimized queries and efficient data filtering
 - **Responsive Design**: Mobile-first approach with CSS Grid and Flexbox
 - **Accessibility**: Proper focus states and keyboard navigation
 
