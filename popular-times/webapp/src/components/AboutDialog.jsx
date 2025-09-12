@@ -3,7 +3,7 @@ import { useState } from 'react'
 const AboutDialog = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
-  const learningsContent = `# Popular Times - High-Performance Google Maps Analyzer
+  const learningsContent = `# Berlinometer - High-Performance Google Maps Analyzer
 
 ## Projekt Übersicht
 

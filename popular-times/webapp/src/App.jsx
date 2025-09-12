@@ -214,7 +214,7 @@ function App() {
             fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
             marginBottom: '0.75rem',
             lineHeight: '1.2'
-          }}>🍷 Popular Times</h1>
+          }}>🍷 Berlinometer</h1>
           <p className="text-secondary" style={{
             fontSize: 'clamp(0.875rem, 2.5vw, 1rem)',
             lineHeight: '1.4',

@@ -1,7 +1,7 @@
 {
-  "name": "Popular Times - Google Maps Auslastungsdaten Scraper",
-  "short_name": "Popular Times",
-  "description": "Web-App zum Scraping von Google Maps Auslastungsdaten und Live-Occupancy Informationen für beliebige Locations",
+  "name": "Berlinometer - Google Maps Auslastungsdaten Scraper",
+  "short_name": "Berlinometer",
+  "description": "Finde die perfekte Zeit für deinen Besuch! Berlinometer zeigt dir Live-Auslastung von Restaurants, Bars & Cafés in Berlin. Vermeide Warteschlangen und finde immer freie Plätze.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#2B2E3B",

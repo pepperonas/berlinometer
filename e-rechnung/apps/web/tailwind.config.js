@@ -24,31 +24,11 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#2C2E3B",
-          50: "#E8E9EC",
-          100: "#D1D3D9",
-          200: "#A3A7B3",
-          300: "#757B8D",
-          400: "#474F67",
-          500: "#2C2E3B", // Main brand color
-          600: "#23252F",
-          700: "#1A1C23",
-          800: "#111217",
-          900: "#08090B",
+          DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "#4F46E5",
-          50: "#EEF2FF",
-          100: "#E0E7FF",
-          200: "#C7D2FE",
-          300: "#A5B4FC",
-          400: "#818CF8",
-          500: "#6366F1",
-          600: "#4F46E5", // Indigo accent
-          700: "#4338CA",
-          800: "#3730A3",
-          900: "#312E81",
+          DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
