@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-// Cache bust: v2.2.0-multilingual
+// Cache bust: v2.2.0-multilingual-major
 import ResultsDisplay from './components/ResultsDisplay'
 import MoodBarometer from './components/MoodBarometer'
 import AboutDialog from './components/AboutDialog'
@@ -366,7 +366,7 @@ function App() {
             fontSize: '0.7rem',
             opacity: 0.5
           }}>
-            v2.1.1
+            v2.2.0
           </span>
         </div>
       </footer>

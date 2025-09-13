@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import './AuthDialog.css';
 
 const AuthDialog = ({ isOpen, onClose, onLogin }) => {
   const [currentForm, setCurrentForm] = useState('login'); // 'login' or 'register'
+  const { t } = useLanguage();
 
   const handleSwitchToRegister = () => {
     setCurrentForm('register');

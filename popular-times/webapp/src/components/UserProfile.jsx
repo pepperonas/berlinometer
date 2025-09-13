@@ -325,8 +325,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
           
           <div className="theme-note">
             <p>
-              <strong>💡 Tipp:</strong> Das ausgewählte Theme wird automatisch gespeichert 
-              und bei Ihrem nächsten Besuch wiederhergestellt.
+              <strong>💡 Tipp:</strong> {t('themeTip')}
             </p>
           </div>
         </div>
@@ -334,9 +333,9 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
 
       {activeTab === 'language' && (
         <div className="language-section">
-          <h4>Sprache auswählen</h4>
+          <h4>{t('languageSelect')}</h4>
           <p className="language-description">
-            Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche.
+            {t('languageDescription')}
           </p>
           
           <div className="language-options">
@@ -349,7 +348,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                 <div className="language-info">
                   <h5>{langName}</h5>
                   <p>{langKey === 'de' ? 'Deutsche Benutzeroberfläche' : 'English user interface'}</p>
-                  {language === langKey && <span className="selected-indicator">✓ Aktiv</span>}
+                  {language === langKey && <span className="selected-indicator">✓ {t('themeSelected')}</span>}
                 </div>
               </div>
             ))}
@@ -357,8 +356,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
           
           <div className="language-note">
             <p>
-              <strong>💡 Tipp:</strong> Die ausgewählte Sprache wird automatisch gespeichert 
-              und bei Ihrem nächsten Besuch wiederhergestellt.
+              <strong>💡 Tipp:</strong> {t('themeTip')}
             </p>
           </div>
         </div>
