@@ -10,6 +10,7 @@ import re
 import sys
 import time
 import urllib.parse
+import requests
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
@@ -27,6 +28,38 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Geolocation cache to avoid repeated API calls
+geolocation_cache = {}
+
+def get_geolocation(ip):
+    """Get geolocation info for IP address using ipapi.co"""
+    # Skip private/local IPs
+    if ip in ['unknown', '127.0.0.1', 'localhost'] or ip.startswith('192.168.') or ip.startswith('10.'):
+        return 'Local', 'Local'
+    
+    # Check cache first
+    if ip in geolocation_cache:
+        return geolocation_cache[ip]
+    
+    try:
+        # Use ipapi.co free API (30k requests/month)
+        response = requests.get(f"https://ipapi.co/{ip}/json/", timeout=2)
+        if response.status_code == 200:
+            data = response.json()
+            country = data.get('country_name', 'unknown')
+            city = data.get('city', 'unknown')
+            
+            # Cache the result
+            geolocation_cache[ip] = (country, city)
+            return country, city
+        else:
+            logger.warning(f"Geolocation API failed for {ip}: {response.status_code}")
+            return 'unknown', 'unknown'
+            
+    except Exception as e:
+        logger.warning(f"Geolocation lookup failed for {ip}: {e}")
+        return 'unknown', 'unknown'
+
 # Access logging function
 def log_access(endpoint):
     """Log access to endpoints with timestamp, IP, and geolocation info"""
@@ -35,9 +68,19 @@ def log_access(endpoint):
         client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
         user_agent = request.headers.get('User-Agent', 'unknown')
         
-        # Try to get geolocation info from headers (if available from proxy)
-        country = request.headers.get('CF-IPCountry', 'unknown')  # Cloudflare
-        city = request.headers.get('CF-IPCity', 'unknown')        # Cloudflare
+        # Clean up IP (remove port if present)
+        if ',' in client_ip:
+            client_ip = client_ip.split(',')[0].strip()
+        if ':' in client_ip and not client_ip.startswith('['):  # IPv4 with port
+            client_ip = client_ip.split(':')[0]
+        
+        # Try to get geolocation info from headers first (Cloudflare)
+        country = request.headers.get('CF-IPCountry', None)
+        city = request.headers.get('CF-IPCity', None)
+        
+        # If not available from headers, use IP geolocation API
+        if not country or country == 'unknown':
+            country, city = get_geolocation(client_ip)
         
         log_entry = f"{timestamp} | {client_ip} | {country} | {city} | {endpoint} | {user_agent}\n"
         
@@ -48,7 +91,7 @@ def log_access(endpoint):
         with open(log_file, 'a', encoding='utf-8') as f:
             f.write(log_entry)
             
-        logger.info(f"📊 Access: {client_ip} -> {endpoint}")
+        logger.info(f"📊 Access: {client_ip} ({country}, {city}) -> {endpoint}")
         
     except Exception as e:
         logger.error(f"Error logging access: {e}")
