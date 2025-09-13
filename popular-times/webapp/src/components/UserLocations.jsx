@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { 
   MapPin, 
   Plus, 
@@ -16,6 +17,7 @@ import './UserLocations.css';
 
 const UserLocations = ({ onClose, onLocationsSaved }) => {
   const { getAuthHeaders, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [savedLocations, setSavedLocations] = useState([]);
   const [defaultLocations, setDefaultLocations] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -209,7 +211,7 @@ const UserLocations = ({ onClose, onLocationsSaved }) => {
       <div className="user-locations-header">
         <h2>
           <MapPin size={24} />
-          Meine Locations
+          {t('myLocations')}
         </h2>
         <button onClick={onClose} className="close-button">
           <X size={20} />
@@ -230,7 +232,7 @@ const UserLocations = ({ onClose, onLocationsSaved }) => {
 
       <div className="saved-locations-section">
         <div className="section-header">
-          <h3>Saved Locations ({savedLocations.length})</h3>
+          <h3>{t('savedLocations')} ({savedLocations.length})</h3>
           <button 
             onClick={scrapeUserLocations}
             disabled={isLoading || savedLocations.length === 0}
@@ -286,7 +288,7 @@ const UserLocations = ({ onClose, onLocationsSaved }) => {
             onClick={() => setShowDefaultLocations(!showDefaultLocations)}
             className="toggle-section-button"
           >
-            <h3>Add Locations</h3>
+            <h3>{t('addLocations')}</h3>
             {showDefaultLocations ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>
         </div>
@@ -297,7 +299,7 @@ const UserLocations = ({ onClose, onLocationsSaved }) => {
               <Search size={20} />
               <input
                 type="text"
-                placeholder="Search locations..."
+                placeholder={t('searchLocations')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -306,7 +308,7 @@ const UserLocations = ({ onClose, onLocationsSaved }) => {
             <div className="available-locations">
               {filteredDefaultLocations.length === 0 ? (
                 <div className="empty-search">
-                  {searchTerm ? 'No matching locations found' : 'All available locations have been added'}
+                  {searchTerm ? t('noSearchResults') : t('allLocationsAdded')}
                 </div>
               ) : (
                 filteredDefaultLocations.map((location) => (

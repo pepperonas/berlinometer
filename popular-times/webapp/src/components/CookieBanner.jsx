@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const CookieBanner = () => {
   const [isVisible, setIsVisible] = useState(false)
+  const { t } = useLanguage()
 
   useEffect(() => {
     // Check if user has already accepted cookies
@@ -43,10 +45,10 @@ const CookieBanner = () => {
       lineHeight: '1.4'
     }}>
       <div style={{ marginBottom: '0.75rem', color: '#A9B7C6' }}>
-        🍪 <span style={{ color: '#FFC66D' }}>console.log</span>(<span style={{ color: '#6A8759' }}>'Cookie-Hinweis'</span>);
+        🍪 <span style={{ color: '#FFC66D' }}>console.log</span>(<span style={{ color: '#6A8759' }}>'{t('cookieNotice')}'</span>);
       </div>
       <div style={{ marginBottom: '1rem', fontSize: '0.8rem' }}>
-        Diese Website verwendet Cookies für Analytics und zur Verbesserung der Nutzererfahrung.
+        {t('cookieDescription')}
       </div>
       <div style={{ 
         display: 'flex', 
@@ -68,7 +70,7 @@ const CookieBanner = () => {
           onMouseEnter={(e) => e.target.style.background = '#4A90E2'}
           onMouseLeave={(e) => e.target.style.background = '#365880'}
         >
-          Akzeptieren
+          {t('accept')}
         </button>
         <button
           onClick={declineCookies}
@@ -91,7 +93,7 @@ const CookieBanner = () => {
             e.target.style.borderColor = '#515151'
           }}
         >
-          Ablehnen
+          {t('decline')}
         </button>
       </div>
       <div style={{ 
@@ -108,7 +110,7 @@ const CookieBanner = () => {
           onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
           onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
         >
-          Mehr Details in der Datenschutzerklärung
+          {t('moreDetails')}
         </a>
       </div>
     </div>

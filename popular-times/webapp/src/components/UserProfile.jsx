@@ -223,7 +223,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
       {activeTab === 'filters' && (
         <div className="filters-section">
           <form onSubmit={handleAddFilter} className="add-filter-form">
-            <h4>Neuen Filter hinzufügen</h4>
+            <h4>{t('addNewFilter')}</h4>
             <div className="filter-inputs">
               <select
                 value={newFilter.type}
@@ -241,21 +241,21 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                 type="text"
                 value={newFilter.value}
                 onChange={(e) => setNewFilter({ ...newFilter, value: e.target.value })}
-                placeholder="Filterwert"
+                placeholder={t('filterValue')}
                 disabled={loading}
                 required
               />
               
               <button type="submit" disabled={loading || !newFilter.value.trim()}>
-                Filter hinzufügen
+                {t('addFilter')}
               </button>
             </div>
           </form>
 
           <div className="filters-list">
-            <h4>Ihre Filter ({filters.length})</h4>
+            <h4>{t('yourFilters')} ({filters.length})</h4>
             {filters.length === 0 ? (
-              <p className="no-filters">Keine Filter konfiguriert. Fügen Sie oben einen Filter hinzu, um die Scraping-Ergebnisse automatisch zu filtern.</p>
+              <p className="no-filters">{t('noFilters')}</p>
             ) : (
               filters.map(filter => (
                 <div key={filter.id} className={`filter-item ${!filter.active ? 'inactive' : ''}`}>
@@ -271,14 +271,14 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                       className={filter.active ? 'toggle-btn active' : 'toggle-btn inactive'}
                       title={filter.active ? 'Filter deaktivieren' : 'Filter aktivieren'}
                     >
-                      {filter.active ? 'ON' : 'OFF'}
+                      {filter.active ? t('on') : t('off')}
                     </button>
                     <button
                       onClick={() => handleDeleteFilter(filter.id)}
                       className="delete-btn"
                       title="Filter löschen"
                     >
-                      Löschen
+                      {t('delete')}
                     </button>
                   </div>
                 </div>
@@ -290,9 +290,9 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
 
       {activeTab === 'themes' && (
         <div className="themes-section">
-          <h4>Theme auswählen</h4>
+          <h4>{t('themeSelect')}</h4>
           <p className="themes-description">
-            Wählen Sie das gewünschte Design für die Benutzeroberfläche.
+            {t('themeDescription')}
           </p>
           
           <div className="theme-options">

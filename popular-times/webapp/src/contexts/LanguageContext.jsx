@@ -41,6 +41,7 @@ const translations = {
     'themeDark': 'Dunkel',
     'themeLight': 'Hell',
     'themePsychedelic': 'Psychedelisch',
+    'themeSelect': 'Theme auswählen',
     'themeDescription': 'Wählen Sie das gewünschte Design für die Benutzeroberfläche.',
     'themeSelected': 'Aktiv',
     'themeTip': 'Das ausgewählte Theme wird automatisch gespeichert und bei Ihrem nächsten Besuch wiederhergestellt.',
@@ -76,6 +77,13 @@ const translations = {
     'noSavedLocations': 'Keine gespeicherten Locations gefunden.',
     'saveLocation': 'Location speichern',
     'removeLocation': 'Entfernen',
+    'addLocations': 'Locations hinzufügen',
+    'searchLocations': 'Locations durchsuchen...',
+    'noSearchResults': 'Keine passenden Locations gefunden.',
+    'scrapeSelected': 'Ausgewählte scrapen',
+    'reorderLocations': 'Locations neu anordnen',
+    'locationAdded': 'Location erfolgreich hinzugefügt!',
+    'allLocationsAdded': 'Alle verfügbaren Locations wurden hinzugefügt',
     
     // Cookie Banner
     'cookieNotice': 'Cookie-Hinweis',
@@ -161,6 +169,13 @@ const translations = {
     'noSavedLocations': 'No saved locations found.',
     'saveLocation': 'Save Location',
     'removeLocation': 'Remove',
+    'addLocations': 'Add Locations',
+    'searchLocations': 'Search locations...',
+    'noSearchResults': 'No matching locations found.',
+    'scrapeSelected': 'Scrape Selected',
+    'reorderLocations': 'Reorder Locations',
+    'locationAdded': 'Location successfully added!',
+    'allLocationsAdded': 'All available locations have been added',
     
     // Cookie Banner
     'cookieNotice': 'Cookie Notice',
