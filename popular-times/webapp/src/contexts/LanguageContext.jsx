@@ -148,17 +148,18 @@ const translations = {
     'automatedScrapingDescription': 'Die Locations werden automatisch alle 20-30 Minuten gescrapt. Die neuesten Ergebnisse werden automatisch geladen.',
     'aboutTheApp': 'Über die App',
     'missingLocation': 'Dir fehlt eine Location?',
+    'emailSubjectNewLocation': 'Berlinometer - Neue Location vorschlagen',
+    'errorLoadingHistory': 'Fehler beim Laden der Historie',
     
     // SearchBar
     'clearSearch': 'Suche löschen',
     'searchFor': 'Suche nach:',
     
     // OccupancyChart
+    'occupancyLast12Hours': 'Auslastung der letzten 12 Stunden',
     'currentOccupancy': 'Aktuelle Auslastung',
     'normalOccupancy': 'Normale Auslastung',
     
-    // UserProfile
-    'deleteFilter': 'Filter löschen',
     
     // Export/HTML
     'noData': 'Keine Daten',
@@ -197,6 +198,21 @@ const translations = {
     'imprint': 'Impressum',
     'privacy': 'Datenschutz',
     
+    // DefaultLocations
+    'pleaseSelectOneLocation': 'Bitte wählen Sie mindestens eine Location aus',
+    'loadingDefaultLocations': 'Lade Standard-Locations...',
+    'errorLoadingLocations': 'Fehler beim Laden der Locations',
+    'tryAgain': 'Erneut versuchen',
+    'standardLocations': 'Standard Locations',
+    'selectLocationsDescription': 'Wählen Sie die Locations aus, deren Auslastung Sie analysieren möchten',
+    'aboutTheAppTitle': 'Über die App',
+    'selectAll': 'Alle auswählen',
+    'selectNone': 'Keine auswählen',
+    'selectedCount': '{count} von {total} ausgewählt',
+    'inactive': '(inaktiv)',
+    'scrapingRunning': 'Scraping läuft...',
+    'startScraping': 'Scraping starten ({count})',
+
     // Generic
     'close': 'Schließen',
     'cancel': 'Abbrechen',
@@ -341,17 +357,18 @@ const translations = {
     'automatedScrapingDescription': 'Locations are automatically scraped every 20-30 minutes. The latest results are loaded automatically.',
     'aboutTheApp': 'About the App',
     'missingLocation': 'Missing a location?',
+    'emailSubjectNewLocation': 'Berlinometer - Suggest New Location',
+    'errorLoadingHistory': 'Error loading history',
     
     // SearchBar
     'clearSearch': 'Clear search',
     'searchFor': 'Search for:',
     
     // OccupancyChart
+    'occupancyLast12Hours': 'Occupancy of the last 12 hours',
     'currentOccupancy': 'Current Occupancy',
     'normalOccupancy': 'Normal Occupancy',
     
-    // UserProfile
-    'deleteFilter': 'Delete filter',
     
     // Export/HTML
     'noData': 'No data',
@@ -390,6 +407,21 @@ const translations = {
     'imprint': 'Imprint',
     'privacy': 'Privacy',
     
+    // DefaultLocations
+    'pleaseSelectOneLocation': 'Please select at least one location',
+    'loadingDefaultLocations': 'Loading default locations...',
+    'errorLoadingLocations': 'Error loading locations',
+    'tryAgain': 'Try again',
+    'standardLocations': 'Standard Locations',
+    'selectLocationsDescription': 'Select the locations whose occupancy you want to analyze',
+    'aboutTheAppTitle': 'About the App',
+    'selectAll': 'Select all',
+    'selectNone': 'Select none',
+    'selectedCount': '{count} of {total} selected',
+    'inactive': '(inactive)',
+    'scrapingRunning': 'Scraping running...',
+    'startScraping': 'Start scraping ({count})',
+
     // Generic
     'close': 'Close',
     'cancel': 'Cancel',

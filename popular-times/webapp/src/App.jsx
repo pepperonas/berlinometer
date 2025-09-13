@@ -115,8 +115,8 @@ function App() {
       console.error('Error loading existing results:', error)
       // Show error message in UI
       setResults([{
-        error: 'Fehler beim Laden der Historie',
-        location_name: 'Fehler beim Laden der Historie',
+        error: t('errorLoadingHistory'),
+        location_name: t('errorLoadingHistory'),
         timestamp: new Date().toISOString()
       }])
     }
@@ -301,7 +301,7 @@ function App() {
           {t('missingLocation')}
         </p>
         <a 
-          href="mailto:martin.pfeffer@celox.io?subject=Berlinometer - Neue Location vorschlagen" 
+          href={`mailto:martin.pfeffer@celox.io?subject=${encodeURIComponent(t('emailSubjectNewLocation'))}`} 
           style={{
             color: 'var(--primary-color)',
             textDecoration: 'none',

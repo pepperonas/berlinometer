@@ -38,7 +38,7 @@ function OccupancyChart({ url, isExpanded }) {
       })
 
       if (!response.ok) {
-        throw new Error('Fehler beim Laden der Historie')
+        throw new Error(t('errorLoadingHistory'))
       }
 
       const data = await response.json()
@@ -59,7 +59,7 @@ function OccupancyChart({ url, isExpanded }) {
         setChartData(formattedData)
       }
     } catch (err) {
-      console.error('Fehler beim Laden der Historie:', err)
+      console.error(t('errorLoadingHistory') + ':', err)
       setError('Historie-Feature nicht verfügbar')
     } finally {
       setIsLoading(false)
@@ -95,7 +95,7 @@ function OccupancyChart({ url, isExpanded }) {
 
   return (
     <div className="p-4" style={{ backgroundColor: 'var(--background-darker)', borderRadius: 'var(--radius)' }}>
-      <h5 className="text-sm font-semibold mb-3">Auslastung der letzten 12 Stunden</h5>
+      <h5 className="text-sm font-semibold mb-3">{t('occupancyLast12Hours')}</h5>
       
       <ResponsiveContainer width="100%" height={isMobile ? 300 : 250}>
         <LineChart 

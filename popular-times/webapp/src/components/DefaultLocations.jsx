@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 
 function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
+  const { t } = useLanguage()
   const [locations, setLocations] = useState([])
   const [selectedLocations, setSelectedLocations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -56,7 +58,7 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
 
   const handleStartScraping = () => {
     if (selectedLocations.length === 0) {
-      alert('Bitte wählen Sie mindestens eine Location aus')
+      alert(t('pleaseSelectOneLocation'))
       return
     }
     onStartScraping(selectedLocations)
@@ -67,7 +69,7 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
       <div className="card">
         <div className="text-center p-8">
           <div className="loading mb-4"></div>
-          <p>Lade Standard-Locations...</p>
+          <p>{t('loadingDefaultLocations')}</p>
         </div>
       </div>
     )
@@ -77,13 +79,13 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
     return (
       <div className="card">
         <div className="text-center p-8">
-          <p className="text-accent-red mb-4">❌ Fehler beim Laden der Locations</p>
+          <p className="text-accent-red mb-4">❌ {t('errorLoadingLocations')}</p>
           <p className="text-secondary">{error}</p>
           <button 
             className="btn btn-secondary mt-4"
             onClick={fetchDefaultLocations}
           >
-            Erneut versuchen
+            {t('tryAgain')}
           </button>
         </div>
       </div>
@@ -95,9 +97,9 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
       <div className="card-header">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="card-title">Standard Locations</h3>
+            <h3 className="card-title">{t('standardLocations')}</h3>
             <p className="card-description">
-              Wählen Sie die Locations aus, deren Auslastung Sie analysieren möchten
+              {t('selectLocationsDescription')}
             </p>
           </div>
           <button 
@@ -128,7 +130,7 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
               e.target.style.borderColor = 'var(--gray-3)'
               e.target.querySelector('svg').style.stroke = 'var(--text-secondary)'
             }}
-            title="Über die App"
+            title={t('aboutTheAppTitle')}
           >
             <svg 
               width="20" 
@@ -159,17 +161,17 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
               className="btn btn-sm btn-outline flex-1"
               onClick={handleSelectAll}
             >
-              Alle auswählen
+              {t('selectAll')}
             </button>
             <button 
               className="btn btn-sm btn-outline flex-1"
               onClick={handleSelectNone}
             >
-              Keine auswählen
+              {t('selectNone')}
             </button>
           </div>
           <div className="text-center text-sm text-secondary">
-            {selectedLocations.length} von {locations.length} ausgewählt
+            {t('selectedCount').replace('{count}', selectedLocations.length).replace('{total}', locations.length)}
           </div>
         </div>
 
@@ -275,7 +277,7 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
                           opacity: '0.8',
                           fontWeight: '400'
                         }}>
-                          (inaktiv)
+                          {t('inactive')}
                         </span>
                       )}
                     </div>
@@ -339,12 +341,12 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
             {isScrapingActive ? (
               <>
                 <div className="loading" style={{ width: '1.25rem', height: '1.25rem' }}></div>
-                <span>Scraping läuft...</span>
+                <span>{t('scrapingRunning')}</span>
               </>
             ) : (
               <>
                 <span>🚀</span>
-                <span>Scraping starten ({selectedLocations.length})</span>
+                <span>{t('startScraping').replace('{count}', selectedLocations.length)}</span>
               </>
             )}
           </button>
