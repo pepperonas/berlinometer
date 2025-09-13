@@ -267,42 +267,7 @@ function ResultsDisplay({ results }) {
     })
   }
 
-  const exportToJson = () => {
-    const sortedResults = sortResultsByOccupancy(filteredResults)
-    const dataStr = JSON.stringify(sortedResults, null, 2)
-    const dataBlob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `popular-times-export-${new Date().toISOString().split('T')[0]}.json`
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  const exportToCsv = () => {
-    const sortedResults = sortResultsByOccupancy(filteredResults)
-    const headers = ['Location Name', 'Address', 'Rating', 'Live Occupancy', 'Is Live', 'URL', 'Timestamp']
-    const csvContent = [
-      headers.join(','),
-      ...sortedResults.map(result => [
-        `"${(result.location_name || '').replace(/"/g, '""')}"`,
-        `"${(result.address || '').replace(/"/g, '""')}"`,
-        result.rating || '',
-        `"${(result.live_occupancy || '').replace(/"/g, '""')}"`,
-        result.is_live_data ? 'Yes' : 'No',
-        `"${result.url}"`,
-        `"${result.timestamp}"`
-      ].join(','))
-    ].join('\n')
-
-    const dataBlob = new Blob([csvContent], { type: 'text/csv' })
-    const url = URL.createObjectURL(dataBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `popular-times-export-${new Date().toISOString().split('T')[0]}.csv`
-    link.click()
-    URL.revokeObjectURL(url)
-  }
+  // Export-Funktionen entfernt für Produktionsversion
 
   const generateHtmlReport = (reportData) => {
     const timestamp = new Date().toLocaleString('de-DE')
@@ -593,69 +558,9 @@ function ResultsDisplay({ results }) {
           </div>
           
           
-          {/* Mobile-optimized export buttons */}
-          <div className="mobile-button-group" style={{
-            display: 'none'  // Export buttons versteckt
-          }}>
-            <button 
-              onClick={exportToCsv}
-              className="btn btn-sm btn-secondary"
-              style={{
-                width: '100%',
-                fontSize: '0.75rem',
-                padding: '0.5rem 0.75rem'
-              }}
-            >
-              📈 CSV Export
-            </button>
-            <button 
-              onClick={exportToJson}
-              className="btn btn-sm btn-secondary"
-              style={{
-                width: '100%',
-                fontSize: '0.75rem',
-                padding: '0.5rem 0.75rem'
-              }}
-            >
-              📊 JSON Export
-            </button>
-            <button 
-              onClick={exportToHtml}
-              className="btn btn-sm btn-primary"
-              style={{
-                width: '100%',
-                fontSize: '0.75rem',
-                padding: '0.5rem 0.75rem',
-                fontWeight: '600'
-              }}
-            >
-              📄 HTML Report
-            </button>
-          </div>
+          {/* Export buttons entfernt für Produktionsversion */}
           
-          {/* Desktop layout */}
-          <div className="flex gap-2" style={{
-            display: 'none'
-          }}>
-            <button 
-              onClick={exportToCsv}
-              className="btn btn-sm btn-secondary"
-            >
-              CSV Export
-            </button>
-            <button 
-              onClick={exportToJson}
-              className="btn btn-sm btn-secondary"
-            >
-              JSON Export
-            </button>
-            <button 
-              onClick={exportToHtml}
-              className="btn btn-sm btn-primary"
-            >
-              📄 HTML Report
-            </button>
-          </div>
+          {/* Desktop Export buttons ebenfalls entfernt */}
         </div>
       </div>
 

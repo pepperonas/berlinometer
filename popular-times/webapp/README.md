@@ -15,8 +15,8 @@ Eine hochperformante Web-Anwendung für die Echtzeit-Analyse von Google Maps Aus
   - ☀️ **Hell**: Modernes helles Theme  
   - 🌈 **Psychedelisch**: Spektakuläres Neon-Theme mit Animationen
 - **Benutzerauthentifizierung** mit Profilverwaltung und personalisierten Filtern
+- **Cookie-Consent-Banner** mit Code-Theme Design und localStorage-Persistierung
 - **Real-time Progress Updates** mit Batch-Information
-- **Export-Funktionen** (JSON/CSV)
 - **Responsive Design** für alle Geräte
 
 ## 📊 Performance Highlights
@@ -153,7 +153,14 @@ batch_group_size = 3     # Gruppen für Progress Updates
 - **Personalisierte Filter** für automatische Datenergebnisfilterung
 - **Benutzerprofil** mit Mitgliedschaftsinformationen
 - **Deutsche Benutzeroberfläche** - alle Texte vollständig lokalisiert
-- **Theme-Auswahl** im Benutzerprofil
+- **Theme-Auswahl** im Benutzerprofil mit 3 Designoptionen
+
+### Datenschutz & Compliance
+- **Cookie-Consent-Banner** mit modernem Code-Theme Design
+- **localStorage-Persistierung** der Cookie-Entscheidungen
+- **Akzeptieren/Ablehnen** Funktionalität
+- **Datenschutzerklärung-Link** für Transparenz
+- **DSGVO-konforme** Cookie-Verwaltung
 
 ### Real-time Progress
 - Live Progress Bar mit Batch-Info
@@ -234,3 +241,9 @@ MIT License - siehe [LICENSE](LICENSE) für Details.
 - **Erweiterte CSS-Animationen** für visuelles Feedback
 - **Theme-Persistierung** für konsistente Benutzererfahrung
 - **Accessibility-optimiert** mit angepassten Kontrasten
+
+### Datenschutz & UI-Optimierungen
+- **Cookie-Consent-Banner** mit `console.log()` Code-Stil
+- **Export-Funktionen entfernt** für cleane Produktionsversion
+- **DSGVO-Compliance** mit transparenter Cookie-Verwaltung
+- **Verbesserte Benutzerführung** ohne ablenkende Export-Optionen
