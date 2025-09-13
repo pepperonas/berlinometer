@@ -9,12 +9,36 @@ A modern web application for analyzing Google Maps location occupancy data with 
 - 🔐 **User Authentication**: Secure user registration and login system
 - 📍 **Personal Location Lists**: Save and manage your favorite locations
 - ⏰ **Automated Scraping**: Automatic data collection every 20-30 minutes
-- 🎨 **Modern Dark UI**: Professional interface with Material Design
+- 🎨 **Multiple Themes**: Dark, Light, and Psychedelic theme options
+- 🌍 **Full Multilingual Support**: Complete German/English interface (v2.3.0+)
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile
-- 🔍 **Smart Filtering**: Results filtered based on your saved locations
-- 📊 **Live Occupancy Data**: Real-time foot traffic information
-- 📈 **Historical Data**: Popular times charts when available
+- 🔍 **Smart Filtering**: Results filtered based on your saved locations (Beta)
+- 📊 **Live Occupancy Data**: Real-time foot traffic information with dynamic translations
+- 📈 **Historical Data**: 12-hour occupancy charts with trend analysis
+- 📊 **Mood Barometer**: City-wide occupancy mood analysis
 - 🚀 **High Performance**: Optimized Python backend with MySQL database
+- 🔄 **PWA Support**: Progressive Web App with offline capabilities
+
+## 🆕 Latest Updates (v2.3.0)
+
+### Complete Multilingual Support
+- Full German/English interface translation
+- Dynamic translation of server-side occupancy texts
+- Language preference persistence in localStorage
+- All UI components, dialogs, and messages translated
+
+### UI/UX Improvements
+- Fixed dialog size consistency for user profile
+- Renamed Filter tab to "Filter (Beta)" 
+- Translated theme names (Dark/Dunkel, Light/Hell, Psychedelic/Psychedelisch)
+- Added "Contains Live Data" indicator with translations
+- Improved mood barometer with localized descriptions
+
+### Technical Enhancements
+- Optimized build configuration for berlinometer.de deployment
+- Separated build outputs for different domains
+- Fixed variable initialization order preventing runtime errors
+- Added comprehensive deployment documentation
 
 ## 🏗️ Architecture
 
