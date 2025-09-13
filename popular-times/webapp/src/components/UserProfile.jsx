@@ -317,7 +317,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                 <div className="theme-info">
                   <h5>{config.name}</h5>
                   <p>{config.description}</p>
-                  {theme === themeKey && <span className="selected-indicator">✓ Aktiv</span>}
+                  {theme === themeKey && <span className="selected-indicator">✓ {t('themeSelected')}</span>}
                 </div>
               </div>
             ))}

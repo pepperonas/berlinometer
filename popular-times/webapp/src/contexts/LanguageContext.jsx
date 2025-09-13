@@ -134,6 +134,7 @@ const translations = {
     'themeDark': 'Dark',
     'themeLight': 'Light',
     'themePsychedelic': 'Psychedelic',
+    'themeSelect': 'Select Theme',
     'themeDescription': 'Choose your preferred design for the user interface.',
     'themeSelected': 'Active',
     'themeTip': 'The selected theme will be automatically saved and restored on your next visit.',
