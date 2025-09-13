@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import './RegisterForm.css';
 
 const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -20,21 +22,21 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwörter stimmen nicht überein');
+      setError(t('passwordMismatch'));
       setLoading(false);
       return;
     }
 
     // Validate password length
     if (formData.password.length < 6) {
-      setError('Passwort muss mindestens 6 Zeichen lang sein');
+      setError(t('passwordTooShort'));
       setLoading(false);
       return;
     }
 
     // Validate username length
     if (formData.username.length < 3) {
-      setError('Benutzername muss mindestens 3 Zeichen lang sein');
+      setError(t('usernameTooShort'));
       setLoading(false);
       return;
     }
@@ -42,7 +44,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError('Bitte geben Sie eine gültige E-Mail-Adresse ein');
+      setError(t('invalidEmail'));
       setLoading(false);
       return;
     }
@@ -63,7 +65,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Registrierung erfolgreich! Ihr Konto wartet auf Aktivierung. Sie können sich anmelden, sobald ein Administrator Ihr Konto aktiviert hat.');
+        setSuccess(t('registrationSuccess'));
         setFormData({
           username: '',
           email: '',
@@ -75,11 +77,11 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
           onRegister(data);
         }
       } else {
-        setError(data.error || 'Registrierung fehlgeschlagen');
+        setError(data.error || t('registerFailed'));
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setError('Netzwerkfehler. Bitte versuchen Sie es erneut.');
+      setError(t('networkError'));
     } finally {
       setLoading(false);
     }
@@ -94,7 +96,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
 
   return (
     <div className="register-form">
-      <h3>Konto erstellen</h3>
+      <h3>{t('registerTitle')}</h3>
       
       {error && (
         <div className="error-message">
@@ -110,7 +112,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="username">Benutzername:</label>
+          <label htmlFor="username">{t('username')}:</label>
           <input
             type="text"
             id="username"
@@ -119,13 +121,13 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Wählen Sie einen Benutzernamen (min. 3 Zeichen)"
+            placeholder={t('usernamePlaceholderRegister')}
             minLength={3}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="email">Email:</label>
+          <label htmlFor="email">{t('email')}:</label>
           <input
             type="email"
             id="email"
@@ -134,12 +136,12 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Geben Sie Ihre E-Mail-Adresse ein"
+            placeholder={t('emailPlaceholder')}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="password">Passwort:</label>
+          <label htmlFor="password">{t('password')}:</label>
           <input
             type="password"
             id="password"
@@ -148,13 +150,13 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Wählen Sie ein Passwort (min. 6 Zeichen)"
+            placeholder={t('passwordPlaceholderRegister')}
             minLength={6}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="confirmPassword">Passwort bestätigen:</label>
+          <label htmlFor="confirmPassword">{t('confirmPassword')}:</label>
           <input
             type="password"
             id="confirmPassword"
@@ -163,31 +165,30 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Bestätigen Sie Ihr Passwort"
+            placeholder={t('confirmPasswordPlaceholder')}
           />
         </div>
 
         <div className="form-actions">
           <button type="submit" disabled={loading} className="register-btn">
-            {loading ? 'Konto wird erstellt...' : 'Konto erstellen'}
+            {loading ? t('registerInProgress') : t('registerButton')}
           </button>
           <button type="button" onClick={onClose} disabled={loading} className="cancel-btn">
-            Abbrechen
+            {t('cancel')}
           </button>
         </div>
       </form>
 
       <div className="auth-switch">
-        Bereits ein Konto?{' '}
+        {t('alreadyHaveAccount')}{' '}
         <button type="button" onClick={onSwitchToLogin} className="link-btn">
-          Hier anmelden
+          {t('loginHere')}
         </button>
       </div>
 
       <div className="activation-note">
         <small>
-          <strong>Hinweis:</strong> Neue Konten erfordern eine manuelle Aktivierung durch einen Administrator. 
-          Sie können sich anmelden, sobald Ihr Konto aktiviert wurde.
+          <strong>{t('noteLabel')}</strong> {t('activationNote')}
         </small>
       </div>
     </div>

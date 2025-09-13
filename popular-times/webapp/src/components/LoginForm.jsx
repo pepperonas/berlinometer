@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import './LoginForm.css';
 
 const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -33,11 +35,11 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
         onLogin(data.user, data.token);
         onClose();
       } else {
-        setError(data.error || 'Anmeldung fehlgeschlagen');
+        setError(data.error || t('loginFailed'));
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError('Netzwerkfehler. Bitte versuchen Sie es erneut.');
+      setError(t('networkError'));
     } finally {
       setLoading(false);
     }
@@ -52,7 +54,7 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
 
   return (
     <div className="login-form">
-      <h3>Anmelden</h3>
+      <h3>{t('loginTitle')}</h3>
       
       {error && (
         <div className="error-message">
@@ -62,7 +64,7 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="username">Benutzername oder E-Mail:</label>
+          <label htmlFor="username">{t('usernameOrEmail')}:</label>
           <input
             type="text"
             id="username"
@@ -71,12 +73,12 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Geben Sie Ihren Benutzername oder E-Mail ein"
+            placeholder={t('usernamePlaceholder')}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="password">Passwort:</label>
+          <label htmlFor="password">{t('password')}:</label>
           <input
             type="password"
             id="password"
@@ -85,24 +87,24 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Geben Sie Ihr Passwort ein"
+            placeholder={t('passwordPlaceholder')}
           />
         </div>
 
         <div className="form-actions">
           <button type="submit" disabled={loading} className="login-btn">
-            {loading ? 'Anmeldung läuft...' : 'Anmelden'}
+            {loading ? t('loginInProgress') : t('loginButton')}
           </button>
           <button type="button" onClick={onClose} disabled={loading} className="cancel-btn">
-            Abbrechen
+            {t('cancel')}
           </button>
         </div>
       </form>
 
       <div className="auth-switch">
-        Noch kein Konto?{' '}
+        {t('noAccount')}{' '}
         <button type="button" onClick={onSwitchToRegister} className="link-btn">
-          Hier registrieren
+          {t('registerHere')}
         </button>
       </div>
     </div>

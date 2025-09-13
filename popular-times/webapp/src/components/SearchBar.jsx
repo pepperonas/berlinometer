@@ -1,7 +1,12 @@
 import { useState } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 
-function SearchBar({ onSearch, placeholder = "Locations durchsuchen..." }) {
+function SearchBar({ onSearch, placeholder }) {
+  const { t } = useLanguage()
   const [searchTerm, setSearchTerm] = useState('')
+  
+  // Use translation as fallback if no placeholder provided
+  const searchPlaceholder = placeholder || t('searchLocationsPlaceholder')
 
   const handleInputChange = (e) => {
     const value = e.target.value
@@ -41,7 +46,7 @@ function SearchBar({ onSearch, placeholder = "Locations durchsuchen..." }) {
           type="text"
           value={searchTerm}
           onChange={handleInputChange}
-          placeholder={placeholder}
+          placeholder={searchPlaceholder}
           style={{
             width: '100%',
             padding: '0.75rem 2.5rem 0.75rem 2.5rem',
@@ -91,7 +96,7 @@ function SearchBar({ onSearch, placeholder = "Locations durchsuchen..." }) {
               e.target.style.backgroundColor = 'transparent'
               e.target.style.color = 'var(--text-secondary)'
             }}
-            title="Suche löschen"
+            title={t('clearSearch')}
           >
             ✕
           </button>
@@ -113,7 +118,7 @@ function SearchBar({ onSearch, placeholder = "Locations durchsuchen..." }) {
           color: 'var(--text-secondary)',
           zIndex: 10
         }}>
-          Suche nach: "{searchTerm}"
+          {t('searchFor')} "{searchTerm}"
         </div>
       )}
     </div>

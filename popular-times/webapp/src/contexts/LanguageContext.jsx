@@ -72,6 +72,33 @@ const translations = {
     'loginHere': 'Hier anmelden',
     'registerHere': 'Hier registrieren',
     
+    // Login Form
+    'loginTitle': 'Anmelden',
+    'loginButton': 'Anmelden',
+    'loginInProgress': 'Anmeldung läuft...',
+    'loginFailed': 'Anmeldung fehlgeschlagen',
+    'networkError': 'Netzwerkfehler. Bitte versuchen Sie es erneut.',
+    'usernamePlaceholder': 'Geben Sie Ihren Benutzername oder E-Mail ein',
+    'passwordPlaceholder': 'Geben Sie Ihr Passwort ein',
+    
+    // Register Form
+    'registerTitle': 'Konto erstellen',
+    'registerButton': 'Konto erstellen',
+    'registerInProgress': 'Konto wird erstellt...',
+    'registerFailed': 'Registrierung fehlgeschlagen',
+    'passwordMismatch': 'Passwörter stimmen nicht überein',
+    'passwordTooShort': 'Passwort muss mindestens 6 Zeichen lang sein',
+    'usernameTooShort': 'Benutzername muss mindestens 3 Zeichen lang sein',
+    'invalidEmail': 'Bitte geben Sie eine gültige E-Mail-Adresse ein',
+    'registrationSuccess': 'Registrierung erfolgreich! Ihr Konto wartet auf Aktivierung. Sie können sich anmelden, sobald ein Administrator Ihr Konto aktiviert hat.',
+    'usernamePlaceholderRegister': 'Wählen Sie einen Benutzernamen (min. 3 Zeichen)',
+    'emailPlaceholder': 'Geben Sie Ihre E-Mail-Adresse ein',
+    'passwordPlaceholderRegister': 'Wählen Sie ein Passwort (min. 6 Zeichen)',
+    'confirmPasswordPlaceholder': 'Bestätigen Sie Ihr Passwort',
+    'confirmPassword': 'Passwort bestätigen',
+    'activationNote': 'Neue Konten erfordern eine manuelle Aktivierung durch einen Administrator. Sie können sich anmelden, sobald Ihr Konto aktiviert wurde.',
+    'noteLabel': 'Hinweis:',
+    
     // Locations
     'savedLocations': 'Gespeicherte Locations',
     'noSavedLocations': 'Keine gespeicherten Locations gefunden.',
@@ -91,6 +118,41 @@ const translations = {
     'accept': 'Akzeptieren',
     'decline': 'Ablehnen',
     'moreDetails': 'Mehr Details in der Datenschutzerklärung',
+    
+    // ResultsDisplay
+    'scrapingResults': 'Scraping Ergebnisse',
+    'locationsAnalyzed': 'Location{count} analysiert',
+    'locationsFiltered': 'Location{count} gefiltert',
+    'searchLocationsPlaceholder': 'Locations durchsuchen...',
+    'unknownLocation': 'Unbekannte Location',
+    'stars': 'Sterne',
+    'liveOccupancy': 'Live-Auslastung:',
+    'occupancyData': 'Auslastungsdaten:',
+    'realtimeData': 'Echtzeitdaten von Google Maps',
+    'noOccupancyData': 'Keine Auslastungsdaten verfügbar',
+    'errorLabel': 'Fehler:',
+    'openGoogleMaps': 'Google Maps öffnen',
+    'showHistory': 'Historie anzeigen',
+    'closeHistory': 'Historie schließen',
+    'noResultsYet': 'Noch keine Ergebnisse verfügbar',
+    'noMatchesFound': 'Keine Treffer gefunden',
+    'tryDifferentSearch': 'Versuche einen anderen Suchbegriff',
+    'historical': 'Historisch',
+    'live': 'LIVE',
+    
+    // AboutDialog
+    'aboutApp': 'Über die App',
+    
+    // App.jsx
+    'berlinometerSubtitle': 'Analysiere die Auslastung von Google Maps Locations in Echtzeit',
+    'automatedScrapingActive': 'Automatisches Scraping aktiv',
+    'automatedScrapingDescription': 'Die Locations werden automatisch alle 20-30 Minuten gescrapt. Die neuesten Ergebnisse werden automatisch geladen.',
+    'aboutTheApp': 'Über die App',
+    'missingLocation': 'Dir fehlt eine Location?',
+    
+    // SearchBar
+    'clearSearch': 'Suche löschen',
+    'searchFor': 'Suche nach:',
     
     // Footer
     'madeWith': 'Made with ❤️ by Martin Pfeffer',
@@ -165,6 +227,33 @@ const translations = {
     'loginHere': 'Login here',
     'registerHere': 'Register here',
     
+    // Login Form
+    'loginTitle': 'Login',
+    'loginButton': 'Login',
+    'loginInProgress': 'Logging in...',
+    'loginFailed': 'Login failed',
+    'networkError': 'Network error. Please try again.',
+    'usernamePlaceholder': 'Enter your username or email',
+    'passwordPlaceholder': 'Enter your password',
+    
+    // Register Form
+    'registerTitle': 'Create Account',
+    'registerButton': 'Create Account',
+    'registerInProgress': 'Creating account...',
+    'registerFailed': 'Registration failed',
+    'passwordMismatch': 'Passwords do not match',
+    'passwordTooShort': 'Password must be at least 6 characters long',
+    'usernameTooShort': 'Username must be at least 3 characters long',
+    'invalidEmail': 'Please enter a valid email address',
+    'registrationSuccess': 'Registration successful! Your account is pending activation. You can log in once an administrator activates your account.',
+    'usernamePlaceholderRegister': 'Choose a username (min. 3 characters)',
+    'emailPlaceholder': 'Enter your email address',
+    'passwordPlaceholderRegister': 'Choose a password (min. 6 characters)',
+    'confirmPasswordPlaceholder': 'Confirm your password',
+    'confirmPassword': 'Confirm Password',
+    'activationNote': 'New accounts require manual activation by an administrator. You can log in once your account has been activated.',
+    'noteLabel': 'Note:',
+    
     // Locations
     'savedLocations': 'Saved Locations',
     'noSavedLocations': 'No saved locations found.',
@@ -184,6 +273,41 @@ const translations = {
     'accept': 'Accept',
     'decline': 'Decline',
     'moreDetails': 'More details in the privacy policy',
+    
+    // ResultsDisplay
+    'scrapingResults': 'Scraping Results',
+    'locationsAnalyzed': 'location{count} analyzed',
+    'locationsFiltered': 'location{count} filtered',
+    'searchLocationsPlaceholder': 'Search locations...',
+    'unknownLocation': 'Unknown Location',
+    'stars': 'stars',
+    'liveOccupancy': 'Live Occupancy:',
+    'occupancyData': 'Occupancy Data:',
+    'realtimeData': 'Real-time data from Google Maps',
+    'noOccupancyData': 'No occupancy data available',
+    'errorLabel': 'Error:',
+    'openGoogleMaps': 'Open Google Maps',
+    'showHistory': 'Show History',
+    'closeHistory': 'Close History',
+    'noResultsYet': 'No results available yet',
+    'noMatchesFound': 'No matches found',
+    'tryDifferentSearch': 'Try a different search term',
+    'historical': 'Historical',
+    'live': 'LIVE',
+    
+    // AboutDialog
+    'aboutApp': 'About the App',
+    
+    // App.jsx
+    'berlinometerSubtitle': 'Analyze real-time occupancy data from Google Maps locations',
+    'automatedScrapingActive': 'Automated Scraping Active',
+    'automatedScrapingDescription': 'Locations are automatically scraped every 20-30 minutes. The latest results are loaded automatically.',
+    'aboutTheApp': 'About the App',
+    'missingLocation': 'Missing a location?',
+    
+    // SearchBar
+    'clearSearch': 'Clear search',
+    'searchFor': 'Search for:',
     
     // Footer
     'madeWith': 'Made with ❤️ by Martin Pfeffer',

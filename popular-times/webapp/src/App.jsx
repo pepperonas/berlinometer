@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-// Cache bust: v2.2.0-multilingual-major
+// Cache bust: v2.3.0-complete-multilingual
 import ResultsDisplay from './components/ResultsDisplay'
 import MoodBarometer from './components/MoodBarometer'
 import AboutDialog from './components/AboutDialog'
@@ -226,7 +226,7 @@ function App() {
             maxWidth: '600px',
             margin: '0 auto'
           }}>
-            Analysiere die Auslastung von Google Maps Locations in Echtzeit
+            {t('berlinometerSubtitle')}
             {user && (
               <span style={{ display: 'block', fontSize: '0.75rem', marginTop: '0.25rem', opacity: 0.8 }}>
                 Results are filtered based on your profile settings
@@ -257,7 +257,7 @@ function App() {
                 marginBottom: '1rem',
                 color: 'var(--text-color)'
               }}>
-                🔄 Automatisches Scraping aktiv
+                🔄 {t('automatedScrapingActive')}
               </h3>
               <p style={{ 
                 color: 'var(--text-secondary)',
@@ -266,8 +266,7 @@ function App() {
                 maxWidth: '400px',
                 margin: '0 auto 1.5rem auto'
               }}>
-                Die Locations werden automatisch alle 20-30 Minuten gescrapt. 
-                Die neuesten Ergebnisse werden automatisch geladen.
+                {t('automatedScrapingDescription')}
               </p>
               <button
                 onClick={() => setShowAboutDialog(true)}
@@ -281,7 +280,7 @@ function App() {
                   fontSize: '0.9rem'
                 }}
               >
-                📋 Über die App
+                📋 {t('aboutTheApp')}
               </button>
             </div>
           )}
@@ -299,7 +298,7 @@ function App() {
         margin: '0 auto'
       }}>
         <p style={{ marginBottom: '0.5rem', opacity: 0.8 }}>
-          Dir fehlt eine Location?
+          {t('missingLocation')}
         </p>
         <a 
           href="mailto:martin.pfeffer@celox.io?subject=Berlinometer - Neue Location vorschlagen" 
@@ -366,7 +365,7 @@ function App() {
             fontSize: '0.7rem',
             opacity: 0.5
           }}>
-            v2.2.0
+            v2.3.0
           </span>
         </div>
       </footer>

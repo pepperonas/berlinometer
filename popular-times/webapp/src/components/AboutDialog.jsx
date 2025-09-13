@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const AboutDialog = ({ isOpen, onClose }) => {
+  const { t, language } = useLanguage()
+  
   if (!isOpen) return null
 
-  const learningsContent = `# Berlinometer - High-Performance Google Maps Analyzer
+  const learningsContentDE = `# Berlinometer - High-Performance Google Maps Analyzer
 
 ## Projekt Übersicht
 
@@ -189,6 +192,136 @@ Das Projekt zeigt, dass robustes Web Scraping möglich ist, wenn man:
 *Aktualisiert: 27.06.2025*  
 *Version: 2.0.0 - High-Performance Batch Edition*`
 
+  const learningsContentEN = `# Berlinometer - High-Performance Google Maps Analyzer
+
+## Project Overview
+
+High-performance React web app for scraping Google Maps occupancy data with optimized Python/Playwright backend and modern dark theme frontend.
+
+**Performance Revolution**: 1200% speed increase through Batch Processing & Multithreading
+**End Result**: 100% location name success rate, 75% occupancy data success rate
+
+---
+
+## 🚀 **Performance Revolution: 1200% Improvement**
+
+### 1. **Concurrent Batch Processing**
+**Breakthrough**: Switched from sequential to parallel processing.
+
+**Implementation**: 
+- Locations divided into batches of 5
+- Up to 10 batches run simultaneously in parallel
+- Page reuse within batches
+- Smart resource blocking for maximum speed
+
+**Result**: **1200% performance increase** - from 60s to 5s for 15 locations!
+
+### 2. **Multi-Retry Strategy**
+**Problem**: Google Maps loads inconsistently - sometimes the scraper works, sometimes it doesn't.
+
+**Solution**: Implementation of 3 retry attempts per URL with different configurations:
+- Different user agents per attempt
+- Different viewport sizes (1280x720, 1366x768, 1920x1080)
+- Adaptive timeouts (30s → 40s → 50s)
+- Randomized wait times between attempts
+
+**Result**: Success rate increased from 50% to 75-100%.
+
+### 3. **Robust Fallback Mechanisms**
+**Problem**: When selectors fail, only "Unknown Location" remains.
+
+**Solution**: Multi-layered fallback system:
+1. **Primary**: CSS selectors (h1[data-attrid="title"], h1.DUwDvf)
+2. **Secondary**: Extended selectors ([data-value="Location"], h1.fontHeadlineLarge)
+3. **Tertiary**: URL parsing as guaranteed fallback
+
+**Result**: 100% location name guarantee.
+
+---
+
+## 🛠 **Technical Architecture**
+
+### Backend (Python Flask)
+- Flask Server (Port 5044) with Concurrent Processing
+- Playwright Browser Automation with Page Reuse
+- Streaming API (Server-Sent Events) for Real-time Updates
+- Multi-Retry Logic with 3-tier Fallbacks
+- Smart Resource Blocking for 1200% Performance Boost
+- Asyncio-based Batch Processing
+
+### Frontend (React + Vite)
+- Modern Dark Theme (Material Design)
+- Real-time Progress Updates
+- Export Functions (JSON/CSV)
+- Responsive Design
+- Live/Historical Data Distinction
+
+---
+
+## 📊 **Performance Metrics**
+
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| **Total Speed** | **60s** | **5s** | **+1200%** 🚀 |
+| Location Names | 50% | 100% | +100% |
+| Occupancy Data | 50% | 75% | +50% |
+| Live Data Detection | 25% | 50% | +100% |
+| Average Time/URL | 15s | 3s | +400% |
+| Concurrent Batches | 1 | 10 | +1000% |
+
+---
+
+## 🎨 **Frontend Design System**
+
+### Color Scheme (Dark Theme)
+- --background-dark: #2B2E3B
+- --background-darker: #252830
+- --card-background: #343845
+- --accent-blue: #688db1
+- --text-primary: #d1d5db
+- --text-secondary: #9ca3af
+
+### Status Indicators
+- 🔴 **LIVE**: Real-time data from Google Maps
+- 📊 **Historical**: Historical occupancy data
+- ⚫ **No Data**: No occupancy information available
+
+---
+
+## 🔮 **Lessons Learned**
+
+### 1. **Web scraping is inherently unstable**
+Google Maps constantly changes layout. A robust solution needs:
+- Multiple fallback strategies
+- Regular selector updates
+- Extensive error handling
+
+### 2. **Retry logic is essential**
+Single attempts often fail. 3+ attempts with different configurations dramatically increase success rate.
+
+### 3. **Timing is critical**
+Too fast = elements not loaded. Too slow = poor UX. Adaptive timeouts are key.
+
+---
+
+## 📈 **Conclusion**
+
+The project shows that robust web scraping is possible when:
+1. **Multi-layered fallback systems** are implemented
+2. **Adaptive retry mechanisms** are used
+3. **Intelligent randomization** to avoid bot detection
+4. **User-friendly fallbacks** (URL parsing) are provided
+
+**End Result**: An ultra-performant web app with 1200% performance increase, 100% location name success rate and modern dark theme design.
+
+**Live Demo**: https://berlinometer.de/ and https://mrx3k1.de/popular-times/
+
+---
+
+*Created: 26.06.2025*  
+*Updated: 27.06.2025*  
+*Version: 2.0.0 - High-Performance Batch Edition*`
+
   const renderMarkdown = (text) => {
     const lines = text.split('\n')
     const elements = []
@@ -302,12 +435,12 @@ Das Projekt zeigt, dass robustes Web Scraping möglich ist, wenn man:
     <div className="dialog-overlay" onClick={onClose}>
       <div className="dialog" onClick={(e) => e.stopPropagation()}>
         <div className="dialog-header">
-          <h2>Über die App</h2>
+          <h2>{t('aboutApp')}</h2>
           <button className="dialog-close" onClick={onClose}>×</button>
         </div>
         <div className="dialog-content">
           <div className="markdown-content">
-            {renderMarkdown(learningsContent)}
+            {renderMarkdown(language === 'de' ? learningsContentDE : learningsContentEN)}
           </div>
         </div>
       </div>

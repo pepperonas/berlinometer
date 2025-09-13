@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 import OccupancyChart from './OccupancyChart'
 import SearchBar from './SearchBar'
 
 function ResultsDisplay({ results }) {
+  const { t } = useLanguage()
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedCard, setExpandedCard] = useState(null)
   const formatTimestamp = (timestamp) => {
@@ -20,10 +22,10 @@ function ResultsDisplay({ results }) {
     if (!occupancy) return null
     
     if (isLive) {
-      return <span className="status status-live">🔴 LIVE</span>
+      return <span className="status status-live">🔴 {t('live')}</span>
     }
     
-    return <span className="status status-success">📊 Historisch</span>
+    return <span className="status status-success">📊 {t('historical')}</span>
   }
 
   const parseOccupancyLevel = (occupancyText) => {
@@ -550,10 +552,10 @@ function ResultsDisplay({ results }) {
           alignItems: 'stretch'
         }}>
           <div className="text-center">
-            <h3 className="card-title mb-2" style={{ fontSize: '1.25rem' }}>Scraping Ergebnisse</h3>
+            <h3 className="card-title mb-2" style={{ fontSize: '1.25rem' }}>{t('scrapingResults')}</h3>
             <p className="card-description" style={{ fontSize: '0.875rem' }}>
-              {filteredResults.length} von {results.length} Location{results.length !== 1 ? 's' : ''} 
-              {searchTerm ? 'gefiltert' : 'analysiert'}
+              {filteredResults.length} von {results.length} {results.length !== 1 ? t('locationsAnalyzed').replace('{count}', 's') : t('locationsAnalyzed').replace('{count}', '')} 
+              {searchTerm ? t('locationsFiltered').replace('{count}', '') : ''}
             </p>
           </div>
           
@@ -573,7 +575,7 @@ function ResultsDisplay({ results }) {
       }}>
         <SearchBar 
           onSearch={setSearchTerm}
-          placeholder="Locations durchsuchen..."
+          placeholder={t('searchLocationsPlaceholder')}
         />
       </div>
 
@@ -598,7 +600,7 @@ function ResultsDisplay({ results }) {
                   lineHeight: '1.3',
                   paddingRight: '0.5rem'
                 }}>
-                  {result.location_name || 'Unbekannte Location'}
+                  {result.location_name || t('unknownLocation')}
                 </h4>
                 
                 <div className="flex flex-col gap-1 items-end" style={{ flexShrink: 0 }}>
@@ -619,7 +621,7 @@ function ResultsDisplay({ results }) {
                   {result.rating && (
                     <div className="flex items-center gap-1 text-secondary">
                       <span>⭐</span>
-                      <span>{result.rating} Sterne</span>
+                      <span>{result.rating} {t('stars')}</span>
                     </div>
                   )}
                   
@@ -640,14 +642,14 @@ function ResultsDisplay({ results }) {
                 }}
               >
                 <div className="font-weight-500 text-sm mb-2">
-                  {result.is_live_data ? `${getOccupancyIcon(result.live_occupancy, result.is_live_data)} Live-Auslastung:` : '📊 Auslastungsdaten:'}
+                  {result.is_live_data ? `${getOccupancyIcon(result.live_occupancy, result.is_live_data)} ${t('liveOccupancy')}` : `📊 ${t('occupancyData')}`}
                 </div>
                 <div className="text-sm mb-2">
                   {result.live_occupancy}
                 </div>
                 {result.is_live_data && (
                   <div className="text-xs text-secondary">
-                    Echtzeitdaten von Google Maps
+                    {t('realtimeData')}
                   </div>
                 )}
               </div>
@@ -661,7 +663,7 @@ function ResultsDisplay({ results }) {
                 }}
               >
                 <div className="text-sm text-secondary">
-                  {result.error ? `Fehler: ${result.error}` : 'Keine Auslastungsdaten verfügbar'}
+                  {result.error ? `${t('errorLabel')} ${result.error}` : t('noOccupancyData')}
                 </div>
               </div>
             )}
@@ -698,7 +700,7 @@ function ResultsDisplay({ results }) {
                   }}
                 >
                   <span>🔗</span>
-                  <span>Google Maps öffnen</span>
+                  <span>{t('openGoogleMaps')}</span>
                 </a>
                 
                 <button
@@ -730,7 +732,7 @@ function ResultsDisplay({ results }) {
                   }}
                 >
                   <span>{expandedCard === index ? '📉' : '📈'}</span>
-                  <span>{expandedCard === index ? 'Historie schließen' : 'Historie anzeigen'}</span>
+                  <span>{expandedCard === index ? t('closeHistory') : t('showHistory')}</span>
                 </button>
               </div>
               
@@ -752,15 +754,15 @@ function ResultsDisplay({ results }) {
 
       {results.length === 0 && (
         <div className="text-center text-secondary py-8">
-          <p>Noch keine Ergebnisse verfügbar</p>
+          <p>{t('noResultsYet')}</p>
         </div>
       )}
       
       {results.length > 0 && filteredResults.length === 0 && (
         <div className="text-center text-secondary py-8">
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔍</div>
-          <p style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>Keine Treffer gefunden</p>
-          <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>Versuche einen anderen Suchbegriff</p>
+          <p style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>{t('noMatchesFound')}</p>
+          <p style={{ fontSize: '0.875rem', opacity: 0.7 }}>{t('tryDifferentSearch')}</p>
         </div>
       )}
     </div>
