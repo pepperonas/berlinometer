@@ -27,6 +27,32 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Access logging function
+def log_access(endpoint):
+    """Log access to endpoints with timestamp, IP, and geolocation info"""
+    try:
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
+        user_agent = request.headers.get('User-Agent', 'unknown')
+        
+        # Try to get geolocation info from headers (if available from proxy)
+        country = request.headers.get('CF-IPCountry', 'unknown')  # Cloudflare
+        city = request.headers.get('CF-IPCity', 'unknown')        # Cloudflare
+        
+        log_entry = f"{timestamp} | {client_ip} | {country} | {city} | {endpoint} | {user_agent}\n"
+        
+        # Write to access log file
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        log_file = os.path.join(script_dir, 'access.log')
+        
+        with open(log_file, 'a', encoding='utf-8') as f:
+            f.write(log_entry)
+            
+        logger.info(f"📊 Access: {client_ip} -> {endpoint}")
+        
+    except Exception as e:
+        logger.error(f"Error logging access: {e}")
+
 # Integrated scraping function
 import asyncio
 from playwright.async_api import async_playwright
@@ -2394,6 +2420,7 @@ def find_locations():
 @app.route('/latest-scraping', methods=['GET'])
 def get_latest_scraping():
     """Endpoint to get the latest scraping result"""
+    log_access('latest-scraping')
     try:
         # Verwende absoluten Pfad basierend auf dem Skript-Verzeichnis
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -2559,6 +2586,7 @@ def get_location_history_endpoint():
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
+    log_access('health')
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
@@ -3220,6 +3248,7 @@ def scrape_user_locations():
 @app.route('/', methods=['GET'])
 def root():
     """Root endpoint with service info"""
+    log_access('root')
     return jsonify({
         'service': 'Popular Times Scraper API',
         'version': '1.5.0 - Final Enhanced Edition',

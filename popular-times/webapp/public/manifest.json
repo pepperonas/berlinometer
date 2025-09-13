@@ -1,5 +1,5 @@
 {
-  "name": "Berlinometer - Google Maps Auslastungsdaten Scraper",
+  "name": "Berlinometer - Vermeide Warteschlangen mit Live-Auslastung",
   "short_name": "Berlinometer",
   "description": "Finde die perfekte Zeit für deinen Besuch! Berlinometer zeigt dir Live-Auslastung von Restaurants, Bars & Cafés in Berlin. Vermeide Warteschlangen und finde immer freie Plätze.",
   "start_url": "./",

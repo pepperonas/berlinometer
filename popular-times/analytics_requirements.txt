@@ -1,0 +1,2 @@
+# Analytics Dependencies
+# Chart.js is loaded via CDN - no Python chart dependencies needed

@@ -283,6 +283,32 @@ function App() {
         </div>
 
       </div>
+
+      {/* Location request info */}
+      <div style={{
+        textAlign: 'center',
+        padding: '2rem 1rem 1rem 1rem',
+        color: 'var(--text-secondary)',
+        fontSize: 'clamp(0.875rem, 2.5vw, 1rem)',
+        maxWidth: '600px',
+        margin: '0 auto'
+      }}>
+        <p style={{ marginBottom: '0.5rem', opacity: 0.8 }}>
+          Dir fehlt eine Location?
+        </p>
+        <a 
+          href="mailto:martin.pfeffer@celox.io?subject=Berlinometer - Neue Location vorschlagen" 
+          style={{
+            color: 'var(--primary-color)',
+            textDecoration: 'none',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+          onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+        >
+          📧 martin.pfeffer@celox.io
+        </a>
+      </div>
       
       {/* Mobile-optimized footer */}
       <footer style={{
