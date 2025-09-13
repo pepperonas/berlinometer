@@ -5,6 +5,7 @@ import AboutDialog from './components/AboutDialog'
 import AuthDialog from './components/AuthDialog'
 import UserProfile from './components/UserProfile'
 import UserLocations from './components/UserLocations'
+import CookieBanner from './components/CookieBanner'
 import { useAuth } from './contexts/AuthContext'
 
 function App() {
@@ -213,6 +214,7 @@ function App() {
           <h1 style={{ 
             fontSize: 'clamp(1.5rem, 4vw, 2.25rem)',
             marginBottom: '0.75rem',
+            marginTop: '1.5rem', // Zusätzlicher Abstand für mobile Geräte
             lineHeight: '1.2'
           }}>🍷 Berlinometer</h1>
           <p className="text-secondary" style={{
@@ -319,7 +321,44 @@ function App() {
         opacity: 0.7,
         marginTop: 'auto'
       }}>
-        Made with ❤️ by Martin Pfeffer
+        <div style={{ marginBottom: '0.75rem' }}>
+          Made with ❤️ by Martin Pfeffer
+        </div>
+        <div style={{ 
+          fontSize: '0.75rem', 
+          opacity: 0.6,
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '1rem',
+          flexWrap: 'wrap'
+        }}>
+          <a 
+            href="https://celox.io/impressum" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              color: 'var(--text-secondary)',
+              textDecoration: 'none'
+            }}
+            onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+            onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+          >
+            Impressum
+          </a>
+          <a 
+            href="https://celox.io/privacy" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              color: 'var(--text-secondary)',
+              textDecoration: 'none'
+            }}
+            onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+            onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
+          >
+            Datenschutz
+          </a>
+        </div>
       </footer>
       
       <AboutDialog 
@@ -372,6 +411,8 @@ function App() {
           </div>
         </div>
       )}
+      
+      <CookieBanner />
     </div>
   )
 }

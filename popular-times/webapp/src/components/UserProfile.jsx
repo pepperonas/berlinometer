@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import './UserProfile.css';
+import './ThemeSelector.css';
 
 const UserProfile = ({ user, token, onLogout, onClose }) => {
+  const { theme, switchTheme, themeNames, availableThemes } = useTheme();
   const [profile, setProfile] = useState(null);
   const [filters, setFilters] = useState([]);
   const [newFilter, setNewFilter] = useState({ type: 'location_name_contains', value: '' });
@@ -11,14 +14,14 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
   const [activeTab, setActiveTab] = useState('profile');
 
   const filterTypes = [
-    { value: 'location_name_contains', label: 'Location name contains' },
-    { value: 'location_name_equals', label: 'Location name equals' },
-    { value: 'address_contains', label: 'Address contains' },
-    { value: 'rating_min', label: 'Minimum rating' },
-    { value: 'occupancy_max', label: 'Maximum occupancy %' },
-    { value: 'occupancy_min', label: 'Minimum occupancy %' },
-    { value: 'exclude_location', label: 'Exclude location' },
-    { value: 'only_live_data', label: 'Only live data' }
+    { value: 'location_name_contains', label: 'Location-Name enthält' },
+    { value: 'location_name_equals', label: 'Location-Name ist' },
+    { value: 'address_contains', label: 'Adresse enthält' },
+    { value: 'rating_min', label: 'Mindestbewertung' },
+    { value: 'occupancy_max', label: 'Max. Auslastung %' },
+    { value: 'occupancy_min', label: 'Min. Auslastung %' },
+    { value: 'exclude_location', label: 'Location ausschließen' },
+    { value: 'only_live_data', label: 'Nur Live-Daten' }
   ];
 
   useEffect(() => {
@@ -58,11 +61,11 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
         const data = await response.json();
         setFilters(data.filters);
       } else {
-        setError('Failed to load filters');
+        setError('Filter konnten nicht geladen werden');
       }
     } catch (error) {
       console.error('Error fetching filters:', error);
-      setError('Network error loading filters');
+      setError('Netzwerkfehler beim Laden der Filter');
     } finally {
       setLoading(false);
     }
@@ -91,14 +94,14 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
       if (response.ok) {
         setFilters([...filters, data.filter]);
         setNewFilter({ type: 'location_name_contains', value: '' });
-        setSuccess('Filter added successfully!');
+        setSuccess('Filter erfolgreich hinzugefügt!');
         setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(data.error || 'Failed to add filter');
+        setError(data.error || 'Filter konnte nicht hinzugefügt werden');
       }
     } catch (error) {
       console.error('Error adding filter:', error);
-      setError('Network error adding filter');
+      setError('Netzwerkfehler beim Hinzufügen des Filters');
     } finally {
       setLoading(false);
     }
@@ -125,7 +128,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
   };
 
   const handleDeleteFilter = async (filterId) => {
-    if (!confirm('Are you sure you want to delete this filter?')) return;
+    if (!confirm('Möchten Sie diesen Filter wirklich löschen?')) return;
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/filters/${filterId}`, {
@@ -137,12 +140,12 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
 
       if (response.ok) {
         setFilters(filters.filter(f => f.id !== filterId));
-        setSuccess('Filter deleted successfully!');
+        setSuccess('Filter erfolgreich gelöscht!');
         setTimeout(() => setSuccess(''), 3000);
       }
     } catch (error) {
       console.error('Error deleting filter:', error);
-      setError('Failed to delete filter');
+      setError('Filter konnte nicht gelöscht werden');
     }
   };
 
@@ -156,9 +159,9 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
   return (
     <div className="user-profile">
       <div className="profile-header">
-        <h3>User Profile</h3>
+        <h3>Willkommen, {profile?.username || 'Benutzer'}!</h3>
         <button className="logout-btn" onClick={handleLogout}>
-          Logout
+          Abmelden
         </button>
       </div>
 
@@ -167,13 +170,19 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
           className={activeTab === 'profile' ? 'active' : ''} 
           onClick={() => setActiveTab('profile')}
         >
-          Profile
+          Profil
         </button>
         <button 
           className={activeTab === 'filters' ? 'active' : ''} 
           onClick={() => setActiveTab('filters')}
         >
-          Filters ({filters.filter(f => f.active).length})
+          Filter ({filters.filter(f => f.active).length})
+        </button>
+        <button 
+          className={activeTab === 'themes' ? 'active' : ''} 
+          onClick={() => setActiveTab('themes')}
+        >
+          Themes
         </button>
       </div>
 
@@ -183,7 +192,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
       {activeTab === 'profile' && profile && (
         <div className="profile-info">
           <div className="info-item">
-            <label>Username:</label>
+            <label>Benutzername:</label>
             <span>{profile.username}</span>
           </div>
           <div className="info-item">
@@ -191,12 +200,12 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
             <span>{profile.email}</span>
           </div>
           <div className="info-item">
-            <label>Member since:</label>
+            <label>Mitglied seit:</label>
             <span>{new Date(profile.created_at).toLocaleDateString()}</span>
           </div>
           {profile.last_login && (
             <div className="info-item">
-              <label>Last login:</label>
+              <label>Letzter Login:</label>
               <span>{new Date(profile.last_login).toLocaleString()}</span>
             </div>
           )}
@@ -206,7 +215,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
       {activeTab === 'filters' && (
         <div className="filters-section">
           <form onSubmit={handleAddFilter} className="add-filter-form">
-            <h4>Add New Filter</h4>
+            <h4>Neuen Filter hinzufügen</h4>
             <div className="filter-inputs">
               <select
                 value={newFilter.type}
@@ -224,21 +233,21 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                 type="text"
                 value={newFilter.value}
                 onChange={(e) => setNewFilter({ ...newFilter, value: e.target.value })}
-                placeholder="Filter value"
+                placeholder="Filterwert"
                 disabled={loading}
                 required
               />
               
               <button type="submit" disabled={loading || !newFilter.value.trim()}>
-                Add Filter
+                Filter hinzufügen
               </button>
             </div>
           </form>
 
           <div className="filters-list">
-            <h4>Your Filters ({filters.length})</h4>
+            <h4>Ihre Filter ({filters.length})</h4>
             {filters.length === 0 ? (
-              <p className="no-filters">No filters configured. Add a filter above to automatically filter scraping results.</p>
+              <p className="no-filters">Keine Filter konfiguriert. Fügen Sie oben einen Filter hinzu, um die Scraping-Ergebnisse automatisch zu filtern.</p>
             ) : (
               filters.map(filter => (
                 <div key={filter.id} className={`filter-item ${!filter.active ? 'inactive' : ''}`}>
@@ -252,21 +261,65 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                     <button
                       onClick={() => handleToggleFilter(filter.id, filter.active)}
                       className={filter.active ? 'toggle-btn active' : 'toggle-btn inactive'}
-                      title={filter.active ? 'Disable filter' : 'Enable filter'}
+                      title={filter.active ? 'Filter deaktivieren' : 'Filter aktivieren'}
                     >
                       {filter.active ? 'ON' : 'OFF'}
                     </button>
                     <button
                       onClick={() => handleDeleteFilter(filter.id)}
                       className="delete-btn"
-                      title="Delete filter"
+                      title="Filter löschen"
                     >
-                      Delete
+                      Löschen
                     </button>
                   </div>
                 </div>
               ))
             )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'themes' && (
+        <div className="themes-section">
+          <h4>Theme auswählen</h4>
+          <p className="themes-description">
+            Wählen Sie das gewünschte Design für die Benutzeroberfläche.
+          </p>
+          
+          <div className="theme-options">
+            {Object.entries(availableThemes).map(([themeKey, config]) => (
+              <div 
+                key={themeKey}
+                className={`theme-option ${theme === themeKey ? 'selected' : ''}`}
+                onClick={() => switchTheme(themeKey)}
+              >
+                <div className="theme-preview">
+                  <div 
+                    className={`preview-circle theme-${themeKey}`}
+                    style={{
+                      background: themeKey === 'psychedelic' 
+                        ? 'linear-gradient(45deg, #FF00FF, #00FFFF, #FFFF00)' 
+                        : themeKey === 'light' 
+                        ? 'linear-gradient(45deg, #3B82F6, #10B981)' 
+                        : 'linear-gradient(45deg, #688db1, #9cb68f)'
+                    }}
+                  ></div>
+                </div>
+                <div className="theme-info">
+                  <h5>{config.name}</h5>
+                  <p>{config.description}</p>
+                  {theme === themeKey && <span className="selected-indicator">✓ Aktiv</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="theme-note">
+            <p>
+              <strong>💡 Tipp:</strong> Das ausgewählte Theme wird automatisch gespeichert 
+              und bei Ihrem nächsten Besuch wiederhergestellt.
+            </p>
           </div>
         </div>
       )}

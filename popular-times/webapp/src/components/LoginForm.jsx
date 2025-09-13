@@ -33,11 +33,11 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
         onLogin(data.user, data.token);
         onClose();
       } else {
-        setError(data.error || 'Login failed');
+        setError(data.error || 'Anmeldung fehlgeschlagen');
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError('Network error. Please try again.');
+      setError('Netzwerkfehler. Bitte versuchen Sie es erneut.');
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
 
   return (
     <div className="login-form">
-      <h3>Login</h3>
+      <h3>Anmelden</h3>
       
       {error && (
         <div className="error-message">
@@ -62,7 +62,7 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="username">Username or Email:</label>
+          <label htmlFor="username">Benutzername oder E-Mail:</label>
           <input
             type="text"
             id="username"
@@ -71,12 +71,12 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Enter your username or email"
+            placeholder="Geben Sie Ihren Benutzername oder E-Mail ein"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="password">Password:</label>
+          <label htmlFor="password">Passwort:</label>
           <input
             type="password"
             id="password"
@@ -85,24 +85,24 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Enter your password"
+            placeholder="Geben Sie Ihr Passwort ein"
           />
         </div>
 
         <div className="form-actions">
           <button type="submit" disabled={loading} className="login-btn">
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Anmeldung läuft...' : 'Anmelden'}
           </button>
           <button type="button" onClick={onClose} disabled={loading} className="cancel-btn">
-            Cancel
+            Abbrechen
           </button>
         </div>
       </form>
 
       <div className="auth-switch">
-        Don't have an account?{' '}
+        Noch kein Konto?{' '}
         <button type="button" onClick={onSwitchToRegister} className="link-btn">
-          Register here
+          Hier registrieren
         </button>
       </div>
     </div>

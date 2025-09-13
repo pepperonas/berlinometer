@@ -1,0 +1,292 @@
+/* =================================================================
+   BERLINOMETER THEME SYSTEM
+   ================================================================= */
+
+/* Default dark theme (existing styles) */
+.theme-dark {
+  --transition-smooth: all 0.3s ease-in-out;
+}
+
+/* ==================== LIGHT THEME ==================== */
+.theme-light {
+  --transition-smooth: all 0.3s ease-in-out;
+  
+  /* Light theme overrides */
+  background: var(--background-dark) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-light body {
+  background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+  color: var(--text-primary);
+}
+
+/* Light theme cards */
+.theme-light .card,
+.theme-light [style*="background: var(--card-bg)"],
+.theme-light [style*="background-color: var(--card-bg)"] {
+  background: #FFFFFF !important;
+  border: 1px solid #E5E7EB !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Light theme buttons */
+.theme-light button {
+  transition: var(--transition-smooth);
+}
+
+.theme-light button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Light theme form inputs */
+.theme-light input,
+.theme-light select,
+.theme-light textarea {
+  background: var(--input-bg) !important;
+  border: 1px solid #D1D5DB !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-light input:focus,
+.theme-light select:focus,
+.theme-light textarea:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* ==================== PSYCHEDELIC THEME ==================== */
+.theme-psychedelic {
+  --transition-smooth: all 0.3s ease-in-out;
+  --glow-effect: 0 0 20px currentColor;
+  --pulse-animation: pulse-glow 2s infinite alternate;
+  --rainbow-gradient: linear-gradient(45deg, 
+    #FF00FF 0%, 
+    #8000FF 14%, 
+    #0080FF 28%, 
+    #00FF80 42%, 
+    #FFFF00 57%, 
+    #FF8000 71%, 
+    #FF0040 85%, 
+    #FF00FF 100%
+  );
+}
+
+.theme-psychedelic body {
+  background: var(--rainbow-gradient);
+  background-size: 400% 400%;
+  animation: rainbow-shift 8s ease infinite;
+  color: var(--text-primary);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated background overlay */
+.theme-psychedelic body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(0, 255, 255, 0.3) 0%, transparent 50%),
+              radial-gradient(circle at 40% 80%, rgba(255, 255, 0, 0.3) 0%, transparent 50%);
+  animation: psychedelic-move 10s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Glassmorphism cards */
+.theme-psychedelic .card,
+.theme-psychedelic [style*="background: var(--card-bg)"],
+.theme-psychedelic [style*="background-color: var(--card-bg)"] {
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 2px solid rgba(255, 0, 255, 0.5) !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 30px rgba(255, 0, 255, 0.3) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-psychedelic .card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Psychedelic buttons */
+.theme-psychedelic button {
+  background: linear-gradient(45deg, #FF00FF, #00FFFF) !important;
+  border: 2px solid #FFFF00 !important;
+  color: #FFFFFF !important;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8) !important;
+  box-shadow: var(--glow-effect) !important;
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-psychedelic button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.theme-psychedelic button:hover::before {
+  left: 100%;
+}
+
+.theme-psychedelic button:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 
+    0 0 30px #FF00FF,
+    0 0 40px #00FFFF,
+    0 0 50px #FFFF00;
+  animation: var(--pulse-animation);
+}
+
+/* Psychedelic form inputs */
+.theme-psychedelic input,
+.theme-psychedelic select,
+.theme-psychedelic textarea {
+  background: rgba(0, 0, 0, 0.7) !important;
+  border: 2px solid #00FFFF !important;
+  color: #FFFFFF !important;
+  text-shadow: 0 0 5px currentColor !important;
+  box-shadow: inset 0 0 10px rgba(0, 255, 255, 0.3) !important;
+}
+
+.theme-psychedelic input:focus,
+.theme-psychedelic select:focus,
+.theme-psychedelic textarea:focus {
+  border-color: #FF00FF !important;
+  box-shadow: 
+    inset 0 0 10px rgba(255, 0, 255, 0.3),
+    0 0 20px rgba(255, 0, 255, 0.5) !important;
+  animation: var(--pulse-animation);
+}
+
+/* Psychedelic text effects */
+.theme-psychedelic h1,
+.theme-psychedelic h2,
+.theme-psychedelic h3 {
+  background: var(--rainbow-gradient);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: rainbow-text 3s ease-in-out infinite;
+  text-shadow: none !important;
+}
+
+/* Psychedelic status indicators */
+.theme-psychedelic .status-live {
+  color: #FF00FF !important;
+  text-shadow: 0 0 10px #FF00FF !important;
+  animation: var(--pulse-animation);
+}
+
+.theme-psychedelic .status-success {
+  color: #00FFFF !important;
+  text-shadow: 0 0 10px #00FFFF !important;
+}
+
+/* Scrollbar styling for psychedelic theme */
+.theme-psychedelic ::-webkit-scrollbar {
+  width: 12px;
+}
+
+.theme-psychedelic ::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
+}
+
+.theme-psychedelic ::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #FF00FF, #00FFFF);
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+}
+
+.theme-psychedelic ::-webkit-scrollbar-thumb:hover {
+  animation: var(--pulse-animation);
+}
+
+/* ==================== ANIMATIONS ==================== */
+
+@keyframes rainbow-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes psychedelic-move {
+  0%, 100% { transform: translateX(0) translateY(0) rotate(0deg); }
+  33% { transform: translateX(30px) translateY(-30px) rotate(120deg); }
+  66% { transform: translateX(-20px) translateY(20px) rotate(240deg); }
+}
+
+@keyframes rainbow-text {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes pulse-glow {
+  0% { 
+    box-shadow: 0 0 5px currentColor;
+    opacity: 0.8;
+  }
+  100% { 
+    box-shadow: 0 0 25px currentColor;
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* ==================== TRANSITIONS ==================== */
+
+* {
+  transition: var(--transition-smooth);
+}
+
+/* Override for elements that shouldn't transition */
+.no-transition,
+.no-transition * {
+  transition: none !important;
+}
+
+/* ==================== RESPONSIVE ADJUSTMENTS ==================== */
+
+@media (max-width: 768px) {
+  .theme-psychedelic body::before {
+    animation-duration: 15s; /* Slower on mobile for performance */
+  }
+  
+  .theme-psychedelic button:hover {
+    transform: scale(1.02); /* Less dramatic on mobile */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-psychedelic * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -200,7 +200,7 @@ function ResultsDisplay({ results }) {
     return -1
   }
 
-  // Filter results based on search term
+  // Filter results based on search term with pipe (||) support for OR search
   const filteredResults = useMemo(() => {
     if (!searchTerm.trim()) {
       return results
@@ -208,28 +208,36 @@ function ResultsDisplay({ results }) {
     
     const term = searchTerm.toLowerCase().trim()
     
+    // Check if search contains pipe symbols for OR search
+    const searchTerms = term.includes('||') 
+      ? term.split('||').map(t => t.trim()).filter(t => t.length > 0)
+      : [term]
+    
     return results.filter(result => {
-      // Search in location name
-      if (result.location_name && result.location_name.toLowerCase().includes(term)) {
-        return true
-      }
-      
-      // Search in address
-      if (result.address && result.address.toLowerCase().includes(term)) {
-        return true
-      }
-      
-      // Search in occupancy text
-      if (result.live_occupancy && result.live_occupancy.toLowerCase().includes(term)) {
-        return true
-      }
-      
-      // Search in rating
-      if (result.rating && result.rating.toString().includes(term)) {
-        return true
-      }
-      
-      return false
+      // Check if any of the search terms match (OR logic)
+      return searchTerms.some(searchTerm => {
+        // Search in location name
+        if (result.location_name && result.location_name.toLowerCase().includes(searchTerm)) {
+          return true
+        }
+        
+        // Search in address
+        if (result.address && result.address.toLowerCase().includes(searchTerm)) {
+          return true
+        }
+        
+        // Search in occupancy text
+        if (result.live_occupancy && result.live_occupancy.toLowerCase().includes(searchTerm)) {
+          return true
+        }
+        
+        // Search in rating
+        if (result.rating && result.rating.toString().includes(searchTerm)) {
+          return true
+        }
+        
+        return false
+      })
     })
   }, [results, searchTerm])
 
@@ -587,11 +595,7 @@ function ResultsDisplay({ results }) {
           
           {/* Mobile-optimized export buttons */}
           <div className="mobile-button-group" style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem',
-            width: '100%',
-            maxWidth: '200px'
+            display: 'none'  // Export buttons versteckt
           }}>
             <button 
               onClick={exportToCsv}

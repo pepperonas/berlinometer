@@ -20,21 +20,21 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Passwörter stimmen nicht überein');
       setLoading(false);
       return;
     }
 
     // Validate password length
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Passwort muss mindestens 6 Zeichen lang sein');
       setLoading(false);
       return;
     }
 
     // Validate username length
     if (formData.username.length < 3) {
-      setError('Username must be at least 3 characters long');
+      setError('Benutzername muss mindestens 3 Zeichen lang sein');
       setLoading(false);
       return;
     }
@@ -42,7 +42,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
-      setError('Please enter a valid email address');
+      setError('Bitte geben Sie eine gültige E-Mail-Adresse ein');
       setLoading(false);
       return;
     }
@@ -63,7 +63,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Registration successful! Your account is pending activation. You will be able to login once an admin activates your account.');
+        setSuccess('Registrierung erfolgreich! Ihr Konto wartet auf Aktivierung. Sie können sich anmelden, sobald ein Administrator Ihr Konto aktiviert hat.');
         setFormData({
           username: '',
           email: '',
@@ -75,11 +75,11 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
           onRegister(data);
         }
       } else {
-        setError(data.error || 'Registration failed');
+        setError(data.error || 'Registrierung fehlgeschlagen');
       }
     } catch (error) {
       console.error('Registration error:', error);
-      setError('Network error. Please try again.');
+      setError('Netzwerkfehler. Bitte versuchen Sie es erneut.');
     } finally {
       setLoading(false);
     }
@@ -94,7 +94,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
 
   return (
     <div className="register-form">
-      <h3>Create Account</h3>
+      <h3>Konto erstellen</h3>
       
       {error && (
         <div className="error-message">
@@ -110,7 +110,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="username">Username:</label>
+          <label htmlFor="username">Benutzername:</label>
           <input
             type="text"
             id="username"
@@ -119,7 +119,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Choose a username (min. 3 characters)"
+            placeholder="Wählen Sie einen Benutzernamen (min. 3 Zeichen)"
             minLength={3}
           />
         </div>
@@ -134,12 +134,12 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Enter your email address"
+            placeholder="Geben Sie Ihre E-Mail-Adresse ein"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="password">Password:</label>
+          <label htmlFor="password">Passwort:</label>
           <input
             type="password"
             id="password"
@@ -148,13 +148,13 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Choose a password (min. 6 characters)"
+            placeholder="Wählen Sie ein Passwort (min. 6 Zeichen)"
             minLength={6}
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="confirmPassword">Confirm Password:</label>
+          <label htmlFor="confirmPassword">Passwort bestätigen:</label>
           <input
             type="password"
             id="confirmPassword"
@@ -163,31 +163,31 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
             onChange={handleChange}
             required
             disabled={loading}
-            placeholder="Confirm your password"
+            placeholder="Bestätigen Sie Ihr Passwort"
           />
         </div>
 
         <div className="form-actions">
           <button type="submit" disabled={loading} className="register-btn">
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Konto wird erstellt...' : 'Konto erstellen'}
           </button>
           <button type="button" onClick={onClose} disabled={loading} className="cancel-btn">
-            Cancel
+            Abbrechen
           </button>
         </div>
       </form>
 
       <div className="auth-switch">
-        Already have an account?{' '}
+        Bereits ein Konto?{' '}
         <button type="button" onClick={onSwitchToLogin} className="link-btn">
-          Login here
+          Hier anmelden
         </button>
       </div>
 
       <div className="activation-note">
         <small>
-          <strong>Note:</strong> New accounts require manual activation by an administrator. 
-          You will be able to login once your account has been activated.
+          <strong>Hinweis:</strong> Neue Konten erfordern eine manuelle Aktivierung durch einen Administrator. 
+          Sie können sich anmelden, sobald Ihr Konto aktiviert wurde.
         </small>
       </div>
     </div>
