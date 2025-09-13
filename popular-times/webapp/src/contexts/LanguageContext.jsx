@@ -145,6 +145,7 @@ const translations = {
     
     // App.jsx
     'berlinometerSubtitle': 'Analysiere die Auslastung von Google Maps Locations in Echtzeit',
+    'resultsFilteredByProfile': 'Die Ergebnisse werden basierend auf deinen Profileinstellungen gefiltert',
     'automatedScrapingActive': 'Automatisches Scraping aktiv',
     'automatedScrapingDescription': 'Die Locations werden automatisch alle 20-30 Minuten gescrapt. Die neuesten Ergebnisse werden automatisch geladen.',
     'aboutTheApp': 'Über die App',
@@ -360,6 +361,7 @@ const translations = {
     
     // App.jsx
     'berlinometerSubtitle': 'Analyze real-time occupancy data from Google Maps locations',
+    'resultsFilteredByProfile': 'Results are filtered based on your profile settings',
     'automatedScrapingActive': 'Automated Scraping Active',
     'automatedScrapingDescription': 'Locations are automatically scraped every 20-30 minutes. The latest results are loaded automatically.',
     'aboutTheApp': 'About the App',

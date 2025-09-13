@@ -229,7 +229,7 @@ function App() {
             {t('berlinometerSubtitle')}
             {user && (
               <span style={{ display: 'block', fontSize: '0.75rem', marginTop: '0.25rem', opacity: 0.8 }}>
-                Results are filtered based on your profile settings
+                {t('resultsFilteredByProfile')}
               </span>
             )}
           </p>
