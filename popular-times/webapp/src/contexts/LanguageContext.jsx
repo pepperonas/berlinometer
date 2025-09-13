@@ -95,7 +95,6 @@ const translations = {
     'emailPlaceholder': 'Geben Sie Ihre E-Mail-Adresse ein',
     'passwordPlaceholderRegister': 'Wählen Sie ein Passwort (min. 6 Zeichen)',
     'confirmPasswordPlaceholder': 'Bestätigen Sie Ihr Passwort',
-    'confirmPassword': 'Passwort bestätigen',
     'activationNote': 'Neue Konten erfordern eine manuelle Aktivierung durch einen Administrator. Sie können sich anmelden, sobald Ihr Konto aktiviert wurde.',
     'noteLabel': 'Hinweis:',
     
@@ -250,7 +249,6 @@ const translations = {
     'emailPlaceholder': 'Enter your email address',
     'passwordPlaceholderRegister': 'Choose a password (min. 6 characters)',
     'confirmPasswordPlaceholder': 'Confirm your password',
-    'confirmPassword': 'Confirm Password',
     'activationNote': 'New accounts require manual activation by an administrator. You can log in once your account has been activated.',
     'noteLabel': 'Note:',
     
