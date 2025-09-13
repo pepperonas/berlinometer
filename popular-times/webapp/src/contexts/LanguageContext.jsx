@@ -153,6 +153,19 @@ const translations = {
     'clearSearch': 'Suche löschen',
     'searchFor': 'Suche nach:',
     
+    // OccupancyChart
+    'currentOccupancy': 'Aktuelle Auslastung',
+    'normalOccupancy': 'Normale Auslastung',
+    
+    // UserProfile
+    'deleteFilter': 'Filter löschen',
+    
+    // Export/HTML
+    'noData': 'Keine Daten',
+    'high': 'Hoch',
+    'medium': 'Mittel',
+    'low': 'Niedrig',
+    
     // Footer
     'madeWith': 'Made with ❤️ by Martin Pfeffer',
     'imprint': 'Impressum',
@@ -306,6 +319,19 @@ const translations = {
     // SearchBar
     'clearSearch': 'Clear search',
     'searchFor': 'Search for:',
+    
+    // OccupancyChart
+    'currentOccupancy': 'Current Occupancy',
+    'normalOccupancy': 'Normal Occupancy',
+    
+    // UserProfile
+    'deleteFilter': 'Delete filter',
+    
+    // Export/HTML
+    'noData': 'No data',
+    'high': 'High',
+    'medium': 'Medium',
+    'low': 'Low',
     
     // Footer
     'madeWith': 'Made with ❤️ by Martin Pfeffer',
