@@ -9,7 +9,12 @@ Eine hochperformante Web-Anwendung für die Echtzeit-Analyse von Google Maps Aus
 - **1200% Performance-Steigerung** durch optimierte concurrent Verarbeitung
 - **Standard Location-Sets** für schnelle Analyse
 - **Live/Historische Daten** Unterscheidung
-- **Dark Theme Design** mit modernen UI-Komponenten
+- **Vollständige deutsche Lokalisierung** - komplette Übersetzung aller UI-Elemente
+- **Multi-Theme System** mit 3 Designoptionen:
+  - 🌙 **Dunkel**: Elegantes dunkles Design (Standard)
+  - ☀️ **Hell**: Modernes helles Theme  
+  - 🌈 **Psychedelisch**: Spektakuläres Neon-Theme mit Animationen
+- **Benutzerauthentifizierung** mit Profilverwaltung und personalisierten Filtern
 - **Real-time Progress Updates** mit Batch-Information
 - **Export-Funktionen** (JSON/CSV)
 - **Responsive Design** für alle Geräte
@@ -26,9 +31,12 @@ Eine hochperformante Web-Anwendung für die Echtzeit-Analyse von Google Maps Aus
 
 ### Frontend
 - **React 18** mit Vite für schnelle Entwicklung
-- **Modern CSS** mit CSS Custom Properties
+- **Context API** für globales State Management (Theme & Auth)
+- **Modern CSS** mit CSS Custom Properties und Theme-System
+- **Animationen & Transitions** für psychedelisches Theme
 - **Real-time Updates** via Server-Sent Events
 - **Responsive Design** mit Flexbox/Grid
+- **Deutsche i18n** mit vollständiger Lokalisierung
 
 ### Backend
 - **Python Flask** API Server
@@ -129,10 +137,23 @@ batch_group_size = 3     # Gruppen für Progress Updates
 
 ## 🎨 UI/UX Features
 
-### Dark Theme Design
-- Moderne CSS Custom Properties
-- Konsistente Farbpalette
-- Optimierte Kontraste für Barrierefreiheit
+### Multi-Theme System
+- **🌙 Dunkel-Theme**: Elegantes dunkles Design mit blauen Akzenten
+- **☀️ Hell-Theme**: Modernes helles Design mit optimalen Kontrasten
+- **🌈 Psychedelisch-Theme**: Spektakuläres Neon-Design mit:
+  - Animierte Regenbogen-Hintergründe
+  - Glassmorphism-Effekte
+  - Neon-Glows und Pulse-Animationen
+  - Holographische Schimmer-Effekte
+- **Theme-Persistierung** via localStorage
+- **Smooth Transitions** zwischen allen Themes
+
+### Benutzerauthentifizierung & Profilverwaltung
+- **Registrierung & Login** mit sicherer JWT-Authentifizierung
+- **Personalisierte Filter** für automatische Datenergebnisfilterung
+- **Benutzerprofil** mit Mitgliedschaftsinformationen
+- **Deutsche Benutzeroberfläche** - alle Texte vollständig lokalisiert
+- **Theme-Auswahl** im Benutzerprofil
 
 ### Real-time Progress
 - Live Progress Bar mit Batch-Info
@@ -198,4 +219,18 @@ MIT License - siehe [LICENSE](LICENSE) für Details.
 
 *Live Demo: [https://mrx3k1.de/popular-times/](https://mrx3k1.de/popular-times/)*
 
-*Version 2.0.0 - High-Performance Batch Edition*
+*Version 2.1.0 - Deutsche Lokalisierung & Multi-Theme Edition*
+
+## 🆕 Version 2.1.0 Features
+
+### Deutsche Lokalisierung
+- **Vollständige Übersetzung** aller UI-Elemente
+- **Authentifizierung** auf Deutsch (Login, Registrierung, Profil)
+- **Filter-Verwaltung** mit deutschen Bezeichnungen
+- **Theme-Auswahl** mit deutschen Beschreibungen
+
+### Multi-Theme System
+- **3 Designvarianten** mit einzigartigen Charakteristiken
+- **Erweiterte CSS-Animationen** für visuelles Feedback
+- **Theme-Persistierung** für konsistente Benutzererfahrung
+- **Accessibility-optimiert** mit angepassten Kontrasten
