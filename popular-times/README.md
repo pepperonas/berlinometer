@@ -19,26 +19,30 @@ A modern web application for analyzing Google Maps location occupancy data with 
 - 🚀 **High Performance**: Optimized Python backend with MySQL database
 - 🔄 **PWA Support**: Progressive Web App with offline capabilities
 
-## 🆕 Latest Updates (v2.3.0)
+## 🆕 Latest Updates (v2.3.1)
 
 ### Complete Multilingual Support
-- Full German/English interface translation
+- Full German/English interface translation with 200+ translation keys
 - Dynamic translation of server-side occupancy texts
 - Language preference persistence in localStorage
 - All UI components, dialogs, and messages translated
+- Fixed hardcoded English text in filtered results message
 
 ### UI/UX Improvements
-- Fixed dialog size consistency for user profile
+- Fixed dialog size consistency for user profile (600px fixed height)
+- Added scrollable content wrapper for profile sections
 - Renamed Filter tab to "Filter (Beta)" 
-- Translated theme names (Dark/Dunkel, Light/Hell, Psychedelic/Psychedelisch)
+- Translated all theme names (Dark/Dunkel, Light/Hell, Psychedelic/Psychedelisch)
 - Added "Contains Live Data" indicator with translations
 - Improved mood barometer with localized descriptions
+- Fixed "Tip/Tipp" translation in theme selection
 
 ### Technical Enhancements
 - Optimized build configuration for berlinometer.de deployment
 - Separated build outputs for different domains
 - Fixed variable initialization order preventing runtime errors
-- Added comprehensive deployment documentation
+- Added comprehensive deployment documentation (DEPLOYMENT.md)
+- Resolved duplicate translation key warnings
 
 ## 🏗️ Architecture
 
