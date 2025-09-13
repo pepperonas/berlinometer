@@ -144,7 +144,7 @@ const translations = {
     'aboutApp': 'Über die App',
     
     // App.jsx
-    'berlinometerSubtitle': 'Analysiere die Auslastung von Google Maps Locations in Echtzeit',
+    'berlinometerSubtitle': 'Finde heraus, wo heute was los ist in Berlins Bars und Clubs',
     'resultsFilteredByProfile': 'Die Ergebnisse werden basierend auf deinen Profileinstellungen gefiltert',
     'automatedScrapingActive': 'Automatisches Scraping aktiv',
     'automatedScrapingDescription': 'Die Locations werden automatisch alle 20-30 Minuten gescrapt. Die neuesten Ergebnisse werden automatisch geladen.',
@@ -360,7 +360,7 @@ const translations = {
     'aboutApp': 'About the App',
     
     // App.jsx
-    'berlinometerSubtitle': 'Analyze real-time occupancy data from Google Maps locations',
+    'berlinometerSubtitle': 'Find out where the party is in Berlin\'s bars and clubs tonight',
     'resultsFilteredByProfile': 'Results are filtered based on your profile settings',
     'automatedScrapingActive': 'Automated Scraping Active',
     'automatedScrapingDescription': 'Locations are automatically scraped every 20-30 minutes. The latest results are loaded automatically.',

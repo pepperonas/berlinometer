@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Snake - Nokia 3310</title>
+  <style>
+    :root{
+      /* Farben an das klassische 3310 angelehnt */
+      --shell:#2a3b54;
+      --shell-light:#3e5677;
+      --bezel:#cfd8e3;
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --screen:#7b8b7a;
+      --screen-glass:#a8b5a6;
+      --key:#e9edf2;
+      --key-shadow: inset 0 -2px 0 rgba(20,25,35,.25), 0 3px 6px rgba(0,0,0,.18);
+      --key-press: inset 0 2px 0 rgba(20,25,35,.15);
+      --text:#0b1420;
+      --accent:#99a9bf;
+      --nokia:#e6eef9;
+      --snake-color:#223120;
+      --food-color:#223120;
+    }
+
+    *{box-sizing:border-box}
+    html,body{
+      height:100%;
+      margin:0;
+      background: radial-gradient(1200px 600px at 70% -20%, #9fb3cc 0%, #7086a3 35%, #1c2430 100%);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--text);
+    }
+
+    .stage{
+      min-height:100%;
+      display:grid;
+      place-items:center;
+      padding:6vmin 2vmin;
+    }
+
+    /* Telefonkörper */
+    .phone{
+      position:relative;
+      width:min(290px, 72vmin);
+      aspect-ratio: 9 / 19;
+      background: linear-gradient(180deg, var(--shell-light), var(--shell) 45%, #203043 100%);
+      border-radius: 28px 28px 42px 42px / 44px 44px 64px 64px;
+      box-shadow: var(--shadow);
+      border: 8px solid var(--shell);
+      padding: 16px 14px 22px;
+      filter: saturate(1.02);
+      overflow:hidden;
+      isolation:isolate;
+    }
+
+    /* helle Front-Schale */
+    .front{
+      position:absolute;
+      inset:12px 10px 52px;
+      background: linear-gradient(180deg, #e9eef7 0%, #dbe3ef 55%, #c8d2e2 100%);
+      border-radius: 22px 22px 36px 36px / 38px 38px 56px 56px;
+      border: 2px solid #b5c0d1;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,.15);
+    }
+
+    /* Ohrmuschel mit Löchern */
+    .ear{
+      position:absolute;
+      top:20px; left:50%;
+      transform: translateX(-50%);
+      width: 42%; height: 26px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #e5ecf6, #cbd6e6);
+      border:1px solid #b5c0d1;
+      display:grid; place-items:center;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,.12);
+    }
+    .ear::after{
+      content:"";
+      width:80%; height:8px;
+      background:
+        radial-gradient(circle at 6% 50%, #4c5a6e 2px, transparent 2px) 0 0/ 14% 100%,
+        radial-gradient(circle at 20% 50%, #4c5a6e 2px, transparent 2px) 0 0/ 14% 100%,
+        radial-gradient(circle at 34% 50%, #4c5a6e 2px, transparent 2px) 0 0/ 14% 100%,
+        radial-gradient(circle at 48% 50%, #4c5a6e 2px, transparent 2px) 0 0/ 14% 100%,
+        radial-gradient(circle at 62% 50%, #4c5a6e 2px, transparent 2px) 0 0/ 14% 100%,
+        radial-gradient(circle at 76% 50%, #4c5a6e 2px, transparent 2px) 0 0/ 14% 100%,
+        radial-gradient(circle at 90% 50%, #4c5a6e 2px, transparent 2px) 0 0/ 14% 100%;
+      display:block;
+      border-radius:8px;
+      filter: drop-shadow(0 1px 0 rgba(255,255,255,.4));
+    }
+
+    /* Logo */
+    .logo{
+      position:absolute; top:60px; left:50%; transform:translateX(-50%);
+      font-weight: 800; letter-spacing:.22em; font-size: 12px;
+      color: var(--nokia);
+      text-shadow: 0 1px 0 #152030, 0 0 10px rgba(255,255,255,.2);
+    }
+
+    /* Displayrahmen */
+    .bezel{
+      position:absolute; left:50%; top:90px; transform:translateX(-50%);
+      width:76%; height:30%;
+      background: linear-gradient(180deg, #dfe7f2, #cdd8e7);
+      border:2px solid #b1bfd2;
+      border-radius: 18px 18px 28px 28px / 26px 26px 44px 44px;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,.12);
+      display:grid; place-items:center;
+      padding:8px 10px;
+    }
+
+    .screen{
+      width:100%; height:100%;
+      border-radius: 10px / 14px;
+      background: linear-gradient(180deg, var(--screen-glass), var(--screen) 60%);
+      border: 2px solid #516059;
+      position:relative; overflow:hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+    }
+
+    /* leichte Glasreflexion */
+    .screen::before{
+      content:""; position:absolute; inset:0;
+      background: linear-gradient(210deg, rgba(255,255,255,.35) 0%, rgba(255,255,255,0) 40%);
+      mix-blend-mode: screen; pointer-events:none;
+    }
+
+    /* Game Info */
+    .game-info {
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      font-weight: bold;
+      color: var(--snake-color);
+      z-index: 2;
+    }
+
+    /* Game Canvas */
+    #gameCanvas {
+      background: transparent;
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+      z-index: 1;
+    }
+
+    /* Game Over */
+    .game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(34, 49, 32, 0.95);
+      color: var(--screen-glass);
+      padding: 12px 20px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 10px;
+      font-weight: bold;
+      display: none;
+      z-index: 3;
+      border: 2px solid var(--snake-color);
+    }
+
+    .blink {
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* Softkeys/Navi */
+    .controls{
+      position:absolute; left:50%; top:calc(90px + 30% + 16px);
+      transform:translateX(-50%);
+      width:74%;
+      display:grid; grid-template-columns: 1fr auto 1fr; gap:10px 12px;
+      align-items:center; justify-items:center;
+    }
+
+    .softkey{
+      width:70%;
+      height:28px;
+      border-radius:20px;
+      background:var(--bezel);
+      border:1px solid #aab6c8;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.12);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: bold;
+      color: var(--text);
+      user-select: none;
+      transition: all 0.1s;
+    }
+
+    .softkey:active {
+      transform: translateY(1px);
+      box-shadow: inset 0 3px 6px rgba(0,0,0,.2);
+    }
+
+    .dpad{
+      grid-column: 2 / 3; grid-row: 1 / span 2;
+      width:72px; height:52px; border-radius: 50% / 40%;
+      background: linear-gradient(180deg, #e9eef7, #cfd9ea);
+      border:1px solid #aab6c8;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.12);
+      position:relative;
+      cursor: pointer;
+    }
+
+    .dpad-btn {
+      position: absolute;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 2;
+      font-size: 14px;
+      color: var(--text);
+      font-weight: bold;
+      user-select: none;
+    }
+
+    .dpad-up {
+      top: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 20px;
+    }
+
+    .dpad-down {
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      height: 20px;
+    }
+
+    .dpad-left {
+      left: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 24px;
+    }
+
+    .dpad-right {
+      right: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 24px;
+    }
+
+    .dpad-center {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #e53e3e;
+      border: 1px solid #9c1c1c;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.3);
+      font-size: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .dpad-btn:active, .dpad-center:active {
+      transform: scale(0.95) translate(-50%, -50%);
+    }
+
+    .dpad:before, .dpad:after{
+      content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:48px; height:18px; background: var(--bezel); border:1px solid #aab6c8; border-radius: 18px; box-shadow: inset 0 2px 4px rgba(0,0,0,.12);
+      pointer-events: none;
+    }
+    .dpad:after{ transform: translate(-50%,-50%) rotate(90deg); }
+
+    /* Tastatur */
+    .keypad{
+      position:absolute; left:50%; bottom:18px; transform:translateX(-50%);
+      width:78%; display:grid; grid-template-columns: repeat(3, 1fr); gap:12px 14px;
+    }
+
+    .key{
+      height:36px; border-radius: 22px;
+      background: var(--key);
+      border: 1px solid #c4cad3;
+      box-shadow: var(--key-shadow);
+      display:flex; align-items:center; justify-content:center; flex-direction:column;
+      font-size: 13px; line-height:1;
+      user-select:none;
+      transition: transform .05s ease, box-shadow .05s ease;
+      cursor: pointer;
+    }
+    .key:active{ transform: translateY(1px); box-shadow: var(--key-press); }
+    .key small{ font-size:9px; opacity:.7; margin-top:4px; letter-spacing:.04em }
+
+    .key-5 {
+      background: linear-gradient(180deg, #48bb78, #38a169);
+      border-color: #2f855a;
+      color: white;
+    }
+
+    /* kleine Glanzkante unten */
+    .phone::after{
+      content:""; position:absolute; inset:auto 22px 10px; height:24px;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,0));
+      border-radius: 0 0 28px 28px / 0 0 44px 44px;
+      pointer-events:none;
+    }
+
+    /* Sound indicator */
+    .sound-indicator {
+      position: absolute;
+      bottom: 4px;
+      right: 8px;
+      font-size: 8px;
+      color: var(--snake-color);
+      z-index: 2;
+    }
+
+    /* Responsiv etwas größer wirken lassen */
+    @media (min-width:900px){
+      .phone{ transform: scale(1.05) }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <article class="phone" aria-label="Nokia 3310 Snake Game">
+      <div class="front" aria-hidden="true"></div>
+      <div class="ear" aria-hidden="true"></div>
+      <div class="logo" aria-hidden="true">NOKIA</div>
+
+      <div class="bezel" role="img" aria-label="Game Display">
+        <div class="screen">
+          <div class="game-info">
+            <span>Score: <span id="score">0</span></span>
+            <span>Hi: <span id="highScore">0</span></span>
+          </div>
+          <canvas id="gameCanvas" width="160" height="100"></canvas>
+          <div class="sound-indicator" id="soundIndicator">♪</div>
+
+          <div class="game-over" id="gameOver">
+            <div>GAME OVER</div>
+            <div style="margin: 6px 0;">Score: <span id="finalScore">0</span></div>
+            <div class="blink">Press OK</div>
+          </div>
+        </div>
+      </div>
+
+      <section class="controls" aria-hidden="true">
+        <div class="softkey" onclick="showMenu()">Menu</div>
+        <div class="dpad" title="Navigationskey">
+          <button class="dpad-btn dpad-up" onclick="changeDirection(0, -1)">▲</button>
+          <button class="dpad-btn dpad-down" onclick="changeDirection(0, 1)">▼</button>
+          <button class="dpad-btn dpad-left" onclick="changeDirection(-1, 0)">◄</button>
+          <button class="dpad-btn dpad-right" onclick="changeDirection(1, 0)">►</button>
+          <button class="dpad-btn dpad-center" onclick="handleOkButton()">OK</button>
+        </div>
+        <div class="softkey" onclick="toggleSound()">Sound</div>
+      </section>
+
+      <section class="keypad" aria-label="Tastenfeld">
+        <div class="key"><span>1</span></div>
+        <div class="key"><span>2</span><small>abc</small></div>
+        <div class="key"><span>3</span><small>def</small></div>
+        <div class="key"><span>4</span><small>ghi</small></div>
+        <div class="key key-5" onclick="handleOkButton()"><span>5</span><small>jkl</small></div>
+        <div class="key"><span>6</span><small>mno</small></div>
+        <div class="key"><span>7</span><small>pqrs</small></div>
+        <div class="key"><span>8</span><small>tuv</small></div>
+        <div class="key"><span>9</span><small>wxyz</small></div>
+        <div class="key"><span>*</span></div>
+        <div class="key"><span>0</span><small>+</small></div>
+        <div class="key"><span>#</span></div>
+      </section>
+    </article>
+  </main>
+
+  <script>
+    // Snake Game Engine
+    class SnakeGame {
+      constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.gridSize = 5;
+        this.tileCountX = Math.floor(this.canvas.width / this.gridSize);
+        this.tileCountY = Math.floor(this.canvas.height / this.gridSize);
+
+        this.snake = [];
+        this.food = {};
+        this.direction = { x: 0, y: 0 };
+        this.nextDirection = { x: 0, y: 0 };
+        this.score = 0;
+        this.highScore = localStorage.getItem('snakeHighScore') || 0;
+        this.gameRunning = false;
+        this.soundEnabled = localStorage.getItem('snakeSound') !== 'false';
+
+        this.gameSpeed = 120;
+        this.gameLoop = null;
+
+        this.initGame();
+        this.updateUI();
+      }
+
+      initGame() {
+        // Reset snake to center
+        const startX = Math.floor(this.tileCountX / 2);
+        const startY = Math.floor(this.tileCountY / 2);
+        this.snake = [{ x: startX, y: startY }];
+
+        this.direction = { x: 0, y: 0 };
+        this.nextDirection = { x: 0, y: 0 };
+        this.score = 0;
+        this.generateFood();
+        this.updateUI();
+        this.draw();
+      }
+
+      generateFood() {
+        let foodPosition;
+        do {
+          foodPosition = {
+            x: Math.floor(Math.random() * this.tileCountX),
+            y: Math.floor(Math.random() * this.tileCountY)
+          };
+        } while (this.isSnakePosition(foodPosition.x, foodPosition.y));
+
+        this.food = foodPosition;
+      }
+
+      isSnakePosition(x, y) {
+        return this.snake.some(segment => segment.x === x && segment.y === y);
+      }
+
+      startGame() {
+        if (this.gameRunning) return;
+
+        this.initGame();
+        this.gameRunning = true;
+        document.getElementById('gameOver').style.display = 'none';
+
+        this.gameLoop = setInterval(() => {
+          this.update();
+          this.draw();
+        }, this.gameSpeed);
+
+        this.playSound('start');
+      }
+
+      update() {
+        if (!this.gameRunning) return;
+
+        // Update direction
+        this.direction = { ...this.nextDirection };
+
+        // Don't move if no direction set
+        if (this.direction.x === 0 && this.direction.y === 0) return;
+
+        // Calculate new head position
+        const head = { ...this.snake[0] };
+        head.x += this.direction.x;
+        head.y += this.direction.y;
+
+        // Check wall collision
+        if (head.x < 0 || head.x >= this.tileCountX ||
+            head.y < 0 || head.y >= this.tileCountY) {
+          this.gameOver();
+          return;
+        }
+
+        // Check self collision
+        if (this.isSnakePosition(head.x, head.y)) {
+          this.gameOver();
+          return;
+        }
+
+        // Add new head
+        this.snake.unshift(head);
+
+        // Check food collision
+        if (head.x === this.food.x && head.y === this.food.y) {
+          this.score += 10;
+          this.generateFood();
+          this.updateUI();
+          this.playSound('eat');
+
+          // Increase speed slightly
+          if (this.gameSpeed > 60) {
+            this.gameSpeed -= 2;
+            clearInterval(this.gameLoop);
+            this.gameLoop = setInterval(() => {
+              this.update();
+              this.draw();
+            }, this.gameSpeed);
+          }
+        } else {
+          // Remove tail if no food eaten
+          this.snake.pop();
+        }
+
+        this.updateUI();
+      }
+
+      draw() {
+        // Clear canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        // Draw snake
+        this.ctx.fillStyle = '#223120';
+        this.snake.forEach((segment, index) => {
+          const x = segment.x * this.gridSize;
+          const y = segment.y * this.gridSize;
+
+          if (index === 0) {
+            // Snake head - full block
+            this.ctx.fillRect(x, y, this.gridSize, this.gridSize);
+          } else {
+            // Snake body - slightly smaller
+            this.ctx.fillRect(x + 0.5, y + 0.5, this.gridSize - 1, this.gridSize - 1);
+          }
+        });
+
+        // Draw food
+        this.ctx.fillStyle = '#223120';
+        const foodX = this.food.x * this.gridSize;
+        const foodY = this.food.y * this.gridSize;
+
+        // Draw food as pixel pattern
+        const center = this.gridSize / 2;
+        this.ctx.fillRect(foodX + center - 1, foodY, 2, this.gridSize);
+        this.ctx.fillRect(foodX, foodY + center - 1, this.gridSize, 2);
+      }
+
+      gameOver() {
+        this.gameRunning = false;
+        clearInterval(this.gameLoop);
+
+        // Update high score
+        if (this.score > this.highScore) {
+          this.highScore = this.score;
+          localStorage.setItem('snakeHighScore', this.highScore);
+        }
+
+        document.getElementById('finalScore').textContent = this.score;
+        document.getElementById('gameOver').style.display = 'block';
+        this.updateUI();
+        this.playSound('gameOver');
+      }
+
+      changeDirection(dx, dy) {
+        if (!this.gameRunning && (dx !== 0 || dy !== 0)) {
+          this.startGame();
+          this.nextDirection = { x: dx, y: dy };
+          return;
+        }
+
+        // Prevent immediate reverse direction
+        if (this.direction.x === -dx && this.direction.y === -dy &&
+            (this.direction.x !== 0 || this.direction.y !== 0)) return;
+
+        this.nextDirection = { x: dx, y: dy };
+      }
+
+      updateUI() {
+        document.getElementById('score').textContent = this.score;
+        document.getElementById('highScore').textContent = this.highScore;
+        document.getElementById('soundIndicator').style.display =
+          this.soundEnabled ? 'block' : 'none';
+      }
+
+      playSound(type) {
+        if (!this.soundEnabled) return;
+
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+
+          gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+          switch(type) {
+            case 'eat':
+              oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+              oscillator.type = 'square';
+              break;
+            case 'gameOver':
+              oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+              oscillator.type = 'sawtooth';
+              break;
+            case 'start':
+              oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+              oscillator.type = 'square';
+              break;
+          }
+
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + 0.1);
+        } catch (e) {
+          // Audio not supported
+        }
+      }
+
+      toggleSound() {
+        this.soundEnabled = !this.soundEnabled;
+        localStorage.setItem('snakeSound', this.soundEnabled);
+        this.updateUI();
+      }
+    }
+
+    // Initialize game
+    const game = new SnakeGame();
+
+    // Global functions for UI
+    function changeDirection(dx, dy) {
+      game.changeDirection(dx, dy);
+    }
+
+    function handleOkButton() {
+      if (!game.gameRunning || document.getElementById('gameOver').style.display === 'block') {
+        game.startGame();
+      }
+    }
+
+    function toggleSound() {
+      game.toggleSound();
+    }
+
+    function showMenu() {
+      alert('Nokia 3310 Snake\n\nHigh Score: ' + game.highScore + '\n\nUse D-pad or arrow keys to play!\n\nPress OK or 5 to start');
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      switch(e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          e.preventDefault();
+          changeDirection(0, -1);
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          e.preventDefault();
+          changeDirection(0, 1);
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          e.preventDefault();
+          changeDirection(-1, 0);
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          e.preventDefault();
+          changeDirection(1, 0);
+          break;
+        case ' ':
+        case 'Enter':
+        case '5':
+          e.preventDefault();
+          handleOkButton();
+          break;
+        case 'm':
+        case 'M':
+          showMenu();
+          break;
+        case 'n':
+        case 'N':
+          toggleSound();
+          break;
+      }
+    });
+
+    // Prevent scrolling on mobile
+    document.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
+
+    // Show initial instructions
+    setTimeout(() => {
+      if (!game.gameRunning) {
+        showMenu();
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
