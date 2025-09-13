@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-// Cache bust: v2.1.1-remove-confirm-dialog
+// Cache bust: v2.2.0-multilingual
 import ResultsDisplay from './components/ResultsDisplay'
 import MoodBarometer from './components/MoodBarometer'
 import AboutDialog from './components/AboutDialog'
@@ -8,9 +8,11 @@ import UserProfile from './components/UserProfile'
 import UserLocations from './components/UserLocations'
 import CookieBanner from './components/CookieBanner'
 import { useAuth } from './contexts/AuthContext'
+import { useLanguage } from './contexts/LanguageContext'
 
 function App() {
   const { user, token, loading, login, logout, getAuthHeaders } = useAuth()
+  const { t } = useLanguage()
   const [results, setResults] = useState([])
   const [showAboutDialog, setShowAboutDialog] = useState(false)
   const [showAuthDialog, setShowAuthDialog] = useState(false)
@@ -160,7 +162,7 @@ function App() {
                   fontSize: '0.875rem',
                   fontWeight: '500'
                 }}>
-                  Willkommen, {user.username}
+                  {t('welcome')}, {user.username}
                 </span>
                 <button
                   onClick={() => setShowUserLocations(true)}
@@ -175,7 +177,7 @@ function App() {
                     fontWeight: '500'
                   }}
                 >
-                  Meine Locations
+                  {t('myLocations')}
                 </button>
                 <button
                   onClick={() => setShowUserProfile(true)}
@@ -190,7 +192,7 @@ function App() {
                     fontWeight: '500'
                   }}
                 >
-                  Profil
+                  {t('profile')}
                 </button>
               </div>
             ) : (
@@ -207,7 +209,7 @@ function App() {
                   fontWeight: '500'
                 }}
               >
-                Login / Register
+                {t('login')} / {t('register')}
               </button>
             )}
           </div>
@@ -323,7 +325,7 @@ function App() {
         marginTop: 'auto'
       }}>
         <div style={{ marginBottom: '0.75rem' }}>
-          Made with ❤️ by Martin Pfeffer
+          {t('madeWith')}
         </div>
         <div style={{ 
           fontSize: '0.75rem', 
@@ -344,7 +346,7 @@ function App() {
             onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
             onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
           >
-            Impressum
+            {t('imprint')}
           </a>
           <a 
             href="https://celox.io/privacy" 
@@ -357,8 +359,15 @@ function App() {
             onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
             onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
           >
-            Datenschutz
+            {t('privacy')}
           </a>
+          <span style={{
+            color: 'var(--text-secondary)',
+            fontSize: '0.7rem',
+            opacity: 0.5
+          }}>
+            v2.1.1
+          </span>
         </div>
       </footer>
       

@@ -111,6 +111,78 @@
   color: var(--text-secondary);
 }
 
+/* Language Selector Styles */
+.language-section {
+  padding: 1rem;
+}
+
+.language-description {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.language-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--hover-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.language-option:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.language-option.selected {
+  border-color: var(--primary-color);
+  background: rgba(var(--primary-color-rgb, 104, 141, 177), 0.1);
+  box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+.language-info {
+  flex: 1;
+}
+
+.language-info h5 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.language-info p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.language-note {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.language-note p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
 /* Responsive adjustments */
 @media (min-width: 768px) {
   .theme-options {
@@ -130,5 +202,9 @@
   .preview-circle {
     width: 80px;
     height: 80px;
+  }
+
+  .language-options {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
 }

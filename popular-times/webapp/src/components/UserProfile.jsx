@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import './UserProfile.css';
 import './ThemeSelector.css';
 
 const UserProfile = ({ user, token, onLogout, onClose }) => {
   const { theme, switchTheme, themeNames, availableThemes } = useTheme();
+  const { language, switchLanguage, t, availableLanguages } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [filters, setFilters] = useState([]);
   const [newFilter, setNewFilter] = useState({ type: 'location_name_contains', value: '' });
@@ -159,9 +161,9 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
   return (
     <div className="user-profile">
       <div className="profile-header">
-        <h3>Willkommen, {profile?.username || 'Benutzer'}!</h3>
+        <h3>{t('welcome')}, {profile?.username || t('username')}!</h3>
         <button className="logout-btn" onClick={handleLogout}>
-          Abmelden
+          {t('logout')}
         </button>
       </div>
 
@@ -170,19 +172,25 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
           className={activeTab === 'profile' ? 'active' : ''} 
           onClick={() => setActiveTab('profile')}
         >
-          Profil
+          {t('profile')}
         </button>
         <button 
           className={activeTab === 'filters' ? 'active' : ''} 
           onClick={() => setActiveTab('filters')}
         >
-          Filter ({filters.filter(f => f.active).length})
+          {t('filters')} ({filters.filter(f => f.active).length})
         </button>
         <button 
           className={activeTab === 'themes' ? 'active' : ''} 
           onClick={() => setActiveTab('themes')}
         >
-          Themes
+          {t('themes')}
+        </button>
+        <button 
+          className={activeTab === 'language' ? 'active' : ''} 
+          onClick={() => setActiveTab('language')}
+        >
+          {t('language')}
         </button>
       </div>
 
@@ -192,20 +200,20 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
       {activeTab === 'profile' && profile && (
         <div className="profile-info">
           <div className="info-item">
-            <label>Benutzername:</label>
+            <label>{t('username')}:</label>
             <span>{profile.username}</span>
           </div>
           <div className="info-item">
-            <label>Email:</label>
+            <label>{t('email')}:</label>
             <span>{profile.email}</span>
           </div>
           <div className="info-item">
-            <label>Mitglied seit:</label>
+            <label>{t('memberSince')}:</label>
             <span>{new Date(profile.created_at).toLocaleDateString()}</span>
           </div>
           {profile.last_login && (
             <div className="info-item">
-              <label>Letzter Login:</label>
+              <label>{t('lastLogin')}:</label>
               <span>{new Date(profile.last_login).toLocaleString()}</span>
             </div>
           )}
@@ -318,6 +326,38 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
           <div className="theme-note">
             <p>
               <strong>💡 Tipp:</strong> Das ausgewählte Theme wird automatisch gespeichert 
+              und bei Ihrem nächsten Besuch wiederhergestellt.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'language' && (
+        <div className="language-section">
+          <h4>Sprache auswählen</h4>
+          <p className="language-description">
+            Wählen Sie Ihre bevorzugte Sprache für die Benutzeroberfläche.
+          </p>
+          
+          <div className="language-options">
+            {Object.entries(availableLanguages).map(([langKey, langName]) => (
+              <div 
+                key={langKey}
+                className={`language-option ${language === langKey ? 'selected' : ''}`}
+                onClick={() => switchLanguage(langKey)}
+              >
+                <div className="language-info">
+                  <h5>{langName}</h5>
+                  <p>{langKey === 'de' ? 'Deutsche Benutzeroberfläche' : 'English user interface'}</p>
+                  {language === langKey && <span className="selected-indicator">✓ Aktiv</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="language-note">
+            <p>
+              <strong>💡 Tipp:</strong> Die ausgewählte Sprache wird automatisch gespeichert 
               und bei Ihrem nächsten Besuch wiederhergestellt.
             </p>
           </div>
