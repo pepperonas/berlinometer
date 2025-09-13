@@ -202,6 +202,24 @@ function ResultsDisplay({ results }) {
     return -1
   }
 
+  // Funktion zum Übersetzen von Auslastungstexten
+  const translateOccupancyText = (occupancyText) => {
+    if (!occupancyText) return occupancyText
+    
+    // Deutsche Patterns
+    const currentMatch = occupancyText.match(/derzeit\s+zu\s+(\d+)\s*%\s*ausgelastet/i)
+    const normalMatch = occupancyText.match(/normal\s+sind\s+(\d+)\s*%/i)
+    
+    if (currentMatch && normalMatch) {
+      const currentPercent = currentMatch[1]
+      const normalPercent = normalMatch[1]
+      return `${t('currentlyOccupied').replace('{percent}', currentPercent)}; ${t('normalOccupancyIs').replace('{percent}', normalPercent)}.`
+    }
+    
+    // Fallback für andere Formate
+    return occupancyText
+  }
+
   // Filter results based on search term with pipe (||) support for OR search
   const filteredResults = useMemo(() => {
     if (!searchTerm.trim()) {
@@ -335,7 +353,7 @@ function ResultsDisplay({ results }) {
           '</div>' +
           '<div class="location-body">' +
             '<div class="occupancy-text">' +
-              (location.live_occupancy || 'Keine Auslastungsdaten verfügbar') +
+              (translateOccupancyText(location.live_occupancy) || t('noOccupancyData')) +
             '</div>' +
             '<div class="occupancy-bar">' +
               '<div class="occupancy-fill" style="background-color: ' + color + '; width: ' + barWidth + '%;"></div>' +
@@ -645,7 +663,7 @@ function ResultsDisplay({ results }) {
                   {result.is_live_data ? `${getOccupancyIcon(result.live_occupancy, result.is_live_data)} ${t('liveOccupancy')}` : `📊 ${t('occupancyData')}`}
                 </div>
                 <div className="text-sm mb-2">
-                  {result.live_occupancy}
+                  {translateOccupancyText(result.live_occupancy)}
                 </div>
                 {result.is_live_data && (
                   <div className="text-xs text-secondary">

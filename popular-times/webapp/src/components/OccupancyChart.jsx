@@ -170,7 +170,7 @@ function OccupancyChart({ url, isExpanded }) {
       <div className="text-xs text-secondary mt-3">
         <p>🔴 {t('currentOccupancy')} | 🔵 {t('normalOccupancy')} für diese Uhrzeit</p>
         {chartData.some(d => d.isLive) && (
-          <p className="mt-1">✨ Enthält Live-Daten</p>
+          <p className="mt-1">✨ {t('containsLiveData')}</p>
         )}
       </div>
     </div>

@@ -213,6 +213,11 @@ const translations = {
     'scrapingRunning': 'Scraping läuft...',
     'startScraping': 'Scraping starten ({count})',
 
+    // ResultsDisplay - Live data indicators
+    'containsLiveData': 'Enthält Live-Daten',
+    'currentlyOccupied': 'Derzeit zu {percent} % ausgelastet',
+    'normalOccupancyIs': 'normal sind {percent} %',
+
     // Generic
     'close': 'Schließen',
     'cancel': 'Abbrechen',
@@ -421,6 +426,11 @@ const translations = {
     'inactive': '(inactive)',
     'scrapingRunning': 'Scraping running...',
     'startScraping': 'Start scraping ({count})',
+
+    // ResultsDisplay - Live data indicators
+    'containsLiveData': 'Contains Live Data',
+    'currentlyOccupied': 'Currently {percent}% occupied',
+    'normalOccupancyIs': 'normal is {percent}%',
 
     // Generic
     'close': 'Close',
