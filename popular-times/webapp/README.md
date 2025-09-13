@@ -226,7 +226,17 @@ MIT License - siehe [LICENSE](LICENSE) für Details.
 
 *Live Demo: [https://mrx3k1.de/popular-times/](https://mrx3k1.de/popular-times/)*
 
-*Version 2.1.0 - Deutsche Lokalisierung & Multi-Theme Edition*
+*Version 2.1.1 - UX-Optimierung & vollständige Deutsche Lokalisierung*
+
+## 🆕 Version 2.1.1 Features
+
+### UX-Optimierungen
+- **Bestätigungsdialoge entfernt** beim Löschen von gespeicherten Locations
+- **Nahtlose Löschfunktion** für flüssigere Bedienung
+- **Vollständige deutsche Lokalisierung** aller verbleibenden englischen Texte:
+  - "Welcome" → "Willkommen"
+  - "My Locations" → "Meine Locations"  
+  - "Profile" → "Profil"
 
 ## 🆕 Version 2.1.0 Features
 
@@ -245,5 +255,6 @@ MIT License - siehe [LICENSE](LICENSE) für Details.
 ### Datenschutz & UI-Optimierungen
 - **Cookie-Consent-Banner** mit `console.log()` Code-Stil
 - **Export-Funktionen entfernt** für cleane Produktionsversion
+- **Bestätigungsdialoge entfernt** für flüssigere UX beim Löschen
 - **DSGVO-Compliance** mit transparenter Cookie-Verwaltung
-- **Verbesserte Benutzerführung** ohne ablenkende Export-Optionen
+- **Verbesserte Benutzerführung** ohne ablenkende Dialoge und Export-Optionen

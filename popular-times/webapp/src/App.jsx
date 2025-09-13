@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-// Cache bust: v2.1.0-final-complete
+// Cache bust: v2.1.1-remove-confirm-dialog
 import ResultsDisplay from './components/ResultsDisplay'
 import MoodBarometer from './components/MoodBarometer'
 import AboutDialog from './components/AboutDialog'
@@ -160,7 +160,7 @@ function App() {
                   fontSize: '0.875rem',
                   fontWeight: '500'
                 }}>
-                  Welcome, {user.username}
+                  Willkommen, {user.username}
                 </span>
                 <button
                   onClick={() => setShowUserLocations(true)}
@@ -175,7 +175,7 @@ function App() {
                     fontWeight: '500'
                   }}
                 >
-                  My Locations
+                  Meine Locations
                 </button>
                 <button
                   onClick={() => setShowUserProfile(true)}
@@ -190,7 +190,7 @@ function App() {
                     fontWeight: '500'
                   }}
                 >
-                  Profile
+                  Profil
                 </button>
               </div>
             ) : (

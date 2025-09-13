@@ -102,10 +102,6 @@ const UserLocations = ({ onClose, onLocationsSaved }) => {
   };
 
   const removeLocation = async (locationId, locationName) => {
-    if (!window.confirm(`Remove ${locationName} from your saved locations?`)) {
-      return;
-    }
-
     setError(null);
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/user-locations/${locationId}`, {
@@ -213,7 +209,7 @@ const UserLocations = ({ onClose, onLocationsSaved }) => {
       <div className="user-locations-header">
         <h2>
           <MapPin size={24} />
-          My Locations
+          Meine Locations
         </h2>
         <button onClick={onClose} className="close-button">
           <X size={20} />
