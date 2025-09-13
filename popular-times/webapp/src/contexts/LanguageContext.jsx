@@ -166,6 +166,32 @@ const translations = {
     'medium': 'Mittel',
     'low': 'Niedrig',
     
+    // MoodBarometer
+    'livelyMood': '🔥 Lebendige Stimmung',
+    'livelyMoodDesc': 'Die meisten Locations sind gut besucht ({highPercent}% hoch). Perfekt für eine energiegeladene Atmosphäre, aber eventuell längere Wartezeiten.',
+    'relaxedMood': '😌 Entspannte Stimmung',
+    'relaxedMoodDesc': 'Die meisten Locations sind ruhig ({lowPercent}% niedrig). Ideal für gemütliche Gespräche und entspannte Atmosphäre.',
+    'diverseMood': '🎭 Vielfältige Stimmung',
+    'diverseMoodDesc': 'Die Auslastung variiert stark ({highPercent}% hoch, {normalPercent}% normal, {lowPercent}% niedrig). Je nach Vorliebe finden Sie sowohl lebendige als auch entspannte Locations.',
+    'averageOccupancy': 'Durchschnittliche Auslastung',
+    'highCategory': '🔥 Hoch (≥70%)',
+    'normalCategory': '⚖️ Normal (30-69%)',
+    'lowCategory': '😌 Niedrig (<30%)',
+    'moodBarometer': '📊 Stimmungsbarometer',
+    'occupancyAnalysis': 'Auslastungsanalyse aller {totalLocations} erfolgreich gescrapten Locations',
+    'stronglyVisited': 'Stark besucht',
+    'averageVisited': 'Durchschnittlich',
+    'lightlyVisited': 'Wenig besucht',
+    'balancedMood': '🟡 Ausgeglichene Stimmung',
+    'balancedMoodDesc': '{mediumPercent}% der Locations haben normale Auslastung. Eine ausgewogene Mischung aus lebendiger und entspannter Atmosphäre erwartet Sie.',
+    
+    // Theme descriptions
+    'themeDarkDesc': 'Elegantes dunkles Theme',
+    'themeLightDesc': 'Modernes helles Theme',
+    'themePsychedelicDesc': 'Spektakuläres Neon-Theme',
+    'germanInterface': 'Deutsche Benutzeroberfläche',
+    'englishInterface': 'English user interface',
+    
     // Footer
     'madeWith': 'Made with ❤️ by Martin Pfeffer',
     'imprint': 'Impressum',
@@ -332,6 +358,32 @@ const translations = {
     'high': 'High',
     'medium': 'Medium',
     'low': 'Low',
+    
+    // MoodBarometer
+    'livelyMood': '🔥 Lively Atmosphere',
+    'livelyMoodDesc': 'Most locations are well visited ({highPercent}% high). Perfect for an energetic atmosphere, but possibly longer wait times.',
+    'relaxedMood': '😌 Relaxed Atmosphere',
+    'relaxedMoodDesc': 'Most locations are quiet ({lowPercent}% low). Ideal for cozy conversations and relaxed atmosphere.',
+    'diverseMood': '🎭 Diverse Atmosphere',
+    'diverseMoodDesc': 'Occupancy varies greatly ({highPercent}% high, {normalPercent}% normal, {lowPercent}% low). Depending on preference, you\'ll find both lively and relaxed locations.',
+    'averageOccupancy': 'Average Occupancy',
+    'highCategory': '🔥 High (≥70%)',
+    'normalCategory': '⚖️ Normal (30-69%)',
+    'lowCategory': '😌 Low (<30%)',
+    'moodBarometer': '📊 Mood Barometer',
+    'occupancyAnalysis': 'Occupancy analysis of all {totalLocations} successfully scraped locations',
+    'stronglyVisited': 'Strongly visited',
+    'averageVisited': 'Average',
+    'lightlyVisited': 'Lightly visited',
+    'balancedMood': '🟡 Balanced Atmosphere',
+    'balancedMoodDesc': '{mediumPercent}% of locations have normal occupancy. A balanced mix of lively and relaxed atmosphere awaits you.',
+    
+    // Theme descriptions
+    'themeDarkDesc': 'Elegant dark theme',
+    'themeLightDesc': 'Modern light theme',
+    'themePsychedelicDesc': 'Spectacular neon theme',
+    'germanInterface': 'Deutsche Benutzeroberfläche',
+    'englishInterface': 'English user interface',
     
     // Footer
     'madeWith': 'Made with ❤️ by Martin Pfeffer',

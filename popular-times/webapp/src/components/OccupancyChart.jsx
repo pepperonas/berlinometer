@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 function OccupancyChart({ url, isExpanded }) {
+  const { t } = useLanguage()
   const [chartData, setChartData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -148,7 +150,7 @@ function OccupancyChart({ url, isExpanded }) {
             dataKey="auslastung" 
             stroke="#e16162" 
             strokeWidth={isMobile ? 1.5 : 2}
-            name="Aktuelle Auslastung"
+            name={t('currentOccupancy')}
             dot={{ fill: '#e16162', r: isMobile ? 2 : 3 }}
             activeDot={{ r: isMobile ? 4 : 5 }}
           />
@@ -157,7 +159,7 @@ function OccupancyChart({ url, isExpanded }) {
             dataKey="normal" 
             stroke="#688db1" 
             strokeWidth={isMobile ? 1.5 : 2}
-            name="Normale Auslastung"
+            name={t('normalOccupancy')}
             strokeDasharray="5 5"
             dot={{ fill: '#688db1', r: isMobile ? 2 : 3 }}
             activeDot={{ r: isMobile ? 4 : 5 }}
@@ -166,7 +168,7 @@ function OccupancyChart({ url, isExpanded }) {
       </ResponsiveContainer>
       
       <div className="text-xs text-secondary mt-3">
-        <p>🔴 Aktuelle Auslastung | 🔵 Normale Auslastung für diese Uhrzeit</p>
+        <p>🔴 {t('currentOccupancy')} | 🔵 {t('normalOccupancy')} für diese Uhrzeit</p>
         {chartData.some(d => d.isLive) && (
           <p className="mt-1">✨ Enthält Live-Daten</p>
         )}

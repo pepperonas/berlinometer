@@ -293,11 +293,11 @@ function ResultsDisplay({ results }) {
       }
 
       const getOccupancyColor = (currentPercent, normalPercent) => {
-        if (currentPercent === null) return ["rgba(156, 163, 175, 0.5)", "Keine Daten"]
+        if (currentPercent === null) return ["rgba(156, 163, 175, 0.5)", t('noData')]
         if (normalPercent === null) {
-          if (currentPercent > 70) return ["rgba(234, 179, 8, 0.8)", "Hoch"]
-          else if (currentPercent > 30) return ["rgba(234, 179, 8, 0.5)", "Mittel"]
-          else return ["rgba(104, 141, 177, 0.6)", "Niedrig"]
+          if (currentPercent > 70) return ["rgba(234, 179, 8, 0.8)", t('high')]
+          else if (currentPercent > 30) return ["rgba(234, 179, 8, 0.5)", t('medium')]
+          else return ["rgba(104, 141, 177, 0.6)", t('low')]
         }
         const difference = currentPercent - normalPercent
         if (difference > 5) return ["rgba(34, 197, 94, 0.8)", "+" + difference + "% über normal"]

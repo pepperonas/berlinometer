@@ -1,4 +1,7 @@
+import { useLanguage } from '../contexts/LanguageContext'
+
 function MoodBarometer({ results }) {
+  const { t } = useLanguage()
   if (!results || results.length === 0) return null
 
   // Analysiere Auslastung aller Locations
@@ -66,40 +69,38 @@ function MoodBarometer({ results }) {
   const mediumPercent = Math.round((medium / total) * 100)
   const lowPercent = Math.round((low / total) * 100)
 
+  // Zusätzliche Statistiken ZUERST berechnen
+  const avgOccupancy = occupancyData.reduce((sum, data) => sum + data.current, 0) / occupancyData.length
+  const locationsAnalyzed = validLocations.length
+
   // Bestimme Gesamtstimmung und Fazit
   let moodIcon, moodTitle, moodDescription
 
   if (highPercent >= 50) {
     moodIcon = '🟢'
-    moodTitle = 'Lebendige Atmosphäre'
-    moodDescription = `${highPercent}% der Locations sind überdurchschnittlich gut besucht. Die Bars und Lokale erleben einen regen Zulauf - perfekte Zeit für einen Besuch!`
+    moodTitle = t('livelyMood')
+    moodDescription = t('livelyMoodDesc').replace('{highPercent}', highPercent) + ` ${t('averageOccupancy')}: ${Math.round(avgOccupancy)}% (${locationsAnalyzed} Locations).`
   } else if (lowPercent >= 50) {
     moodIcon = '🔴'
-    moodTitle = 'Entspannte Stimmung'
-    moodDescription = `${lowPercent}% der Locations sind unterdurchschnittlich besucht. Ideal für einen ruhigen Abend ohne Gedränge und mit entspannter Atmosphäre.`
+    moodTitle = t('relaxedMood')
+    moodDescription = t('relaxedMoodDesc').replace('{lowPercent}', lowPercent) + ` ${t('averageOccupancy')}: ${Math.round(avgOccupancy)}% (${locationsAnalyzed} Locations).`
   } else if (mediumPercent >= 40) {
     moodIcon = '🟡'
-    moodTitle = 'Ausgeglichene Stimmung'
-    moodDescription = `${mediumPercent}% der Locations haben normale Auslastung. Eine ausgewogene Mischung aus lebendiger und entspannter Atmosphäre erwartet Sie.`
+    moodTitle = t('balancedMood')
+    moodDescription = t('balancedMoodDesc').replace('{mediumPercent}', mediumPercent) + ` ${t('averageOccupancy')}: ${Math.round(avgOccupancy)}% (${locationsAnalyzed} Locations).`
   } else {
     // Gemischte Verteilung
     moodIcon = '🟠'
-    moodTitle = 'Vielfältige Stimmung'
-    moodDescription = `Die Auslastung variiert stark (${highPercent}% hoch, ${mediumPercent}% normal, ${lowPercent}% niedrig). Je nach Vorliebe finden Sie sowohl lebendige als auch entspannte Locations.`
+    moodTitle = t('diverseMood')
+    moodDescription = t('diverseMoodDesc').replace('{highPercent}', highPercent).replace('{normalPercent}', mediumPercent).replace('{lowPercent}', lowPercent) + ` ${t('averageOccupancy')}: ${Math.round(avgOccupancy)}% (${locationsAnalyzed} Locations).`
   }
-
-  // Zusätzliche Statistiken
-  const avgOccupancy = occupancyData.reduce((sum, data) => sum + data.current, 0) / occupancyData.length
-  const locationsAnalyzed = validLocations.length
-  
-  moodDescription += ` Durchschnittliche Auslastung: ${Math.round(avgOccupancy)}% (${locationsAnalyzed} Locations analysiert).`
 
   return (
     <div className="card">
       <div className="card-header">
-        <h3 className="card-title">🌡️ Stimmungsbarometer</h3>
+        <h3 className="card-title">{t('moodBarometer')}</h3>
         <p className="card-description">
-          Auslastungsanalyse aller {total} erfolgreich gescrapten Locations
+          {t('occupancyAnalysis').replace('{totalLocations}', total)}
         </p>
       </div>
 
@@ -134,7 +135,7 @@ function MoodBarometer({ results }) {
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
-              Stark besucht
+              {t('stronglyVisited')}
             </div>
           </div>
 
@@ -161,7 +162,7 @@ function MoodBarometer({ results }) {
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
-              Durchschnittlich
+              {t('averageVisited')}
             </div>
           </div>
 
@@ -188,7 +189,7 @@ function MoodBarometer({ results }) {
               textTransform: 'uppercase',
               letterSpacing: '0.05em'
             }}>
-              Wenig besucht
+              {t('lightlyVisited')}
             </div>
           </div>
         </div>

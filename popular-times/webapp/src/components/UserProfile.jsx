@@ -15,6 +15,15 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
 
+  const getThemeDescription = (themeKey) => {
+    const themeDescMap = {
+      'dark': t('themeDarkDesc'),
+      'light': t('themeLightDesc'), 
+      'psychedelic': t('themePsychedelicDesc')
+    };
+    return themeDescMap[themeKey] || '';
+  };
+
   const filterTypes = [
     { value: 'location_name_contains', label: 'Location-Name enthält' },
     { value: 'location_name_equals', label: 'Location-Name ist' },
@@ -276,7 +285,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                     <button
                       onClick={() => handleDeleteFilter(filter.id)}
                       className="delete-btn"
-                      title="Filter löschen"
+                      title={t('deleteFilter')}
                     >
                       {t('delete')}
                     </button>
@@ -316,7 +325,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                 </div>
                 <div className="theme-info">
                   <h5>{config.name}</h5>
-                  <p>{config.description}</p>
+                  <p>{getThemeDescription(themeKey)}</p>
                   {theme === themeKey && <span className="selected-indicator">✓ {t('themeSelected')}</span>}
                 </div>
               </div>
@@ -347,7 +356,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
               >
                 <div className="language-info">
                   <h5>{langName}</h5>
-                  <p>{langKey === 'de' ? 'Deutsche Benutzeroberfläche' : 'English user interface'}</p>
+                  <p>{langKey === 'de' ? t('germanInterface') : t('englishInterface')}</p>
                   {language === langKey && <span className="selected-indicator">✓ {t('themeSelected')}</span>}
                 </div>
               </div>
