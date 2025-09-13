@@ -33,9 +33,10 @@ const translations = {
     'confirmPassword': 'Passwort bestätigen',
     'memberSince': 'Mitglied seit',
     'lastLogin': 'Letzter Login',
-    'filters': 'Filter',
+    'filters': 'Filter (Beta)',
     'themes': 'Themes',
     'language': 'Sprache',
+    'tip': 'Tipp',
     
     // Theme names
     'themeDark': 'Dunkel',
@@ -247,9 +248,10 @@ const translations = {
     'confirmPassword': 'Confirm Password',
     'memberSince': 'Member since',
     'lastLogin': 'Last Login',
-    'filters': 'Filters',
+    'filters': 'Filters (Beta)',
     'themes': 'Themes',
     'language': 'Language',
+    'tip': 'Tip',
     
     // Theme names
     'themeDark': 'Dark',

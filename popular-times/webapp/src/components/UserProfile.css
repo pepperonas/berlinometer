@@ -5,8 +5,10 @@
   padding: 24px;
   max-width: 600px;
   width: 100%;
+  height: 600px;
   max-height: 80vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .profile-header {
@@ -86,6 +88,12 @@
   margin-bottom: 16px;
   color: #363;
   font-size: 14px;
+}
+
+.profile-content {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .profile-info {

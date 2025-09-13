@@ -15,6 +15,15 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
 
+  const getThemeName = (themeKey) => {
+    const themeNameMap = {
+      'dark': t('themeDark'),
+      'light': t('themeLight'),
+      'psychedelic': t('themePsychedelic')
+    };
+    return themeNameMap[themeKey] || themeKey;
+  };
+
   const getThemeDescription = (themeKey) => {
     const themeDescMap = {
       'dark': t('themeDarkDesc'),
@@ -206,6 +215,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
       {error && <div className="error-message">{error}</div>}
       {success && <div className="success-message">{success}</div>}
 
+      <div className="profile-content">
       {activeTab === 'profile' && profile && (
         <div className="profile-info">
           <div className="info-item">
@@ -324,7 +334,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
                   ></div>
                 </div>
                 <div className="theme-info">
-                  <h5>{config.name}</h5>
+                  <h5>{getThemeName(themeKey)}</h5>
                   <p>{getThemeDescription(themeKey)}</p>
                   {theme === themeKey && <span className="selected-indicator">✓ {t('themeSelected')}</span>}
                 </div>
@@ -334,7 +344,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
           
           <div className="theme-note">
             <p>
-              <strong>💡 Tipp:</strong> {t('themeTip')}
+              <strong>💡 {t('tip') || 'Tipp'}:</strong> {t('themeTip')}
             </p>
           </div>
         </div>
@@ -370,6 +380,7 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
