@@ -14,6 +14,10 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('profile');
+  const [manualSortingEnabled, setManualSortingEnabled] = useState(() => {
+    const saved = localStorage.getItem('berlinometer-manual-sorting-enabled');
+    return saved ? JSON.parse(saved) : false;
+  });
 
   const getThemeName = (themeKey) => {
     const themeNameMap = {
@@ -31,6 +35,20 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
       'psychedelic': t('themePsychedelicDesc')
     };
     return themeDescMap[themeKey] || '';
+  };
+
+  const handleManualSortingToggle = () => {
+    const newValue = !manualSortingEnabled;
+    setManualSortingEnabled(newValue);
+    localStorage.setItem('berlinometer-manual-sorting-enabled', JSON.stringify(newValue));
+    
+    // Clear existing custom order when disabling manual sorting
+    if (!newValue) {
+      localStorage.removeItem('berlinometer-results-order');
+    }
+    
+    setSuccess(newValue ? 'Manuelle Sortierung aktiviert' : 'Manuelle Sortierung deaktiviert');
+    setTimeout(() => setSuccess(''), 3000);
   };
 
   const filterTypes = [
@@ -236,6 +254,37 @@ const UserProfile = ({ user, token, onLogout, onClose }) => {
               <span>{new Date(profile.last_login).toLocaleString()}</span>
             </div>
           )}
+          
+          {/* Manual Sorting Setting */}
+          <div className="info-item" style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <label htmlFor="manual-sorting-toggle" style={{ cursor: 'pointer', marginBottom: 0 }}>
+                Manuelle Sortierung aktivieren
+              </label>
+              <input
+                id="manual-sorting-toggle"
+                type="checkbox"
+                checked={manualSortingEnabled}
+                onChange={handleManualSortingToggle}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  cursor: 'pointer'
+                }}
+              />
+            </div>
+            <p style={{ 
+              fontSize: '0.875rem', 
+              color: 'var(--text-secondary)', 
+              marginTop: '0.5rem',
+              marginBottom: 0 
+            }}>
+              {manualSortingEnabled 
+                ? '✅ Du kannst Locations per Drag & Drop neu anordnen' 
+                : '📊 Locations werden nach Auslastung sortiert (Standard)'
+              }
+            </p>
+          </div>
         </div>
       )}
 

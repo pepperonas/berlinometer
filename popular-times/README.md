@@ -8,41 +8,53 @@ A modern web application for analyzing Google Maps location occupancy data with 
 
 - 🔐 **User Authentication**: Secure user registration and login system
 - 📍 **Personal Location Lists**: Save and manage your favorite locations
+- 🗺️ **Distance Display**: Automatic calculation and display of distances to all venues (v2.4.0+)
 - ⏰ **Automated Scraping**: Automatic data collection every 20-30 minutes
 - 🎨 **Multiple Themes**: Dark, Light, and Psychedelic theme options
-- 🌍 **Full Multilingual Support**: Complete German/English interface (v2.3.0+)
+- 🌍 **Full Multilingual Support**: Complete German/English interface
 - 📱 **Responsive Design**: Works seamlessly on desktop and mobile
 - 🔍 **Smart Filtering**: Results filtered based on your saved locations (Beta)
+- 🎯 **Flexible Sorting**: Occupancy-based sorting with optional manual drag & drop (v2.4.0+)
 - 📊 **Live Occupancy Data**: Real-time foot traffic information with dynamic translations
 - 📈 **Historical Data**: 12-hour occupancy charts with trend analysis
 - 📊 **Mood Barometer**: City-wide occupancy mood analysis
 - 🚀 **High Performance**: Optimized Python backend with MySQL database
 - 🔄 **PWA Support**: Progressive Web App with offline capabilities
 
-## 🆕 Latest Updates (v2.3.1)
+## 🆕 Latest Updates (v2.4.0)
 
-### Complete Multilingual Support
-- Full German/English interface translation with 200+ translation keys
-- Dynamic translation of server-side occupancy texts
-- Language preference persistence in localStorage
-- All UI components, dialogs, and messages translated
-- Fixed hardcoded English text in filtered results message
+### 📍 Real-time Distance Display
+- **Automatic location detection**: Distances to all venues are calculated and displayed automatically
+- **Smart permission handling**: Location is requested automatically when page loads (if previously granted)
+- **Distance indicators**: Shows distance in meters (<1km) or kilometers after each venue address
+- **API-based coordinate loading**: Location coordinates loaded from backend API for consistency
+- **Fallback matching**: Intelligent name matching for locations with different spellings
 
-### UI/UX Improvements
-- Fixed dialog size consistency for user profile (600px fixed height)
-- Added scrollable content wrapper for profile sections
-- Renamed Filter tab to "Filter (Beta)" 
-- Translated all theme names (Dark/Dunkel, Light/Hell, Psychedelic/Psychedelisch)
-- Added "Contains Live Data" indicator with translations
-- Improved mood barometer with localized descriptions
-- Fixed "Tip/Tipp" translation in theme selection
+### 🎯 Enhanced Sorting Controls
+- **Default occupancy sorting**: All users see venues sorted by highest occupancy first
+- **Optional manual sorting**: Logged-in users can enable drag & drop sorting in profile settings
+- **Persistent sort preferences**: Custom sort order saved to localStorage
+- **Visual drag indicators**: Clear drag handles (⋮⋮) appear when manual sorting is enabled
+- **Reset functionality**: One-click reset to default occupancy-based sorting
 
-### Technical Enhancements
-- Optimized build configuration for berlinometer.de deployment
-- Separated build outputs for different domains
-- Fixed variable initialization order preventing runtime errors
-- Added comprehensive deployment documentation (DEPLOYMENT.md)
-- Resolved duplicate translation key warnings
+### 🔐 Profile Settings Updates
+- **Manual sorting toggle**: New checkbox in profile settings to enable/disable drag & drop
+- **Improved UI feedback**: Clear status messages when toggling sorting preferences
+- **Settings persistence**: All preferences saved automatically
+
+### 🛠️ Technical Improvements
+- **Fixed JavaScript initialization errors**: Resolved "Cannot access before initialization" issues
+- **Improved error handling**: Better fallbacks for location permission denial
+- **Address formatting**: Automatically removes '+' prefix from database addresses
+- **Debug logging**: Comprehensive console logs for troubleshooting distance calculations
+- **Build optimizations**: Reduced bundle size and improved loading performance
+
+### 🐛 Bug Fixes
+- Removed unnecessary "Check All" button from My Locations
+- Fixed coordinate extraction from Google Maps URLs
+- Resolved CSV loading issues by switching to API-based approach
+- Fixed missing import statements for location utilities
+- Corrected address display formatting issues
 
 ## 🏗️ Architecture
 

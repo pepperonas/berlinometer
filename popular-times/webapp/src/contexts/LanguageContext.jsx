@@ -219,6 +219,11 @@ const translations = {
     'containsLiveData': 'Enthält Live-Daten',
     'currentlyOccupied': 'Derzeit zu {percent} % ausgelastet',
     'normalOccupancyIs': 'normal sind {percent} %',
+    'resetSortOrder': 'Sortierung zurücksetzen',
+    'dragToReorder': 'Ziehen zum Neuordnen',
+    'distance': 'Entfernung',
+    'allowLocation': 'Standort zulassen für Entfernungsanzeige',
+    'locationNotAvailable': 'Standort nicht verfügbar',
 
     // Generic
     'close': 'Schließen',
@@ -435,6 +440,11 @@ const translations = {
     'containsLiveData': 'Contains Live Data',
     'currentlyOccupied': 'Currently {percent}% occupied',
     'normalOccupancyIs': 'normal is {percent}%',
+    'resetSortOrder': 'Reset Sort Order',
+    'dragToReorder': 'Drag to reorder',
+    'distance': 'Distance',
+    'allowLocation': 'Allow location for distance display',
+    'locationNotAvailable': 'Location not available',
 
     // Generic
     'close': 'Close',

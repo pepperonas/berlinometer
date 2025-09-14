@@ -233,14 +233,6 @@ const UserLocations = ({ onClose, onLocationsSaved }) => {
       <div className="saved-locations-section">
         <div className="section-header">
           <h3>{t('savedLocations')} ({savedLocations.length})</h3>
-          <button 
-            onClick={scrapeUserLocations}
-            disabled={isLoading || savedLocations.length === 0}
-            className="check-button"
-          >
-            <RefreshCw size={16} className={isLoading ? 'spinning' : ''} />
-            Check All
-          </button>
         </div>
 
         {savedLocations.length === 0 ? (

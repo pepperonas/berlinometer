@@ -243,7 +243,7 @@ function App() {
           {results.length > 0 ? (
             <>
               <MoodBarometer results={results} />
-              <ResultsDisplay results={results} />
+              <ResultsDisplay results={results} user={user} token={token} />
             </>
           ) : (
             <div style={{

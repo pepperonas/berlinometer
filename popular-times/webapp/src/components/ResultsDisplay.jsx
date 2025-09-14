@@ -1,12 +1,219 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import OccupancyChart from './OccupancyChart'
 import SearchBar from './SearchBar'
+import { calculateDistance, formatDistance, getUserLocation, parseLocationCoordinates, extractCoordinatesFromUrl } from '../utils/locationUtils'
 
-function ResultsDisplay({ results }) {
+function ResultsDisplay({ results, user, token }) {
   const { t } = useLanguage()
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedCard, setExpandedCard] = useState(null)
+  const [customOrder, setCustomOrder] = useState(() => {
+    if (user && token) {
+      const saved = localStorage.getItem('berlinometer-results-order')
+      return saved ? JSON.parse(saved) : null
+    }
+    return null
+  })
+  const [draggedIndex, setDraggedIndex] = useState(null)
+  const [dragOverIndex, setDragOverIndex] = useState(null)
+  const [userLocation, setUserLocation] = useState(null)
+  const [locationCoordinates, setLocationCoordinates] = useState(new Map())
+  const [locationPermissionDenied, setLocationPermissionDenied] = useState(false)
+  const [manualSortingEnabled, setManualSortingEnabled] = useState(() => {
+    const saved = localStorage.getItem('berlinometer-manual-sorting-enabled')
+    return saved ? JSON.parse(saved) : false
+  })
+
+  // Save custom order to localStorage whenever it changes
+  useEffect(() => {
+    if (user && token && customOrder) {
+      localStorage.setItem('berlinometer-results-order', JSON.stringify(customOrder))
+    }
+  }, [customOrder, user, token])
+
+  // Load location coordinates from API - execute immediately
+  useEffect(() => {
+    console.log('🚀 ResultsDisplay mounted, starting location coordinates load from API...')
+    
+    const loadLocationCoordinates = async () => {
+      try {
+        console.log('🔍 Loading location coordinates from API...')
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/default-locations`)
+        console.log('📦 API fetch response status:', response.status)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const data = await response.json()
+        console.log('📄 API response data:', data)
+        console.log('📄 Locations count:', data.locations?.length)
+        
+        if (data.success && data.locations) {
+          const coordinateMap = new Map()
+          
+          data.locations.forEach(location => {
+            if (location.url) {
+              const coordinates = extractCoordinatesFromUrl(location.url)
+              if (coordinates) {
+                coordinateMap.set(location.name, coordinates)
+                console.log(`📍 Added coordinates for "${location.name}":`, coordinates)
+              } else {
+                console.warn(`⚠️ No coordinates found for "${location.name}" in URL:`, location.url.substring(0, 100))
+              }
+            }
+          })
+          
+          console.log('🗺️ Parsed coordinates for locations:', coordinateMap.size)
+          console.log('📍 Sample coordinates:', Array.from(coordinateMap.entries()).slice(0, 3))
+          
+          setLocationCoordinates(coordinateMap)
+          console.log('✅ Location coordinates loaded successfully!')
+          
+          // Auto-request location after coordinates are loaded
+          console.log('🔄 Auto-requesting user location...')
+          requestLocation()
+        } else {
+          throw new Error('API response was not successful or missing locations')
+        }
+      } catch (error) {
+        console.error('❌ Failed to load location coordinates:', error)
+        console.error('❌ Error details:', error.message)
+      }
+    }
+    
+    // Execute immediately
+    loadLocationCoordinates()
+  }, [])
+
+  // Get user's current location 
+  const requestLocation = async () => {
+    try {
+      console.log('📍 Requesting user location...')
+      const location = await getUserLocation()
+      console.log('✅ User location obtained:', location)
+      setUserLocation(location)
+      setLocationPermissionDenied(false)
+    } catch (error) {
+      console.warn('Could not get user location:', error.message)
+      if (error.code === 1) { // PERMISSION_DENIED
+        console.log('❌ User denied location permission')
+        setLocationPermissionDenied(true)
+      } else {
+        console.log('⚠️ Location request failed for other reason:', error.code)
+      }
+    }
+  }
+
+  // Listen for manual sorting setting changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('berlinometer-manual-sorting-enabled')
+      setManualSortingEnabled(saved ? JSON.parse(saved) : false)
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
+  // Drag & Drop handlers
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handleDragEnter = (e, index) => {
+    e.preventDefault()
+    setDragOverIndex(index)
+  }
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault()
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDragOverIndex(null)
+      return
+    }
+
+    const draggedItem = sortedResults[draggedIndex]
+    const newResults = [...sortedResults]
+    
+    // Remove dragged item
+    newResults.splice(draggedIndex, 1)
+    // Insert at new position
+    newResults.splice(dropIndex, 0, draggedItem)
+    
+    // Create new order based on location names
+    const newOrder = newResults.map(result => result.location_name)
+    setCustomOrder(newOrder)
+    
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const resetSortOrder = () => {
+    setCustomOrder(null)
+    localStorage.removeItem('berlinometer-results-order')
+  }
+
+  // Calculate distance to a location
+  const getDistanceToLocation = (locationName) => {
+    console.log('🔍 Getting distance for:', locationName)
+    console.log('👤 User location:', userLocation)
+    
+    // Try exact match first
+    let hasCoords = locationCoordinates.has(locationName)
+    let locationCoords = null
+    
+    if (hasCoords) {
+      locationCoords = locationCoordinates.get(locationName)
+    } else {
+      // Try with normalized name (remove spaces, lowercase, etc.)
+      const normalizedName = locationName.toLowerCase().trim()
+      for (const [key, value] of locationCoordinates.entries()) {
+        if (key.toLowerCase().trim() === normalizedName) {
+          locationCoords = value
+          hasCoords = true
+          console.log('📍 Found coordinates using normalized name matching:', key)
+          break
+        }
+      }
+    }
+    
+    console.log('🗺️ Has coordinates for location:', hasCoords)
+    
+    if (!userLocation || !hasCoords || !locationCoords) {
+      console.log('❌ Cannot calculate distance - missing data')
+      console.log('Available location names:', Array.from(locationCoordinates.keys()).slice(0, 5))
+      return null
+    }
+    
+    console.log('📍 Location coords:', locationCoords)
+    
+    const distance = calculateDistance(
+      userLocation.lat,
+      userLocation.lng,
+      locationCoords.lat,
+      locationCoords.lng
+    )
+    
+    console.log('📏 Calculated distance:', distance)
+    const formatted = formatDistance(distance)
+    console.log('✅ Formatted distance:', formatted)
+    
+    return formatted
+  }
+
   const formatTimestamp = (timestamp) => {
     return new Date(timestamp).toLocaleString('de-DE', {
       year: 'numeric',
@@ -286,6 +493,29 @@ function ResultsDisplay({ results }) {
       return 0
     })
   }
+
+  // Apply sorting - custom order only if enabled and user has set custom order
+  const sortedResults = useMemo(() => {
+    // Use custom order only if manual sorting is enabled, user is logged in, and has a custom order
+    if (user && token && manualSortingEnabled && customOrder && customOrder.length > 0) {
+      const sorted = [...filteredResults].sort((a, b) => {
+        const indexA = customOrder.indexOf(a.location_name)
+        const indexB = customOrder.indexOf(b.location_name)
+        
+        // If item is not in customOrder, put it at the end
+        if (indexA === -1 && indexB === -1) return 0
+        if (indexA === -1) return 1
+        if (indexB === -1) return -1
+        
+        return indexA - indexB
+      })
+      
+      return sorted
+    }
+    
+    // Default: always use occupancy-based sorting
+    return sortResultsByOccupancy(filteredResults)
+  }, [filteredResults, customOrder, user, token, manualSortingEnabled])
 
   // Export-Funktionen entfernt für Produktionsversion
 
@@ -572,9 +802,96 @@ function ResultsDisplay({ results }) {
           <div className="text-center">
             <h3 className="card-title mb-2" style={{ fontSize: '1.25rem' }}>{t('scrapingResults')}</h3>
             <p className="card-description" style={{ fontSize: '0.875rem' }}>
-              {filteredResults.length} von {results.length} {results.length !== 1 ? t('locationsAnalyzed').replace('{count}', 's') : t('locationsAnalyzed').replace('{count}', '')} 
+              {sortedResults.length} von {results.length} {results.length !== 1 ? t('locationsAnalyzed').replace('{count}', 's') : t('locationsAnalyzed').replace('{count}', '')} 
               {searchTerm ? t('locationsFiltered').replace('{count}', '') : ''}
             </p>
+
+            {/* Distance Feature Info */}
+            {!userLocation && !locationPermissionDenied && (
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem',
+                backgroundColor: 'rgba(104, 141, 177, 0.1)',
+                borderRadius: 'var(--radius)',
+                border: '1px solid rgba(104, 141, 177, 0.2)'
+              }}>
+                <div style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                  📍 {t('allowLocation') || 'Standort zulassen für Entfernungsanzeige'}
+                </div>
+                <button
+                  onClick={requestLocation}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    fontSize: '0.875rem',
+                    backgroundColor: 'var(--primary-color)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 'var(--radius)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.opacity = '0.8'}
+                  onMouseLeave={(e) => e.target.style.opacity = '1'}
+                >
+                  📍 Standort aktivieren
+                </button>
+              </div>
+            )}
+            
+            {/* Location permission denied */}
+            {locationPermissionDenied && (
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem',
+                backgroundColor: 'rgba(225, 97, 98, 0.1)',
+                borderRadius: 'var(--radius)',
+                border: '1px solid rgba(225, 97, 98, 0.2)',
+                fontSize: '0.875rem'
+              }}>
+                ❌ {t('locationNotAvailable') || 'Standort nicht verfügbar'} - Entfernungsanzeige deaktiviert
+              </div>
+            )}
+            
+            {/* Location active */}
+            {userLocation && (
+              <div style={{
+                marginTop: '1rem',
+                padding: '0.75rem',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                borderRadius: 'var(--radius)',
+                border: '1px solid rgba(34, 197, 94, 0.2)',
+                fontSize: '0.875rem'
+              }}>
+                ✅ Entfernungsanzeige aktiv
+              </div>
+            )}
+
+            {user && token && manualSortingEnabled && customOrder && (
+              <button 
+                onClick={resetSortOrder}
+                style={{
+                  marginTop: '0.5rem',
+                  padding: '0.25rem 0.75rem',
+                  fontSize: '0.75rem',
+                  backgroundColor: 'transparent',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius)',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'var(--background-darker)'
+                  e.target.style.color = 'var(--text-primary)'
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent'
+                  e.target.style.color = 'var(--text-secondary)'
+                }}
+              >
+                🔄 {t('resetSortOrder') || 'Sortierung zurücksetzen'}
+              </button>
+            )}
           </div>
           
           
@@ -598,17 +915,51 @@ function ResultsDisplay({ results }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {filteredResults.map((result, index) => (
+        {sortedResults.map((result, index) => (
           <div 
-            key={index} 
-            className="p-4"
+            key={result.location_name || index} 
+            className={`p-4 ${draggedIndex === index ? 'dragging' : ''} ${dragOverIndex === index ? 'drag-over' : ''}`}
+            draggable={user && token && manualSortingEnabled}
+            onDragStart={(e) => user && token && manualSortingEnabled && handleDragStart(e, index)}
+            onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
+            onDragEnter={(e) => handleDragEnter(e, index)}
+            onDrop={(e) => handleDrop(e, index)}
             style={{ 
               backgroundColor: 'var(--background-darker)', 
               borderRadius: 'var(--radius-lg)',
-              border: '1px solid rgba(209, 213, 219, 0.1)',
-              marginBottom: '1rem'
+              border: dragOverIndex === index ? '2px dashed var(--primary-color)' : '1px solid rgba(209, 213, 219, 0.1)',
+              marginBottom: '1rem',
+              opacity: draggedIndex === index ? 0.5 : 1,
+              transition: 'all 0.2s ease',
+              position: 'relative',
+              cursor: user && token && manualSortingEnabled ? 'move' : 'default'
             }}
           >
+            {/* Drag Handle */}
+            {user && token && manualSortingEnabled && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  cursor: 'grab',
+                  padding: '8px',
+                  opacity: 0.3,
+                  transition: 'opacity 0.2s',
+                  fontSize: '1.5rem',
+                  lineHeight: 1,
+                  userSelect: 'none'
+                }}
+                onMouseEnter={(e) => e.target.style.opacity = '0.7'}
+                onMouseLeave={(e) => e.target.style.opacity = '0.3'}
+                title={t('dragToReorder') || 'Ziehen zum Neuordnen'}
+              >
+                ⋮⋮
+              </div>
+            )}
+            
             {/* Mobile-optimized header */}
             <div className="flex flex-col gap-3 mb-4">
               <div className="flex justify-between items-start">
@@ -631,7 +982,13 @@ function ResultsDisplay({ results }) {
                 {result.address && (
                   <div className="flex items-start gap-2 text-secondary">
                     <span style={{ flexShrink: 0 }}>📍</span>
-                    <span style={{ lineHeight: '1.4' }}>{result.address}</span>
+                    <span style={{ lineHeight: '1.4' }}>
+                      {result.address.startsWith('+') ? result.address.substring(1) : result.address}
+                      {(() => {
+                        const distance = getDistanceToLocation(result.location_name)
+                        return distance ? ` • ${distance}` : ''
+                      })()}
+                    </span>
                   </div>
                 )}
                 
