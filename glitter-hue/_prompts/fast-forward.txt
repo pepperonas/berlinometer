@@ -1,3 +1,0 @@
-Füge weitere Funktionen hinzu (siehe features.md).
-Beachte auch die tree.txt - die Dateien / Funktionen,
-die dort enthalten sind, habe ich bereits.

@@ -1,0 +1,204 @@
+/* ===================================
+   ActionBar Component Styles
+   ================================ */
+
+.action-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: var(--background-darker);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.action-bar__container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  height: 60px;
+}
+
+/* ===================================
+   Hamburger Menu Button
+   ================================ */
+
+.action-bar__menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.action-bar__menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.action-bar__menu-button:active {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Hamburger Icon (3 lines) */
+.action-bar__hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 18px;
+}
+
+.action-bar__hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: var(--text-primary);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* ===================================
+   Brand / Logo
+   ================================ */
+
+.action-bar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: center;
+}
+
+.action-bar__logo {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.action-bar__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* ===================================
+   Login Button
+   ================================ */
+
+.action-bar__login-button {
+  min-width: 80px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  height: 44px;
+}
+
+.action-bar__login-text {
+  display: inline;
+}
+
+/* Spacer to keep brand centered when login button is hidden */
+.action-bar__spacer {
+  width: 44px;
+}
+
+/* ===================================
+   Responsive Design
+   ================================ */
+
+/* Small Devices (< 480px) */
+@media (max-width: 480px) {
+  .action-bar__container {
+    padding: 0.5rem 0.75rem;
+    height: 56px;
+  }
+
+  .action-bar__title {
+    font-size: 1.1rem;
+  }
+
+  .action-bar__logo {
+    font-size: 1.3rem;
+  }
+
+  .action-bar__login-button {
+    min-width: 70px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .action-bar__login-text {
+    display: inline; /* Always show on mobile */
+  }
+
+  .action-bar__menu-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .action-bar__spacer {
+    width: 40px;
+  }
+}
+
+/* Medium Devices (480px - 768px) */
+@media (min-width: 480px) and (max-width: 768px) {
+  .action-bar__title {
+    font-size: 1.2rem;
+  }
+}
+
+/* Large Devices (> 1200px) */
+@media (min-width: 1200px) {
+  .action-bar__container {
+    padding: 0.75rem 2rem;
+  }
+
+  .action-bar__title {
+    font-size: 1.35rem;
+  }
+}
+
+/* ===================================
+   Accessibility
+   ================================ */
+
+.action-bar__menu-button:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.action-bar__login-button:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .action-bar {
+    border-bottom-width: 2px;
+  }
+
+  .action-bar__hamburger span {
+    height: 3px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .action-bar__menu-button,
+  .action-bar__hamburger span {
+    transition: none;
+  }
+}

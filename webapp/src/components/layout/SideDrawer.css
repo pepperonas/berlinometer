@@ -1,0 +1,362 @@
+/* ===================================
+   SideDrawer Component Styles
+   ================================ */
+
+/* Backdrop */
+.side-drawer__backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Drawer Container */
+.side-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 1200;
+  width: 280px;
+  background-color: var(--background-darker);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.side-drawer__content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: 60px; /* Offset for ActionBar */
+}
+
+/* ===================================
+   User Header
+   ================================ */
+
+.side-drawer__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem 1rem;
+  background: linear-gradient(
+    135deg,
+    rgba(104, 141, 177, 0.1) 0%,
+    rgba(104, 141, 177, 0.05) 100%
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.side-drawer__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: var(--accent-blue);
+  color: white;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.side-drawer__user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.side-drawer__user-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side-drawer__user-email {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===================================
+   Navigation Items
+   ================================ */
+
+.side-drawer__nav {
+  flex: 1;
+  padding: 1rem 0;
+  overflow-y: auto;
+}
+
+.side-drawer__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.2s ease;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+
+.side-drawer__nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.side-drawer__nav-item:active {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.side-drawer__nav-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.side-drawer__nav-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* ===================================
+   Divider
+   ================================ */
+
+.side-drawer__divider {
+  height: 1px;
+  margin: 0.5rem 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ===================================
+   Theme Section
+   ================================ */
+
+.side-drawer__theme-section {
+  padding: 1rem 1rem 0.5rem;
+}
+
+.side-drawer__section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+/* ===================================
+   Social Links Section
+   ================================ */
+
+.side-drawer__social-section {
+  padding: 1rem 1rem 0.5rem;
+}
+
+.side-drawer__social-link {
+  text-decoration: none;
+  position: relative;
+}
+
+.side-drawer__social-link:hover {
+  background-color: rgba(104, 141, 177, 0.1);
+}
+
+.side-drawer__social-link .side-drawer__nav-icon svg {
+  display: block;
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+.side-drawer__social-link:hover .side-drawer__nav-icon svg {
+  color: var(--accent-blue);
+}
+
+.side-drawer__external-icon {
+  margin-left: auto;
+  font-size: 1rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.side-drawer__social-link:hover .side-drawer__external-icon {
+  opacity: 1;
+  color: var(--accent-blue);
+}
+
+/* ===================================
+   Footer (Logout)
+   ================================ */
+
+.side-drawer__footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.side-drawer__logout-button {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: 1px solid var(--accent-red);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  color: var(--accent-red);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.side-drawer__logout-button:hover {
+  background-color: rgba(225, 97, 98, 0.1);
+  border-color: var(--accent-red);
+}
+
+.side-drawer__logout-button:active {
+  background-color: rgba(225, 97, 98, 0.15);
+  transform: scale(0.98);
+}
+
+/* ===================================
+   Responsive Design
+   ================================ */
+
+/* Small Devices (< 480px) - Full Width */
+@media (max-width: 480px) {
+  .side-drawer {
+    width: 85%;
+    max-width: 320px;
+  }
+
+  .side-drawer__content {
+    padding-top: 56px; /* Match mobile ActionBar height */
+  }
+
+  .side-drawer__header {
+    padding: 1rem 0.875rem;
+  }
+
+  .side-drawer__nav-item {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .side-drawer__footer {
+    padding: 0.875rem;
+  }
+}
+
+/* Medium Devices (480px - 768px) */
+@media (min-width: 480px) and (max-width: 768px) {
+  .side-drawer {
+    width: 320px;
+  }
+}
+
+/* Large Devices (> 768px) */
+@media (min-width: 768px) {
+  .side-drawer {
+    width: 360px;
+  }
+}
+
+/* ===================================
+   Scrollbar Styling
+   ================================ */
+
+.side-drawer__nav::-webkit-scrollbar {
+  width: 8px;
+}
+
+.side-drawer__nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.side-drawer__nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.side-drawer__nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===================================
+   Accessibility
+   ================================ */
+
+.side-drawer__nav-item:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: -2px;
+}
+
+.side-drawer__logout-button:focus-visible {
+  outline: 2px solid var(--accent-red);
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .side-drawer {
+    border-left: 2px solid var(--text-primary);
+  }
+
+  .side-drawer__divider {
+    height: 2px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .side-drawer,
+  .side-drawer__backdrop {
+    animation: none;
+  }
+
+  .side-drawer__nav-item,
+  .side-drawer__logout-button {
+    transition: none;
+  }
+}
