@@ -389,28 +389,19 @@ function ResultsDisplay({ results, user, token }) {
     return <span className="status status-success">📊 {t('historical')}</span>
   }
 
-  const parseOccupancyLevel = (occupancyText) => {
-    if (!occupancyText) return null
-    
-    // Extract percentage or level indicators from text
-    const percentMatch = occupancyText.match(/(\d+)\s*%/)
-    if (percentMatch) {
-      return parseInt(percentMatch[1])
-    }
-    
-    // Check for German keywords indicating occupancy levels
-    const text = occupancyText.toLowerCase()
-    if (text.includes('sehr beliebt') || text.includes('sehr voll') || text.includes('überfüllt')) {
-      return 90 // Very busy
-    } else if (text.includes('beliebt') || text.includes('voll') || text.includes('geschäftig')) {
-      return 70 // Busy
-    } else if (text.includes('mäßig') || text.includes('mittlerweile') || text.includes('normal')) {
-      return 50 // Moderate
-    } else if (text.includes('ruhig') || text.includes('wenig') || text.includes('leer')) {
-      return 20 // Quiet
-    }
-    
-    return null
+  // Clean address from unwanted Unicode characters
+  const cleanAddress = (address) => {
+    if (!address) return address
+    return address
+      .replace(/◉/g, '')
+      .replace(/\ue8b5/g, '') // Remove clock icon
+      .replace(/\ue5cf/g, '') // Remove clock icon
+      .replace(/\u22c5/g, '') // Remove bullet
+      .replace(/[\u2000-\u206F]/g, '') // Remove general punctuation
+      .replace(/[\u2E00-\u2E7F]/g, '') // Remove supplemental punctuation
+      .replace(/[\uFE00-\uFE0F]/g, '') // Remove variation selectors
+      .replace(/[\uE000-\uF8FF]/g, '') // Remove private use area characters
+      .trim()
   }
 
   const extractPercentageValues = (occupancyText) => {
@@ -935,7 +926,7 @@ function ResultsDisplay({ results, user, token }) {
             '<div class="meta-info">' +
               '<div class="meta-item">' +
                 '<span class="meta-label">📍 Adresse:</span>' +
-                '<span>' + location.address + '</span>' +
+                '<span>' + cleanAddress(location.address) + '</span>' +
               '</div>' +
               '<div class="meta-item">' +
                 '<span class="meta-label">⭐ Bewertung:</span>' +
@@ -1371,7 +1362,7 @@ function ResultsDisplay({ results, user, token }) {
                   <div className="flex items-start gap-2 text-secondary">
                     <span style={{ flexShrink: 0 }}>📍</span>
                     <span style={{ lineHeight: '1.4' }}>
-                      {result.address.startsWith('+') ? result.address.substring(1) : result.address}
+                      {cleanAddress(result.address.startsWith('+') ? result.address.substring(1) : result.address)}
                       {(() => {
                         const distance = getDistanceToLocation(result.location_name, result.url)
                         return distance ? ` • ${distance}` : ''
