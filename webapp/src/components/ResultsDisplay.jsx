@@ -351,14 +351,32 @@ function ResultsDisplay({ results, user, token }) {
   }
 
   const formatTimestamp = (timestamp) => {
-    return new Date(timestamp).toLocaleString('de-DE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    })
+    const now = new Date()
+    const time = new Date(timestamp)
+    const diffMs = now - time
+    const diffSeconds = Math.floor(diffMs / 1000)
+    const diffMinutes = Math.floor(diffSeconds / 60)
+    const diffHours = Math.floor(diffMinutes / 60)
+    const diffDays = Math.floor(diffHours / 24)
+    const diffWeeks = Math.floor(diffDays / 7)
+    const diffMonths = Math.floor(diffDays / 30)
+    const diffYears = Math.floor(diffDays / 365)
+
+    if (diffSeconds < 60) {
+      return 'vor weniger als einer Minute'
+    } else if (diffMinutes < 60) {
+      return `vor ${diffMinutes} ${diffMinutes === 1 ? 'Minute' : 'Minuten'}`
+    } else if (diffHours < 24) {
+      return `vor ${diffHours} ${diffHours === 1 ? 'Stunde' : 'Stunden'}`
+    } else if (diffDays < 7) {
+      return `vor ${diffDays} ${diffDays === 1 ? 'Tag' : 'Tagen'}`
+    } else if (diffWeeks < 4) {
+      return `vor ${diffWeeks} ${diffWeeks === 1 ? 'Woche' : 'Wochen'}`
+    } else if (diffMonths < 12) {
+      return `vor ${diffMonths} ${diffMonths === 1 ? 'Monat' : 'Monaten'}`
+    } else {
+      return `vor ${diffYears} ${diffYears === 1 ? 'Jahr' : 'Jahren'}`
+    }
   }
 
   const getOccupancyStatus = (occupancy, isLive) => {
@@ -1434,11 +1452,6 @@ function ResultsDisplay({ results, user, token }) {
                 <div className="text-sm mb-2">
                   {translateOccupancyText(result.live_occupancy)}
                 </div>
-                {result.is_live_data && (
-                  <div className="text-xs text-secondary">
-                    {t('realtimeData')}
-                  </div>
-                )}
               </div>
             ) : (
               <div 
