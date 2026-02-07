@@ -1616,6 +1616,7 @@ CORS(app)
 
 # JWT Configuration
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'popular-times-secret-key-change-in-production')
+app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID', '414227852820-74ebk6vis2alnr2q92hgr482d6f4pcbu.apps.googleusercontent.com')
 
 # MySQL Connection Pool
 try:
@@ -1636,6 +1637,25 @@ try:
         **db_config
     )
     logger.info("✅ MySQL connection pool created successfully")
+
+    # Ensure google_id column exists in users table
+    try:
+        _conn = db_pool.get_connection()
+        _cursor = _conn.cursor()
+        _cursor.execute("""
+            SELECT COUNT(*) FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = 'users' AND COLUMN_NAME = 'google_id'
+        """, (db_config['database'],))
+        if _cursor.fetchone()[0] == 0:
+            _cursor.execute("ALTER TABLE users ADD COLUMN google_id VARCHAR(255) DEFAULT NULL")
+            _cursor.execute("CREATE INDEX idx_users_google_id ON users (google_id)")
+            _conn.commit()
+            logger.info("✅ Added google_id column to users table")
+        _cursor.close()
+        _conn.close()
+    except Exception as migration_err:
+        logger.warning(f"⚠️ google_id migration check: {migration_err}")
+
 except Exception as e:
     logger.error(f"❌ Failed to create MySQL connection pool: {e}")
     db_pool = None
@@ -3225,6 +3245,114 @@ def login():
     except Exception as e:
         logger.error(f"Login error: {e}")
         return jsonify({'error': 'Login failed'}), 500
+
+@app.route('/auth/google', methods=['POST'])
+def google_login():
+    """Google OAuth login/register endpoint"""
+    try:
+        data = request.get_json()
+        if not data or not data.get('credential'):
+            return jsonify({'error': 'No credential provided'}), 400
+
+        credential = data['credential']
+
+        # Verify Google ID token via Google's tokeninfo endpoint
+        google_response = requests.get(
+            f'https://oauth2.googleapis.com/tokeninfo?id_token={credential}',
+            timeout=10
+        )
+
+        if google_response.status_code != 200:
+            logger.warning(f"Google token verification failed: {google_response.status_code}")
+            return jsonify({'error': 'Invalid Google token'}), 401
+
+        google_data = google_response.json()
+
+        # Verify the token was issued for our client ID
+        if google_data.get('aud') != app.config['GOOGLE_CLIENT_ID']:
+            logger.warning(f"Google token audience mismatch: {google_data.get('aud')}")
+            return jsonify({'error': 'Invalid token audience'}), 401
+
+        google_id = google_data.get('sub')
+        email = google_data.get('email')
+        name = google_data.get('name', email.split('@')[0] if email else 'Google User')
+
+        if not email or not google_id:
+            return jsonify({'error': 'Could not retrieve email from Google'}), 400
+
+        if not db_pool:
+            return jsonify({'error': 'Database connection not available'}), 500
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Check if user exists by google_id
+            cursor.execute("SELECT id, username, is_active FROM users WHERE google_id = %s", (google_id,))
+            user = cursor.fetchone()
+
+            if user:
+                user_id, username, is_active = user
+                if not is_active:
+                    return jsonify({'error': 'Account not activated. Please contact admin.'}), 403
+
+                # Update last login
+                cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user_id,))
+                conn.commit()
+            else:
+                # Check if user exists by email (link Google to existing account)
+                cursor.execute("SELECT id, username, is_active FROM users WHERE email = %s", (email,))
+                existing = cursor.fetchone()
+
+                if existing:
+                    user_id, username, is_active = existing
+                    # Link Google ID to existing account
+                    cursor.execute("UPDATE users SET google_id = %s, last_login = NOW() WHERE id = %s", (google_id, user_id))
+                    conn.commit()
+                else:
+                    # Create new user
+                    # Generate a unique username from the name
+                    base_username = re.sub(r'[^a-zA-Z0-9]', '', name)[:20] or 'user'
+                    username = base_username
+                    suffix = 1
+                    while True:
+                        cursor.execute("SELECT id FROM users WHERE username = %s", (username,))
+                        if not cursor.fetchone():
+                            break
+                        username = f"{base_username}{suffix}"
+                        suffix += 1
+
+                    # Create user with a random password hash (they'll use Google to log in)
+                    random_pw = bcrypt.hashpw(os.urandom(32), bcrypt.gensalt()).decode('utf-8')
+                    cursor.execute(
+                        "INSERT INTO users (username, email, password_hash, google_id, is_active) VALUES (%s, %s, %s, %s, 1)",
+                        (username, email, random_pw, google_id)
+                    )
+                    conn.commit()
+                    user_id = cursor.lastrowid
+
+            # Generate JWT token
+            token = generate_jwt_token(user_id, username)
+
+            return jsonify({
+                'message': 'Google login successful',
+                'token': token,
+                'user': {
+                    'id': user_id,
+                    'username': username
+                }
+            }), 200
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    except requests.exceptions.Timeout:
+        logger.error("Google token verification timed out")
+        return jsonify({'error': 'Google verification timeout'}), 504
+    except Exception as e:
+        logger.error(f"Google login error: {e}")
+        return jsonify({'error': 'Google login failed'}), 500
 
 @app.route('/auth/profile', methods=['GET'])
 @token_required
