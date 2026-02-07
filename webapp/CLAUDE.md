@@ -52,7 +52,7 @@ This script:
 Application is wrapped in multiple context providers in this order:
 1. **GoogleOAuthProvider**: Google authentication (requires VITE_GOOGLE_CLIENT_ID)
 2. **LanguageProvider**: i18n support (German/English)
-3. **ThemeProvider**: Dark/Light theme system
+3. **ThemeProvider**: Dark/Light/Berlin theme system
 4. **AuthProvider**: User authentication and JWT token management
 
 ### Routing Structure
@@ -82,7 +82,7 @@ Application is wrapped in multiple context providers in this order:
 
 **Global State** (React Context):
 - `AuthContext`: User authentication, token, login/logout
-- `ThemeContext`: Theme selection (dark/light) with localStorage persistence
+- `ThemeContext`: Theme selection (dark/light/berlin) with localStorage persistence
 - `LanguageContext`: i18n translations (de/en)
 
 **Local State**: Component-level useState for UI state

@@ -12,12 +12,14 @@ export const useTheme = () => {
 
 export const THEMES = {
   DARK: 'dark',
-  LIGHT: 'light'
+  LIGHT: 'light',
+  BERLIN: 'berlin'
 };
 
 export const THEME_NAMES = {
   [THEMES.DARK]: 'Dunkel',
-  [THEMES.LIGHT]: 'Hell'
+  [THEMES.LIGHT]: 'Hell',
+  [THEMES.BERLIN]: 'Berlin'
 };
 
 // Theme configurations
@@ -62,6 +64,27 @@ const themeConfig = {
       'input-bg': '#F9FAFB',
       'primary-color': '#3B82F6',
       'hover-bg': '#F3F4F6'
+    }
+  },
+  [THEMES.BERLIN]: {
+    name: 'Berlin',
+    description: 'Urbanes Berlin-Theme',
+    cssClass: 'theme-berlin',
+    colors: {
+      'background-dark': '#1A1D26',
+      'background-darker': '#151821',
+      'card-background': '#242836',
+      'accent-blue': '#F0C040',
+      'accent-green': '#7EC8A0',
+      'accent-red': '#E85D5D',
+      'text-primary': '#E8E6E1',
+      'text-secondary': '#8B8FA3',
+      'card-bg': '#242836',
+      'border-color': '#363B4E',
+      'text-color': '#E8E6E1',
+      'input-bg': '#2A2F3E',
+      'primary-color': '#F0C040',
+      'hover-bg': '#303548'
     }
   }
 };

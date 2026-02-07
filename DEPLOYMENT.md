@@ -285,6 +285,6 @@ If deployment causes critical issues:
 
 - Backups are stored in: `/var/www/html/popular-times/deployment-backups/`
 - Old backups are automatically cleaned (keeps last 10)
-- Scraping runs every 20-30 minutes (randomized)
+- Scraping runs every 10-13 minutes (randomized)
 - Python server runs 24/7 via long-running process
 - Nginx handles routing between frontend and backend

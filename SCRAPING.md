@@ -82,10 +82,10 @@ Diese Dokumentation beschreibt die Architektur, Funktionsweise und Best Practice
 
 ```bash
 #!/bin/bash
-# Randomisierte Intervalle: 20-30 Minuten
+# Randomisierte Intervalle: 10-13 Minuten
 
-MIN_DELAY=$((20 * 60))  # 20 Minuten in Sekunden
-MAX_DELAY=$((30 * 60))  # 30 Minuten in Sekunden
+MIN_DELAY=$((10 * 60))  # 10 Minuten in Sekunden
+MAX_DELAY=$((13 * 60))  # 13 Minuten in Sekunden
 RANDOM_DELAY=$((MIN_DELAY + RANDOM % (MAX_DELAY - MIN_DELAY)))
 
 # Führe Scraper aus
@@ -460,7 +460,7 @@ Das `schedule_scraper.sh` modifiziert seinen eigenen Cron-Eintrag für randomisi
 crontab -l | grep -v "schedule_scraper.sh" > /tmp/cron_temp
 
 # 2. Neuen Eintrag mit randomisierter Zeit hinzufügen
-RANDOM_MINUTES=$((20 + RANDOM % 11))  # 20-30 Minuten
+RANDOM_MINUTES=$((10 + RANDOM % 4))  # 10-13 Minuten
 NEXT_RUN=$(date -d "+${RANDOM_MINUTES} minutes" "+%M %H %d %m *")
 echo "$NEXT_RUN /var/www/html/popular-times/schedule_scraper.sh" >> /tmp/cron_temp
 

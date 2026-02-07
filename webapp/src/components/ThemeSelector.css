@@ -81,6 +81,11 @@
   pointer-events: none;
 }
 
+.theme-berlin .preview-circle {
+  background: linear-gradient(45deg, #F0C040, #7EC8A0);
+  border-color: #363B4E;
+}
+
 .theme-info {
   flex: 1;
 }

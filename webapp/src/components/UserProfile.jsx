@@ -23,7 +23,8 @@ const UserProfile = ({ user, token, onLogout, onClose, isOpen }) => {
   const getThemeName = (themeKey) => {
     const themeNameMap = {
       'dark': t('themeDark'),
-      'light': t('themeLight')
+      'light': t('themeLight'),
+      'berlin': t('themeBerlin')
     };
     return themeNameMap[themeKey] || themeKey;
   };
@@ -31,7 +32,8 @@ const UserProfile = ({ user, token, onLogout, onClose, isOpen }) => {
   const getThemeDescription = (themeKey) => {
     const themeDescMap = {
       'dark': t('themeDarkDesc'),
-      'light': t('themeLightDesc')
+      'light': t('themeLightDesc'),
+      'berlin': t('themeBerlinDesc')
     };
     return themeDescMap[themeKey] || '';
   };
@@ -374,6 +376,8 @@ const UserProfile = ({ user, token, onLogout, onClose, isOpen }) => {
                     style={{
                       background: themeKey === 'light'
                         ? 'linear-gradient(45deg, #3B82F6, #10B981)'
+                        : themeKey === 'berlin'
+                        ? 'linear-gradient(45deg, #F0C040, #7EC8A0)'
                         : 'linear-gradient(45deg, #688db1, #9cb68f)'
                     }}
                   ></div>

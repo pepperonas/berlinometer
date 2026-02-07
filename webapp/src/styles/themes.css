@@ -56,6 +56,74 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
 
+/* ==================== BERLIN THEME ==================== */
+.theme-berlin {
+  --transition-smooth: all 0.3s ease-in-out;
+  background: var(--background-dark) !important;
+  color: var(--text-primary) !important;
+}
+
+.theme-berlin body {
+  background: linear-gradient(180deg, #1A1D26 0%, #151821 100%);
+  color: var(--text-primary);
+}
+
+/* Berlin cards - industrial style with sharp edges */
+.theme-berlin .card,
+.theme-berlin [style*="background: var(--card-bg)"],
+.theme-berlin [style*="background-color: var(--card-bg)"] {
+  background: #242836 !important;
+  border: 1px solid #363B4E !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 4px !important;
+}
+
+/* Berlin buttons - BVG-Gelb accent */
+.theme-berlin button {
+  transition: var(--transition-smooth);
+}
+
+.theme-berlin button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(240, 192, 64, 0.2);
+}
+
+/* Berlin form inputs */
+.theme-berlin input,
+.theme-berlin select,
+.theme-berlin textarea {
+  background: var(--input-bg) !important;
+  border: 1px solid #363B4E !important;
+  color: var(--text-primary) !important;
+  border-radius: 4px !important;
+}
+
+.theme-berlin input:focus,
+.theme-berlin select:focus,
+.theme-berlin textarea:focus {
+  border-color: #F0C040 !important;
+  box-shadow: 0 0 0 2px rgba(240, 192, 64, 0.15) !important;
+}
+
+/* Berlin scrollbar */
+.theme-berlin ::-webkit-scrollbar {
+  width: 8px;
+  background: #1A1D26;
+}
+
+.theme-berlin ::-webkit-scrollbar-track {
+  background: #1A1D26;
+}
+
+.theme-berlin ::-webkit-scrollbar-thumb {
+  background: #363B4E;
+  border-radius: 4px;
+}
+
+.theme-berlin ::-webkit-scrollbar-thumb:hover {
+  background: #F0C040;
+}
+
 /* ==================== NEWSPAPER THEME ==================== */
 .theme-newspaper {
   --transition-smooth: all 0.2s ease;
