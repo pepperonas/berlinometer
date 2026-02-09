@@ -1,14 +1,14 @@
 {
-  "name": "popular-times",
+  "name": "berlinometer",
   "version": "2.7.3",
-  "description": "A modern web application for analyzing Google Maps location occupancy data in real-time",
-  "homepage": "https://github.com/pepperonas/popular-times#readme",
+  "description": "Real-time occupancy tracker for Berlin's bars and clubs",
+  "homepage": "https://github.com/pepperonas/berlinometer#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pepperonas/popular-times.git"
+    "url": "https://github.com/pepperonas/berlinometer.git"
   },
   "bugs": {
-    "url": "https://github.com/pepperonas/popular-times/issues"
+    "url": "https://github.com/pepperonas/berlinometer/issues"
   },
   "author": {
     "name": "Martin Pfeffer",
@@ -23,15 +23,18 @@
     "react",
     "analytics",
     "foot-traffic",
-    "popular-times",
-    "business-intelligence"
+    "berlinometer",
+    "berlin",
+    "nightlife"
   ],
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.2",
@@ -45,6 +48,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.29.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
@@ -52,6 +57,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
-    "vite": "^7.0.0"
+    "jsdom": "^28.0.0",
+    "vite": "^7.0.0",
+    "vitest": "^4.0.18"
   }
 }
