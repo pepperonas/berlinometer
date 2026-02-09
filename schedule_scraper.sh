@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# Script zur Planung des nächsten Scraper-Laufs mit randomisierter Zeit (10-13 Min)
+# DEPRECATED: Wird durch scraper-loop.sh (PM2) ersetzt
+# Script zur Planung des nächsten Scraper-Laufs mit randomisierter Zeit (7-12 Min)
 # Dieses Script entfernt sich selbst aus dem Cron und plant den nächsten Lauf
 
-# Generiere zufällige Verzögerung zwischen 10-13 Minuten (in Sekunden)
-MIN_DELAY=$((10 * 60))  # 10 Minuten in Sekunden
-MAX_DELAY=$((13 * 60))  # 13 Minuten in Sekunden
+# Generiere zufällige Verzögerung zwischen 7-12 Minuten (in Sekunden)
+MIN_DELAY=$((7 * 60))   # 7 Minuten in Sekunden
+MAX_DELAY=$((12 * 60))  # 12 Minuten in Sekunden
 RANDOM_DELAY=$((MIN_DELAY + RANDOM % (MAX_DELAY - MIN_DELAY)))
 
 echo "$(date): Nächster Scraper-Lauf in $((RANDOM_DELAY / 60)) Minuten" >> /var/log/scraper.log

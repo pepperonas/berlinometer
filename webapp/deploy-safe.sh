@@ -216,7 +216,7 @@ echo -e "${GREEN}✅ Backend files untouched${NC}"
 echo -e "${GREEN}✅ Backup available at: $BACKUP_DIR/frontend-$TIMESTAMP${NC}"
 echo -e "${GREEN}✅ Website verified: https://berlinometer.de${NC}"
 echo ""
-echo -e "${BLUE}Next scraping in 10-13 minutes (automatic)${NC}"
+echo -e "${BLUE}Next scraping in 7-12 minutes (automatic)${NC}"
 echo ""
 
 # Display rollback command

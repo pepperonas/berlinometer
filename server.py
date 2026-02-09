@@ -2431,7 +2431,7 @@ def scrape_locations():
     """Endpoint disabled - only automatic scraping is allowed"""
     return jsonify({
         'success': False,
-        'error': 'Manual scraping has been disabled. Locations are automatically scraped every 10-13 minutes.',
+        'error': 'Manual scraping has been disabled. Locations are automatically scraped every 7-12 minutes.',
         'message': 'Please use the latest-scraping endpoint to get current results.'
     }), 403
 
@@ -2578,7 +2578,7 @@ def find_locations():
     """Endpoint disabled - only automatic scraping is allowed"""
     return jsonify({
         'success': False,
-        'error': 'Manual location finding has been disabled. Locations are automatically scraped every 10-13 minutes.',
+        'error': 'Manual location finding has been disabled. Locations are automatically scraped every 7-12 minutes.',
         'message': 'Please use your saved locations or contact admin to add new locations to the automatic scraping.'
     }), 403
 
