@@ -287,7 +287,7 @@ Das Admin Panel (`/admin`) bietet rollenbasierten Zugang für Admins und Locatio
 | `OccupancyTimeline` | Zeitverlauf der Auslastung als Liniendiagramm (Recharts) |
 | `OccupancyHeatmap` | Wochentag x Stunde Heatmap mit Farbskala (gruen bis rot) |
 | `PeakHoursChart` | Durchschnittliche Auslastung pro Stunde als Balkendiagramm |
-| `LocationComparison` | Vergleich von bis zu 5 Locations: Suchfeld zum Filtern, alle Locations als Chips (kein Limit), ausgewaehlte Chips bleiben oben gepinnt, scrollbare Chip-Liste (max 200px), Radar-Chart + Vergleichstabelle |
+| `LocationComparison` | Vergleich von bis zu 5 Locations: Suchfeld zum Filtern, alle Locations als Chips (kein Limit), ausgewaehlte Chips bleiben oben gepinnt, scrollbare Chip-Liste (max 200px), Radar-Chart (14:00-05:00) + Vergleichstabelle |
 
 **Layout:**
 
@@ -306,6 +306,28 @@ Das Admin Panel (`/admin`) bietet rollenbasierten Zugang für Admins und Locatio
 ```
 
 Das Layout ist Single-Column - der LocationSelector sitzt kompakt im Header-Bereich neben den TimeRange-Buttons statt in einer separaten Sidebar.
+
+**Bar-freundliche Stundenbetrachtung:**
+
+Berlinometer ist auf das Berliner Nachtleben ausgerichtet. Die Charts beruecksichtigen, dass Bars und Clubs ihren Betrieb ueber Mitternacht hinaus fuehren:
+
+- **Radar-Chart (Location-Vergleich):** Zeigt den Zeitraum **14:00 bis 05:00** statt der ueblichen 0:00-23:00 oder 6:00-23:00 Darstellung. Die Achse verlaeuft im Uhrzeigersinn von Nachmittag ueber den Abend und die Nacht bis in die fruehen Morgenstunden. So wird die gesamte "Ausgehzeit" auf einen Blick sichtbar, ohne dass die relevantesten Stunden (23:00-04:00) am Rand abgeschnitten werden.
+- **Heatmap & Peak Hours:** Zeigen alle 24 Stunden, da hier die Tagesstruktur (Wochentag x Stunde) im Vordergrund steht.
+- **Timeline:** Zeigt den chronologischen Verlauf ueber den gewaehlten Zeitraum (7/30/90 Tage) mit allen Datenpunkten.
+
+**Oeffnungszeiten:**
+
+Die Oeffnungszeiten werden pro Location in der `opening_hours_history`-Tabelle gespeichert und im Analytics-Bereich unterhalb der Charts angezeigt. Die Datenstruktur unterstuetzt:
+
+| Feld | Beschreibung |
+|------|-------------|
+| `weekday` | Wochentag (0=Sonntag, 1=Montag, ..., 6=Samstag) |
+| `open_time` | Oeffnungszeit (z.B. `18:00`) |
+| `close_time` | Schliesszeit (z.B. `05:00` fuer Bars mit Nachtbetrieb) |
+| `is_closed` | Location an diesem Tag geschlossen |
+| `is_24h` | 24-Stunden-Betrieb |
+
+Eine `close_time` die kleiner als die `open_time` ist (z.B. `open: 20:00, close: 05:00`) bedeutet, dass die Location ueber Mitternacht hinaus geoeffnet ist - typisch fuer Berliner Bars und Clubs. Die Anzeige im Frontend unterscheidet automatisch zwischen geschlossen, 24h-Betrieb und regulaeren Oeffnungszeiten mit Zeitspanne.
 
 **Zeitzonen:** Alle Zeitangaben in den Charts beziehen sich auf die Berliner Zeitzone (Europe/Berlin), da der VPS auf CET/CEST konfiguriert ist. Die Timeline nutzt `toLocaleString('de-DE')` des Browsers; Heatmap und Peak Hours verwenden die Server-Stunden direkt.
 

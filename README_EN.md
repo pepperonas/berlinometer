@@ -287,7 +287,7 @@ The admin panel (`/admin`) provides role-based access for admins and location ow
 | `OccupancyTimeline` | Occupancy over time as line chart (Recharts) |
 | `OccupancyHeatmap` | Weekday x hour heatmap with color scale (green to red) |
 | `PeakHoursChart` | Average occupancy per hour as bar chart |
-| `LocationComparison` | Compare up to 5 locations: search field for filtering, all locations as chips (no limit), selected chips pinned at top, scrollable chip list (max 200px), radar chart + comparison table |
+| `LocationComparison` | Compare up to 5 locations: search field for filtering, all locations as chips (no limit), selected chips pinned at top, scrollable chip list (max 200px), radar chart (14:00-05:00) + comparison table |
 
 **Layout:**
 
@@ -306,6 +306,28 @@ The admin panel (`/admin`) provides role-based access for admins and location ow
 ```
 
 The layout is single-column - the LocationSelector sits compactly in the header area next to the time range buttons instead of in a separate sidebar.
+
+**Bar-friendly hour ranges:**
+
+Berlinometer is designed for Berlin's nightlife scene. The charts account for the fact that bars and clubs operate well past midnight:
+
+- **Radar chart (location comparison):** Displays the range **14:00 to 05:00** instead of the conventional 0:00-23:00 or 6:00-23:00 view. The axis runs clockwise from afternoon through evening and night into the early morning hours. This makes the entire "going-out window" visible at a glance, without cutting off the most relevant hours (23:00-04:00) at the edges.
+- **Heatmap & peak hours:** Show all 24 hours, as the focus here is on the daily structure (weekday x hour).
+- **Timeline:** Shows the chronological progression over the selected period (7/30/90 days) with all data points.
+
+**Opening hours:**
+
+Opening hours are stored per location in the `opening_hours_history` table and displayed in the analytics section below the charts. The data structure supports:
+
+| Field | Description |
+|-------|------------|
+| `weekday` | Day of week (0=Sunday, 1=Monday, ..., 6=Saturday) |
+| `open_time` | Opening time (e.g., `18:00`) |
+| `close_time` | Closing time (e.g., `05:00` for late-night venues) |
+| `is_closed` | Location closed on this day |
+| `is_24h` | 24-hour operation |
+
+A `close_time` that is earlier than `open_time` (e.g., `open: 20:00, close: 05:00`) indicates the venue operates past midnight - typical for Berlin's bars and clubs. The frontend display automatically distinguishes between closed, 24h operation, and regular opening hours with time ranges.
 
 **Timezones:** All times in the charts refer to the Berlin timezone (Europe/Berlin), as the VPS is configured to CET/CEST. The timeline uses the browser's `toLocaleString('de-DE')`; heatmap and peak hours use server hours directly.
 
