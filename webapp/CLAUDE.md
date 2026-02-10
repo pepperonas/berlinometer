@@ -301,7 +301,6 @@ webapp/
 
 ## Related Documentation
 
+- **Full Documentation**: See `../README.md` (comprehensive project docs including scraping, deployment, architecture)
 - **Backend & Full System**: See `../CLAUDE.md` in parent directory
-- **Deployment Details**: See `../DEPLOYMENT.md`
 - **API Documentation**: See backend `server.py` docstrings
-- **Scraping System**: See `../SCRAPING-SYSTEM.md`
