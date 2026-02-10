@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
         const userInfo = JSON.parse(storedUser);
         setToken(storedToken);
         setUser(userInfo);
-        
+
         // Verify token is still valid by making a profile request
         verifyToken(storedToken);
       } catch (error) {
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem('user_info');
       }
     }
-    
+
     setLoading(false);
   }, []);
 
@@ -51,6 +51,14 @@ export const AuthProvider = ({ children }) => {
       if (!response.ok) {
         // Token is invalid or expired
         logout();
+      } else {
+        // Update user state with latest data from server (includes role, email)
+        const data = await response.json();
+        if (data.user) {
+          const updatedUser = { ...data.user };
+          setUser(updatedUser);
+          localStorage.setItem('user_info', JSON.stringify(updatedUser));
+        }
       }
     } catch (error) {
       console.error('Token verification error:', error);
@@ -76,6 +84,18 @@ export const AuthProvider = ({ children }) => {
     return !!(user && token);
   };
 
+  const isAdmin = () => {
+    return user?.role === 'admin';
+  };
+
+  const isLocationOwner = () => {
+    return user?.role === 'location_owner';
+  };
+
+  const canAccessAdmin = () => {
+    return user?.role === 'admin' || user?.role === 'location_owner';
+  };
+
   const getAuthHeaders = () => {
     if (!token) return {};
     return {
@@ -90,6 +110,9 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     isAuthenticated,
+    isAdmin,
+    isLocationOwner,
+    canAccessAdmin,
     getAuthHeaders
   };
 

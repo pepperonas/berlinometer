@@ -1656,6 +1656,56 @@ try:
     except Exception as migration_err:
         logger.warning(f"⚠️ google_id migration check: {migration_err}")
 
+    # Ensure role column exists in users table
+    try:
+        _conn = db_pool.get_connection()
+        _cursor = _conn.cursor()
+        _cursor.execute("""
+            SELECT COUNT(*) FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = 'users' AND COLUMN_NAME = 'role'
+        """, (db_config['database'],))
+        if _cursor.fetchone()[0] == 0:
+            _cursor.execute("ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user'")
+            _conn.commit()
+            logger.info("✅ Added role column to users table")
+        # Set admin role for martinpaush@gmail.com
+        _cursor.execute("UPDATE users SET role = 'admin' WHERE email = 'martinpaush@gmail.com' AND role = 'user'")
+        _conn.commit()
+        _cursor.close()
+        _conn.close()
+    except Exception as migration_err:
+        logger.warning(f"⚠️ role migration check: {migration_err}")
+
+    # Ensure location_owners table exists
+    try:
+        _conn = db_pool.get_connection()
+        _cursor = _conn.cursor()
+        _cursor.execute("""
+            SELECT COUNT(*) FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = 'location_owners'
+        """, (db_config['database'],))
+        if _cursor.fetchone()[0] == 0:
+            _cursor.execute("""
+                CREATE TABLE location_owners (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    location_id INT NOT NULL,
+                    granted_by INT NOT NULL,
+                    granted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    is_active BOOLEAN DEFAULT TRUE,
+                    FOREIGN KEY (user_id) REFERENCES users(id),
+                    FOREIGN KEY (location_id) REFERENCES locations(id),
+                    FOREIGN KEY (granted_by) REFERENCES users(id),
+                    UNIQUE KEY unique_owner_location (user_id, location_id)
+                )
+            """)
+            _conn.commit()
+            logger.info("✅ Created location_owners table")
+        _cursor.close()
+        _conn.close()
+    except Exception as migration_err:
+        logger.warning(f"⚠️ location_owners migration check: {migration_err}")
+
 except Exception as e:
     logger.error(f"❌ Failed to create MySQL connection pool: {e}")
     db_pool = None
@@ -1691,11 +1741,12 @@ def verify_password(password, password_hash):
     """Verify a password against its hash"""
     return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
 
-def generate_jwt_token(user_id, username):
+def generate_jwt_token(user_id, username, role='user'):
     """Generate JWT token for user"""
     payload = {
         'user_id': user_id,
         'username': username,
+        'role': role,
         'exp': datetime.utcnow() + timedelta(days=7)  # 7 days expiration
     }
     return jwt.encode(payload, app.config['JWT_SECRET_KEY'], algorithm='HS256')
@@ -1726,6 +1777,70 @@ def token_required(f):
             return jsonify({'error': 'Invalid or expired token'}), 401
         
         request.current_user = payload
+        return f(*args, **kwargs)
+    return decorated
+
+def admin_required(f):
+    """Decorator to require admin role"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'error': 'No token provided'}), 401
+        if token.startswith('Bearer '):
+            token = token[7:]
+        payload = verify_jwt_token(token)
+        if not payload:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+        # Check role from JWT or fetch from DB
+        role = payload.get('role')
+        if not role:
+            # Legacy token without role - fetch from DB
+            try:
+                conn = db_pool.get_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT role FROM users WHERE id = %s", (payload['user_id'],))
+                result = cursor.fetchone()
+                cursor.close()
+                conn.close()
+                role = result[0] if result else 'user'
+            except Exception:
+                role = 'user'
+        if role != 'admin':
+            return jsonify({'error': 'Admin access required'}), 403
+        request.current_user = payload
+        request.current_user['role'] = role
+        return f(*args, **kwargs)
+    return decorated
+
+def location_owner_or_admin_required(f):
+    """Decorator to require location_owner or admin role"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'error': 'No token provided'}), 401
+        if token.startswith('Bearer '):
+            token = token[7:]
+        payload = verify_jwt_token(token)
+        if not payload:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+        role = payload.get('role')
+        if not role:
+            try:
+                conn = db_pool.get_connection()
+                cursor = conn.cursor()
+                cursor.execute("SELECT role FROM users WHERE id = %s", (payload['user_id'],))
+                result = cursor.fetchone()
+                cursor.close()
+                conn.close()
+                role = result[0] if result else 'user'
+            except Exception:
+                role = 'user'
+        if role not in ('admin', 'location_owner'):
+            return jsonify({'error': 'Admin or location owner access required'}), 403
+        request.current_user = payload
+        request.current_user['role'] = role
         return f(*args, **kwargs)
     return decorated
 
@@ -3206,35 +3321,37 @@ def login():
         try:
             # Get user by username or email
             cursor.execute(
-                "SELECT id, username, password_hash, is_active FROM users WHERE username = %s OR email = %s",
+                "SELECT id, username, password_hash, is_active, email, role FROM users WHERE username = %s OR email = %s",
                 (username, username)
             )
             user = cursor.fetchone()
-            
+
             if not user:
                 return jsonify({'error': 'Invalid credentials'}), 401
-            
-            user_id, user_username, password_hash, is_active = user
-            
+
+            user_id, user_username, password_hash, is_active, user_email, user_role = user
+
             if not verify_password(password, password_hash):
                 return jsonify({'error': 'Invalid credentials'}), 401
-            
+
             if not is_active:
                 return jsonify({'error': 'Account not activated. Please contact admin.'}), 403
-            
+
             # Update last login
             cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user_id,))
             conn.commit()
-            
+
             # Generate JWT token
-            token = generate_jwt_token(user_id, user_username)
-            
+            token = generate_jwt_token(user_id, user_username, user_role or 'user')
+
             return jsonify({
                 'message': 'Login successful',
                 'token': token,
                 'user': {
                     'id': user_id,
-                    'username': user_username
+                    'username': user_username,
+                    'email': user_email,
+                    'role': user_role or 'user'
                 }
             }), 200
         
@@ -3331,15 +3448,22 @@ def google_login():
                     conn.commit()
                     user_id = cursor.lastrowid
 
+            # Fetch role for JWT
+            cursor.execute("SELECT role FROM users WHERE id = %s", (user_id,))
+            role_row = cursor.fetchone()
+            user_role = role_row[0] if role_row else 'user'
+
             # Generate JWT token
-            token = generate_jwt_token(user_id, username)
+            token = generate_jwt_token(user_id, username, user_role)
 
             return jsonify({
                 'message': 'Google login successful',
                 'token': token,
                 'user': {
                     'id': user_id,
-                    'username': username
+                    'username': username,
+                    'email': email,
+                    'role': user_role
                 }
             }), 200
 
@@ -3369,21 +3493,22 @@ def get_profile():
         
         try:
             cursor.execute(
-                "SELECT username, email, created_at, last_login FROM users WHERE id = %s",
+                "SELECT username, email, created_at, last_login, role FROM users WHERE id = %s",
                 (user_id,)
             )
             user = cursor.fetchone()
-            
+
             if not user:
                 return jsonify({'error': 'User not found'}), 404
-            
-            username, email, created_at, last_login = user
-            
+
+            username, email, created_at, last_login, role = user
+
             return jsonify({
                 'user': {
                     'id': user_id,
                     'username': username,
                     'email': email,
+                    'role': role or 'user',
                     'created_at': created_at.isoformat() if created_at else None,
                     'last_login': last_login.isoformat() if last_login else None
                 }
@@ -4499,6 +4624,707 @@ def track_map_click():
             cursor.close()
         if conn:
             conn.close()
+
+# ===== ADMIN ENDPOINTS =====
+
+@app.route('/admin/overview', methods=['GET'])
+@admin_required
+def admin_overview():
+    """Get admin overview metrics"""
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        now = datetime.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = today_start - timedelta(days=7)
+        two_weeks_ago = today_start - timedelta(days=14)
+        month_ago = today_start - timedelta(days=30)
+
+        metrics = {}
+
+        # Total locations
+        cursor.execute("SELECT COUNT(*) as count FROM locations")
+        metrics['totalLocations'] = cursor.fetchone()['count']
+
+        # Total data points
+        cursor.execute("SELECT COUNT(*) as count FROM occupancy_history")
+        metrics['totalDataPoints'] = cursor.fetchone()['count']
+
+        # Total users
+        cursor.execute("SELECT COUNT(*) as count FROM users")
+        metrics['totalUsers'] = cursor.fetchone()['count']
+
+        # Total map clicks
+        cursor.execute("SELECT COUNT(*) as count FROM map_clicks")
+        metrics['totalMapClicks'] = cursor.fetchone()['count']
+
+        # Users by role
+        cursor.execute("SELECT COALESCE(role, 'user') as role, COUNT(*) as count FROM users GROUP BY COALESCE(role, 'user')")
+        metrics['usersByRole'] = {row['role']: row['count'] for row in cursor.fetchall()}
+
+        # Active users today
+        cursor.execute("SELECT COUNT(*) as count FROM users WHERE DATE(last_login) = DATE(%s)", (today_start,))
+        metrics['activeUsersToday'] = cursor.fetchone()['count']
+
+        # Active users this week
+        cursor.execute("SELECT COUNT(*) as count FROM users WHERE last_login >= %s", (week_ago,))
+        metrics['activeUsersWeek'] = cursor.fetchone()['count']
+
+        # Scraping stats today
+        cursor.execute("SELECT COUNT(*) as count FROM occupancy_history WHERE DATE(timestamp) = DATE(%s)", (today_start,))
+        metrics['scrapingsToday'] = cursor.fetchone()['count']
+
+        # Scraping stats this week
+        cursor.execute("SELECT COUNT(*) as count FROM occupancy_history WHERE timestamp >= %s", (week_ago,))
+        metrics['scrapingsWeek'] = cursor.fetchone()['count']
+
+        # Scraping stats this month
+        cursor.execute("SELECT COUNT(*) as count FROM occupancy_history WHERE timestamp >= %s", (month_ago,))
+        metrics['scrapingsMonth'] = cursor.fetchone()['count']
+
+        # Live data quote (entries with occupancy_percent not null from today)
+        cursor.execute("""
+            SELECT
+                COUNT(*) as total,
+                SUM(CASE WHEN occupancy_percent IS NOT NULL AND occupancy_percent > 0 THEN 1 ELSE 0 END) as with_data
+            FROM occupancy_history WHERE DATE(timestamp) = DATE(%s)
+        """, (today_start,))
+        live_row = cursor.fetchone()
+        if live_row and live_row['total'] > 0:
+            metrics['liveDataQuote'] = round(live_row['with_data'] / live_row['total'] * 100, 1)
+        else:
+            metrics['liveDataQuote'] = 0
+
+        # Trend: this week vs last week scrapings
+        cursor.execute("SELECT COUNT(*) as count FROM occupancy_history WHERE timestamp >= %s AND timestamp < %s", (two_weeks_ago, week_ago))
+        last_week_count = cursor.fetchone()['count']
+        if last_week_count > 0:
+            metrics['weeklyTrend'] = round((metrics['scrapingsWeek'] - last_week_count) / last_week_count * 100, 1)
+        else:
+            metrics['weeklyTrend'] = 0
+
+        # Daily scrapings for chart (last 7 days)
+        cursor.execute("""
+            SELECT DATE(timestamp) as date, COUNT(*) as count
+            FROM occupancy_history
+            WHERE timestamp >= %s
+            GROUP BY DATE(timestamp)
+            ORDER BY date
+        """, (week_ago,))
+        metrics['dailyScrapings'] = [{'date': row['date'].isoformat(), 'count': row['count']} for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+        return jsonify(metrics), 200
+    except Exception as e:
+        logger.error(f"Admin overview error: {e}")
+        return jsonify({'error': 'Failed to fetch overview'}), 500
+
+
+@app.route('/admin/locations', methods=['GET'])
+@admin_required
+def admin_locations():
+    """Get all locations with aggregated stats"""
+    try:
+        sort_by = request.args.get('sort_by', 'name')
+        sort_dir = request.args.get('sort_dir', 'asc')
+        search = request.args.get('search', '')
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+            SELECT
+                l.id, l.name, l.address, l.rating,
+                COUNT(DISTINCT oh.id) as data_points,
+                ROUND(AVG(CASE WHEN oh.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN oh.occupancy_percent END), 1) as avg_occupancy_7d,
+                MAX(oh.timestamp) as last_scraping,
+                COALESCE(mc.click_count, 0) as map_clicks,
+                COALESCE(ul.save_count, 0) as user_saves
+            FROM locations l
+            LEFT JOIN occupancy_history oh ON l.id = oh.location_id
+            LEFT JOIN (
+                SELECT location_id, COUNT(*) as click_count FROM map_clicks GROUP BY location_id
+            ) mc ON l.id = mc.location_id
+            LEFT JOIN (
+                SELECT location_id, COUNT(*) as save_count FROM user_locations GROUP BY location_id
+            ) ul ON l.id = ul.location_id
+        """
+        params = []
+        if search:
+            query += " WHERE (l.name LIKE %s OR l.address LIKE %s)"
+            params.extend([f'%{search}%', f'%{search}%'])
+
+        query += " GROUP BY l.id, l.name, l.address, l.rating, mc.click_count, ul.save_count"
+
+        # Safe sort columns
+        safe_sorts = {
+            'name': 'l.name', 'rating': 'l.rating', 'data_points': 'data_points',
+            'avg_occupancy_7d': 'avg_occupancy_7d', 'last_scraping': 'last_scraping',
+            'map_clicks': 'map_clicks', 'user_saves': 'user_saves'
+        }
+        sort_col = safe_sorts.get(sort_by, 'l.name')
+        sort_direction = 'DESC' if sort_dir == 'desc' else 'ASC'
+        query += f" ORDER BY {sort_col} {sort_direction}"
+
+        cursor.execute(query, params)
+        locations = cursor.fetchall()
+
+        # Serialize datetime
+        for loc in locations:
+            if loc.get('last_scraping'):
+                loc['last_scraping'] = loc['last_scraping'].isoformat()
+
+        cursor.close()
+        conn.close()
+        return jsonify({'locations': locations}), 200
+    except Exception as e:
+        logger.error(f"Admin locations error: {e}")
+        return jsonify({'error': 'Failed to fetch locations'}), 500
+
+
+@app.route('/admin/locations/<int:location_id>/analytics', methods=['GET'])
+@location_owner_or_admin_required
+def admin_location_analytics(location_id):
+    """Deep analytics for a single location"""
+    try:
+        user_id = request.current_user['user_id']
+        role = request.current_user.get('role', 'user')
+        days = int(request.args.get('days', 30))
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Access control for location owners
+        if role == 'location_owner':
+            cursor.execute("SELECT id FROM location_owners WHERE user_id = %s AND location_id = %s AND is_active = 1", (user_id, location_id))
+            if not cursor.fetchone():
+                cursor.close()
+                conn.close()
+                return jsonify({'error': 'Access denied to this location'}), 403
+
+        start_date = datetime.now() - timedelta(days=days)
+        prev_start = start_date - timedelta(days=days)
+
+        # Location info
+        cursor.execute("SELECT id, name, address, rating, google_maps_url FROM locations WHERE id = %s", (location_id,))
+        location = cursor.fetchone()
+        if not location:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'Location not found'}), 404
+
+        # Timeline: occupancy over time
+        cursor.execute("""
+            SELECT timestamp, occupancy_percent, usual_percent
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s
+            ORDER BY timestamp
+        """, (location_id, start_date))
+        timeline = [{'timestamp': row['timestamp'].isoformat(), 'occupancy': row['occupancy_percent'], 'usual': row['usual_percent']} for row in cursor.fetchall()]
+
+        # Heatmap: weekday x hour matrix
+        cursor.execute("""
+            SELECT DAYOFWEEK(timestamp) as dow, HOUR(timestamp) as hour, ROUND(AVG(occupancy_percent), 1) as avg_occ
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s AND occupancy_percent IS NOT NULL
+            GROUP BY DAYOFWEEK(timestamp), HOUR(timestamp)
+        """, (location_id, start_date))
+        weekday_hourly = {}
+        for row in cursor.fetchall():
+            dow = row['dow']  # 1=Sunday, 2=Monday, ..., 7=Saturday
+            hour = row['hour']
+            if dow not in weekday_hourly:
+                weekday_hourly[dow] = {}
+            weekday_hourly[dow][hour] = row['avg_occ']
+
+        # Daily averages
+        cursor.execute("""
+            SELECT DAYOFWEEK(timestamp) as dow, ROUND(AVG(occupancy_percent), 1) as avg_occ
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s AND occupancy_percent IS NOT NULL
+            GROUP BY DAYOFWEEK(timestamp)
+            ORDER BY dow
+        """, (location_id, start_date))
+        daily_average = [{'dow': row['dow'], 'avg': row['avg_occ']} for row in cursor.fetchall()]
+
+        # Peak hours
+        cursor.execute("""
+            SELECT HOUR(timestamp) as hour, ROUND(AVG(occupancy_percent), 1) as avg_occ, COUNT(*) as count
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s AND occupancy_percent IS NOT NULL
+            GROUP BY HOUR(timestamp)
+            ORDER BY avg_occ DESC
+            LIMIT 10
+        """, (location_id, start_date))
+        peak_hours = [{'hour': row['hour'], 'avg': row['avg_occ'], 'count': row['count']} for row in cursor.fetchall()]
+
+        # Trend: this period vs previous period
+        cursor.execute("""
+            SELECT ROUND(AVG(occupancy_percent), 1) as avg_occ
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s AND timestamp < %s AND occupancy_percent IS NOT NULL
+        """, (location_id, start_date, datetime.now()))
+        current_avg = cursor.fetchone()['avg_occ'] or 0
+
+        cursor.execute("""
+            SELECT ROUND(AVG(occupancy_percent), 1) as avg_occ
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s AND timestamp < %s AND occupancy_percent IS NOT NULL
+        """, (location_id, prev_start, start_date))
+        prev_avg = cursor.fetchone()['avg_occ'] or 0
+
+        trend = {'current': current_avg, 'previous': prev_avg, 'change': round(current_avg - prev_avg, 1)}
+
+        # Map clicks for this location
+        cursor.execute("""
+            SELECT DATE(clicked_at) as date, COUNT(*) as count
+            FROM map_clicks
+            WHERE location_id = %s AND clicked_at >= %s
+            GROUP BY DATE(clicked_at)
+            ORDER BY date
+        """, (location_id, start_date))
+        map_clicks_daily = [{'date': row['date'].isoformat(), 'count': row['count']} for row in cursor.fetchall()]
+
+        cursor.execute("SELECT COUNT(*) as total FROM map_clicks WHERE location_id = %s", (location_id,))
+        map_clicks_total = cursor.fetchone()['total']
+
+        # Opening hours
+        cursor.execute("""
+            SELECT weekday, open_time, close_time, is_closed, is_24h
+            FROM opening_hours_history
+            WHERE location_id = %s AND is_active = 1
+            ORDER BY weekday
+        """, (location_id,))
+        opening_hours = [dict(row) for row in cursor.fetchall()]
+        for oh in opening_hours:
+            if oh.get('open_time'):
+                oh['open_time'] = str(oh['open_time'])
+            if oh.get('close_time'):
+                oh['close_time'] = str(oh['close_time'])
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'location': location,
+            'timeline': timeline,
+            'weekdayHourly': weekday_hourly,
+            'dailyAverage': daily_average,
+            'peakHours': peak_hours,
+            'trends': trend,
+            'mapClicks': {'daily': map_clicks_daily, 'total': map_clicks_total},
+            'openingHours': opening_hours
+        }), 200
+    except Exception as e:
+        logger.error(f"Admin location analytics error: {e}")
+        return jsonify({'error': 'Failed to fetch location analytics'}), 500
+
+
+@app.route('/admin/locations/compare', methods=['GET'])
+@location_owner_or_admin_required
+def admin_locations_compare():
+    """Compare multiple locations"""
+    try:
+        ids_param = request.args.get('ids', '')
+        days = int(request.args.get('days', 30))
+        if not ids_param:
+            return jsonify({'error': 'No location IDs provided'}), 400
+
+        location_ids = [int(x) for x in ids_param.split(',') if x.strip().isdigit()]
+        if not location_ids or len(location_ids) > 10:
+            return jsonify({'error': 'Provide 1-10 location IDs'}), 400
+
+        start_date = datetime.now() - timedelta(days=days)
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        comparisons = []
+        for loc_id in location_ids:
+            cursor.execute("SELECT id, name FROM locations WHERE id = %s", (loc_id,))
+            loc = cursor.fetchone()
+            if not loc:
+                continue
+
+            cursor.execute("""
+                SELECT
+                    ROUND(AVG(occupancy_percent), 1) as avg_occupancy,
+                    ROUND(MAX(occupancy_percent), 1) as max_occupancy
+                FROM occupancy_history
+                WHERE location_id = %s AND timestamp >= %s AND occupancy_percent IS NOT NULL
+            """, (loc_id, start_date))
+            stats = cursor.fetchone()
+
+            # Peak hour
+            cursor.execute("""
+                SELECT HOUR(timestamp) as hour, ROUND(AVG(occupancy_percent), 1) as avg_occ
+                FROM occupancy_history
+                WHERE location_id = %s AND timestamp >= %s AND occupancy_percent IS NOT NULL
+                GROUP BY HOUR(timestamp)
+                ORDER BY avg_occ DESC LIMIT 1
+            """, (loc_id, start_date))
+            peak = cursor.fetchone()
+
+            # Map clicks
+            cursor.execute("SELECT COUNT(*) as count FROM map_clicks WHERE location_id = %s AND clicked_at >= %s", (loc_id, start_date))
+            clicks = cursor.fetchone()['count']
+
+            # Hourly average for radar chart
+            cursor.execute("""
+                SELECT HOUR(timestamp) as hour, ROUND(AVG(occupancy_percent), 1) as avg_occ
+                FROM occupancy_history
+                WHERE location_id = %s AND timestamp >= %s AND occupancy_percent IS NOT NULL
+                GROUP BY HOUR(timestamp)
+                ORDER BY hour
+            """, (loc_id, start_date))
+            hourly = {row['hour']: row['avg_occ'] for row in cursor.fetchall()}
+
+            comparisons.append({
+                'id': loc['id'],
+                'name': loc['name'],
+                'avgOccupancy': stats['avg_occupancy'] if stats else 0,
+                'maxOccupancy': stats['max_occupancy'] if stats else 0,
+                'peakHour': peak['hour'] if peak else None,
+                'mapClicks': clicks,
+                'hourlyAverage': hourly
+            })
+
+        cursor.close()
+        conn.close()
+        return jsonify({'comparisons': comparisons}), 200
+    except Exception as e:
+        logger.error(f"Admin locations compare error: {e}")
+        return jsonify({'error': 'Failed to compare locations'}), 500
+
+
+@app.route('/admin/users', methods=['GET'])
+@admin_required
+def admin_users():
+    """Get paginated user list"""
+    try:
+        page = int(request.args.get('page', 1))
+        limit = min(int(request.args.get('limit', 25)), 100)
+        role_filter = request.args.get('role', 'all')
+        search = request.args.get('search', '')
+        offset = (page - 1) * limit
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        where_clauses = []
+        params = []
+        if role_filter != 'all':
+            where_clauses.append("u.role = %s")
+            params.append(role_filter)
+        if search:
+            where_clauses.append("(u.username LIKE %s OR u.email LIKE %s)")
+            params.extend([f'%{search}%', f'%{search}%'])
+
+        where_sql = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+
+        # Count total
+        cursor.execute(f"SELECT COUNT(*) as total FROM users u{where_sql}", params)
+        total = cursor.fetchone()['total']
+
+        # Fetch users
+        cursor.execute(f"""
+            SELECT
+                u.id, u.username, u.email, COALESCE(u.role, 'user') as role, u.is_active, u.created_at, u.last_login,
+                CASE WHEN u.google_id IS NOT NULL THEN 1 ELSE 0 END as has_google,
+                COALESCE(sl.saved_count, 0) as saved_locations,
+                COALESCE(fl.filter_count, 0) as filter_count
+            FROM users u
+            LEFT JOIN (SELECT user_id, COUNT(*) as saved_count FROM user_locations GROUP BY user_id) sl ON u.id = sl.user_id
+            LEFT JOIN (SELECT user_id, COUNT(*) as filter_count FROM user_filters GROUP BY user_id) fl ON u.id = fl.user_id
+            {where_sql}
+            ORDER BY u.id DESC
+            LIMIT %s OFFSET %s
+        """, params + [limit, offset])
+        users = cursor.fetchall()
+
+        for u in users:
+            if u.get('created_at'):
+                u['created_at'] = u['created_at'].isoformat()
+            if u.get('last_login'):
+                u['last_login'] = u['last_login'].isoformat()
+
+        cursor.close()
+        conn.close()
+        return jsonify({'users': users, 'total': total, 'page': page, 'limit': limit}), 200
+    except Exception as e:
+        logger.error(f"Admin users error: {e}")
+        return jsonify({'error': 'Failed to fetch users'}), 500
+
+
+@app.route('/admin/users/<int:user_id>', methods=['PUT'])
+@admin_required
+def admin_update_user(user_id):
+    """Update user role or active status"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+
+        updates = []
+        params = []
+        if 'role' in data and data['role'] in ('user', 'admin', 'location_owner'):
+            updates.append("role = %s")
+            params.append(data['role'])
+        if 'is_active' in data:
+            updates.append("is_active = %s")
+            params.append(1 if data['is_active'] else 0)
+
+        if not updates:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'No valid fields to update'}), 400
+
+        params.append(user_id)
+        cursor.execute(f"UPDATE users SET {', '.join(updates)} WHERE id = %s", params)
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+        return jsonify({'message': 'User updated'}), 200
+    except Exception as e:
+        logger.error(f"Admin update user error: {e}")
+        return jsonify({'error': 'Failed to update user'}), 500
+
+
+@app.route('/admin/users/<int:user_id>/assign-locations', methods=['POST'])
+@admin_required
+def admin_assign_locations(user_id):
+    """Assign locations to a location owner"""
+    try:
+        data = request.get_json()
+        location_ids = data.get('location_ids', [])
+        granted_by = request.current_user['user_id']
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+
+        # Set user role to location_owner if not already admin
+        cursor.execute("SELECT role FROM users WHERE id = %s", (user_id,))
+        row = cursor.fetchone()
+        if not row:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'User not found'}), 404
+        if row[0] != 'admin':
+            cursor.execute("UPDATE users SET role = 'location_owner' WHERE id = %s", (user_id,))
+
+        # Remove existing inactive assignments, add new ones
+        for loc_id in location_ids:
+            cursor.execute("""
+                INSERT INTO location_owners (user_id, location_id, granted_by, is_active)
+                VALUES (%s, %s, %s, 1)
+                ON DUPLICATE KEY UPDATE is_active = 1, granted_by = %s, granted_at = NOW()
+            """, (user_id, loc_id, granted_by, granted_by))
+
+        # Deactivate locations not in the list
+        if location_ids:
+            placeholders = ','.join(['%s'] * len(location_ids))
+            cursor.execute(f"""
+                UPDATE location_owners SET is_active = 0
+                WHERE user_id = %s AND location_id NOT IN ({placeholders})
+            """, [user_id] + location_ids)
+        else:
+            cursor.execute("UPDATE location_owners SET is_active = 0 WHERE user_id = %s", (user_id,))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return jsonify({'message': 'Locations assigned'}), 200
+    except Exception as e:
+        logger.error(f"Admin assign locations error: {e}")
+        return jsonify({'error': 'Failed to assign locations'}), 500
+
+
+@app.route('/admin/scraping/health', methods=['GET'])
+@admin_required
+def admin_scraping_health():
+    """Get scraping health metrics"""
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        now = datetime.now()
+        today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        week_ago = today_start - timedelta(days=7)
+
+        # Daily stats (last 7 days)
+        cursor.execute("""
+            SELECT DATE(timestamp) as date, COUNT(*) as entries,
+                COUNT(DISTINCT location_id) as unique_locations,
+                ROUND(SUM(CASE WHEN occupancy_percent IS NOT NULL AND occupancy_percent > 0 THEN 1 ELSE 0 END) / COUNT(*) * 100, 1) as live_quote
+            FROM occupancy_history
+            WHERE timestamp >= %s
+            GROUP BY DATE(timestamp)
+            ORDER BY date
+        """, (week_ago,))
+        daily_stats = [{'date': row['date'].isoformat(), 'entries': row['entries'], 'uniqueLocations': row['unique_locations'], 'liveQuote': float(row['live_quote'] or 0)} for row in cursor.fetchall()]
+
+        # Coverage
+        cursor.execute("SELECT COUNT(*) as total FROM locations")
+        total_locations = cursor.fetchone()['total']
+
+        cursor.execute("SELECT COUNT(DISTINCT location_id) as count FROM occupancy_history WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 24 HOUR)")
+        scraped_24h = cursor.fetchone()['count']
+
+        cursor.execute("SELECT COUNT(DISTINCT location_id) as count FROM occupancy_history WHERE timestamp >= %s", (week_ago,))
+        scraped_7d = cursor.fetchone()['count']
+
+        cursor.execute("""
+            SELECT COUNT(*) as count FROM locations l
+            WHERE NOT EXISTS (SELECT 1 FROM occupancy_history oh WHERE oh.location_id = l.id)
+        """)
+        never_scraped = cursor.fetchone()['count']
+
+        coverage = {
+            'total': total_locations, 'scraped24h': scraped_24h,
+            'scraped7d': scraped_7d, 'neverScraped': never_scraped
+        }
+
+        # Freshness: top 20 stalest locations
+        cursor.execute("""
+            SELECT l.id, l.name, MAX(oh.timestamp) as last_scraping,
+                TIMESTAMPDIFF(HOUR, MAX(oh.timestamp), NOW()) as hours_stale
+            FROM locations l
+            LEFT JOIN occupancy_history oh ON l.id = oh.location_id
+            GROUP BY l.id, l.name
+            ORDER BY last_scraping ASC
+            LIMIT 20
+        """)
+        freshness = []
+        for row in cursor.fetchall():
+            freshness.append({
+                'id': row['id'], 'name': row['name'],
+                'lastScraping': row['last_scraping'].isoformat() if row['last_scraping'] else None,
+                'hoursStale': row['hours_stale']
+            })
+
+        cursor.close()
+        conn.close()
+        return jsonify({'dailyStats': daily_stats, 'coverage': coverage, 'freshness': freshness}), 200
+    except Exception as e:
+        logger.error(f"Admin scraping health error: {e}")
+        return jsonify({'error': 'Failed to fetch scraping health'}), 500
+
+
+@app.route('/admin/map-clicks/analytics', methods=['GET'])
+@admin_required
+def admin_map_click_analytics():
+    """Get map click analytics"""
+    try:
+        days = int(request.args.get('days', 30))
+        start_date = datetime.now() - timedelta(days=days)
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Top clicked locations
+        cursor.execute("""
+            SELECT l.id, l.name, COUNT(mc.id) as clicks
+            FROM map_clicks mc
+            JOIN locations l ON mc.location_id = l.id
+            WHERE mc.clicked_at >= %s
+            GROUP BY l.id, l.name
+            ORDER BY clicks DESC
+            LIMIT 20
+        """, (start_date,))
+        top_locations = [dict(row) for row in cursor.fetchall()]
+
+        # Daily click trends
+        cursor.execute("""
+            SELECT DATE(clicked_at) as date, COUNT(*) as clicks
+            FROM map_clicks
+            WHERE clicked_at >= %s
+            GROUP BY DATE(clicked_at)
+            ORDER BY date
+        """, (start_date,))
+        daily_trends = [{'date': row['date'].isoformat(), 'clicks': row['clicks']} for row in cursor.fetchall()]
+
+        # Hourly click trends
+        cursor.execute("""
+            SELECT HOUR(clicked_at) as hour, COUNT(*) as clicks
+            FROM map_clicks
+            WHERE clicked_at >= %s
+            GROUP BY HOUR(clicked_at)
+            ORDER BY hour
+        """, (start_date,))
+        hourly_trends = [dict(row) for row in cursor.fetchall()]
+
+        # Clicks vs Occupancy correlation
+        cursor.execute("""
+            SELECT l.id, l.name,
+                COUNT(mc.id) as clicks,
+                ROUND(AVG(oh.occupancy_percent), 1) as avg_occupancy
+            FROM locations l
+            LEFT JOIN map_clicks mc ON l.id = mc.location_id AND mc.clicked_at >= %s
+            LEFT JOIN occupancy_history oh ON l.id = oh.location_id AND oh.timestamp >= %s AND oh.occupancy_percent IS NOT NULL
+            GROUP BY l.id, l.name
+            HAVING clicks > 0
+            ORDER BY clicks DESC
+            LIMIT 30
+        """, (start_date, start_date))
+        correlation = [dict(row) for row in cursor.fetchall()]
+
+        cursor.close()
+        conn.close()
+        return jsonify({
+            'topLocations': top_locations, 'dailyTrends': daily_trends,
+            'hourlyTrends': hourly_trends, 'correlation': correlation
+        }), 200
+    except Exception as e:
+        logger.error(f"Admin map click analytics error: {e}")
+        return jsonify({'error': 'Failed to fetch map click analytics'}), 500
+
+
+@app.route('/admin/my-locations', methods=['GET'])
+@location_owner_or_admin_required
+def admin_my_locations():
+    """Get locations for location owner or all for admin"""
+    try:
+        user_id = request.current_user['user_id']
+        role = request.current_user.get('role', 'user')
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        if role == 'admin':
+            cursor.execute("""
+                SELECT l.id, l.name, l.address, l.rating,
+                    ROUND(AVG(CASE WHEN oh.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN oh.occupancy_percent END), 1) as avg_occupancy_7d,
+                    COUNT(DISTINCT oh.id) as data_points
+                FROM locations l
+                LEFT JOIN occupancy_history oh ON l.id = oh.location_id
+                GROUP BY l.id, l.name, l.address, l.rating
+                ORDER BY l.name
+            """)
+        else:
+            cursor.execute("""
+                SELECT l.id, l.name, l.address, l.rating,
+                    ROUND(AVG(CASE WHEN oh.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN oh.occupancy_percent END), 1) as avg_occupancy_7d,
+                    COUNT(DISTINCT oh.id) as data_points
+                FROM locations l
+                INNER JOIN location_owners lo ON l.id = lo.location_id AND lo.user_id = %s AND lo.is_active = 1
+                LEFT JOIN occupancy_history oh ON l.id = oh.location_id
+                GROUP BY l.id, l.name, l.address, l.rating
+                ORDER BY l.name
+            """, (user_id,))
+
+        locations = [dict(row) for row in cursor.fetchall()]
+        cursor.close()
+        conn.close()
+        return jsonify({'locations': locations}), 200
+    except Exception as e:
+        logger.error(f"Admin my locations error: {e}")
+        return jsonify({'error': 'Failed to fetch locations'}), 500
+
 
 if __name__ == "__main__":
     logger.info("🚀 Starting Popular Times Scraper Server (Final Enhanced Edition) on port 5044...")

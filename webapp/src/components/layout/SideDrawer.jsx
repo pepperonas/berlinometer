@@ -94,33 +94,42 @@ function SideDrawer({ isOpen, onClose, user, onNavigate, onLogout }) {
               <span className="side-drawer__nav-label">Profil</span>
             </button>
 
+            {(user?.role === 'admin' || user?.role === 'location_owner') && (
+              <button
+                className="side-drawer__nav-item"
+                onClick={() => handleNavigationClick('admin')}
+                type="button"
+              >
+                <span className="side-drawer__nav-icon">📊</span>
+                <span className="side-drawer__nav-label">Admin Panel</span>
+              </button>
+            )}
+
             <div className="side-drawer__divider"></div>
 
             {/* Theme Selector */}
             <div className="side-drawer__theme-section">
               <div className="side-drawer__section-title">Design</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {Object.keys(availableThemes || {}).map((themeKey) => (
-                  <button
-                    key={themeKey}
-                    className="side-drawer__nav-item"
-                    onClick={() => switchTheme(themeKey)}
-                    style={{
-                      backgroundColor: theme === themeKey ? 'rgba(104, 141, 177, 0.2)' : 'transparent',
-                      borderLeft: theme === themeKey ? '3px solid var(--accent-blue)' : '3px solid transparent'
-                    }}
-                    type="button"
-                  >
-                    <span className="side-drawer__nav-icon">
-                      {themeKey === 'dark' && '🌙'}
-                      {themeKey === 'light' && '☀️'}
-                    </span>
-                    <span className="side-drawer__nav-label">
-                      {themeKey === 'dark' && 'Dark'}
-                      {themeKey === 'light' && 'Light'}
-                    </span>
-                  </button>
-                ))}
+                {Object.keys(availableThemes || {}).map((themeKey) => {
+                  const icons = { xd: '🚀', dark: '🌙', light: '☀️' }
+                  const labels = { xd: 'xD', dark: 'Dark', light: 'Light' }
+                  return (
+                    <button
+                      key={themeKey}
+                      className="side-drawer__nav-item"
+                      onClick={() => switchTheme(themeKey)}
+                      style={{
+                        backgroundColor: theme === themeKey ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                        borderLeft: theme === themeKey ? '3px solid var(--accent-blue)' : '3px solid transparent'
+                      }}
+                      type="button"
+                    >
+                      <span className="side-drawer__nav-icon">{icons[themeKey] || '🎨'}</span>
+                      <span className="side-drawer__nav-label">{labels[themeKey] || themeKey}</span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
@@ -182,7 +191,7 @@ function SideDrawer({ isOpen, onClose, user, onNavigate, onLogout }) {
               <span className="side-drawer__nav-icon">🚪</span>
               <span className="side-drawer__nav-label">Abmelden</span>
             </button>
-            <div className="side-drawer__version">v2.8.0</div>
+            <div className="side-drawer__version">v2.9.0</div>
           </div>
         </div>
       </nav>

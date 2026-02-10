@@ -1,6 +1,6 @@
 {
   "name": "berlinometer",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "description": "Real-time occupancy tracker for Berlin's bars and clubs",
   "homepage": "https://github.com/pepperonas/berlinometer#readme",
   "repository": {

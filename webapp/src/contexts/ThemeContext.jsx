@@ -13,20 +13,43 @@ export const useTheme = () => {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const THEMES = {
+  XD: 'xd',
   DARK: 'dark',
   LIGHT: 'light',
-  BERLIN: 'berlin'
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const THEME_NAMES = {
+  [THEMES.XD]: 'xD',
   [THEMES.DARK]: 'Dunkel',
   [THEMES.LIGHT]: 'Hell',
-  [THEMES.BERLIN]: 'Berlin'
 };
 
 // Theme configurations
 const themeConfig = {
+  [THEMES.XD]: {
+    name: 'xD',
+    description: 'celox.io SaaS Theme',
+    cssClass: 'theme-xd',
+    colors: {
+      'background-dark': '#020617',
+      'background-darker': '#0f172a',
+      'card-background': 'rgba(30, 41, 59, 0.5)',
+      'accent-blue': '#6366f1',
+      'accent-green': '#4ade80',
+      'accent-red': '#ef4444',
+      'text-primary': '#f8fafc',
+      'text-secondary': '#94a3b8',
+      'card-bg': 'rgba(30, 41, 59, 0.5)',
+      'border-color': 'rgba(51, 65, 85, 0.5)',
+      'text-color': '#f8fafc',
+      'input-bg': '#1e293b',
+      'primary-color': '#6366f1',
+      'hover-bg': 'rgba(51, 65, 85, 0.6)',
+      'accent-purple': '#8b5cf6',
+      'background': '#020617',
+    }
+  },
   [THEMES.DARK]: {
     name: 'Dunkel',
     description: 'Elegantes dunkles Theme',
@@ -69,31 +92,10 @@ const themeConfig = {
       'hover-bg': '#F3F4F6'
     }
   },
-  [THEMES.BERLIN]: {
-    name: 'Berlin',
-    description: 'Urbanes Berlin-Theme',
-    cssClass: 'theme-berlin',
-    colors: {
-      'background-dark': '#1A1D26',
-      'background-darker': '#151821',
-      'card-background': '#242836',
-      'accent-blue': '#F0C040',
-      'accent-green': '#7EC8A0',
-      'accent-red': '#E85D5D',
-      'text-primary': '#E8E6E1',
-      'text-secondary': '#8B8FA3',
-      'card-bg': '#242836',
-      'border-color': '#363B4E',
-      'text-color': '#E8E6E1',
-      'input-bg': '#2A2F3E',
-      'primary-color': '#F0C040',
-      'hover-bg': '#303548'
-    }
-  }
 };
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(THEMES.DARK);
+  const [theme, setTheme] = useState(THEMES.XD);
 
   useEffect(() => {
     // Load theme from localStorage on mount
@@ -106,7 +108,7 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     // Apply theme to document
     applyTheme(theme);
-    
+
     // Save theme to localStorage
     localStorage.setItem('berlinometer-theme', theme);
   }, [theme]);
