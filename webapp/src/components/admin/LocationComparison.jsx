@@ -4,7 +4,7 @@ import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 const API_URL = import.meta.env.VITE_API_URL
 const COLORS = ['var(--accent-blue)', 'var(--accent-green)', '#f59e0b', '#ef4444', '#8b5cf6']
 
-function LocationComparison({ token, locations }) {
+function LocationComparison({ token, locations, days = 30 }) {
   const [selectedIds, setSelectedIds] = useState([])
   const [comparisons, setComparisons] = useState([])
   const [loading, setLoading] = useState(false)
@@ -22,7 +22,7 @@ function LocationComparison({ token, locations }) {
     if (selectedIds.length < 2) return
     setLoading(true)
     try {
-      const res = await fetch(`${API_URL}/admin/locations/compare?ids=${selectedIds.join(',')}&days=30`, {
+      const res = await fetch(`${API_URL}/admin/locations/compare?ids=${selectedIds.join(',')}&days=${days}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {

@@ -140,7 +140,7 @@ function LocationAnalytics({ token, isAdmin }) {
 
         {/* Comparison Section */}
         {locations.length >= 2 && (
-          <LocationComparison token={token} locations={locations} />
+          <LocationComparison token={token} locations={locations} days={days} />
         )}
       </div>
     </div>
