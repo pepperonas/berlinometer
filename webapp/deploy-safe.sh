@@ -154,8 +154,8 @@ echo -e "${YELLOW}[6/8] Deploying frontend files...${NC}"
 for file in "${FRONTEND_FILES[@]}"; do
     echo "  → Copying $file..."
     if [[ "$file" == */ ]]; then
-        # Directory
-        rsync -av "$LOCAL_BUILD_DIR/$file" "$VPS_HOST:$VPS_PATH/"
+        # Directory - use trailing slash on destination to place contents inside subdir
+        rsync -av "$LOCAL_BUILD_DIR/$file" "$VPS_HOST:$VPS_PATH/$file"
     else
         # File
         rsync -av "$LOCAL_BUILD_DIR/$file" "$VPS_HOST:$VPS_PATH/"
