@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml/badge.svg)](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.9.0-blue.svg)](https://github.com/pepperonas/berlinometer)
+[![Version](https://img.shields.io/badge/version-2.10.0-blue.svg)](https://github.com/pepperonas/berlinometer)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fberlinometer.de)](https://berlinometer.de)
 
 [![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -57,7 +57,8 @@ Finde heraus, wo heute Nacht was los ist. Berlinometer scrapt Google-Maps-Auslas
 - **Gespeicherte Locations** - Lieblingsspots bookmarken und umsortieren
 - **Admin Panel** - Analytics, User Management, Scraping Health, Map Click Analytics
 - **Rollen-System** - User, Admin, Location-Owner mit B2B-Zugang
-- **Location Analytics** - Heatmaps, Timelines, Peak Hours, Location-Vergleich
+- **Location Analytics** - Heatmaps, Timelines, Peak Hours, Location-Vergleich mit Autocomplete-Dropdown
+- **Optimierte Location-Auswahl** - Autocomplete-Dropdown mit Adressanzeige, suchbarer Location-Vergleich ohne Limit
 
 ---
 
@@ -264,6 +265,54 @@ return <h1>{t('welcomeMessage')}</h1>
 Neue Übersetzungen hinzufügen:
 1. Schlüssel in `translations.de` und `translations.en` in `LanguageContext.jsx` eintragen
 2. Im Component über `t('schlüssel')` verwenden
+
+### Admin Panel (v2.10.0)
+
+Das Admin Panel (`/admin`) bietet rollenbasierten Zugang für Admins und Location-Owner.
+
+**Tabs:**
+- **Overview** - Metriken-Dashboard mit Auslastungs-, User- und Scraping-Stats
+- **Locations** - Alle Locations verwalten (Admin) oder eigene Locations (Location-Owner)
+- **Location Analytics** - Detaillierte Auslastungsanalysen pro Location
+- **Users** - Benutzerverwaltung mit Rollen und Paginierung (nur Admin)
+- **Scraping Health** - Monitoring des Scraping-Systems
+- **Map Clicks** - Analyse der Karteninteraktionen
+
+**Location Analytics - Komponenten:**
+
+| Komponente | Beschreibung |
+|------------|-------------|
+| `LocationSelector` | Autocomplete-Dropdown mit Suche nach Name/Adresse. Zeigt ausgewaehlte Location mit Adresse und Auslastungs-%. Dropdown-Overlay mit max. 360px Hoehe, schliesst bei Klick ausserhalb. |
+| `TimeRangeSelector` | Zeitraum-Buttons (7d, 30d, 90d) im Header neben dem Location-Dropdown |
+| `OccupancyTimeline` | Zeitverlauf der Auslastung als Liniendiagramm (Recharts) |
+| `OccupancyHeatmap` | Wochentag x Stunde Heatmap mit Farbskala (gruen bis rot) |
+| `PeakHoursChart` | Durchschnittliche Auslastung pro Stunde als Balkendiagramm |
+| `LocationComparison` | Vergleich von bis zu 5 Locations: Suchfeld zum Filtern, alle Locations als Chips (kein Limit), ausgewaehlte Chips bleiben oben gepinnt, scrollbare Chip-Liste (max 200px), Radar-Chart + Vergleichstabelle |
+
+**Layout:**
+
+```
++--------------------------------------------------+
+| Location Analytics    [Location v] [7d][30d][90d] |
++--------------------------------------------------+
+| Location-Header (Name, Adresse, Trend-Badge)      |
+| Stats-Row (Ø Auslastung, Map Clicks, Datenpunkte) |
+| OccupancyTimeline                                  |
+| OccupancyHeatmap                                   |
+| PeakHoursChart                                     |
+| Oeffnungszeiten                                    |
+| LocationComparison                                 |
++--------------------------------------------------+
+```
+
+Das Layout ist Single-Column - der LocationSelector sitzt kompakt im Header-Bereich neben den TimeRange-Buttons statt in einer separaten Sidebar.
+
+**Zeitzonen:** Alle Zeitangaben in den Charts beziehen sich auf die Berliner Zeitzone (Europe/Berlin), da der VPS auf CET/CEST konfiguriert ist. Die Timeline nutzt `toLocaleString('de-DE')` des Browsers; Heatmap und Peak Hours verwenden die Server-Stunden direkt.
+
+**Rollen:**
+- `admin` - Vollzugriff auf alle Tabs und Locations
+- `location_owner` - Zugriff auf eigene Locations (via `location_owners`-Tabelle)
+- `user` - Kein Zugang zum Admin Panel
 
 ---
 

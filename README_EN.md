@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml/badge.svg)](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.9.0-blue.svg)](https://github.com/pepperonas/berlinometer)
+[![Version](https://img.shields.io/badge/version-2.10.0-blue.svg)](https://github.com/pepperonas/berlinometer)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fberlinometer.de)](https://berlinometer.de)
 
 [![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -57,7 +57,8 @@ Find out where the party is tonight. Berlinometer scrapes Google Maps occupancy 
 - **Saved locations** - Bookmark and reorder your favourite spots
 - **Admin panel** - Analytics, user management, scraping health, map click analytics
 - **Role system** - User, admin, location owner with B2B access
-- **Location analytics** - Heatmaps, timelines, peak hours, location comparison
+- **Location analytics** - Heatmaps, timelines, peak hours, location comparison with autocomplete dropdown
+- **Optimized location selection** - Autocomplete dropdown with address display, searchable location comparison without limit
 
 ---
 
@@ -264,6 +265,54 @@ return <h1>{t('welcomeMessage')}</h1>
 Adding new translations:
 1. Add key to both `translations.de` and `translations.en` in `LanguageContext.jsx`
 2. Use via `t('key')` in components
+
+### Admin Panel (v2.10.0)
+
+The admin panel (`/admin`) provides role-based access for admins and location owners.
+
+**Tabs:**
+- **Overview** - Metrics dashboard with occupancy, user, and scraping stats
+- **Locations** - Manage all locations (admin) or own locations (location owner)
+- **Location Analytics** - Detailed occupancy analysis per location
+- **Users** - User management with roles and pagination (admin only)
+- **Scraping Health** - Scraping system monitoring
+- **Map Clicks** - Map interaction analytics
+
+**Location Analytics - Components:**
+
+| Component | Description |
+|-----------|------------|
+| `LocationSelector` | Autocomplete dropdown with name/address search. Shows selected location with address and occupancy %. Dropdown overlay with max 360px height, closes on outside click. |
+| `TimeRangeSelector` | Time range buttons (7d, 30d, 90d) in the header next to the location dropdown |
+| `OccupancyTimeline` | Occupancy over time as line chart (Recharts) |
+| `OccupancyHeatmap` | Weekday x hour heatmap with color scale (green to red) |
+| `PeakHoursChart` | Average occupancy per hour as bar chart |
+| `LocationComparison` | Compare up to 5 locations: search field for filtering, all locations as chips (no limit), selected chips pinned at top, scrollable chip list (max 200px), radar chart + comparison table |
+
+**Layout:**
+
+```
++--------------------------------------------------+
+| Location Analytics    [Location v] [7d][30d][90d] |
++--------------------------------------------------+
+| Location header (name, address, trend badge)       |
+| Stats row (avg occupancy, map clicks, data points) |
+| OccupancyTimeline                                  |
+| OccupancyHeatmap                                   |
+| PeakHoursChart                                     |
+| Opening hours                                      |
+| LocationComparison                                 |
++--------------------------------------------------+
+```
+
+The layout is single-column - the LocationSelector sits compactly in the header area next to the time range buttons instead of in a separate sidebar.
+
+**Timezones:** All times in the charts refer to the Berlin timezone (Europe/Berlin), as the VPS is configured to CET/CEST. The timeline uses the browser's `toLocaleString('de-DE')`; heatmap and peak hours use server hours directly.
+
+**Roles:**
+- `admin` - Full access to all tabs and locations
+- `location_owner` - Access to own locations (via `location_owners` table)
+- `user` - No access to the admin panel
 
 ---
 

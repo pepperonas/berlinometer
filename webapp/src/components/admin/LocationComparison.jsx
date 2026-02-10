@@ -8,6 +8,7 @@ function LocationComparison({ token, locations }) {
   const [selectedIds, setSelectedIds] = useState([])
   const [comparisons, setComparisons] = useState([])
   const [loading, setLoading] = useState(false)
+  const [search, setSearch] = useState('')
 
   const toggleLocation = (id) => {
     setSelectedIds(prev => {
@@ -35,6 +36,15 @@ function LocationComparison({ token, locations }) {
     }
   }
 
+  const allLocs = locations || []
+  const selectedLocs = allLocs.filter(l => selectedIds.includes(l.id))
+  const filteredUnselected = allLocs.filter(l =>
+    !selectedIds.includes(l.id) && (
+      l.name?.toLowerCase().includes(search.toLowerCase()) ||
+      l.address?.toLowerCase().includes(search.toLowerCase())
+    )
+  )
+
   // Build radar data from hourly averages
   const radarData = []
   if (comparisons.length > 0) {
@@ -51,24 +61,47 @@ function LocationComparison({ token, locations }) {
     <div className="admin-chart-card">
       <h3 className="admin-chart-title">Location-Vergleich</h3>
       <div className="admin-compare-selector">
-        <div className="admin-compare-chips">
-          {(locations || []).slice(0, 20).map(loc => (
+        <input
+          type="text"
+          className="admin-compare-search"
+          placeholder="Locations filtern..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <div className="admin-compare-chips-wrapper">
+          {/* Pinned: selected chips always on top */}
+          {selectedLocs.map(loc => (
             <button
               key={loc.id}
-              className={`admin-chip ${selectedIds.includes(loc.id) ? 'admin-chip--active' : ''}`}
+              className="admin-chip admin-chip--active"
+              onClick={() => toggleLocation(loc.id)}
+            >
+              {loc.name}
+            </button>
+          ))}
+          {/* Unselected, filtered */}
+          {filteredUnselected.map(loc => (
+            <button
+              key={loc.id}
+              className="admin-chip"
               onClick={() => toggleLocation(loc.id)}
             >
               {loc.name}
             </button>
           ))}
         </div>
-        <button
-          className="admin-btn admin-btn--primary"
-          onClick={fetchComparison}
-          disabled={selectedIds.length < 2 || loading}
-        >
-          {loading ? 'Laden...' : 'Vergleichen'}
-        </button>
+        <div className="admin-compare-footer">
+          <span className="admin-compare-count">
+            {selectedIds.length} von max. 5 ausgewählt
+          </span>
+          <button
+            className="admin-btn admin-btn--primary"
+            onClick={fetchComparison}
+            disabled={selectedIds.length < 2 || loading}
+          >
+            {loading ? 'Laden...' : 'Vergleichen'}
+          </button>
+        </div>
       </div>
 
       {comparisons.length > 0 && (
