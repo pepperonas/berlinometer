@@ -45,10 +45,11 @@ function LocationComparison({ token, locations, days = 30 }) {
     )
   )
 
-  // Build radar data from hourly averages
+  // Build radar data from hourly averages (14:00 - 05:00, bar-friendly range)
   const radarData = []
   if (comparisons.length > 0) {
-    for (let h = 6; h <= 23; h++) {
+    const hours = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5]
+    for (const h of hours) {
       const point = { hour: `${h}:00` }
       comparisons.forEach(c => {
         point[c.name] = c.hourlyAverage?.[h] || 0
