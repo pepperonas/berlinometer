@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const LanguageContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (!context) {
@@ -10,6 +11,7 @@ export const useLanguage = () => {
   return context;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const LANGUAGES = {
   DE: 'de',
   EN: 'en'

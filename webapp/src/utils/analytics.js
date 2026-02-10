@@ -8,8 +8,8 @@
  * @param {Object} locationData - The full location object with name, url, address
  */
 export const trackMapClick = async (locationId, locationData = {}) => {
+  const locationName = locationData.name || 'Unknown'
   try {
-    const locationName = locationData.name || 'Unknown'
     console.log(`📊 Tracking map click for location: ${locationName} (ID: ${locationId})`)
 
     const payload = {

@@ -7,7 +7,7 @@ import './AuthDialog.css';
 
 const AuthDialog = ({ isOpen, onClose, onLogin }) => {
   const [currentForm, setCurrentForm] = useState('login'); // 'login' or 'register'
-  const { t } = useLanguage();
+  const { t: _t } = useLanguage();
 
   const handleSwitchToRegister = () => {
     setCurrentForm('register');
@@ -22,7 +22,7 @@ const AuthDialog = ({ isOpen, onClose, onLogin }) => {
     onClose();
   };
 
-  const handleRegister = (data) => {
+  const handleRegister = () => {
     // Registration was successful, user can now switch to login
     // The success message is already shown in RegisterForm
   };

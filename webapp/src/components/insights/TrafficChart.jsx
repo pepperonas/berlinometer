@@ -133,7 +133,7 @@ function TrafficChart({ data }) {
             {data.hourlyPattern
               .sort((a, b) => b.count - a.count)
               .slice(0, 3)
-              .map((hour, index) => (
+              .map((hour) => (
                 <div
                   key={hour.hour}
                   style={{

@@ -10,12 +10,10 @@ import ActionBar from '../components/layout/ActionBar'
 import SideDrawer from '../components/layout/SideDrawer'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
-import { useNavigate } from 'react-router-dom'
 
 function HomePage() {
   const { user, token, loading, login, logout, getAuthHeaders } = useAuth()
   const { t } = useLanguage()
-  const navigate = useNavigate()
   const [results, setResults] = useState([])
   const [showAboutDialog, setShowAboutDialog] = useState(false)
   const [showAuthDialog, setShowAuthDialog] = useState(false)

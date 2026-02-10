@@ -22,7 +22,7 @@ const UserLocations = ({ onClose, onLocationsSaved, isOpen }) => {
   const [savedLocations, setSavedLocations] = useState([]);
   const [defaultLocations, setDefaultLocations] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [draggedItem, setDraggedItem] = useState(null);
@@ -119,7 +119,7 @@ const UserLocations = ({ onClose, onLocationsSaved, isOpen }) => {
       await fetchUserLocations();
       setSuccessMessage(`${locationName} removed`);
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (err) {
+    } catch {
       setError('Could not remove location');
       setTimeout(() => setError(null), 3000);
     }
@@ -161,12 +161,13 @@ const UserLocations = ({ onClose, onLocationsSaved, isOpen }) => {
       if (!response.ok) {
         throw new Error('Failed to update order');
       }
-    } catch (err) {
+    } catch {
       setError('Could not save new order');
       fetchUserLocations(); // Revert to server order
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const scrapeUserLocations = async () => {
     if (savedLocations.length === 0) {
       setError('No locations to check');
@@ -193,7 +194,7 @@ const UserLocations = ({ onClose, onLocationsSaved, isOpen }) => {
       
       setSuccessMessage('Successfully checked all your locations');
       setTimeout(() => setSuccessMessage(''), 3000);
-    } catch (err) {
+    } catch {
       setError('Could not check locations');
       setTimeout(() => setError(null), 3000);
     } finally {

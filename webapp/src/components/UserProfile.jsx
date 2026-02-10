@@ -5,8 +5,8 @@ import Dialog from './ui/Dialog';
 import './UserProfile.css';
 import './ThemeSelector.css';
 
-const UserProfile = ({ user, token, onLogout, onClose, isOpen }) => {
-  const { theme, switchTheme, themeNames, availableThemes } = useTheme();
+const UserProfile = ({ token, onLogout, onClose, isOpen }) => {
+  const { theme, switchTheme, availableThemes } = useTheme();
   const { language, switchLanguage, t, availableLanguages } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [filters, setFilters] = useState([]);
@@ -364,7 +364,7 @@ const UserProfile = ({ user, token, onLogout, onClose, isOpen }) => {
           </p>
           
           <div className="theme-options">
-            {Object.entries(availableThemes).map(([themeKey, config]) => (
+            {Object.entries(availableThemes).map(([themeKey]) => (
               <div 
                 key={themeKey}
                 className={`theme-option ${theme === themeKey ? 'selected' : ''}`}

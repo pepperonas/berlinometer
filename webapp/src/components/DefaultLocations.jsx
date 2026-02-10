@@ -230,7 +230,7 @@ function DefaultLocations({ onStartScraping, isScrapingActive, onShowAbout }) {
               </tr>
             </thead>
             <tbody>
-              {locations.map((location, index) => (
+              {locations.map((location) => (
                 <tr 
                   key={location.url}
                   style={{ 

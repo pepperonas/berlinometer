@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
@@ -10,12 +11,14 @@ export const useTheme = () => {
   return context;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const THEMES = {
   DARK: 'dark',
   LIGHT: 'light',
   BERLIN: 'berlin'
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const THEME_NAMES = {
   [THEMES.DARK]: 'Dunkel',
   [THEMES.LIGHT]: 'Hell',
