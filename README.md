@@ -24,6 +24,22 @@
 
 Finde heraus, wo heute Nacht was los ist. Berlinometer scrapt Google-Maps-Auslastungsdaten für über 100 Bars und Clubs in Berlin und zeigt dir Echtzeit- sowie historische Füllstände, damit du den perfekten Spot findest.
 
+## Screenshots
+
+### Homepage
+![Homepage - Stimmungsbarometer und Live-Auslastung](docs/screenshots/homepage.png)
+
+### Admin Panel - Übersicht
+![Admin Overview - Metriken-Dashboard](docs/screenshots/admin-overview.png)
+
+### Admin Panel - Location Analytics
+![Location Analytics - Heatmap, Timeline, Radar-Chart](docs/screenshots/admin-location-analytics.png)
+
+### Admin Panel - Scraping Health
+![Scraping Health - Monitoring und Staleness-Ranking](docs/screenshots/admin-scraping-health.png)
+
+---
+
 ## Inhaltsverzeichnis
 
 1. [Features](#features)

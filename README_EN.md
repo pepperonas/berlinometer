@@ -24,6 +24,22 @@
 
 Find out where the party is tonight. Berlinometer scrapes Google Maps occupancy data for 100+ bars and clubs across Berlin, showing you real-time and historical crowd levels so you can pick the perfect spot.
 
+## Screenshots
+
+### Homepage
+![Homepage - Mood barometer and live occupancy](docs/screenshots/homepage.png)
+
+### Admin Panel - Overview
+![Admin Overview - Metrics dashboard](docs/screenshots/admin-overview.png)
+
+### Admin Panel - Location Analytics
+![Location Analytics - Heatmap, timeline, radar chart](docs/screenshots/admin-location-analytics.png)
+
+### Admin Panel - Scraping Health
+![Scraping Health - Monitoring and staleness ranking](docs/screenshots/admin-scraping-health.png)
+
+---
+
 ## Table of Contents
 
 1. [Features](#features)
