@@ -3772,17 +3772,18 @@ def delete_user_filter(filter_id):
 @token_required
 def get_user_locations():
     """Get all saved locations for the current user"""
+    if not db_pool:
+        return jsonify({'error': 'Database connection not available'}), 500
+
+    connection = None
     try:
         user_id = request.current_user.get('user_id')
-        
-        if not db_pool:
-            return jsonify({'error': 'Database connection not available'}), 500
-        
+
         connection = db_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
-        
+
         query = """
-            SELECT 
+            SELECT
                 ul.id,
                 l.id as location_id,
                 l.google_maps_url,
@@ -3790,98 +3791,100 @@ def get_user_locations():
                 l.address,
                 ul.display_order,
                 ul.created_at as saved_at,
-                (SELECT COUNT(*) FROM occupancy_history 
-                 WHERE location_id = l.id 
+                (SELECT COUNT(*) FROM occupancy_history
+                 WHERE location_id = l.id
                  AND timestamp >= DATE_SUB(NOW(), INTERVAL 1 HOUR)) as recent_readings
             FROM user_locations ul
             INNER JOIN locations l ON ul.location_id = l.id
             WHERE ul.user_id = %s AND ul.is_active = TRUE
             ORDER BY ul.display_order, ul.created_at
         """
-        
+
         cursor.execute(query, (user_id,))
         locations = cursor.fetchall()
-        
+
         # Convert datetime objects to ISO format
         for location in locations:
             if location['saved_at']:
                 location['saved_at'] = location['saved_at'].isoformat()
-        
+
         cursor.close()
-        connection.close()
-        
+
         return jsonify({
             'success': True,
             'locations': locations,
             'count': len(locations)
         })
-        
+
     except Exception as e:
         logger.error(f"Error getting user locations: {e}")
         return jsonify({'error': 'Failed to get user locations'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
 
 @app.route('/user-locations', methods=['POST'])
 @token_required
 def save_user_location():
     """Save a location to user's preferences"""
+    if not db_pool:
+        return jsonify({'error': 'Database connection not available'}), 500
+
+    connection = None
     try:
         user_id = request.current_user.get('user_id')
         data = request.json
-        
+
         # Validate required fields
         google_maps_url = data.get('google_maps_url')
         name = data.get('name')
         address = data.get('address')
-        
+
         if not google_maps_url or not name:
             return jsonify({'error': 'URL and name are required'}), 400
-        
-        if not db_pool:
-            return jsonify({'error': 'Database connection not available'}), 500
-        
+
         connection = db_pool.get_connection()
         cursor = connection.cursor()
-        
+
         # First, ensure the location exists in the locations table
         cursor.execute("""
             INSERT INTO locations (google_maps_url, name, address)
             VALUES (%s, %s, %s)
-            ON DUPLICATE KEY UPDATE 
+            ON DUPLICATE KEY UPDATE
                 name = VALUES(name),
                 address = COALESCE(VALUES(address), address)
         """, (google_maps_url, name, address))
-        
+
         # Get the location ID
         cursor.execute("SELECT id FROM locations WHERE google_maps_url = %s", (google_maps_url,))
         location_id = cursor.fetchone()[0]
-        
+
         # Get the next display order for this user
         cursor.execute("""
-            SELECT COALESCE(MAX(display_order), -1) + 1 
-            FROM user_locations 
+            SELECT COALESCE(MAX(display_order), -1) + 1
+            FROM user_locations
             WHERE user_id = %s
         """, (user_id,))
         next_order = cursor.fetchone()[0]
-        
+
         # Add to user's saved locations
         cursor.execute("""
             INSERT INTO user_locations (user_id, location_id, display_order)
             VALUES (%s, %s, %s)
-            ON DUPLICATE KEY UPDATE 
+            ON DUPLICATE KEY UPDATE
                 is_active = TRUE,
                 display_order = VALUES(display_order)
         """, (user_id, location_id, next_order))
-        
+
         connection.commit()
         cursor.close()
-        connection.close()
-        
+
         return jsonify({
             'success': True,
             'message': 'Location saved successfully',
             'location_id': location_id
         })
-        
+
     except mysql.connector.IntegrityError as e:
         if 'Duplicate entry' in str(e):
             return jsonify({'error': 'Location already saved'}), 409
@@ -3889,98 +3892,107 @@ def save_user_location():
     except Exception as e:
         logger.error(f"Error saving user location: {e}")
         return jsonify({'error': 'Failed to save location'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
 
 @app.route('/user-locations/<int:location_id>', methods=['DELETE'])
 @token_required
 def remove_user_location(location_id):
     """Remove a location from user's saved locations"""
+    if not db_pool:
+        return jsonify({'error': 'Database connection not available'}), 500
+
+    connection = None
     try:
         user_id = request.current_user.get('user_id')
-        
-        if not db_pool:
-            return jsonify({'error': 'Database connection not available'}), 500
-        
+
         connection = db_pool.get_connection()
         cursor = connection.cursor()
-        
+
         # Soft delete the user location
         cursor.execute("""
-            UPDATE user_locations 
-            SET is_active = FALSE 
+            UPDATE user_locations
+            SET is_active = FALSE
             WHERE user_id = %s AND location_id = %s
         """, (user_id, location_id))
-        
+
         if cursor.rowcount == 0:
             cursor.close()
-            connection.close()
             return jsonify({'error': 'Location not found'}), 404
-        
+
         connection.commit()
         cursor.close()
-        connection.close()
-        
+
         return jsonify({
             'success': True,
             'message': 'Location removed successfully'
         })
-        
+
     except Exception as e:
         logger.error(f"Error removing user location: {e}")
         return jsonify({'error': 'Failed to remove location'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
 
 @app.route('/user-locations/reorder', methods=['PUT'])
 @token_required
 def reorder_user_locations():
     """Update the display order of user's saved locations"""
+    if not db_pool:
+        return jsonify({'error': 'Database connection not available'}), 500
+
+    connection = None
     try:
         user_id = request.current_user.get('user_id')
         data = request.json
         location_ids = data.get('location_ids', [])
-        
+
         if not location_ids:
             return jsonify({'error': 'Location IDs are required'}), 400
-        
-        if not db_pool:
-            return jsonify({'error': 'Database connection not available'}), 500
-        
+
         connection = db_pool.get_connection()
         cursor = connection.cursor()
-        
+
         # Update display order for each location
         for index, location_id in enumerate(location_ids):
             cursor.execute("""
-                UPDATE user_locations 
-                SET display_order = %s 
+                UPDATE user_locations
+                SET display_order = %s
                 WHERE user_id = %s AND location_id = %s AND is_active = TRUE
             """, (index, user_id, location_id))
-        
+
         connection.commit()
         cursor.close()
-        connection.close()
-        
+
         return jsonify({
             'success': True,
             'message': 'Location order updated successfully'
         })
-        
+
     except Exception as e:
         logger.error(f"Error reordering user locations: {e}")
         return jsonify({'error': 'Failed to reorder locations'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
 
 @app.route('/user-locations/scrape', methods=['POST'])
 @token_required
 def scrape_user_locations():
     """Scrape only the user's saved locations"""
+    if not db_pool:
+        return jsonify({'error': 'Database connection not available'}), 500
+
+    connection = None
     try:
         user_id = request.current_user.get('user_id')
-        
-        if not db_pool:
-            return jsonify({'error': 'Database connection not available'}), 500
-        
+
         # Get user's saved locations
         connection = db_pool.get_connection()
         cursor = connection.cursor(dictionary=True)
-        
+
         cursor.execute("""
             SELECT l.google_maps_url, l.name
             FROM user_locations ul
@@ -3988,27 +4000,29 @@ def scrape_user_locations():
             WHERE ul.user_id = %s AND ul.is_active = TRUE
             ORDER BY ul.display_order
         """, (user_id,))
-        
+
         locations = cursor.fetchall()
         cursor.close()
-        connection.close()
-        
+
         if not locations:
             return jsonify({'error': 'No saved locations found'}), 404
-        
+
         # Prepare the locations for scraping
         urls_to_scrape = [
-            {'url': loc['google_maps_url'], 'name': loc['name']} 
+            {'url': loc['google_maps_url'], 'name': loc['name']}
             for loc in locations
         ]
-        
+
         # Use the existing scraping logic
         request.json = {'locations': urls_to_scrape}
         return scrape_locations()
-        
+
     except Exception as e:
         logger.error(f"Error scraping user locations: {e}")
         return jsonify({'error': 'Failed to scrape user locations'}), 500
+    finally:
+        if connection and connection.is_connected():
+            connection.close()
 
 @app.route('/', methods=['GET'])
 def root():
@@ -4102,11 +4116,11 @@ def insights_overview():
     """Get overview metrics for insights dashboard"""
     log_access('insights_overview')
 
-    # Return demo data if database connection fails
-    try:
-        if db_pool is None:
-            raise Exception("No database connection")
+    if db_pool is None:
+        return jsonify({'error': 'No database connection'}), 500
 
+    conn = None
+    try:
         conn = db_pool.get_connection()
         cursor = conn.cursor(dictionary=True)
 
@@ -4173,16 +4187,16 @@ def insights_overview():
         result = cursor.fetchone()
         metrics['avgDataPerLocation'] = round(result['avg'] if result['avg'] else 0, 1)
 
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+        cursor.close()
 
         return jsonify(metrics), 200
 
     except Exception as e:
         logger.error(f"Error fetching insights overview: {e}")
         return jsonify({'error': 'Failed to fetch metrics'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 @app.route('/insights/traffic', methods=['GET'])
 @insights_required
@@ -4240,6 +4254,9 @@ def insights_traffic():
     except Exception as e:
         logger.error(f"Error fetching traffic insights: {e}")
         return jsonify({'error': 'Failed to fetch traffic data'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 @app.route('/insights/locations', methods=['GET'])
 @insights_required
@@ -4631,6 +4648,7 @@ def track_map_click():
 @admin_required
 def admin_overview():
     """Get admin overview metrics"""
+    conn = None
     try:
         conn = db_pool.get_connection()
         cursor = conn.cursor(dictionary=True)
@@ -4715,17 +4733,20 @@ def admin_overview():
         metrics['dailyScrapings'] = [{'date': row['date'].isoformat(), 'count': row['count']} for row in cursor.fetchall()]
 
         cursor.close()
-        conn.close()
         return jsonify(metrics), 200
     except Exception as e:
         logger.error(f"Admin overview error: {e}")
         return jsonify({'error': 'Failed to fetch overview'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/locations', methods=['GET'])
 @admin_required
 def admin_locations():
     """Get all locations with aggregated stats"""
+    conn = None
     try:
         sort_by = request.args.get('sort_by', 'name')
         sort_dir = request.args.get('sort_dir', 'asc')
@@ -4777,17 +4798,20 @@ def admin_locations():
                 loc['last_scraping'] = loc['last_scraping'].isoformat()
 
         cursor.close()
-        conn.close()
         return jsonify({'locations': locations}), 200
     except Exception as e:
         logger.error(f"Admin locations error: {e}")
         return jsonify({'error': 'Failed to fetch locations'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/locations/<int:location_id>/analytics', methods=['GET'])
 @location_owner_or_admin_required
 def admin_location_analytics(location_id):
     """Deep analytics for a single location"""
+    conn = None
     try:
         user_id = request.current_user['user_id']
         role = request.current_user.get('role', 'user')
@@ -4801,7 +4825,6 @@ def admin_location_analytics(location_id):
             cursor.execute("SELECT id FROM location_owners WHERE user_id = %s AND location_id = %s AND is_active = 1", (user_id, location_id))
             if not cursor.fetchone():
                 cursor.close()
-                conn.close()
                 return jsonify({'error': 'Access denied to this location'}), 403
 
         start_date = datetime.now() - timedelta(days=days)
@@ -4812,7 +4835,6 @@ def admin_location_analytics(location_id):
         location = cursor.fetchone()
         if not location:
             cursor.close()
-            conn.close()
             return jsonify({'error': 'Location not found'}), 404
 
         # Timeline: occupancy over time
@@ -4905,7 +4927,6 @@ def admin_location_analytics(location_id):
                 oh['close_time'] = str(oh['close_time'])
 
         cursor.close()
-        conn.close()
 
         return jsonify({
             'location': location,
@@ -4920,12 +4941,16 @@ def admin_location_analytics(location_id):
     except Exception as e:
         logger.error(f"Admin location analytics error: {e}")
         return jsonify({'error': 'Failed to fetch location analytics'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/locations/compare', methods=['GET'])
 @location_owner_or_admin_required
 def admin_locations_compare():
     """Compare multiple locations"""
+    conn = None
     try:
         ids_param = request.args.get('ids', '')
         days = int(request.args.get('days', 30))
@@ -4991,17 +5016,20 @@ def admin_locations_compare():
             })
 
         cursor.close()
-        conn.close()
         return jsonify({'comparisons': comparisons}), 200
     except Exception as e:
         logger.error(f"Admin locations compare error: {e}")
         return jsonify({'error': 'Failed to compare locations'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/users', methods=['GET'])
 @admin_required
 def admin_users():
     """Get paginated user list"""
+    conn = None
     try:
         page = int(request.args.get('page', 1))
         limit = min(int(request.args.get('limit', 25)), 100)
@@ -5050,17 +5078,20 @@ def admin_users():
                 u['last_login'] = u['last_login'].isoformat()
 
         cursor.close()
-        conn.close()
         return jsonify({'users': users, 'total': total, 'page': page, 'limit': limit}), 200
     except Exception as e:
         logger.error(f"Admin users error: {e}")
         return jsonify({'error': 'Failed to fetch users'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/users/<int:user_id>', methods=['PUT'])
 @admin_required
 def admin_update_user(user_id):
     """Update user role or active status"""
+    conn = None
     try:
         data = request.get_json()
         if not data:
@@ -5080,7 +5111,6 @@ def admin_update_user(user_id):
 
         if not updates:
             cursor.close()
-            conn.close()
             return jsonify({'error': 'No valid fields to update'}), 400
 
         params.append(user_id)
@@ -5088,17 +5118,20 @@ def admin_update_user(user_id):
         conn.commit()
 
         cursor.close()
-        conn.close()
         return jsonify({'message': 'User updated'}), 200
     except Exception as e:
         logger.error(f"Admin update user error: {e}")
         return jsonify({'error': 'Failed to update user'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/users/<int:user_id>/assign-locations', methods=['POST'])
 @admin_required
 def admin_assign_locations(user_id):
     """Assign locations to a location owner"""
+    conn = None
     try:
         data = request.get_json()
         location_ids = data.get('location_ids', [])
@@ -5112,7 +5145,6 @@ def admin_assign_locations(user_id):
         row = cursor.fetchone()
         if not row:
             cursor.close()
-            conn.close()
             return jsonify({'error': 'User not found'}), 404
         if row[0] != 'admin':
             cursor.execute("UPDATE users SET role = 'location_owner' WHERE id = %s", (user_id,))
@@ -5137,17 +5169,20 @@ def admin_assign_locations(user_id):
 
         conn.commit()
         cursor.close()
-        conn.close()
         return jsonify({'message': 'Locations assigned'}), 200
     except Exception as e:
         logger.error(f"Admin assign locations error: {e}")
         return jsonify({'error': 'Failed to assign locations'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/scraping/health', methods=['GET'])
 @admin_required
 def admin_scraping_health():
     """Get scraping health metrics"""
+    conn = None
     try:
         conn = db_pool.get_connection()
         cursor = conn.cursor(dictionary=True)
@@ -5208,17 +5243,20 @@ def admin_scraping_health():
             })
 
         cursor.close()
-        conn.close()
         return jsonify({'dailyStats': daily_stats, 'coverage': coverage, 'freshness': freshness}), 200
     except Exception as e:
         logger.error(f"Admin scraping health error: {e}")
         return jsonify({'error': 'Failed to fetch scraping health'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/map-clicks/analytics', methods=['GET'])
 @admin_required
 def admin_map_click_analytics():
     """Get map click analytics"""
+    conn = None
     try:
         days = int(request.args.get('days', 30))
         start_date = datetime.now() - timedelta(days=days)
@@ -5274,7 +5312,6 @@ def admin_map_click_analytics():
         correlation = [dict(row) for row in cursor.fetchall()]
 
         cursor.close()
-        conn.close()
         return jsonify({
             'topLocations': top_locations, 'dailyTrends': daily_trends,
             'hourlyTrends': hourly_trends, 'correlation': correlation
@@ -5282,12 +5319,16 @@ def admin_map_click_analytics():
     except Exception as e:
         logger.error(f"Admin map click analytics error: {e}")
         return jsonify({'error': 'Failed to fetch map click analytics'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 @app.route('/admin/my-locations', methods=['GET'])
 @location_owner_or_admin_required
 def admin_my_locations():
     """Get locations for location owner or all for admin"""
+    conn = None
     try:
         user_id = request.current_user['user_id']
         role = request.current_user.get('role', 'user')
@@ -5319,11 +5360,13 @@ def admin_my_locations():
 
         locations = [dict(row) for row in cursor.fetchall()]
         cursor.close()
-        conn.close()
         return jsonify({'locations': locations}), 200
     except Exception as e:
         logger.error(f"Admin my locations error: {e}")
         return jsonify({'error': 'Failed to fetch locations'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
 
 
 if __name__ == "__main__":

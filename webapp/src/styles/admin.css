@@ -330,7 +330,7 @@
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: var(--card-bg);
+  background: var(--input-bg, var(--card-bg));
   color: var(--text-color);
   font-size: 0.85rem;
   cursor: pointer;
@@ -390,7 +390,7 @@
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: var(--card-bg);
+  background: var(--input-bg, var(--card-bg));
   border: 1px solid var(--border-color);
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
