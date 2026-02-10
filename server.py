@@ -4831,7 +4831,7 @@ def admin_location_analytics(location_id):
         prev_start = start_date - timedelta(days=days)
 
         # Location info
-        cursor.execute("SELECT id, name, address, rating, google_maps_url FROM locations WHERE id = %s", (location_id,))
+        cursor.execute("SELECT id, name, address, google_maps_url FROM locations WHERE id = %s", (location_id,))
         location = cursor.fetchone()
         if not location:
             cursor.close()
