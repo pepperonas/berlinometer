@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -9,6 +9,14 @@ function LocationComparison({ token, locations, days = 30 }) {
   const [comparisons, setComparisons] = useState([])
   const [loading, setLoading] = useState(false)
   const [search, setSearch] = useState('')
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 480)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 480px)')
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const toggleLocation = (id) => {
     setSelectedIds(prev => {
@@ -135,10 +143,10 @@ function LocationComparison({ token, locations, days = 30 }) {
 
           {/* Radar Chart */}
           {radarData.length > 0 && (
-            <ResponsiveContainer width="100%" height={350}>
+            <ResponsiveContainer width="100%" height={isMobile ? 280 : 350}>
               <RadarChart data={radarData}>
                 <PolarGrid stroke="var(--border-color)" />
-                <PolarAngleAxis dataKey="hour" stroke="var(--text-secondary)" fontSize={10} />
+                <PolarAngleAxis dataKey="hour" stroke="var(--text-secondary)" fontSize={isMobile ? 9 : 10} />
                 <PolarRadiusAxis stroke="var(--text-secondary)" fontSize={10} domain={[0, 100]} />
                 <Tooltip contentStyle={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-color)' }} />
                 <Legend />

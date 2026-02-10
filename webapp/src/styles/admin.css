@@ -974,4 +974,119 @@
   .admin-table td {
     padding: 0.4rem 0.5rem;
   }
+
+  /* Hide less important table columns on mobile */
+  .admin-table__col--hide-mobile {
+    display: none;
+  }
+
+  /* Search inputs: remove min-width constraint */
+  .admin-search-input {
+    min-width: 0;
+    flex: 1;
+  }
+
+  /* Text truncation: tighter on mobile */
+  .admin-text-truncate {
+    max-width: 140px;
+  }
+
+  /* Compare search */
+  .admin-compare-search {
+    font-size: 0.85rem;
+  }
+
+  /* Tab buttons: larger touch targets */
+  .admin-tabs-mobile__item {
+    font-size: 0.7rem;
+    padding: 0.5rem 0.6rem;
+    min-height: 44px;
+  }
+
+  /* Page header: stack vertically */
+  .admin-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .admin-page-header__controls {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  /* Location dropdown: full width */
+  .admin-location-dropdown {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .admin-location-dropdown__trigger {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* Stats row: smaller cards */
+  .admin-stats-row .admin-stat {
+    min-width: 80px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Filters row: tighter gap */
+  .admin-filters-row {
+    gap: 0.5rem;
+  }
+
+  /* Chart cards: less padding */
+  .admin-chart-card {
+    padding: 0.75rem;
+  }
+
+  /* Opening hours: smaller font */
+  .admin-opening-hours__time,
+  .admin-opening-hours__day {
+    font-size: 0.75rem;
+  }
+
+  .admin-opening-hours__row {
+    gap: 0.5rem;
+  }
+
+  /* Modal: full width on mobile */
+  .admin-modal {
+    max-width: 100%;
+    margin: 0.5rem;
+    border-radius: 12px;
+  }
+
+  .admin-modal__header {
+    padding: 1rem;
+  }
+
+  .admin-modal__body {
+    padding: 1rem;
+  }
+
+  .admin-modal__footer {
+    padding: 0.75rem 1rem;
+  }
+
+  /* Charts row: force single column */
+  .admin-charts-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Page title */
+  .admin-page-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Time range buttons */
+  .admin-time-range__btn {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.75rem;
+  }
 }

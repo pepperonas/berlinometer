@@ -25,7 +25,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-VPS_HOST="root@<YOUR_VPS_IP>"
+VPS_HOST="root@69.62.121.168"
 VPS_PATH="/var/www/html/popular-times"
 LOCAL_BUILD_DIR="./build"
 BACKUP_DIR="$VPS_PATH/deployment-backups"

@@ -79,13 +79,13 @@ function UserManagement({ token }) {
         <table className="admin-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th className="admin-table__col--hide-mobile">ID</th>
               <th>Username</th>
               <th>Email</th>
               <th>Rolle</th>
               <th>Aktiv</th>
-              <th>Google</th>
-              <th>Locations</th>
+              <th className="admin-table__col--hide-mobile">Google</th>
+              <th className="admin-table__col--hide-mobile">Locations</th>
               <th>Registriert</th>
               <th>Letzter Login</th>
               <th>Aktionen</th>
@@ -99,7 +99,7 @@ function UserManagement({ token }) {
             ) : (
               users.map(u => (
                 <tr key={u.id}>
-                  <td>{u.id}</td>
+                  <td className="admin-table__col--hide-mobile">{u.id}</td>
                   <td>{u.username}</td>
                   <td className="admin-text-truncate">{u.email}</td>
                   <td>
@@ -122,8 +122,8 @@ function UserManagement({ token }) {
                       {u.is_active ? '✓' : '✕'}
                     </button>
                   </td>
-                  <td>{u.has_google ? '🔗' : '-'}</td>
-                  <td>{u.saved_locations}</td>
+                  <td className="admin-table__col--hide-mobile">{u.has_google ? '🔗' : '-'}</td>
+                  <td className="admin-table__col--hide-mobile">{u.saved_locations}</td>
                   <td className="admin-text-nowrap">{u.created_at ? new Date(u.created_at).toLocaleDateString('de-DE') : '-'}</td>
                   <td className="admin-text-nowrap">{u.last_login ? new Date(u.last_login).toLocaleDateString('de-DE') : '-'}</td>
                   <td>
