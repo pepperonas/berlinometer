@@ -52,13 +52,13 @@ This script:
 Application is wrapped in multiple context providers in this order:
 1. **GoogleOAuthProvider**: Google authentication (requires VITE_GOOGLE_CLIENT_ID)
 2. **LanguageProvider**: i18n support (German/English)
-3. **ThemeProvider**: Dark/Light/Berlin theme system
+3. **ThemeProvider**: xD/Dark/Light theme system
 4. **AuthProvider**: User authentication and JWT token management
 
 ### Routing Structure
 ```javascript
 /              → HomePage (main scraping interface)
-/insights      → InsightsPage (analytics dashboard)
+/admin         → AdminPage (admin panel, role-based access)
 ```
 
 ### Key Components Architecture
@@ -82,7 +82,7 @@ Application is wrapped in multiple context providers in this order:
 
 **Global State** (React Context):
 - `AuthContext`: User authentication, token, login/logout
-- `ThemeContext`: Theme selection (dark/light/berlin) with localStorage persistence
+- `ThemeContext`: Theme selection (xd/dark/light) with localStorage persistence
 - `LanguageContext`: i18n translations (de/en)
 
 **Local State**: Component-level useState for UI state
@@ -104,7 +104,7 @@ VITE_GOOGLE_CLIENT_ID=414227852820-...            # Google OAuth
 - `GET /latest-scraping` - Latest scraping data
 - `GET /location-history` - Historical data
 - `GET /user-locations` - User's saved locations
-- `GET /insights/*` - Analytics endpoints
+- `GET /admin/*` - Admin panel endpoints (role-based access)
 
 ### Styling System
 
@@ -281,13 +281,13 @@ pm2 restart popular-times   # Restart backend
 webapp/
 ├── src/
 │   ├── components/
+│   │   ├── admin/           # Admin panel (16 components)
 │   │   ├── layout/          # ActionBar, SideDrawer
 │   │   ├── ui/              # Dialog (unified modal)
-│   │   ├── insights/        # Analytics components
 │   │   └── *.jsx            # Feature components
 │   ├── contexts/            # React Context providers
-│   ├── pages/               # Route components
-│   ├── styles/              # Global theme CSS
+│   ├── pages/               # Route components (HomePage, AdminPage)
+│   ├── styles/              # Global theme CSS, admin.css
 │   ├── utils/               # Utility functions
 │   ├── App.jsx              # Route configuration
 │   └── main.jsx             # App entry point with providers

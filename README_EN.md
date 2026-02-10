@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml/badge.svg)](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.8.0-blue.svg)](https://github.com/pepperonas/berlinometer)
+[![Version](https://img.shields.io/badge/version-2.9.0-blue.svg)](https://github.com/pepperonas/berlinometer)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fberlinometer.de)](https://berlinometer.de)
 
 [![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -49,13 +49,15 @@ Find out where the party is tonight. Berlinometer scrapes Google Maps occupancy 
 - **Real-time scraping** - Live occupancy data from Google Maps, auto-refreshed every 10-13 min
 - **Historical charts** - 12h / 24h / 48h occupancy trends per location
 - **Mood barometer** - City-wide vibe indicator based on aggregate occupancy
-- **3 themes** - Dark, Light, Berlin (BVG yellow)
+- **3 themes** - xD (celox.io SaaS, default), Dark, Light
 - **2 languages** - German and English
 - **Google OAuth** - One-click login alongside email/password auth
 - **PWA-ready** - Installable on mobile, works offline with cached data
 - **Distance sorting** - Sort locations by distance from your current position
 - **Saved locations** - Bookmark and reorder your favourite spots
-- **Insights dashboard** - Analytics page with aggregated trends
+- **Admin panel** - Analytics, user management, scraping health, map click analytics
+- **Role system** - User, admin, location owner with B2B access
+- **Location analytics** - Heatmaps, timelines, peak hours, location comparison
 
 ---
 
@@ -118,14 +120,14 @@ berlinometer/
 ├── webapp/                        # React frontend
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── admin/             # Admin panel (16 components)
 │   │   │   ├── layout/            # ActionBar, SideDrawer
 │   │   │   ├── ui/                # Dialog (unified modal)
-│   │   │   ├── insights/          # Analytics components
 │   │   │   └── *.jsx              # Feature components
 │   │   ├── contexts/              # Auth, Theme, Language providers
-│   │   ├── pages/                 # HomePage, InsightsPage
+│   │   ├── pages/                 # HomePage, AdminPage
 │   │   ├── utils/                 # Distance calc, analytics helpers
-│   │   └── styles/                # Theme CSS
+│   │   └── styles/                # Theme CSS, Admin CSS
 │   ├── public/                    # Static assets
 │   ├── deploy-safe.sh             # Safe deployment script
 │   ├── vite.config.js             # Default Vite config
@@ -195,14 +197,14 @@ The application is wrapped in multiple context providers in `main.jsx`:
 
 1. **GoogleOAuthProvider** - Google authentication (requires `VITE_GOOGLE_CLIENT_ID`)
 2. **LanguageProvider** - i18n support (German/English)
-3. **ThemeProvider** - Dark/Light/Berlin theme system
+3. **ThemeProvider** - xD/Dark/Light theme system
 4. **AuthProvider** - User authentication and JWT token management
 
 ### Routing
 
 ```
 /              -> HomePage (main scraping interface)
-/insights      -> InsightsPage (analytics dashboard)
+/admin         -> AdminPage (admin panel, role-based access)
 ```
 
 ### Components
@@ -226,7 +228,7 @@ The application is wrapped in multiple context providers in `main.jsx`:
 
 **Global State** (React Context):
 - `AuthContext` - User authentication, token, login/logout
-- `ThemeContext` - Theme selection (dark/light/berlin) with localStorage persistence
+- `ThemeContext` - Theme selection (xd/dark/light) with localStorage persistence
 - `LanguageContext` - i18n translations (de/en)
 
 ### Styling / Themes
@@ -279,7 +281,16 @@ The Python Flask backend runs on port 5044.
 | `GET` | `/latest-scraping` | Latest scraping data |
 | `GET` | `/location-history` | Historical data |
 | `GET` | `/user-locations` | User's saved locations |
-| `GET` | `/insights/*` | Analytics endpoints |
+| `GET` | `/admin/overview` | Admin: Overview metrics |
+| `GET` | `/admin/locations` | Admin: All locations with stats |
+| `GET` | `/admin/locations/<id>/analytics` | Location analytics (heatmap, timeline) |
+| `GET` | `/admin/locations/compare` | Location comparison |
+| `GET` | `/admin/users` | Admin: User list (paginated) |
+| `PUT` | `/admin/users/<id>` | Admin: Update user role/status |
+| `POST` | `/admin/users/<id>/assign-locations` | Admin: Assign location owner |
+| `GET` | `/admin/scraping/health` | Admin: Scraping monitoring |
+| `GET` | `/admin/map-clicks/analytics` | Admin: Map click analytics |
+| `GET` | `/admin/my-locations` | Location owner: Own locations |
 
 ---
 

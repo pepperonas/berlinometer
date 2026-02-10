@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml/badge.svg)](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.8.0-blue.svg)](https://github.com/pepperonas/berlinometer)
+[![Version](https://img.shields.io/badge/version-2.9.0-blue.svg)](https://github.com/pepperonas/berlinometer)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fberlinometer.de)](https://berlinometer.de)
 
 [![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -49,13 +49,15 @@ Finde heraus, wo heute Nacht was los ist. Berlinometer scrapt Google-Maps-Auslas
 - **Echtzeit-Scraping** - Live-Auslastungsdaten von Google Maps, automatisch alle 10-13 Min aktualisiert
 - **Historische Charts** - 12h / 24h / 48h Auslastungstrends pro Location
 - **Stimmungsbarometer** - Stadtweiter Vibe-Indikator basierend auf aggregierter Auslastung
-- **3 Themes** - Dark, Light, Berlin (BVG-Gelb)
+- **3 Themes** - xD (celox.io SaaS, Default), Dark, Light
 - **2 Sprachen** - Deutsch und Englisch
 - **Google OAuth** - Ein-Klick-Login neben E-Mail/Passwort-Authentifizierung
 - **PWA-fähig** - Auf Mobilgeräten installierbar, funktioniert offline mit gecachten Daten
 - **Entfernungssortierung** - Locations nach Entfernung vom aktuellen Standort sortieren
 - **Gespeicherte Locations** - Lieblingsspots bookmarken und umsortieren
-- **Insights-Dashboard** - Analytics-Seite mit aggregierten Trends
+- **Admin Panel** - Analytics, User Management, Scraping Health, Map Click Analytics
+- **Rollen-System** - User, Admin, Location-Owner mit B2B-Zugang
+- **Location Analytics** - Heatmaps, Timelines, Peak Hours, Location-Vergleich
 
 ---
 
@@ -118,14 +120,14 @@ berlinometer/
 ├── webapp/                        # React Frontend
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── admin/             # Admin Panel (16 Komponenten)
 │   │   │   ├── layout/            # ActionBar, SideDrawer
 │   │   │   ├── ui/                # Dialog (einheitlicher Modal)
-│   │   │   ├── insights/          # Analytics-Komponenten
 │   │   │   └── *.jsx              # Feature-Komponenten
 │   │   ├── contexts/              # Auth, Theme, Language Provider
-│   │   ├── pages/                 # HomePage, InsightsPage
+│   │   ├── pages/                 # HomePage, AdminPage
 │   │   ├── utils/                 # Distanz-Berechnung, Analytics-Helfer
-│   │   └── styles/                # Theme-CSS
+│   │   └── styles/                # Theme-CSS, Admin-CSS
 │   ├── public/                    # Statische Assets
 │   ├── deploy-safe.sh             # Sicheres Deployment-Skript
 │   ├── vite.config.js             # Standard Vite-Konfiguration
@@ -195,14 +197,14 @@ Die Anwendung wird in `main.jsx` in mehrere Context Provider eingebettet:
 
 1. **GoogleOAuthProvider** - Google-Authentifizierung (benötigt `VITE_GOOGLE_CLIENT_ID`)
 2. **LanguageProvider** - i18n-Unterstützung (Deutsch/Englisch)
-3. **ThemeProvider** - Dark/Light/Berlin Theme-System
+3. **ThemeProvider** - xD/Dark/Light Theme-System
 4. **AuthProvider** - Benutzer-Authentifizierung und JWT-Token-Management
 
 ### Routing
 
 ```
 /              -> HomePage (Haupt-Scraping-Interface)
-/insights      -> InsightsPage (Analytics-Dashboard)
+/admin         -> AdminPage (Admin Panel, rollenbasierter Zugang)
 ```
 
 ### Komponenten
@@ -226,7 +228,7 @@ Die Anwendung wird in `main.jsx` in mehrere Context Provider eingebettet:
 
 **Globaler State** (React Context):
 - `AuthContext` - Benutzer-Authentifizierung, Token, Login/Logout
-- `ThemeContext` - Theme-Auswahl (dark/light/berlin) mit localStorage-Persistenz
+- `ThemeContext` - Theme-Auswahl (xd/dark/light) mit localStorage-Persistenz
 - `LanguageContext` - i18n-Übersetzungen (de/en)
 
 ### Styling / Themes
@@ -279,7 +281,16 @@ Das Python-Flask-Backend läuft auf Port 5044.
 | `GET` | `/latest-scraping` | Neueste Scraping-Daten |
 | `GET` | `/location-history` | Historische Daten |
 | `GET` | `/user-locations` | Gespeicherte Locations des Benutzers |
-| `GET` | `/insights/*` | Analytics-Endpunkte |
+| `GET` | `/admin/overview` | Admin: Uebersichts-Metriken |
+| `GET` | `/admin/locations` | Admin: Alle Locations mit Stats |
+| `GET` | `/admin/locations/<id>/analytics` | Location Analytics (Heatmap, Timeline) |
+| `GET` | `/admin/locations/compare` | Location-Vergleich |
+| `GET` | `/admin/users` | Admin: User-Liste (paginiert) |
+| `PUT` | `/admin/users/<id>` | Admin: User-Rolle/Status aendern |
+| `POST` | `/admin/users/<id>/assign-locations` | Admin: Location-Owner zuweisen |
+| `GET` | `/admin/scraping/health` | Admin: Scraping-Monitoring |
+| `GET` | `/admin/map-clicks/analytics` | Admin: Map Click Analytics |
+| `GET` | `/admin/my-locations` | Location-Owner: Eigene Locations |
 
 ---
 
