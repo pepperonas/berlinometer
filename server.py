@@ -4736,7 +4736,7 @@ def admin_locations():
 
         query = """
             SELECT
-                l.id, l.name, l.address, l.rating,
+                l.id, l.name, l.address,
                 COUNT(DISTINCT oh.id) as data_points,
                 ROUND(AVG(CASE WHEN oh.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN oh.occupancy_percent END), 1) as avg_occupancy_7d,
                 MAX(oh.timestamp) as last_scraping,
@@ -4756,11 +4756,11 @@ def admin_locations():
             query += " WHERE (l.name LIKE %s OR l.address LIKE %s)"
             params.extend([f'%{search}%', f'%{search}%'])
 
-        query += " GROUP BY l.id, l.name, l.address, l.rating, mc.click_count, ul.save_count"
+        query += " GROUP BY l.id, l.name, l.address, mc.click_count, ul.save_count"
 
         # Safe sort columns
         safe_sorts = {
-            'name': 'l.name', 'rating': 'l.rating', 'data_points': 'data_points',
+            'name': 'l.name', 'data_points': 'data_points',
             'avg_occupancy_7d': 'avg_occupancy_7d', 'last_scraping': 'last_scraping',
             'map_clicks': 'map_clicks', 'user_saves': 'user_saves'
         }
@@ -4879,10 +4879,10 @@ def admin_location_analytics(location_id):
 
         # Map clicks for this location
         cursor.execute("""
-            SELECT DATE(clicked_at) as date, COUNT(*) as count
+            SELECT DATE(timestamp) as date, COUNT(*) as count
             FROM map_clicks
-            WHERE location_id = %s AND clicked_at >= %s
-            GROUP BY DATE(clicked_at)
+            WHERE location_id = %s AND timestamp >= %s
+            GROUP BY DATE(timestamp)
             ORDER BY date
         """, (location_id, start_date))
         map_clicks_daily = [{'date': row['date'].isoformat(), 'count': row['count']} for row in cursor.fetchall()]
@@ -4967,7 +4967,7 @@ def admin_locations_compare():
             peak = cursor.fetchone()
 
             # Map clicks
-            cursor.execute("SELECT COUNT(*) as count FROM map_clicks WHERE location_id = %s AND clicked_at >= %s", (loc_id, start_date))
+            cursor.execute("SELECT COUNT(*) as count FROM map_clicks WHERE location_id = %s AND timestamp >= %s", (loc_id, start_date))
             clicks = cursor.fetchone()['count']
 
             # Hourly average for radar chart
@@ -5231,7 +5231,7 @@ def admin_map_click_analytics():
             SELECT l.id, l.name, COUNT(mc.id) as clicks
             FROM map_clicks mc
             JOIN locations l ON mc.location_id = l.id
-            WHERE mc.clicked_at >= %s
+            WHERE mc.timestamp >= %s
             GROUP BY l.id, l.name
             ORDER BY clicks DESC
             LIMIT 20
@@ -5240,20 +5240,20 @@ def admin_map_click_analytics():
 
         # Daily click trends
         cursor.execute("""
-            SELECT DATE(clicked_at) as date, COUNT(*) as clicks
+            SELECT DATE(timestamp) as date, COUNT(*) as clicks
             FROM map_clicks
-            WHERE clicked_at >= %s
-            GROUP BY DATE(clicked_at)
+            WHERE timestamp >= %s
+            GROUP BY DATE(timestamp)
             ORDER BY date
         """, (start_date,))
         daily_trends = [{'date': row['date'].isoformat(), 'clicks': row['clicks']} for row in cursor.fetchall()]
 
         # Hourly click trends
         cursor.execute("""
-            SELECT HOUR(clicked_at) as hour, COUNT(*) as clicks
+            SELECT HOUR(timestamp) as hour, COUNT(*) as clicks
             FROM map_clicks
-            WHERE clicked_at >= %s
-            GROUP BY HOUR(clicked_at)
+            WHERE timestamp >= %s
+            GROUP BY HOUR(timestamp)
             ORDER BY hour
         """, (start_date,))
         hourly_trends = [dict(row) for row in cursor.fetchall()]
@@ -5264,7 +5264,7 @@ def admin_map_click_analytics():
                 COUNT(mc.id) as clicks,
                 ROUND(AVG(oh.occupancy_percent), 1) as avg_occupancy
             FROM locations l
-            LEFT JOIN map_clicks mc ON l.id = mc.location_id AND mc.clicked_at >= %s
+            LEFT JOIN map_clicks mc ON l.id = mc.location_id AND mc.timestamp >= %s
             LEFT JOIN occupancy_history oh ON l.id = oh.location_id AND oh.timestamp >= %s AND oh.occupancy_percent IS NOT NULL
             GROUP BY l.id, l.name
             HAVING clicks > 0
@@ -5297,23 +5297,23 @@ def admin_my_locations():
 
         if role == 'admin':
             cursor.execute("""
-                SELECT l.id, l.name, l.address, l.rating,
+                SELECT l.id, l.name, l.address,
                     ROUND(AVG(CASE WHEN oh.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN oh.occupancy_percent END), 1) as avg_occupancy_7d,
                     COUNT(DISTINCT oh.id) as data_points
                 FROM locations l
                 LEFT JOIN occupancy_history oh ON l.id = oh.location_id
-                GROUP BY l.id, l.name, l.address, l.rating
+                GROUP BY l.id, l.name, l.address
                 ORDER BY l.name
             """)
         else:
             cursor.execute("""
-                SELECT l.id, l.name, l.address, l.rating,
+                SELECT l.id, l.name, l.address,
                     ROUND(AVG(CASE WHEN oh.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN oh.occupancy_percent END), 1) as avg_occupancy_7d,
                     COUNT(DISTINCT oh.id) as data_points
                 FROM locations l
                 INNER JOIN location_owners lo ON l.id = lo.location_id AND lo.user_id = %s AND lo.is_active = 1
                 LEFT JOIN occupancy_history oh ON l.id = oh.location_id
-                GROUP BY l.id, l.name, l.address, l.rating
+                GROUP BY l.id, l.name, l.address
                 ORDER BY l.name
             """, (user_id,))
 
