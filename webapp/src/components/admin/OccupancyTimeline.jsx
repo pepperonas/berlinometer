@@ -15,7 +15,7 @@ function OccupancyTimeline({ data }) {
             dataKey="timestamp"
             stroke="var(--text-secondary)"
             fontSize={11}
-            tickFormatter={t => new Date(t).toLocaleDateString('de-DE', { day: '2d', month: '2d' })}
+            tickFormatter={t => new Date(t).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}
           />
           <YAxis stroke="var(--text-secondary)" fontSize={12} domain={[0, 100]} unit="%" />
           <Tooltip
