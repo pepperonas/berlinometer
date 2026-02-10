@@ -260,6 +260,14 @@
   transform: scale(0.98);
 }
 
+.side-drawer__version {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  margin-top: 0.75rem;
+}
+
 /* ===================================
    Responsive Design
    ================================ */

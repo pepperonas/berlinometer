@@ -156,7 +156,7 @@ function SideDrawer({ isOpen, onClose, user, onNavigate, onLogout }) {
               </a>
 
               <a
-                href="https://github.com/pepperonas"
+                href="https://github.com/pepperonas/berlinometer"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="side-drawer__nav-item side-drawer__social-link"
@@ -182,6 +182,7 @@ function SideDrawer({ isOpen, onClose, user, onNavigate, onLogout }) {
               <span className="side-drawer__nav-icon">🚪</span>
               <span className="side-drawer__nav-label">Abmelden</span>
             </button>
+            <div className="side-drawer__version">v2.8.0</div>
           </div>
         </div>
       </nav>
