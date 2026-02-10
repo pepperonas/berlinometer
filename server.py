@@ -1615,8 +1615,8 @@ app = Flask(__name__)
 CORS(app)
 
 # JWT Configuration
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'popular-times-secret-key-change-in-production')
-app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID', '414227852820-74ebk6vis2alnr2q92hgr482d6f4pcbu.apps.googleusercontent.com')
+app.config['JWT_SECRET_KEY'] = os.environ['JWT_SECRET_KEY']
+app.config['GOOGLE_CLIENT_ID'] = os.environ['GOOGLE_CLIENT_ID']
 
 # MySQL Connection Pool
 try:

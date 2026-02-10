@@ -114,7 +114,7 @@ source /var/www/html/popular-times/venv/bin/activate
 # MySQL Credentials setzen (KRITISCH!)
 export MYSQL_HOST=localhost
 export MYSQL_USER=martin
-export MYSQL_PASSWORD='N)ZyhegaJ#YLH(c&Jhx7'
+export MYSQL_PASSWORD='<YOUR_MYSQL_PASSWORD>'
 export MYSQL_DATABASE=popular_times_db
 export MYSQL_PORT=3306
 
@@ -585,7 +585,7 @@ ps aux | grep gmaps-scraper
 ls -la /var/www/html/popular-times/popular-times-scrapings/ | tail -5
 
 # Prüfe Datenbank-Einträge
-mysql -u martin -p'N)ZyhegaJ#YLH(c&Jhx7' popular_times_db -e "
+mysql -u martin -p'<YOUR_MYSQL_PASSWORD>' popular_times_db -e "
 SELECT MAX(timestamp) FROM occupancy_history;"
 ```
 

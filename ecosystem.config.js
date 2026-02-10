@@ -14,10 +14,10 @@ module.exports = {
         PATH: '/var/www/html/popular-times/venv/bin:/usr/local/bin:/usr/bin:/bin',
         MYSQL_HOST: 'localhost',
         MYSQL_USER: 'martin',
-        MYSQL_PASSWORD: 'N)ZyhegaJ#YLH(c&Jhx7',
+        MYSQL_PASSWORD: process.env.MYSQL_PASSWORD || '',
         MYSQL_DATABASE: 'popular_times_db',
         MYSQL_PORT: '3306',
-        GOOGLE_CLIENT_ID: '414227852820-74ebk6vis2alnr2q92hgr482d6f4pcbu.apps.googleusercontent.com'
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || ''
       },
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',

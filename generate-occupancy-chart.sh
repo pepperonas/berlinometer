@@ -9,9 +9,9 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # VPS Verbindung
-VPS_HOST="root@69.62.121.168"
+VPS_HOST="${VPS_USER:-root}@${VPS_IP:?Set VPS_IP env var}"
 MYSQL_USER="martin"
-MYSQL_PASS='N)ZyhegaJ#YLH(c&Jhx7'
+MYSQL_PASS="${MYSQL_PASSWORD:?Set MYSQL_PASSWORD env var}"
 MYSQL_DB="popular_times_db"
 
 echo -e "${CYAN}╔════════════════════════════════════════════════════════════╗${NC}"

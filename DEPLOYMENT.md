@@ -78,18 +78,18 @@ If you must deploy manually, use this EXACT command:
 npm run build
 
 # Deploy ONLY specific files
-rsync -av build/index.html root@69.62.121.168:/var/www/html/popular-times/
-rsync -av build/assets/ root@69.62.121.168:/var/www/html/popular-times/assets/
-rsync -av build/manifest.json root@69.62.121.168:/var/www/html/popular-times/
-rsync -av build/sw.js root@69.62.121.168:/var/www/html/popular-times/
-rsync -av build/*.png root@69.62.121.168:/var/www/html/popular-times/
-rsync -av build/favicon.ico root@69.62.121.168:/var/www/html/popular-times/
+rsync -av build/index.html root@<YOUR_VPS_IP>:/var/www/html/popular-times/
+rsync -av build/assets/ root@<YOUR_VPS_IP>:/var/www/html/popular-times/assets/
+rsync -av build/manifest.json root@<YOUR_VPS_IP>:/var/www/html/popular-times/
+rsync -av build/sw.js root@<YOUR_VPS_IP>:/var/www/html/popular-times/
+rsync -av build/*.png root@<YOUR_VPS_IP>:/var/www/html/popular-times/
+rsync -av build/favicon.ico root@<YOUR_VPS_IP>:/var/www/html/popular-times/
 ```
 
 ⚠️ **NEVER USE:**
 ```bash
 # DANGEROUS - DO NOT USE
-rsync -av --delete build/ root@69.62.121.168:/var/www/html/popular-times/
+rsync -av --delete build/ root@<YOUR_VPS_IP>:/var/www/html/popular-times/
 ```
 
 ---
@@ -143,13 +143,13 @@ The safe deployment script automatically rolls back if:
 
 ```bash
 # List available backups
-ssh root@69.62.121.168 "ls -lt /var/www/html/popular-times/deployment-backups/"
+ssh root@<YOUR_VPS_IP> "ls -lt /var/www/html/popular-times/deployment-backups/"
 
 # Rollback to specific backup
-ssh root@69.62.121.168 "cp -r /var/www/html/popular-times/deployment-backups/frontend-TIMESTAMP/* /var/www/html/popular-times/"
+ssh root@<YOUR_VPS_IP> "cp -r /var/www/html/popular-times/deployment-backups/frontend-TIMESTAMP/* /var/www/html/popular-times/"
 
 # Example:
-ssh root@69.62.121.168 "cp -r /var/www/html/popular-times/deployment-backups/frontend-20251110-193045/* /var/www/html/popular-times/"
+ssh root@<YOUR_VPS_IP> "cp -r /var/www/html/popular-times/deployment-backups/frontend-20251110-193045/* /var/www/html/popular-times/"
 
 # Verify rollback
 curl https://berlinometer.de/
@@ -164,13 +164,13 @@ curl https://berlinometer.de/
 **Check:**
 ```bash
 # 1. Verify index.html exists
-ssh root@69.62.121.168 "ls -lh /var/www/html/popular-times/index.html"
+ssh root@<YOUR_VPS_IP> "ls -lh /var/www/html/popular-times/index.html"
 
 # 2. Check asset files
-ssh root@69.62.121.168 "ls -lh /var/www/html/popular-times/assets/"
+ssh root@<YOUR_VPS_IP> "ls -lh /var/www/html/popular-times/assets/"
 
 # 3. Check nginx error log
-ssh root@69.62.121.168 "tail -50 /var/log/nginx/berlinometer.de.error.log"
+ssh root@<YOUR_VPS_IP> "tail -50 /var/log/nginx/berlinometer.de.error.log"
 ```
 
 **Solution:**
@@ -198,11 +198,11 @@ curl -I https://berlinometer.de/latest-scraping
 **Check:**
 ```bash
 # Verify scraper files exist
-ssh root@69.62.121.168 "ls -lh /var/www/html/popular-times/*.sh"
-ssh root@69.62.121.168 "ls -lh /var/www/html/popular-times/server.py"
+ssh root@<YOUR_VPS_IP> "ls -lh /var/www/html/popular-times/*.sh"
+ssh root@<YOUR_VPS_IP> "ls -lh /var/www/html/popular-times/server.py"
 
 # Check cron job
-ssh root@69.62.121.168 "crontab -l | grep schedule_scraper"
+ssh root@<YOUR_VPS_IP> "crontab -l | grep schedule_scraper"
 ```
 
 **Emergency Fix:**
@@ -228,7 +228,7 @@ Before deploying, verify:
 - [ ] Frontend built successfully (`npm run build`)
 - [ ] Build directory contains all files
 - [ ] Using `deploy-safe.sh` script (NOT manual rsync)
-- [ ] VPS connection works (`ssh root@69.62.121.168`)
+- [ ] VPS connection works (`ssh root@<YOUR_VPS_IP>`)
 - [ ] No ongoing scraping process (check time)
 
 After deploying, verify:
