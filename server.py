@@ -2764,9 +2764,33 @@ def get_latest_scraping():
                 }
             }), 404
         
-        # Sortiere nach Dateiname (Timestamp)
+        # Sortiere nach Dateiname (Timestamp) - neueste zuerst
         json_files.sort(reverse=True)
+
+        # Wähle die beste aktuelle Datei (nicht nur die neueste)
+        # Prüfe die neuesten Dateien und bevorzuge solche mit hoher Erfolgsrate
         latest_file = json_files[0]
+        for candidate in json_files[:5]:  # Prüfe bis zu 5 neueste Dateien
+            try:
+                candidate_path = os.path.join(scraping_dir, candidate)
+                with open(candidate_path, 'r', encoding='utf-8') as cf:
+                    candidate_data = json.load(cf)
+                total = candidate_data.get('total_locations', 0)
+                successful = candidate_data.get('successful_scrapes', 0)
+                results_count = len(candidate_data.get('results', []))
+                error_count = sum(1 for r in candidate_data.get('results', []) if r.get('error'))
+
+                # Gute Datei: viele Results und wenige Fehler
+                if results_count > 0 and error_count / results_count < 0.3:
+                    latest_file = candidate
+                    logger.info(f"✅ Beste Datei gewählt: {candidate} ({results_count} results, {error_count} errors)")
+                    break
+                else:
+                    logger.info(f"⚠️ Datei übersprungen: {candidate} ({results_count} results, {error_count} errors)")
+            except Exception as e:
+                logger.warning(f"⚠️ Fehler beim Prüfen von {candidate}: {e}")
+                continue
+
         filepath = os.path.join(scraping_dir, latest_file)
         
         logger.info(f"📂 Lade Datei: {filepath}")

@@ -130,7 +130,7 @@ async def _perform_scraping(page, url, location_name_from_csv, start_time, retri
 			'[aria-label*="Derzeit"]',
 			'[aria-label*="derzeit"]',
 			'[aria-label*="Currently"]',
-			'[aria-label*="Live"]'
+			'[aria-label*="ausgelastet"]'
 		]
 
 		tasks = [page.query_selector_all(selector) for selector in aria_selectors]
@@ -218,14 +218,27 @@ async def _perform_scraping(page, url, location_name_from_csv, start_time, retri
 
 def validate_occupancy_text(text: str) -> bool:
 	"""
-	Validiert ob ein Text Auslastungsdaten enthält
+	Validiert ob ein Text tatsächlich Auslastungsdaten enthält.
+	Strenge Prüfung um Google Reviews und Nearby-Places-Listings auszufiltern.
 	"""
 	if not text or len(text.strip()) < 5:
 		return False
 
-	# Prüfe auf relevante Keywords
-	keywords = ['ausgelastet', 'derzeit', 'um ', '%', 'live', 'occupancy']
-	return any(keyword in text.lower() for keyword in keywords)
+	text_lower = text.lower()
+
+	# Direkte Occupancy-Keywords (zuverlässig)
+	if any(kw in text_lower for kw in ['ausgelastet', 'derzeit', 'currently', 'occupancy']):
+		return True
+
+	# Prozentangabe vorhanden (z.B. "zu 45 % ausgelastet")
+	if re.search(r'\d+\s*%', text):
+		return True
+
+	# Zeitbasiertes Pattern: "Um HH:MM Uhr zu X% ausgelastet"
+	if re.search(r'[Uu]m\s+\d{1,2}[:.]\d{2}', text):
+		return True
+
+	return False
 
 
 def clean_occupancy_text(text: str) -> str:
@@ -881,22 +894,38 @@ async def process_locations(locations):
 		# Batches concurrent verarbeiten
 		all_results = []
 		batch_tasks = []
+		batch_locations = []  # Track which locations belong to each task
 
 		for batch_id, batch in enumerate(batches, 1):
 			task = process_batch_concurrent(batch, context, semaphore, batch_id)
 			batch_tasks.append(task)
+			batch_locations.append(batch)
 
 			# Starte nicht zu viele Batches gleichzeitig
 			if len(batch_tasks) >= max_concurrent or batch_id == len(batches):
 				batch_results = await asyncio.gather(*batch_tasks, return_exceptions=True)
 
-				for batch_result in batch_results:
+				for idx, batch_result in enumerate(batch_results):
 					if isinstance(batch_result, Exception):
 						print(f"❌ Batch-Fehler: {batch_result}")
+						# Erzeuge Error-Results für alle Locations im fehlgeschlagenen Batch
+						for loc in batch_locations[idx]:
+							all_results.append({
+								'location_name': loc['name'],
+								'error': str(batch_result),
+								'statistics': {'success': False, 'processing_time_seconds': 0, 'retries_needed': 0},
+								'url': loc['url'],
+								'timestamp': datetime.now().isoformat(),
+								'live_occupancy': None,
+								'is_live_data': False,
+								'address': None,
+								'rating': None
+							})
 					elif isinstance(batch_result, list):
 						all_results.extend(batch_result)
 
 				batch_tasks = []
+				batch_locations = []
 
 				# Kurze Pause zwischen Batch-Gruppen
 				if batch_id < len(batches):
