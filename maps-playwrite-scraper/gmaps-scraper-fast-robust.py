@@ -80,7 +80,7 @@ async def _perform_scraping(page, url, location_name_from_csv, start_time, retri
 	print("🍪 Prüfe Cookie-Banner...")
 	# Optimierte Cookie-Behandlung mit Timeout
 	try:
-		await page.wait_for_timeout(800)  # Reduziert
+		await page.wait_for_timeout(1200)
 		# Robustere Cookie-Selektoren
 		cookie_selectors = [
 			'button:has-text("Accept")',
@@ -105,11 +105,13 @@ async def _perform_scraping(page, url, location_name_from_csv, start_time, retri
 		pass
 
 	print("⏳ Warte auf Maps-Inhalte...")
-	# Intelligentes Warten auf Content
+	# Warte auf Content - mit JS braucht der Occupancy-Chart etwas länger
 	try:
-		await page.wait_for_selector('[data-value="Bewertungen"], h1[data-attrid="title"], h1.DUwDvf', timeout=8000)
+		await page.wait_for_selector('[data-value="Bewertungen"], h1[data-attrid="title"], h1.DUwDvf', timeout=10000)
+		# Zusätzliche Wartezeit für JS-gerenderte Occupancy-Elemente
+		await page.wait_for_timeout(2000)
 	except:
-		await page.wait_for_timeout(3000)  # Fallback
+		await page.wait_for_timeout(4000)  # Fallback
 
 	print("🔍 Suche Live-Auslastung...")
 	live_data = None
@@ -782,14 +784,16 @@ async def create_browser_context():
 
 async def setup_page_with_blocking(context):
 	"""
-	Erstellt optimierte Page mit erweiterten Resource-Blocking
+	Erstellt optimierte Page mit Resource-Blocking für nicht-essentielle Ressourcen.
+	WICHTIG: JavaScript und CSS werden NICHT blockiert!
+	Google Maps ist eine JS-SPA und braucht beides um den Occupancy-Chart zu rendern.
+	Nur Bilder, Fonts und Tracking werden blockiert.
 	"""
 	page = await context.new_page()
 
-	# Erweiterte Resource-Blockierung
+	# Nur Medien und Tracking blockieren - JS und CSS bleiben aktiv!
 	blocked_resources = [
 		"**/*.{png,jpg,jpeg,gif,svg,webp,ico}",  # Bilder
-		"**/*.{css,scss,sass,less}",  # Stylesheets
 		"**/*.{woff,woff2,ttf,otf,eot}",  # Fonts
 		"**/ads/**",  # Ads
 		"**/analytics/**",  # Analytics
@@ -798,7 +802,6 @@ async def setup_page_with_blocking(context):
 		"**/googletagmanager/**",  # GTM
 		"**/facebook.com/**",  # Facebook
 		"**/twitter.com/**",  # Twitter
-		"**/*.js"  # JavaScript (aggressive)
 	]
 
 	for resource_pattern in blocked_resources:
