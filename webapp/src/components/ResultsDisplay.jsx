@@ -618,7 +618,29 @@ function ResultsDisplay({ results, user, token }) {
       }
     }
 
-    // Pattern 4: Just "Geschlossen"
+    // Pattern 4: "Schließt demnächst · HH:MM" or "Schließt demnächst um HH:MM"
+    const closingSoonMatch = cleanText.match(/Schließt demnächst.*?(\d{1,2}):(\d{2})/i)
+    if (closingSoonMatch) {
+      const closeTime = `${closingSoonMatch[1].padStart(2, '0')}:${closingSoonMatch[2]}`
+      return {
+        isOpen: true,
+        closeTime: closeTime,
+        status: 'open',
+        raw: cleanText
+      }
+    }
+
+    // Pattern 5: "Vorübergehend geschlossen"
+    if (/vorübergehend geschlossen/i.test(cleanText)) {
+      return {
+        isOpen: false,
+        openTime: null,
+        status: 'closed_unknown',
+        raw: cleanText
+      }
+    }
+
+    // Pattern 6: Just "Geschlossen"
     if (/^geschlossen$/i.test(cleanText)) {
       return {
         isOpen: false,

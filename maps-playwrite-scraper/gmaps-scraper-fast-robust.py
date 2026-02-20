@@ -757,8 +757,22 @@ def get_occupancy_color(current_percent, normal_percent):
 
 async def create_browser_context():
 	"""
-	Erstellt optimierten Browser-Context für Wiederverwendung
+	Erstellt optimierten Browser-Context für Wiederverwendung.
+	Lädt Google Auth State falls vorhanden (für Popular Times Zugriff).
 	"""
+	# Suche google-auth-state.json im Scraper-Verzeichnis oder Parent
+	script_dir = os.path.dirname(os.path.abspath(__file__))
+	parent_dir = os.path.dirname(script_dir)
+	auth_state_path = None
+
+	for candidate in [
+		os.path.join(script_dir, 'google-auth-state.json'),
+		os.path.join(parent_dir, 'google-auth-state.json'),
+	]:
+		if os.path.exists(candidate):
+			auth_state_path = candidate
+			break
+
 	playwright = await async_playwright().start()
 	browser = await playwright.chromium.launch(
 		headless=True,
@@ -774,10 +788,19 @@ async def create_browser_context():
 		]
 	)
 
-	context = await browser.new_context(
-		viewport={'width': 1280, 'height': 720},
-		user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-	)
+	context_options = {
+		'viewport': {'width': 1280, 'height': 720},
+		'user_agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+		'locale': 'de-DE',
+	}
+
+	if auth_state_path:
+		context_options['storage_state'] = auth_state_path
+		print(f"🔑 Google Auth State geladen: {auth_state_path}")
+	else:
+		print("⚠️  Kein google-auth-state.json gefunden – Scraping ohne Google Login")
+
+	context = await browser.new_context(**context_options)
 
 	return playwright, browser, context
 
