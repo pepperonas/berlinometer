@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import ResultsDisplay from '../components/ResultsDisplay'
 import MoodBarometer from '../components/MoodBarometer'
 import AboutDialog from '../components/AboutDialog'
@@ -14,6 +14,7 @@ import { useLanguage } from '../contexts/LanguageContext'
 
 function HomePage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { user, token, loading, login, logout, getAuthHeaders } = useAuth()
   const { t } = useLanguage()
   const [results, setResults] = useState([])
@@ -22,6 +23,34 @@ function HomePage() {
   const [showUserProfile, setShowUserProfile] = useState(false)
   const [showUserLocations, setShowUserLocations] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [verificationBanner, setVerificationBanner] = useState(null)
+
+  // Check for email verification result in URL params
+  useEffect(() => {
+    const verified = searchParams.get('verified')
+    if (verified === 'true') {
+      setVerificationBanner({ type: 'success', message: t('accountVerified') })
+      // Auto-login if auth token is provided from verification redirect
+      const authToken = searchParams.get('auth_token')
+      const authUserB64 = searchParams.get('auth_user')
+      if (authToken && authUserB64) {
+        try {
+          const userData = JSON.parse(atob(authUserB64))
+          login(userData, authToken)
+        } catch (e) {
+          console.error('Failed to parse auth data from verification:', e)
+        }
+      }
+      searchParams.delete('verified')
+      searchParams.delete('auth_token')
+      searchParams.delete('auth_user')
+      setSearchParams(searchParams, { replace: true })
+    } else if (verified === 'false') {
+      setVerificationBanner({ type: 'error', message: t('verificationFailed') })
+      searchParams.delete('verified')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [])
 
   // Handle navigation from drawer
   const handleDrawerNavigation = (itemId) => {
@@ -189,6 +218,32 @@ function HomePage() {
         paddingLeft: '1rem',
         paddingRight: '1rem'
       }}>
+        {verificationBanner && (
+          <div style={{
+            maxWidth: '600px',
+            margin: '0 auto 1rem auto',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            background: verificationBanner.type === 'success' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+            border: `1px solid ${verificationBanner.type === 'success' ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+            color: verificationBanner.type === 'success' ? '#22c55e' : '#ef4444',
+            fontSize: '0.9rem'
+          }}>
+            <span style={{ flex: 1 }}>{verificationBanner.message}</span>
+            <button
+              onClick={() => setVerificationBanner(null)}
+              style={{
+                background: 'none', border: 'none', color: 'inherit',
+                cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1, padding: '0 4px'
+              }}
+            >
+              &times;
+            </button>
+          </div>
+        )}
         <div className="text-center mb-6">
           {/* Subtitle */}
           <p className="text-secondary" style={{

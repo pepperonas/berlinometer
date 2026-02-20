@@ -17,7 +17,12 @@ module.exports = {
         MYSQL_PASSWORD: process.env.MYSQL_PASSWORD || '',
         MYSQL_DATABASE: 'popular_times_db',
         MYSQL_PORT: '3306',
-        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || ''
+        GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+        SMTP_HOST: process.env.SMTP_HOST || '',
+        SMTP_PORT: process.env.SMTP_PORT || '465',
+        SMTP_USER: process.env.SMTP_USER || '',
+        SMTP_PASSWORD: process.env.SMTP_PASSWORD || '',
+        SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL || ''
       },
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',

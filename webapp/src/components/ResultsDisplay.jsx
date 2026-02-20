@@ -204,7 +204,7 @@ function ResultsDisplay({ results, user, token }) {
       // Always try to track, even if locationId is null - backend will try to find it
       console.log('✅ Tracking map click with result data:', {
         id: locationId,
-        name: result.name,
+        name: result.location_name,
         url: result.url,
         address: result.address
       })

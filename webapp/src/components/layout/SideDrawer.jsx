@@ -101,7 +101,7 @@ function SideDrawer({ isOpen, onClose, user, onNavigate, onLogout }) {
                 type="button"
               >
                 <span className="side-drawer__nav-icon">📊</span>
-                <span className="side-drawer__nav-label">Admin Panel</span>
+                <span className="side-drawer__nav-label">{user?.role === 'admin' ? 'Admin Panel' : 'Location Panel'}</span>
               </button>
             )}
 

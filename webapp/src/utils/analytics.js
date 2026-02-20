@@ -8,13 +8,13 @@
  * @param {Object} locationData - The full location object with name, url, address
  */
 export const trackMapClick = async (locationId, locationData = {}) => {
-  const locationName = locationData.name || 'Unknown'
+  const locationName = locationData.name || locationData.location_name || 'Unknown'
   try {
     console.log(`📊 Tracking map click for location: ${locationName} (ID: ${locationId})`)
 
     const payload = {
       location_id: locationId,
-      location_name: locationData.name,
+      location_name: locationData.name || locationData.location_name,
       location_url: locationData.url,
       location_address: locationData.address
     }
@@ -62,6 +62,7 @@ export const findLocationId = (location, defaultLocations = []) => {
   // Search in default locations by name
   const foundLocation = defaultLocations.find(loc =>
     loc.name === location.name ||
+    loc.name === location.location_name ||
     loc.url === location.url ||
     (location.google_maps_url && loc.url === location.google_maps_url)
   )

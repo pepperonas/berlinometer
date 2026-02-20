@@ -12,13 +12,18 @@ import time
 import urllib.parse
 import requests
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, redirect
 from flask_cors import CORS
 import mysql.connector
 from mysql.connector import pooling
 from dotenv import load_dotenv
 import jwt
 import bcrypt
+import smtplib
+import ssl
+import uuid
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from functools import wraps
 
 # Load environment variables
@@ -1706,6 +1711,23 @@ try:
     except Exception as migration_err:
         logger.warning(f"⚠️ location_owners migration check: {migration_err}")
 
+    # Ensure email_verification_token column exists in users table
+    try:
+        _conn = db_pool.get_connection()
+        _cursor = _conn.cursor()
+        _cursor.execute("""
+            SELECT COUNT(*) FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email_verification_token'
+        """, (db_config['database'],))
+        if _cursor.fetchone()[0] == 0:
+            _cursor.execute("ALTER TABLE users ADD COLUMN email_verification_token VARCHAR(255) DEFAULT NULL")
+            _conn.commit()
+            logger.info("✅ Added email_verification_token column to users table")
+        _cursor.close()
+        _conn.close()
+    except Exception as migration_err:
+        logger.warning(f"⚠️ email_verification_token migration check: {migration_err}")
+
 except Exception as e:
     logger.error(f"❌ Failed to create MySQL connection pool: {e}")
     db_pool = None
@@ -1760,6 +1782,56 @@ def verify_jwt_token(token):
         return None
     except jwt.InvalidTokenError:
         return None
+
+def send_verification_email(email, username, token):
+    """Send email verification link to newly registered user"""
+    smtp_host = os.environ.get('SMTP_HOST', '')
+    smtp_port = int(os.environ.get('SMTP_PORT', '465'))
+    smtp_user = os.environ.get('SMTP_USER', '')
+    smtp_password = os.environ.get('SMTP_PASSWORD', '')
+    smtp_from = os.environ.get('SMTP_FROM_EMAIL', smtp_user)
+
+    if not smtp_host or not smtp_user or not smtp_password:
+        logger.warning("⚠️ SMTP not configured — skipping verification email")
+        return False
+
+    verification_url = f"https://berlinometer.de/auth/verify-email?token={token}"
+
+    html_body = f"""
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #1a1a2e; color: #e0e0e0; border-radius: 12px;">
+        <h1 style="font-size: 24px; margin: 0 0 8px 0; color: #ffffff;">Berlinometer</h1>
+        <p style="font-size: 14px; color: #888; margin: 0 0 24px 0;">Berlins Bars & Clubs — Live</p>
+        <hr style="border: none; border-top: 1px solid #333; margin: 0 0 24px 0;">
+        <p style="font-size: 16px; margin: 0 0 16px 0;">Hi {username},</p>
+        <p style="font-size: 14px; line-height: 1.6; margin: 0 0 24px 0;">
+            Danke für deine Registrierung! Bitte bestätige deine E-Mail-Adresse, um deinen Account zu aktivieren.
+        </p>
+        <a href="{verification_url}" style="display: inline-block; padding: 12px 28px; background: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 14px;">
+            E-Mail bestätigen
+        </a>
+        <p style="font-size: 12px; color: #666; margin: 24px 0 0 0; line-height: 1.5;">
+            Falls der Button nicht funktioniert, kopiere diesen Link in deinen Browser:<br>
+            <a href="{verification_url}" style="color: #4f46e5; word-break: break-all;">{verification_url}</a>
+        </p>
+    </div>
+    """
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'Berlinometer — E-Mail bestätigen'
+    msg['From'] = smtp_from
+    msg['To'] = email
+    msg.attach(MIMEText(html_body, 'html'))
+
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context) as server:
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_from, email, msg.as_string())
+        logger.info(f"✅ Verification email sent to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"❌ Failed to send verification email to {email}: {e}")
+        return False
 
 def token_required(f):
     """Decorator to require JWT token authentication"""
@@ -3301,17 +3373,22 @@ def register():
             if cursor.fetchone():
                 return jsonify({'error': 'Username or email already exists'}), 409
             
-            # Hash password and create user
+            # Hash password and create user with verification token
             password_hash = hash_password(password)
+            verification_token = str(uuid.uuid4())
             cursor.execute(
-                "INSERT INTO users (username, email, password_hash) VALUES (%s, %s, %s)",
-                (username, email, password_hash)
+                "INSERT INTO users (username, email, password_hash, email_verification_token) VALUES (%s, %s, %s, %s)",
+                (username, email, password_hash, verification_token)
             )
             conn.commit()
-            
+
+            # Send verification email
+            email_sent = send_verification_email(email, username, verification_token)
+
             return jsonify({
-                'message': 'User registered successfully. Account activation pending.',
-                'username': username
+                'message': 'Verification email sent. Please check your inbox.' if email_sent else 'User registered successfully. Account activation pending.',
+                'username': username,
+                'email_sent': email_sent
             }), 201
         
         finally:
@@ -3321,6 +3398,53 @@ def register():
     except Exception as e:
         logger.error(f"Registration error: {e}")
         return jsonify({'error': 'Registration failed'}), 500
+
+@app.route('/auth/verify-email', methods=['GET'])
+def verify_email():
+    """Verify user email via token and activate account"""
+    token = request.args.get('token', '').strip()
+    if not token:
+        return redirect('https://berlinometer.de/?verified=false')
+
+    try:
+        if not db_pool:
+            return redirect('https://berlinometer.de/?verified=false')
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                "SELECT id, username, email, role FROM users WHERE email_verification_token = %s",
+                (token,)
+            )
+            user = cursor.fetchone()
+
+            if not user:
+                return redirect('https://berlinometer.de/?verified=false')
+
+            user_id, username, user_email, user_role = user
+            cursor.execute(
+                "UPDATE users SET is_active = 1, email_verification_token = NULL WHERE id = %s",
+                (user_id,)
+            )
+            conn.commit()
+            logger.info(f"✅ Email verified and account activated for user: {username}")
+
+            # Generate JWT so user is auto-logged-in after verification
+            jwt_token = generate_jwt_token(user_id, username, user_role or 'user')
+            import base64
+            user_json = json.dumps({'id': user_id, 'username': username, 'email': user_email, 'role': user_role or 'user'})
+            user_b64 = base64.urlsafe_b64encode(user_json.encode()).decode()
+            return redirect(f'https://berlinometer.de/?verified=true&auth_token={jwt_token}&auth_user={user_b64}')
+
+        finally:
+            cursor.close()
+            conn.close()
+
+    except Exception as e:
+        logger.error(f"Email verification error: {e}")
+        return redirect('https://berlinometer.de/?verified=false')
 
 @app.route('/auth/login', methods=['POST'])
 def login():
@@ -3359,7 +3483,7 @@ def login():
                 return jsonify({'error': 'Invalid credentials'}), 401
 
             if not is_active:
-                return jsonify({'error': 'Account not activated. Please contact admin.'}), 403
+                return jsonify({'error': 'Account not activated. Please check your email for the verification link.'}), 403
 
             # Update last login
             cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user_id,))
@@ -3435,7 +3559,7 @@ def google_login():
             if user:
                 user_id, username, is_active = user
                 if not is_active:
-                    return jsonify({'error': 'Account not activated. Please contact admin.'}), 403
+                    return jsonify({'error': 'Account not activated. Please check your email for the verification link.'}), 403
 
                 # Update last login
                 cursor.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (user_id,))
@@ -5277,7 +5401,7 @@ def admin_scraping_health():
 
 
 @app.route('/admin/map-clicks/analytics', methods=['GET'])
-@admin_required
+@location_owner_or_admin_required
 def admin_map_click_analytics():
     """Get map click analytics"""
     conn = None
