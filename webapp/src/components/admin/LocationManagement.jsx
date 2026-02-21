@@ -17,7 +17,7 @@ function LocationManagement({ token }) {
 
   const fetchLocations = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/admin/locations`, {
+      const res = await fetch(`${API}/admin/locations/list`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const data = await res.json()
@@ -128,8 +128,6 @@ function LocationManagement({ token }) {
                 <th>ID</th>
                 <th>Name</th>
                 <th className="admin-table__col--hide-mobile">Adresse</th>
-                <th>Datenpunkte</th>
-                <th className="admin-table__col--hide-mobile">Letztes Scraping</th>
               </tr>
             </thead>
             <tbody>
@@ -142,17 +140,11 @@ function LocationManagement({ token }) {
                       {cleanAddress(loc.address) || '–'}
                     </span>
                   </td>
-                  <td>{loc.data_points ?? 0}</td>
-                  <td className="admin-table__col--hide-mobile">
-                    {loc.last_scraping
-                      ? new Date(loc.last_scraping).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
-                      : '–'}
-                  </td>
                 </tr>
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>
+                  <td colSpan={3} style={{ textAlign: 'center', padding: '2rem' }}>
                     Keine Locations gefunden.
                   </td>
                 </tr>

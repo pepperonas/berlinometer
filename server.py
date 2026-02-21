@@ -4912,13 +4912,20 @@ def admin_locations():
         query = """
             SELECT
                 l.id, l.name, l.address,
-                COUNT(DISTINCT oh.id) as data_points,
-                ROUND(AVG(CASE WHEN oh.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN oh.occupancy_percent END), 1) as avg_occupancy_7d,
-                MAX(oh.timestamp) as last_scraping,
+                COALESCE(oh_stats.data_points, 0) as data_points,
+                oh_stats.avg_occupancy_7d,
+                oh_stats.last_scraping,
                 COALESCE(mc.click_count, 0) as map_clicks,
                 COALESCE(ul.save_count, 0) as user_saves
             FROM locations l
-            LEFT JOIN occupancy_history oh ON l.id = oh.location_id
+            LEFT JOIN (
+                SELECT location_id,
+                    COUNT(*) as data_points,
+                    ROUND(AVG(CASE WHEN timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN occupancy_percent END), 1) as avg_occupancy_7d,
+                    MAX(timestamp) as last_scraping
+                FROM occupancy_history
+                GROUP BY location_id
+            ) oh_stats ON l.id = oh_stats.location_id
             LEFT JOIN (
                 SELECT location_id, COUNT(*) as click_count FROM map_clicks GROUP BY location_id
             ) mc ON l.id = mc.location_id
@@ -4930,8 +4937,6 @@ def admin_locations():
         if search:
             query += " WHERE (l.name LIKE %s OR l.address LIKE %s)"
             params.extend([f'%{search}%', f'%{search}%'])
-
-        query += " GROUP BY l.id, l.name, l.address, mc.click_count, ul.save_count"
 
         # Safe sort columns
         safe_sorts = {
@@ -4955,6 +4960,36 @@ def admin_locations():
         return jsonify({'locations': locations}), 200
     except Exception as e:
         logger.error(f"Admin locations error: {e}")
+        return jsonify({'error': 'Failed to fetch locations'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
+@app.route('/admin/locations/list', methods=['GET'])
+@admin_required
+def admin_locations_list():
+    """Lightweight list of all locations (no heavy aggregations)"""
+    conn = None
+    try:
+        search = request.args.get('search', '')
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = "SELECT id, name, address FROM locations"
+        params = []
+        if search:
+            query += " WHERE (name LIKE %s OR address LIKE %s)"
+            params.extend([f'%{search}%', f'%{search}%'])
+        query += " ORDER BY name ASC"
+
+        cursor.execute(query, params)
+        locations = cursor.fetchall()
+
+        cursor.close()
+        return jsonify({'locations': locations}), 200
+    except Exception as e:
+        logger.error(f"Admin locations list error: {e}")
         return jsonify({'error': 'Failed to fetch locations'}), 500
     finally:
         if conn and conn.is_connected():
