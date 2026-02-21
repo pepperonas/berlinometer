@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml/badge.svg)](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.10.0-blue.svg)](https://github.com/pepperonas/berlinometer)
+[![Version](https://img.shields.io/badge/version-2.11.0-blue.svg)](https://github.com/pepperonas/berlinometer)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fberlinometer.de)](https://berlinometer.de)
 
 [![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -282,7 +282,7 @@ Neue Übersetzungen hinzufügen:
 1. Schlüssel in `translations.de` und `translations.en` in `LanguageContext.jsx` eintragen
 2. Im Component über `t('schlüssel')` verwenden
 
-### Admin Panel (v2.10.0)
+### Admin Panel (v2.11.0)
 
 Das Admin Panel (`/admin`) bietet rollenbasierten Zugang für Admins und Location-Owner.
 
