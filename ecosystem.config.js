@@ -22,7 +22,8 @@ module.exports = {
         SMTP_PORT: process.env.SMTP_PORT || '465',
         SMTP_USER: process.env.SMTP_USER || '',
         SMTP_PASSWORD: process.env.SMTP_PASSWORD || '',
-        SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL || ''
+        SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL || '',
+        JWT_SECRET_KEY: process.env.JWT_SECRET_KEY || ''
       },
       error_file: './logs/pm2-error.log',
       out_file: './logs/pm2-out.log',
