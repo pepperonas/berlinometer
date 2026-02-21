@@ -369,7 +369,8 @@ The Python Flask backend runs on port 5044.
 | `GET` | `/location-history` | Historical data |
 | `GET` | `/user-locations` | User's saved locations |
 | `GET` | `/admin/overview` | Admin: Overview metrics |
-| `GET` | `/admin/locations` | Admin: All locations with stats |
+| `GET` | `/admin/locations` | Admin: All locations with stats (aggregated) |
+| `GET` | `/admin/locations/list` | Admin: Fast location list (no aggregation) |
 | `GET` | `/admin/locations/<id>/analytics` | Location analytics (heatmap, timeline) |
 | `GET` | `/admin/locations/compare` | Location comparison |
 | `GET` | `/admin/users` | Admin: User list (paginated) |

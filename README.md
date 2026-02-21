@@ -369,7 +369,8 @@ Das Python-Flask-Backend läuft auf Port 5044.
 | `GET` | `/location-history` | Historische Daten |
 | `GET` | `/user-locations` | Gespeicherte Locations des Benutzers |
 | `GET` | `/admin/overview` | Admin: Uebersichts-Metriken |
-| `GET` | `/admin/locations` | Admin: Alle Locations mit Stats |
+| `GET` | `/admin/locations` | Admin: Alle Locations mit Stats (aggregiert) |
+| `GET` | `/admin/locations/list` | Admin: Schnelle Location-Liste (ohne Aggregation) |
 | `GET` | `/admin/locations/<id>/analytics` | Location Analytics (Heatmap, Timeline) |
 | `GET` | `/admin/locations/compare` | Location-Vergleich |
 | `GET` | `/admin/users` | Admin: User-Liste (paginiert) |
