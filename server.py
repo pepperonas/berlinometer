@@ -1732,6 +1732,12 @@ except Exception as e:
     logger.error(f"❌ Failed to create MySQL connection pool: {e}")
     db_pool = None
 
+def clean_address(address):
+    """Strip Google Maps Private Use Area icons from address strings"""
+    if not address:
+        return address
+    return re.sub(r'[\uE000-\uF8FF]', '', address).strip()
+
 # Database Helper Functions
 from contextlib import contextmanager
 
@@ -2240,7 +2246,7 @@ def save_to_database(result):
         cursor.callproc('insert_occupancy_data', [
             result.get('url', ''),
             result.get('location_name', 'Unknown'),
-            result.get('address'),
+            clean_address(result.get('address')),
             occupancy_percent,
             usual_percent,
             result.get('is_live_data', False),
@@ -3145,7 +3151,7 @@ def save_scraping_to_database(scraping_data, filename):
                     VALUES (%s, %s, %s, %s)
                 """, (
                     location.get('location_name', 'Unknown'),
-                    location.get('address', ''),
+                    clean_address(location.get('address', '')),
                     location_url,
                     location.get('rating', 0.0)
                 ))
@@ -3986,7 +3992,7 @@ def save_user_location():
         # Validate required fields
         google_maps_url = data.get('google_maps_url')
         name = data.get('name')
-        address = data.get('address')
+        address = clean_address(data.get('address'))
 
         if not google_maps_url or not name:
             return jsonify({'error': 'URL and name are required'}), 400

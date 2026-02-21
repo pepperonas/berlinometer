@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { cleanAddress } from '../../utils/locationUtils'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -74,7 +75,7 @@ function LocationAssignment({ token, userId, userName, onClose, onSaved }) {
                   />
                   <span>{loc.name}</span>
                   <span className="admin-text-secondary" style={{ fontSize: '0.8rem', marginLeft: 'auto' }}>
-                    {loc.address}
+                    {cleanAddress(loc.address)}
                   </span>
                 </label>
               ))}

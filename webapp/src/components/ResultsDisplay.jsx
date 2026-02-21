@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import OccupancyChart from './OccupancyChart'
 import SearchBar from './SearchBar'
-import { calculateDistance, formatDistance, getUserLocation, extractCoordinatesFromUrl } from '../utils/locationUtils'
+import { calculateDistance, formatDistance, getUserLocation, extractCoordinatesFromUrl, cleanAddress } from '../utils/locationUtils'
 import { trackMapClick, findLocationId } from '../utils/analytics'
 
 function ResultsDisplay({ results, user, token }) {
@@ -389,20 +389,7 @@ function ResultsDisplay({ results, user, token }) {
     return <span className="status status-success">📊 {t('historical')}</span>
   }
 
-  // Clean address from unwanted Unicode characters
-  const cleanAddress = (address) => {
-    if (!address) return address
-    return address
-      .replace(/◉/g, '')
-      .replace(/\ue8b5/g, '') // Remove clock icon
-      .replace(/\ue5cf/g, '') // Remove clock icon
-      .replace(/\u22c5/g, '') // Remove bullet
-      .replace(/[\u2000-\u206F]/g, '') // Remove general punctuation
-      .replace(/[\u2E00-\u2E7F]/g, '') // Remove supplemental punctuation
-      .replace(/[\uFE00-\uFE0F]/g, '') // Remove variation selectors
-      .replace(/[\uE000-\uF8FF]/g, '') // Remove private use area characters
-      .trim()
-  }
+
 
   const extractPercentageValues = (occupancyText) => {
     if (!occupancyText) return { current: null, usual: null }

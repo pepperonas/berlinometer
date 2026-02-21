@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { cleanAddress } from '../utils/locationUtils';
 import Dialog from './ui/Dialog';
 import {
   MapPin,
@@ -261,7 +262,7 @@ const UserLocations = ({ onClose, onLocationsSaved, isOpen }) => {
                 <div className="location-info">
                   <div className="location-name">{location.name}</div>
                   {location.address && (
-                    <div className="location-address">{location.address}</div>
+                    <div className="location-address">{cleanAddress(location.address)}</div>
                   )}
                 </div>
                 <button

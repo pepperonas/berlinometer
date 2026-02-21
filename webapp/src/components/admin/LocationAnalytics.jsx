@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { cleanAddress } from '../../utils/locationUtils'
 import LocationSelector from './LocationSelector'
 import OccupancyTimeline from './OccupancyTimeline'
 import OccupancyHeatmap from './OccupancyHeatmap'
@@ -83,7 +84,7 @@ function LocationAnalytics({ token, isAdmin }) {
             {/* Location Info Header */}
             <div className="admin-location-header">
               <h2>{analytics.location?.name}</h2>
-              <p className="admin-text-secondary">{analytics.location?.address}</p>
+              <p className="admin-text-secondary">{cleanAddress(analytics.location?.address)}</p>
               {analytics.location?.rating && (
                 <span className="admin-badge">⭐ {analytics.location.rating}</span>
               )}

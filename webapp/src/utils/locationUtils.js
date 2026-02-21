@@ -1,6 +1,20 @@
 // Utility functions for location and distance calculations
 
 /**
+ * Strip Google Maps Private Use Area icons and other unwanted Unicode from addresses
+ */
+export function cleanAddress(address) {
+  if (!address) return address
+  return address
+    .replace(/[\uE000-\uF8FF]/g, '')
+    .replace(/[\u2000-\u206F]/g, '')
+    .replace(/[\u2E00-\u2E7F]/g, '')
+    .replace(/[\uFE00-\uFE0F]/g, '')
+    .replace(/◉/g, '')
+    .trim()
+}
+
+/**
  * Haversine formula to calculate distance between two GPS coordinates
  * @param {number} lat1 - Latitude of first point
  * @param {number} lon1 - Longitude of first point

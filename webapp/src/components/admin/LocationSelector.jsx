@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { cleanAddress } from '../../utils/locationUtils'
 
 function LocationSelector({ locations, selectedId, onChange, loading }) {
   const [search, setSearch] = useState('')
@@ -53,7 +54,7 @@ function LocationSelector({ locations, selectedId, onChange, loading }) {
             <div className="admin-location-dropdown__selected">
               <span className="admin-location-dropdown__selected-name">{selected.name}</span>
               {selected.address && (
-                <span className="admin-location-dropdown__selected-addr">{selected.address}</span>
+                <span className="admin-location-dropdown__selected-addr">{cleanAddress(selected.address)}</span>
               )}
             </div>
             {selected.avg_occupancy_7d != null && (
@@ -91,7 +92,7 @@ function LocationSelector({ locations, selectedId, onChange, loading }) {
                   <div className="admin-location-dropdown__item-info">
                     <span className="admin-location-dropdown__item-name">{loc.name}</span>
                     {loc.address && (
-                      <span className="admin-location-dropdown__item-addr">{loc.address}</span>
+                      <span className="admin-location-dropdown__item-addr">{cleanAddress(loc.address)}</span>
                     )}
                   </div>
                   {loc.avg_occupancy_7d != null && (

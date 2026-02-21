@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import Dialog from '../ui/Dialog'
+import { cleanAddress } from '../../utils/locationUtils'
 
 const API = import.meta.env.VITE_API_URL || ''
 
@@ -138,7 +139,7 @@ function LocationManagement({ token }) {
                   <td>{loc.name}</td>
                   <td className="admin-table__col--hide-mobile">
                     <span className="admin-text-truncate" style={{ display: 'block' }}>
-                      {loc.address || '–'}
+                      {cleanAddress(loc.address) || '–'}
                     </span>
                   </td>
                   <td>{loc.data_points ?? 0}</td>
