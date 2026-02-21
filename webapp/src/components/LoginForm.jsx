@@ -144,6 +144,7 @@ const LoginForm = ({ onLogin, onSwitchToRegister, onClose }) => {
               type="password"
               id="password"
               name="password"
+              autoComplete="current-password"
               value={formData.password}
               onChange={handleChange}
               required

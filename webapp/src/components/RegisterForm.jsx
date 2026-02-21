@@ -216,6 +216,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin, onClose }) => {
               type="password"
               id="password"
               name="password"
+              autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
               required

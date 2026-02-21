@@ -17,27 +17,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored authentication on app load
-    const storedToken = localStorage.getItem('auth_token');
-    const storedUser = localStorage.getItem('user_info');
+    const initAuth = async () => {
+      const storedToken = localStorage.getItem('auth_token');
+      const storedUser = localStorage.getItem('user_info');
 
-    if (storedToken && storedUser) {
-      try {
-        const userInfo = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(userInfo);
+      if (storedToken && storedUser) {
+        try {
+          const userInfo = JSON.parse(storedUser);
+          setToken(storedToken);
+          setUser(userInfo);
 
-        // Verify token is still valid by making a profile request
-        verifyToken(storedToken);
-      } catch (error) {
-        console.error('Error parsing stored user info:', error);
-        // Clear invalid data
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user_info');
+          // Verify token is still valid before finishing loading
+          await verifyToken(storedToken);
+        } catch (error) {
+          console.error('Error parsing stored user info:', error);
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user_info');
+        }
       }
-    }
 
-    setLoading(false);
+      setLoading(false);
+    };
+    initAuth();
   }, []);
 
   const verifyToken = async (tokenToVerify) => {
@@ -103,6 +104,17 @@ export const AuthProvider = ({ children }) => {
     };
   };
 
+  const authFetch = async (url, options = {}) => {
+    const response = await fetch(url, {
+      ...options,
+      headers: { ...getAuthHeaders(), ...options.headers }
+    });
+    if (response.status === 401) {
+      logout();
+    }
+    return response;
+  };
+
   const value = {
     user,
     token,
@@ -113,7 +125,8 @@ export const AuthProvider = ({ children }) => {
     isAdmin,
     isLocationOwner,
     canAccessAdmin,
-    getAuthHeaders
+    getAuthHeaders,
+    authFetch
   };
 
   return (
