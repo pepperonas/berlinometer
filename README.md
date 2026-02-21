@@ -288,11 +288,11 @@ Das Admin Panel (`/admin`) bietet rollenbasierten Zugang für Admins und Locatio
 
 **Tabs:**
 - **Overview** - Metriken-Dashboard mit Auslastungs-, User- und Scraping-Stats
-- **Locations** - Alle Locations verwalten (Admin) oder eigene Locations (Location-Owner)
 - **Location Analytics** - Detaillierte Auslastungsanalysen pro Location
 - **Users** - Benutzerverwaltung mit Rollen und Paginierung (nur Admin)
 - **Scraping Health** - Monitoring des Scraping-Systems
 - **Map Clicks** - Analyse der Karteninteraktionen
+- **Locations** - Location Management: Alle Locations aus der DB mit Datenpunkten und letztem Scraping, neue Locations hinzufügen (nur Admin)
 
 **Location Analytics - Komponenten:**
 
@@ -377,6 +377,7 @@ Das Python-Flask-Backend läuft auf Port 5044.
 | `POST` | `/admin/users/<id>/assign-locations` | Admin: Location-Owner zuweisen |
 | `GET` | `/admin/scraping/health` | Admin: Scraping-Monitoring |
 | `GET` | `/admin/map-clicks/analytics` | Admin: Map Click Analytics |
+| `POST` | `/admin/locations/add` | Admin: Neue Location hinzufügen (DB + CSV) |
 | `GET` | `/admin/my-locations` | Location-Owner: Eigene Locations |
 
 ---

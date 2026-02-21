@@ -4955,6 +4955,58 @@ def admin_locations():
             conn.close()
 
 
+@app.route('/admin/locations/add', methods=['POST'])
+@admin_required
+def admin_add_location():
+    """Add a new location to DB and default-locations.csv"""
+    conn = None
+    try:
+        data = request.get_json()
+        name = (data.get('name') or '').strip()
+        google_maps_url = (data.get('google_maps_url') or '').strip()
+
+        if not name or not google_maps_url:
+            return jsonify({'error': 'Name und Google Maps URL sind erforderlich'}), 400
+
+        if 'google.de/maps' not in google_maps_url and 'google.com/maps' not in google_maps_url:
+            return jsonify({'error': 'Ungültige Google Maps URL'}), 400
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Check for duplicate by URL
+        cursor.execute("SELECT id, name FROM locations WHERE google_maps_url = %s", (google_maps_url,))
+        existing = cursor.fetchone()
+        if existing:
+            cursor.close()
+            return jsonify({'error': f'Location existiert bereits: {existing["name"]} (ID {existing["id"]})'}), 409
+
+        # Insert into DB
+        cursor.execute(
+            "INSERT INTO locations (name, google_maps_url) VALUES (%s, %s)",
+            (name, google_maps_url)
+        )
+        conn.commit()
+        location_id = cursor.lastrowid
+        cursor.close()
+
+        # Append to default-locations.csv
+        csv_path = os.path.join(os.path.dirname(__file__), 'default-locations.csv')
+        csv_line = f'"1";"{name}";"{google_maps_url}"\n'
+        with open(csv_path, 'a', encoding='utf-8') as f:
+            f.write(csv_line)
+
+        logger.info(f"Admin added location: {name} (ID {location_id})")
+        return jsonify({'success': True, 'location_id': location_id, 'name': name}), 200
+
+    except Exception as e:
+        logger.error(f"Admin add location error: {e}")
+        return jsonify({'error': 'Fehler beim Hinzufügen der Location'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
 @app.route('/admin/locations/<int:location_id>/analytics', methods=['GET'])
 @location_owner_or_admin_required
 def admin_location_analytics(location_id):

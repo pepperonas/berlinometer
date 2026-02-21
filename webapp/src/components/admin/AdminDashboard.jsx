@@ -5,6 +5,7 @@ import LocationAnalytics from './LocationAnalytics'
 import UserManagement from './UserManagement'
 import ScrapingHealth from './ScrapingHealth'
 import MapClickAnalytics from './MapClickAnalytics'
+import LocationManagement from './LocationManagement'
 import '../../styles/admin.css'
 
 function AdminDashboard({ user, token }) {
@@ -23,6 +24,8 @@ function AdminDashboard({ user, token }) {
         return isAdmin ? <ScrapingHealth token={token} /> : null
       case 'clicks':
         return <MapClickAnalytics token={token} isAdmin={isAdmin} />
+      case 'location-management':
+        return isAdmin ? <LocationManagement token={token} /> : null
       default:
         return <AdminOverview token={token} isAdmin={isAdmin} />
     }

@@ -288,11 +288,11 @@ The admin panel (`/admin`) provides role-based access for admins and location ow
 
 **Tabs:**
 - **Overview** - Metrics dashboard with occupancy, user, and scraping stats
-- **Locations** - Manage all locations (admin) or own locations (location owner)
 - **Location Analytics** - Detailed occupancy analysis per location
 - **Users** - User management with roles and pagination (admin only)
 - **Scraping Health** - Scraping system monitoring
 - **Map Clicks** - Map interaction analytics
+- **Locations** - Location management: All locations from DB with data points and last scraping, add new locations (admin only)
 
 **Location Analytics - Components:**
 
@@ -377,6 +377,7 @@ The Python Flask backend runs on port 5044.
 | `POST` | `/admin/users/<id>/assign-locations` | Admin: Assign location owner |
 | `GET` | `/admin/scraping/health` | Admin: Scraping monitoring |
 | `GET` | `/admin/map-clicks/analytics` | Admin: Map click analytics |
+| `POST` | `/admin/locations/add` | Admin: Add new location (DB + CSV) |
 | `GET` | `/admin/my-locations` | Location owner: Own locations |
 
 ---

@@ -5,6 +5,7 @@ function AdminSidebar({ activeTab, onTabChange, isAdmin }) {
     { id: 'users', label: 'User Management', icon: '👥', roles: ['admin'] },
     { id: 'scraping', label: 'Scraping Health', icon: '🔄', roles: ['admin'] },
     { id: 'clicks', label: 'Map Clicks', icon: '🖱️', roles: ['admin', 'location_owner'] },
+    { id: 'location-management', label: 'Locations', icon: '➕', roles: ['admin'] },
   ]
 
   const visibleTabs = tabs.filter(tab => isAdmin || tab.roles.includes('location_owner'))
