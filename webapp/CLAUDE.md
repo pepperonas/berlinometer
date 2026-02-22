@@ -78,6 +78,11 @@ Application is wrapped in multiple context providers in this order:
 - `UserLocations`: Saved locations management
 - `UserProfile`: User settings and theme selector
 
+**Shared Utilities** (`src/utils/locationUtils.js`):
+- `cleanAddress()`: Strips Google Maps PUA icons from addresses — use in all components that display addresses
+- `calculateDistance()`, `formatDistance()`: Haversine-based distance calculations
+- `extractCoordinatesFromUrl()`: Parses lat/lng from Google Maps URLs
+
 ### State Management
 
 **Global State** (React Context):
@@ -281,7 +286,7 @@ pm2 restart popular-times   # Restart backend
 webapp/
 ├── src/
 │   ├── components/
-│   │   ├── admin/           # Admin panel (16 components)
+│   │   ├── admin/           # Admin panel (17 components, incl. LocationManagement)
 │   │   ├── layout/          # ActionBar, SideDrawer
 │   │   ├── ui/              # Dialog (unified modal)
 │   │   └── *.jsx            # Feature components

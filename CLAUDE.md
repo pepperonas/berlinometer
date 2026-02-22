@@ -50,18 +50,20 @@ Scraper: PM2 "berlinometer-scraper" → scraper-loop.sh (7-12 min intervals)
          → /latest-scraping endpoint picks best file (lowest error rate) from last 5
 ```
 
-### Backend: `server.py` (~4800 lines, monolith)
+### Backend: `server.py` (~5000 lines, monolith)
 
 Single Flask file containing everything:
 - **Lines ~1-30**: Imports
 - **Lines ~1600-1720**: DB pool creation + migrations (run on startup)
-- **Lines ~1735-1850**: Auth helpers (hash_password, JWT, token_required decorator, send_verification_email)
+- **Lines ~1735**: `clean_address()` — strips Google Maps PUA Unicode icons from addresses
+- **Lines ~1740-1870**: Auth helpers (hash_password, JWT, token_required decorator, send_verification_email)
 - **Lines ~3270-3600**: Auth endpoints (/auth/register, /auth/verify-email, /auth/login, /auth/google, /auth/profile)
 - **Lines ~3600+**: Admin endpoints, scraping endpoints, location endpoints
 
 Key patterns:
 - DB connections via `db_pool.get_connection()` with manual `cursor.close()` / `conn.close()` in try/finally
 - Context manager `get_db_connection()` exists but not used everywhere
+- `clean_address()` must be called on all address data before DB writes (Google Maps scrapes include invisible PUA icons)
 - JWT tokens (7-day expiry), bcrypt passwords, Google OAuth
 - Roles: `user`, `admin`, `location_owner`
 - Auth decorators: `@token_required`, `@admin_required`, `@location_owner_or_admin_required`
@@ -89,7 +91,7 @@ MySQL with connection pooling (20 connections). Key tables:
 |-------|---------|
 | `users` | Auth (username, email, password_hash, is_active, role, google_id, email_verification_token) |
 | `locations` | Scraped locations (name, address, google_maps_url) |
-| `occupancy_history` | Time-series occupancy data per location |
+| `occupancy_history` | Time-series occupancy data per location (900k+ rows, avoid full-table JOINs) |
 | `opening_hours_history` | Per-location hours (weekday, open_time, close_time, is_closed, is_24h) |
 | `user_sessions` | Login tracking |
 | `user_locations` | User's saved/bookmarked locations |
@@ -141,3 +143,6 @@ Wrap in try/except with `logger.warning()`.
 - Frontend `.env` AND `.env.local` must both have `VITE_API_URL=https://berlinometer.de` — `.env.local` overrides `.env`
 - Chunk size warning on build is expected (recharts is large)
 - Nginx must set `Cross-Origin-Opener-Policy: same-origin-allow-popups` for Google OAuth
+- Google Maps scrapes addresses with invisible U+E0C8 (Private Use Area) prefix — `clean_address()` in backend and `cleanAddress()` from `webapp/src/utils/locationUtils.js` handle this
+- `occupancy_history` has 900k+ rows — never JOIN it directly to `locations`; use subqueries or the lightweight `/admin/locations/list` endpoint
+- Version lives in 3 places: `webapp/package.json`, `README.md` badge, `README_EN.md` badge
