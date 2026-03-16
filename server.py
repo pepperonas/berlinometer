@@ -1728,6 +1728,84 @@ try:
     except Exception as migration_err:
         logger.warning(f"⚠️ email_verification_token migration check: {migration_err}")
 
+    # Ensure category column exists in locations table
+    try:
+        _conn = db_pool.get_connection()
+        _cursor = _conn.cursor()
+        _cursor.execute("""
+            SELECT COUNT(*) FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = 'locations' AND COLUMN_NAME = 'category'
+        """, (db_config['database'],))
+        if _cursor.fetchone()[0] == 0:
+            _cursor.execute("ALTER TABLE locations ADD COLUMN category VARCHAR(20) NOT NULL DEFAULT 'bar_club'")
+            _cursor.execute("CREATE INDEX idx_locations_category ON locations (category)")
+            _conn.commit()
+            logger.info("✅ Added category column to locations table")
+        _cursor.close()
+        _conn.close()
+    except Exception as migration_err:
+        logger.warning(f"⚠️ category migration check: {migration_err}")
+
+    # Update stored procedure to accept category parameter
+    try:
+        _conn = db_pool.get_connection()
+        _cursor = _conn.cursor()
+        _cursor.execute("DROP PROCEDURE IF EXISTS insert_occupancy_data")
+        _cursor.execute("""
+            CREATE PROCEDURE insert_occupancy_data(
+                IN p_url VARCHAR(500),
+                IN p_name VARCHAR(255),
+                IN p_address VARCHAR(500),
+                IN p_occupancy_percent INT,
+                IN p_usual_percent INT,
+                IN p_is_live_data BOOLEAN,
+                IN p_raw_text TEXT,
+                IN p_category VARCHAR(20)
+            )
+            BEGIN
+                DECLARE v_location_id INT;
+
+                INSERT INTO locations (google_maps_url, name, address, category)
+                VALUES (p_url, p_name, p_address, COALESCE(p_category, 'bar_club'))
+                ON DUPLICATE KEY UPDATE
+                    name = VALUES(name),
+                    address = COALESCE(VALUES(address), address),
+                    category = COALESCE(VALUES(category), category),
+                    updated_at = CURRENT_TIMESTAMP;
+
+                SELECT id INTO v_location_id FROM locations WHERE google_maps_url = p_url;
+
+                INSERT INTO occupancy_history (location_id, occupancy_percent, usual_percent, is_live_data, raw_text)
+                VALUES (v_location_id, p_occupancy_percent, p_usual_percent, p_is_live_data, p_raw_text);
+            END
+        """)
+        _conn.commit()
+        logger.info("✅ Updated insert_occupancy_data stored procedure with category support")
+        _cursor.close()
+        _conn.close()
+    except Exception as migration_err:
+        logger.warning(f"⚠️ stored procedure update: {migration_err}")
+
+    # Performance indexes for occupancy_history (1M+ rows)
+    try:
+        _conn = db_pool.get_connection()
+        _cursor = _conn.cursor()
+        for idx_name, idx_sql in [
+            ('idx_oh_loc_ts_occ', 'CREATE INDEX idx_oh_loc_ts_occ ON occupancy_history (location_id, timestamp, occupancy_percent)'),
+            ('idx_oh_loc_occ', 'CREATE INDEX idx_oh_loc_occ ON occupancy_history (location_id, occupancy_percent)'),
+            ('idx_loc_category_name', 'CREATE INDEX idx_loc_category_name ON locations (category, name)'),
+            ('idx_mc_location', 'CREATE INDEX idx_mc_location ON map_clicks (location_id)'),
+        ]:
+            _cursor.execute("SELECT COUNT(*) FROM information_schema.STATISTICS WHERE TABLE_SCHEMA = %s AND INDEX_NAME = %s", (db_config['database'], idx_name))
+            if _cursor.fetchone()[0] == 0:
+                _cursor.execute(idx_sql)
+                _conn.commit()
+                logger.info(f"✅ Created index {idx_name}")
+        _cursor.close()
+        _conn.close()
+    except Exception as migration_err:
+        logger.warning(f"⚠️ performance index migration: {migration_err}")
+
 except Exception as e:
     logger.error(f"❌ Failed to create MySQL connection pool: {e}")
     db_pool = None
@@ -2242,7 +2320,7 @@ def save_to_database(result):
             if usual_match:
                 usual_percent = int(usual_match.group(1))
         
-        # Stored Procedure aufrufen
+        # Stored Procedure aufrufen (mit Kategorie-Support)
         cursor.callproc('insert_occupancy_data', [
             result.get('url', ''),
             result.get('location_name', 'Unknown'),
@@ -2250,7 +2328,8 @@ def save_to_database(result):
             occupancy_percent,
             usual_percent,
             result.get('is_live_data', False),
-            result.get('live_occupancy', '')
+            result.get('live_occupancy', ''),
+            result.get('category', 'bar_club')
         ])
         
         conn.commit()
@@ -2818,12 +2897,12 @@ def get_latest_scraping():
                     }
                 }), 404
         
-        # Finde alle JSON-Dateien
+        # Finde alle JSON-Dateien (nur bar_club, nicht restaurants_*)
         try:
             all_files = os.listdir(scraping_dir)
-            json_files = [f for f in all_files if f.endswith('.json')]
+            json_files = [f for f in all_files if f.endswith('.json') and not f.startswith('scraping_restaurants_')]
             logger.info(f"📁 Gefundene Dateien: {all_files}")
-            logger.info(f"📄 JSON-Dateien: {json_files}")
+            logger.info(f"📄 JSON-Dateien (bar_club): {json_files}")
         except Exception as list_error:
             logger.error(f"❌ Fehler beim Lesen des Ordners: {list_error}")
             return jsonify({
@@ -4932,10 +5011,11 @@ def admin_locations():
             LEFT JOIN (
                 SELECT location_id, COUNT(*) as save_count FROM user_locations GROUP BY location_id
             ) ul ON l.id = ul.location_id
+            WHERE l.category = 'bar_club'
         """
         params = []
         if search:
-            query += " WHERE (l.name LIKE %s OR l.address LIKE %s)"
+            query += " AND (l.name LIKE %s OR l.address LIKE %s)"
             params.extend([f'%{search}%', f'%{search}%'])
 
         # Safe sort columns
@@ -4976,10 +5056,10 @@ def admin_locations_list():
         conn = db_pool.get_connection()
         cursor = conn.cursor(dictionary=True)
 
-        query = "SELECT id, name, address FROM locations"
+        query = "SELECT id, name, address FROM locations WHERE category = 'bar_club'"
         params = []
         if search:
-            query += " WHERE (name LIKE %s OR address LIKE %s)"
+            query += " AND (name LIKE %s OR address LIKE %s)"
             params.extend([f'%{search}%', f'%{search}%'])
         query += " ORDER BY name ASC"
 
@@ -4999,12 +5079,16 @@ def admin_locations_list():
 @app.route('/admin/locations/add', methods=['POST'])
 @admin_required
 def admin_add_location():
-    """Add a new location to DB and default-locations.csv"""
+    """Add a new location to DB"""
     conn = None
     try:
         data = request.get_json()
         name = (data.get('name') or '').strip()
         google_maps_url = (data.get('google_maps_url') or '').strip()
+        category = (data.get('category') or 'bar_club').strip()
+
+        if category not in ('bar_club', 'restaurant'):
+            return jsonify({'error': 'Ungültige Kategorie (bar_club oder restaurant)'}), 400
 
         if not name or not google_maps_url:
             return jsonify({'error': 'Name und Google Maps URL sind erforderlich'}), 400
@@ -5024,21 +5108,15 @@ def admin_add_location():
 
         # Insert into DB
         cursor.execute(
-            "INSERT INTO locations (name, google_maps_url) VALUES (%s, %s)",
-            (name, google_maps_url)
+            "INSERT INTO locations (name, google_maps_url, category) VALUES (%s, %s, %s)",
+            (name, google_maps_url, category)
         )
         conn.commit()
         location_id = cursor.lastrowid
         cursor.close()
 
-        # Append to default-locations.csv
-        csv_path = os.path.join(os.path.dirname(__file__), 'default-locations.csv')
-        csv_line = f'"1";"{name}";"{google_maps_url}"\n'
-        with open(csv_path, 'a', encoding='utf-8') as f:
-            f.write(csv_line)
-
-        logger.info(f"Admin added location: {name} (ID {location_id})")
-        return jsonify({'success': True, 'location_id': location_id, 'name': name}), 200
+        logger.info(f"Admin added {category} location: {name} (ID {location_id})")
+        return jsonify({'success': True, 'location_id': location_id, 'name': name, 'category': category}), 200
 
     except Exception as e:
         logger.error(f"Admin add location error: {e}")
@@ -5604,6 +5682,308 @@ def admin_my_locations():
         return jsonify({'locations': locations}), 200
     except Exception as e:
         logger.error(f"Admin my locations error: {e}")
+        return jsonify({'error': 'Failed to fetch locations'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
+# ============================================================
+# Restaurant Admin Endpoints (separate from bars/clubs)
+# ============================================================
+
+@app.route('/admin/restaurants', methods=['GET'])
+@admin_required
+def admin_restaurants():
+    """Get all restaurant locations with aggregated stats"""
+    conn = None
+    try:
+        sort_by = request.args.get('sort_by', 'name')
+        sort_dir = request.args.get('sort_dir', 'asc')
+        search = request.args.get('search', '')
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+            SELECT
+                l.id, l.name, l.address, l.google_maps_url,
+                COALESCE(oh_stats.data_points, 0) as data_points,
+                oh_stats.avg_occupancy_7d,
+                oh_stats.last_scraping
+            FROM locations l
+            LEFT JOIN (
+                SELECT location_id,
+                    COUNT(*) as data_points,
+                    ROUND(AVG(CASE WHEN timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN occupancy_percent END), 1) as avg_occupancy_7d,
+                    MAX(timestamp) as last_scraping
+                FROM occupancy_history
+                GROUP BY location_id
+            ) oh_stats ON l.id = oh_stats.location_id
+            WHERE l.category = 'restaurant'
+        """
+        params = []
+        if search:
+            query += " AND (l.name LIKE %s OR l.address LIKE %s)"
+            params.extend([f'%{search}%', f'%{search}%'])
+
+        safe_sorts = {
+            'name': 'l.name', 'data_points': 'data_points',
+            'avg_occupancy_7d': 'avg_occupancy_7d', 'last_scraping': 'last_scraping'
+        }
+        sort_col = safe_sorts.get(sort_by, 'l.name')
+        sort_direction = 'DESC' if sort_dir == 'desc' else 'ASC'
+        query += f" ORDER BY {sort_col} {sort_direction}"
+
+        cursor.execute(query, params)
+        locations = cursor.fetchall()
+
+        for loc in locations:
+            if loc.get('last_scraping'):
+                loc['last_scraping'] = loc['last_scraping'].isoformat()
+
+        cursor.close()
+        return jsonify({'locations': locations, 'total': len(locations)}), 200
+    except Exception as e:
+        logger.error(f"Admin restaurants error: {e}")
+        return jsonify({'error': 'Failed to fetch restaurants'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
+@app.route('/admin/restaurants/overview', methods=['GET'])
+@admin_required
+def admin_restaurants_overview():
+    """Overview stats for restaurant scraping"""
+    conn = None
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Total restaurants
+        cursor.execute("SELECT COUNT(*) as total FROM locations WHERE category = 'restaurant'")
+        total = cursor.fetchone()['total']
+
+        # Restaurants with recent data (last 24h)
+        cursor.execute("""
+            SELECT COUNT(DISTINCT l.id) as active
+            FROM locations l
+            INNER JOIN occupancy_history oh ON l.id = oh.location_id
+            WHERE l.category = 'restaurant' AND oh.timestamp >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        """)
+        active = cursor.fetchone()['active']
+
+        # Average occupancy right now (last scraping cycle)
+        cursor.execute("""
+            SELECT ROUND(AVG(oh.occupancy_percent), 1) as avg_occupancy
+            FROM locations l
+            INNER JOIN occupancy_history oh ON l.id = oh.location_id
+            WHERE l.category = 'restaurant'
+              AND oh.timestamp >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+              AND oh.occupancy_percent IS NOT NULL
+        """)
+        avg_row = cursor.fetchone()
+        avg_occupancy = avg_row['avg_occupancy'] if avg_row else None
+
+        # Total data points
+        cursor.execute("""
+            SELECT COUNT(*) as total_data_points
+            FROM occupancy_history oh
+            INNER JOIN locations l ON oh.location_id = l.id
+            WHERE l.category = 'restaurant'
+        """)
+        total_data_points = cursor.fetchone()['total_data_points']
+
+        # Top 10 busiest restaurants right now
+        cursor.execute("""
+            SELECT l.id, l.name, l.address, l.google_maps_url, oh.occupancy_percent, oh.timestamp
+            FROM locations l
+            INNER JOIN occupancy_history oh ON l.id = oh.location_id
+            WHERE l.category = 'restaurant'
+              AND oh.timestamp = (
+                  SELECT MAX(oh2.timestamp) FROM occupancy_history oh2 WHERE oh2.location_id = l.id
+              )
+              AND oh.occupancy_percent IS NOT NULL
+            ORDER BY oh.occupancy_percent DESC
+            LIMIT 10
+        """)
+        busiest = []
+        for row in cursor.fetchall():
+            busiest.append({
+                'id': row['id'],
+                'name': row['name'],
+                'address': row['address'],
+                'google_maps_url': row.get('google_maps_url'),
+                'occupancy_percent': row['occupancy_percent'],
+                'timestamp': row['timestamp'].isoformat()
+            })
+
+        cursor.close()
+        return jsonify({
+            'total_restaurants': total,
+            'active_last_24h': active,
+            'avg_occupancy_now': avg_occupancy,
+            'total_data_points': total_data_points,
+            'busiest_now': busiest
+        }), 200
+    except Exception as e:
+        logger.error(f"Admin restaurants overview error: {e}")
+        return jsonify({'error': 'Failed to fetch restaurant overview'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
+@app.route('/admin/restaurants/<int:location_id>/analytics', methods=['GET'])
+@admin_required
+def admin_restaurant_analytics(location_id):
+    """Deep analytics for a single restaurant"""
+    conn = None
+    try:
+        days = int(request.args.get('days', 30))
+        start_date = datetime.now() - timedelta(days=days)
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Verify it's a restaurant
+        cursor.execute("SELECT id, name, address, google_maps_url FROM locations WHERE id = %s AND category = 'restaurant'", (location_id,))
+        location = cursor.fetchone()
+        if not location:
+            cursor.close()
+            return jsonify({'error': 'Restaurant not found'}), 404
+
+        # Timeline
+        cursor.execute("""
+            SELECT timestamp, occupancy_percent, usual_percent
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s
+            ORDER BY timestamp
+        """, (location_id, start_date))
+        timeline = [{'timestamp': row['timestamp'].isoformat(), 'occupancy': row['occupancy_percent'], 'usual': row['usual_percent']} for row in cursor.fetchall()]
+
+        # Heatmap: weekday x hour
+        cursor.execute("""
+            SELECT DAYOFWEEK(timestamp) as dow, HOUR(timestamp) as hour, ROUND(AVG(occupancy_percent), 1) as avg_occ
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s AND occupancy_percent IS NOT NULL
+            GROUP BY DAYOFWEEK(timestamp), HOUR(timestamp)
+        """, (location_id, start_date))
+        heatmap = {}
+        for row in cursor.fetchall():
+            dow = row['dow']
+            if dow not in heatmap:
+                heatmap[dow] = {}
+            heatmap[dow][row['hour']] = row['avg_occ']
+
+        # Peak hours
+        cursor.execute("""
+            SELECT HOUR(timestamp) as hour, ROUND(AVG(occupancy_percent), 1) as avg_occ, COUNT(*) as samples
+            FROM occupancy_history
+            WHERE location_id = %s AND timestamp >= %s AND occupancy_percent IS NOT NULL
+            GROUP BY HOUR(timestamp)
+            ORDER BY avg_occ DESC
+        """, (location_id, start_date))
+        peak_hours = [{'hour': row['hour'], 'avg_occupancy': row['avg_occ'], 'samples': row['samples']} for row in cursor.fetchall()]
+
+        cursor.close()
+        return jsonify({
+            'location': location,
+            'timeline': timeline,
+            'heatmap': heatmap,
+            'peak_hours': peak_hours
+        }), 200
+    except Exception as e:
+        logger.error(f"Admin restaurant analytics error: {e}")
+        return jsonify({'error': 'Failed to fetch restaurant analytics'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
+@app.route('/admin/restaurants/latest-scraping', methods=['GET'])
+@admin_required
+def admin_restaurants_latest_scraping():
+    """Get latest scraping results for restaurants only"""
+    conn = None
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # Get latest occupancy for each restaurant
+        cursor.execute("""
+            SELECT l.id, l.name, l.address, l.google_maps_url,
+                oh.occupancy_percent, oh.usual_percent, oh.is_live_data, oh.raw_text, oh.timestamp
+            FROM locations l
+            INNER JOIN occupancy_history oh ON l.id = oh.location_id
+            WHERE l.category = 'restaurant'
+              AND oh.timestamp = (
+                  SELECT MAX(oh2.timestamp) FROM occupancy_history oh2 WHERE oh2.location_id = l.id
+              )
+            ORDER BY l.name
+        """)
+        results = []
+        for row in cursor.fetchall():
+            results.append({
+                'id': row['id'],
+                'name': row['name'],
+                'address': row['address'],
+                'google_maps_url': row['google_maps_url'],
+                'occupancy_percent': row['occupancy_percent'],
+                'usual_percent': row['usual_percent'],
+                'is_live_data': bool(row['is_live_data']),
+                'raw_text': row['raw_text'],
+                'timestamp': row['timestamp'].isoformat()
+            })
+
+        cursor.close()
+        return jsonify({'results': results, 'total': len(results)}), 200
+    except Exception as e:
+        logger.error(f"Admin restaurants latest scraping error: {e}")
+        return jsonify({'error': 'Failed to fetch latest restaurant scraping'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
+@app.route('/admin/restaurants/scraper-locations', methods=['GET'])
+@admin_required
+def admin_restaurants_scraper_locations():
+    """Get all restaurant locations for the scraper (used by scraper to load from DB)"""
+    conn = None
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, name, google_maps_url as url FROM locations WHERE category = 'restaurant' ORDER BY name")
+        locations = cursor.fetchall()
+        cursor.close()
+        return jsonify({'locations': locations, 'total': len(locations)}), 200
+    except Exception as e:
+        logger.error(f"Admin restaurants scraper locations error: {e}")
+        return jsonify({'error': 'Failed to fetch scraper locations'}), 500
+    finally:
+        if conn and conn.is_connected():
+            conn.close()
+
+
+@app.route('/scraper/locations', methods=['GET'])
+def scraper_get_locations():
+    """Internal endpoint for scraper to fetch locations by category from DB"""
+    conn = None
+    try:
+        category = request.args.get('category', 'bar_club')
+        if category not in ('bar_club', 'restaurant'):
+            return jsonify({'error': 'Invalid category'}), 400
+
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT name, google_maps_url as url FROM locations WHERE category = %s ORDER BY name", (category,))
+        locations = cursor.fetchall()
+        cursor.close()
+        return jsonify({'locations': locations, 'total': len(locations)}), 200
+    except Exception as e:
+        logger.error(f"Scraper locations error: {e}")
         return jsonify({'error': 'Failed to fetch locations'}), 500
     finally:
         if conn and conn.is_connected():

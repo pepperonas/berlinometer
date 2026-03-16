@@ -2,11 +2,11 @@
 
 # Berlinometer
 
-**Echtzeit-Auslastungstracker für Berlins Bars und Clubs**
+**Echtzeit-Auslastungstracker für Berlins Bars, Clubs und Restaurants**
 
 [![CI](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml/badge.svg)](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.11.0-blue.svg)](https://github.com/pepperonas/berlinometer)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/pepperonas/berlinometer)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fberlinometer.de)](https://berlinometer.de)
 
 [![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -22,7 +22,7 @@
 
 ---
 
-Finde heraus, wo heute Nacht was los ist. Berlinometer scrapt Google-Maps-Auslastungsdaten für über 100 Bars und Clubs in Berlin und zeigt dir Echtzeit- sowie historische Füllstände, damit du den perfekten Spot findest.
+Finde heraus, wo heute Nacht was los ist — oder wo du heute Abend essen gehen kannst. Berlinometer scrapt Google-Maps-Auslastungsdaten für über 100 Bars/Clubs und ~3.000 Restaurants in Berlin und zeigt dir Echtzeit- sowie historische Füllstände.
 
 ## Screenshots
 
@@ -62,7 +62,8 @@ Finde heraus, wo heute Nacht was los ist. Berlinometer scrapt Google-Maps-Auslas
 
 ## Features
 
-- **Echtzeit-Scraping** - Live-Auslastungsdaten von Google Maps, automatisch alle 10-13 Min aktualisiert
+- **Echtzeit-Scraping** - Live-Auslastungsdaten von Google Maps, automatisch alle 7-12 Min (Bars) / 15-25 Min (Restaurants) aktualisiert
+- **~3.000 Restaurants** - Separates Scraping und Analytics für Berliner Restaurants, getrennt von Bars/Clubs
 - **Historische Charts** - 12h / 24h / 48h Auslastungstrends pro Location
 - **Stimmungsbarometer** - Stadtweiter Vibe-Indikator basierend auf aggregierter Auslastung
 - **3 Themes** - xD (celox.io SaaS, Default), Dark, Light
@@ -71,10 +72,10 @@ Finde heraus, wo heute Nacht was los ist. Berlinometer scrapt Google-Maps-Auslas
 - **PWA-fähig** - Auf Mobilgeräten installierbar, funktioniert offline mit gecachten Daten
 - **Entfernungssortierung** - Locations nach Entfernung vom aktuellen Standort sortieren
 - **Gespeicherte Locations** - Lieblingsspots bookmarken und umsortieren
-- **Admin Panel** - Analytics, User Management, Scraping Health, Map Click Analytics
+- **Admin Panel** - Analytics, User Management, Scraping Health, Map Click Analytics, Restaurant Management
 - **Rollen-System** - User, Admin, Location-Owner mit B2B-Zugang
 - **Location Analytics** - Heatmaps, Timelines, Peak Hours, Location-Vergleich mit Autocomplete-Dropdown
-- **Optimierte Location-Auswahl** - Autocomplete-Dropdown mit Adressanzeige, suchbarer Location-Vergleich ohne Limit
+- **Restaurant Analytics** - Separate Detailanalysen für Restaurants mit Timeline, Heatmap, Peak Hours und Vergleich
 
 ---
 
@@ -151,8 +152,11 @@ berlinometer/
 │   ├── vite.config.berlinometer.js
 │   └── package.json
 ├── server.py                      # Python Flask Backend
-├── ecosystem.config.js            # PM2-Konfiguration
-├── generate-occupancy-chart.sh    # Auslastungs-Chart Generator
+├── ecosystem.config.js            # PM2-Konfiguration (API + Restaurant-Scraper)
+├── scraper-loop.sh                # Scraper-Loop für Bars/Clubs (PM2)
+├── scraper-loop-restaurants.sh    # Scraper-Loop für Restaurants (PM2)
+├── run_scraper.sh                 # Scraper-Wrapper Bars/Clubs
+├── run_scraper_restaurants.sh     # Scraper-Wrapper Restaurants
 ├── .github/workflows/ci.yml      # GitHub Actions CI
 ├── README.md                      # Diese Datei
 └── README_EN.md                   # Englische Version
@@ -282,17 +286,19 @@ Neue Übersetzungen hinzufügen:
 1. Schlüssel in `translations.de` und `translations.en` in `LanguageContext.jsx` eintragen
 2. Im Component über `t('schlüssel')` verwenden
 
-### Admin Panel (v2.11.0)
+### Admin Panel (v3.0.0)
 
 Das Admin Panel (`/admin`) bietet rollenbasierten Zugang für Admins und Location-Owner.
 
 **Tabs:**
 - **Overview** - Metriken-Dashboard mit Auslastungs-, User- und Scraping-Stats
-- **Location Analytics** - Detaillierte Auslastungsanalysen pro Location
+- **Location Analytics** - Detaillierte Auslastungsanalysen pro Bar/Club
 - **Users** - Benutzerverwaltung mit Rollen und Paginierung (nur Admin)
 - **Scraping Health** - Monitoring des Scraping-Systems
 - **Map Clicks** - Analyse der Karteninteraktionen
-- **Locations** - Location Management: Alle Locations aus der DB mit Datenpunkten und letztem Scraping, neue Locations hinzufügen (nur Admin)
+- **Locations** - Location Management: Alle Bars/Clubs aus der DB (nur Admin)
+- **Restaurants** - Restaurant-Übersicht: Metriken, Top 10, sortierbare Tabelle aller ~3.000 Restaurants (nur Admin)
+- **Restaurant Analytics** - Detailanalyse pro Restaurant mit Timeline, Heatmap, Peak Hours, Vergleich (nur Admin)
 
 **Location Analytics - Komponenten:**
 
@@ -378,8 +384,13 @@ Das Python-Flask-Backend läuft auf Port 5044.
 | `POST` | `/admin/users/<id>/assign-locations` | Admin: Location-Owner zuweisen |
 | `GET` | `/admin/scraping/health` | Admin: Scraping-Monitoring |
 | `GET` | `/admin/map-clicks/analytics` | Admin: Map Click Analytics |
-| `POST` | `/admin/locations/add` | Admin: Neue Location hinzufügen (DB + CSV) |
+| `POST` | `/admin/locations/add` | Admin: Neue Location hinzufügen (mit Kategorie) |
 | `GET` | `/admin/my-locations` | Location-Owner: Eigene Locations |
+| `GET` | `/admin/restaurants` | Admin: Alle Restaurants mit Stats |
+| `GET` | `/admin/restaurants/overview` | Admin: Restaurant-Übersicht (Gesamt, Aktive, Top 10) |
+| `GET` | `/admin/restaurants/<id>/analytics` | Admin: Restaurant-Detailanalyse |
+| `GET` | `/admin/restaurants/latest-scraping` | Admin: Letzte Restaurant-Scraping-Ergebnisse |
+| `GET` | `/scraper/locations?category=...` | Interner Endpoint: Locations nach Kategorie für Scraper |
 
 ---
 
@@ -391,9 +402,13 @@ Der Scraper nutzt Playwright (Headless Chromium), um Google-Maps-Auslastungsdate
 
 | Komponente | Funktion |
 |------------|----------|
-| `schedule_scraper.sh` | Scheduling mit randomisierten Intervallen |
-| `run_scraper.sh` | Orchestriert den Scraping-Prozess |
-| `gmaps-scraper-fast-robust.py` | Hauptscraper mit Playwright |
+| `scraper-loop.sh` | PM2-Loop für Bars/Clubs (7-12 Min Intervall) |
+| `scraper-loop-restaurants.sh` | PM2-Loop für Restaurants (15-25 Min Intervall) |
+| `run_scraper.sh` | Orchestriert Bar/Club-Scraping |
+| `run_scraper_restaurants.sh` | Orchestriert Restaurant-Scraping |
+| `gmaps-scraper-fast-robust.py` | Hauptscraper mit `--category` Parameter |
+| `collect-restaurant-urls.py` | Sammelt Restaurant-URLs aus Google Maps |
+| `collect-restaurants-batch.py` | Batch-Sammler für große Mengen Restaurant-URLs |
 | `process_json_to_db.py` | JSON-zu-Datenbank Import |
 
 ### Scraping-Pipeline
@@ -625,7 +640,22 @@ VALID_PATTERNS = [
 
 #### MySQL Stored Procedure
 
-Die Datenbank nutzt eine Stored Procedure `insert_occupancy_data`, die Locations automatisch anlegt (INSERT ... ON DUPLICATE KEY UPDATE) und Auslastungsdaten in die `occupancy_history`-Tabelle schreibt.
+Die Datenbank nutzt eine Stored Procedure `insert_occupancy_data` (8 Parameter inkl. `p_category`), die Locations automatisch anlegt (INSERT ... ON DUPLICATE KEY UPDATE) und Auslastungsdaten in die `occupancy_history`-Tabelle schreibt.
+
+#### Kategorien
+
+Locations haben eine `category`-Spalte (`bar_club` oder `restaurant`). Der Scraper liest Locations gefiltert nach Kategorie aus der DB und schreibt die Kategorie in die JSON-Ausgabe. Bars/Clubs und Restaurants werden komplett getrennt verarbeitet.
+
+#### Performance-Indizes
+
+Für die `occupancy_history`-Tabelle (1M+ Zeilen) sind optimierte Composite-Indizes angelegt:
+
+| Index | Spalten | Zweck |
+|-------|---------|-------|
+| `idx_oh_loc_ts_occ` | location_id, timestamp, occupancy_percent | Covering Index für Timeline/Heatmap/Peak Queries |
+| `idx_oh_loc_occ` | location_id, occupancy_percent | GROUP BY Aggregationen |
+| `idx_loc_category_name` | category, name | Category-Filter + Name-Sort |
+| `idx_mc_location` | location_id | Map Clicks per Location |
 
 ### Performance-Metriken
 

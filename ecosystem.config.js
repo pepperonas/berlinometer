@@ -29,6 +29,20 @@ module.exports = {
       out_file: './logs/pm2-out.log',
       merge_logs: true,
       time: true
+    },
+    {
+      name: 'berlinometer-scraper-restaurants',
+      script: '/var/www/html/popular-times/scraper-loop-restaurants.sh',
+      interpreter: '/bin/bash',
+      cwd: '/var/www/html/popular-times',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '2G',
+      error_file: './logs/scraper-restaurants-error.log',
+      out_file: './logs/scraper-restaurants-out.log',
+      merge_logs: true,
+      time: true
     }
   ]
 };

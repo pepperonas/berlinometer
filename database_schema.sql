@@ -8,9 +8,11 @@ CREATE TABLE IF NOT EXISTS locations (
     google_maps_url VARCHAR(500) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     address VARCHAR(500),
+    category VARCHAR(20) NOT NULL DEFAULT 'bar_club',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    INDEX idx_url (google_maps_url)
+    INDEX idx_url (google_maps_url),
+    INDEX idx_locations_category (category)
 );
 
 -- Tabelle für Auslastungs-Historie
@@ -51,22 +53,24 @@ CREATE PROCEDURE insert_occupancy_data(
     IN p_occupancy_percent INT,
     IN p_usual_percent INT,
     IN p_is_live_data BOOLEAN,
-    IN p_raw_text TEXT
+    IN p_raw_text TEXT,
+    IN p_category VARCHAR(20)
 )
 BEGIN
     DECLARE v_location_id INT;
-    
+
     -- Location einfügen oder aktualisieren
-    INSERT INTO locations (google_maps_url, name, address)
-    VALUES (p_url, p_name, p_address)
-    ON DUPLICATE KEY UPDATE 
+    INSERT INTO locations (google_maps_url, name, address, category)
+    VALUES (p_url, p_name, p_address, COALESCE(p_category, 'bar_club'))
+    ON DUPLICATE KEY UPDATE
         name = VALUES(name),
         address = COALESCE(VALUES(address), address),
+        category = COALESCE(VALUES(category), category),
         updated_at = CURRENT_TIMESTAMP;
-    
+
     -- Location ID abrufen
     SELECT id INTO v_location_id FROM locations WHERE google_maps_url = p_url;
-    
+
     -- Historie-Eintrag hinzufügen
     INSERT INTO occupancy_history (location_id, occupancy_percent, usual_percent, is_live_data, raw_text)
     VALUES (v_location_id, p_occupancy_percent, p_usual_percent, p_is_live_data, p_raw_text);

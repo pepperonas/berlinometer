@@ -6,6 +6,8 @@ import UserManagement from './UserManagement'
 import ScrapingHealth from './ScrapingHealth'
 import MapClickAnalytics from './MapClickAnalytics'
 import LocationManagement from './LocationManagement'
+import RestaurantManagement from './RestaurantManagement'
+import RestaurantAnalytics from './RestaurantAnalytics'
 import '../../styles/admin.css'
 
 function AdminDashboard({ user, token }) {
@@ -26,6 +28,10 @@ function AdminDashboard({ user, token }) {
         return <MapClickAnalytics token={token} isAdmin={isAdmin} />
       case 'location-management':
         return isAdmin ? <LocationManagement token={token} /> : null
+      case 'restaurants':
+        return isAdmin ? <RestaurantManagement token={token} /> : null
+      case 'restaurant-analytics':
+        return isAdmin ? <RestaurantAnalytics token={token} /> : null
       default:
         return <AdminOverview token={token} isAdmin={isAdmin} />
     }

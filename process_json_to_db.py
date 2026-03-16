@@ -85,7 +85,7 @@ def save_to_database(result, db_pool):
             if usual_match:
                 usual_percent = int(usual_match.group(1))
         
-        # Stored Procedure call with correct 7 parameters
+        # Stored Procedure call with 8 parameters (incl. category)
         cursor.callproc('insert_occupancy_data', [
             result.get('url', ''),                    # p_url
             location_name,                            # p_name
@@ -93,7 +93,8 @@ def save_to_database(result, db_pool):
             occupancy_percent,                        # p_occupancy_percent
             usual_percent,                            # p_usual_percent
             is_live_data,                             # p_is_live_data
-            live_occupancy                            # p_raw_text
+            live_occupancy,                           # p_raw_text
+            result.get('category', 'bar_club')        # p_category
         ])
         
         conn.commit()

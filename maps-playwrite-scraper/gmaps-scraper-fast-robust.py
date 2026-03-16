@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import asyncio
 import csv
 import json
@@ -10,7 +11,12 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
+import mysql.connector
+from dotenv import load_dotenv
 from playwright.async_api import async_playwright
+
+# Load .env from parent directory
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env'))
 
 
 async def scrape_live_occupancy(page, url, location_name_from_csv=None, semaphore=None):
@@ -657,13 +663,47 @@ def extract_opening_hours_from_content(content: str) -> Optional[str]:
 	return None
 
 
+def load_locations_from_db(category='bar_club'):
+	"""
+	Lädt Location-Daten aus der MySQL-Datenbank, gefiltert nach Kategorie.
+	"""
+	try:
+		db_config = {
+			'host': os.getenv('MYSQL_HOST', 'localhost'),
+			'user': os.getenv('MYSQL_USER', 'root'),
+			'password': os.getenv('MYSQL_PASSWORD', ''),
+			'database': os.getenv('MYSQL_DATABASE', 'popular_times_db'),
+			'port': int(os.getenv('MYSQL_PORT', '3306'))
+		}
+		conn = mysql.connector.connect(**db_config)
+		cursor = conn.cursor(dictionary=True)
+		cursor.execute(
+			"SELECT name, google_maps_url as url FROM locations WHERE category = %s ORDER BY name",
+			(category,)
+		)
+		locations = cursor.fetchall()
+		cursor.close()
+		conn.close()
+
+		if locations:
+			print(f"📄 {len(locations)} {category}-Locations aus Datenbank geladen")
+			return locations
+		else:
+			print(f"❌ Keine {category}-Locations in Datenbank gefunden")
+			return None
+
+	except Exception as e:
+		print(f"❌ Fehler beim Laden aus Datenbank: {e}")
+		print("⚠️  Fallback auf CSV...")
+		return load_locations_from_csv()
+
+
 def load_locations_from_csv():
 	"""
-	Lädt Location-Daten aus ../default-locations.csv mit neuer 3-Spalten-Struktur
+	Fallback: Lädt Location-Daten aus ../default-locations.csv
 	"""
-	# Pfad zur CSV-Datei im übergeordneten Verzeichnis
 	csv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'default-locations.csv')
-	
+
 	if not os.path.exists(csv_path):
 		print(f"❌ default-locations.csv nicht gefunden unter: {csv_path}")
 		return None
@@ -672,26 +712,19 @@ def load_locations_from_csv():
 		locations = []
 		with open(csv_path, 'r', encoding='utf-8') as f:
 			csv_reader = csv.reader(f, delimiter=';')
-
-			# Header überspringen
 			next(csv_reader, None)
 
-			for line_num, row in enumerate(csv_reader, 2):  # Start bei 2 wegen Header
+			for line_num, row in enumerate(csv_reader, 2):
 				if len(row) >= 3:
 					aktiv = row[0].strip().strip('"')
 					name = row[1].strip().strip('"')
 					url = row[2].strip().strip('"')
 
-					# Nur aktive Locations (Aktiv = "1") laden
 					if aktiv == "1" and name and url and url.startswith('https://'):
 						locations.append({
 							'name': name,
 							'url': url
 						})
-					elif aktiv != "1" and aktiv != "0":
-						print(f"⚠️  Zeile {line_num}: Ungültiger Aktiv-Status '{aktiv}', erwartet '1' oder '0': {row}")
-				else:
-					print(f"⚠️  Zeile {line_num}: Nicht genügend Spalten (erwartet 3): {row}")
 
 		if locations:
 			print(f"📄 {len(locations)} aktive Locations aus default-locations.csv geladen")
@@ -891,7 +924,7 @@ async def process_batch_concurrent(locations_batch: List[Dict], context, semapho
 				pass
 
 
-async def process_locations(locations):
+async def process_locations(locations, category='bar_club'):
 	"""
 	Verarbeitet alle Locations mit optimierter Concurrent-Strategie
 	"""
@@ -1020,18 +1053,23 @@ async def process_locations(locations):
 	
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	
+	# Kategorie in jedes Result einfügen
+	for result in results:
+		result['category'] = category
+
 	# Webapp-kompatibles Format
 	webapp_data = {
 		"timestamp": datetime.now().isoformat(),
 		"total_locations": final_data['metadata']['total_locations'],
 		"successful_scrapes": final_data['metadata']['successful_requests'],
-		"search_params": {"source": "cronjob", "type": "default_locations"},
+		"search_params": {"source": "cronjob", "type": "default_locations", "category": category},
 		"results": final_data['locations']
 	}
-	
+
 	# Speichere beide Formate
 	# 1. Webapp-kompatible minifizierte JSON
-	webapp_filename = f"scraping_{timestamp}.json"
+	category_prefix = "restaurants_" if category == "restaurant" else ""
+	webapp_filename = f"scraping_{category_prefix}{timestamp}.json"
 	webapp_filepath = os.path.join(scraping_dir, webapp_filename)
 	with open(webapp_filepath, 'w', encoding='utf-8') as f:
 		json.dump(webapp_data, f, ensure_ascii=False, separators=(',', ':'))
@@ -1080,13 +1118,23 @@ async def process_locations(locations):
 
 
 async def main():
-	print("🗺️  Google Maps Live-Auslastung Scraper")
+	parser = argparse.ArgumentParser(description='Google Maps Live-Auslastung Scraper')
+	parser.add_argument('--category', default='bar_club', choices=['bar_club', 'restaurant'],
+	                    help='Kategorie der zu scrapenden Locations (default: bar_club)')
+	parser.add_argument('--csv-fallback', action='store_true',
+	                    help='CSV statt Datenbank verwenden')
+	args = parser.parse_args()
+
+	print(f"🗺️  Google Maps Live-Auslastung Scraper [{args.category}]")
 	print("=" * 50)
 
-	locations = load_locations_from_csv()
+	if args.csv_fallback:
+		locations = load_locations_from_csv()
+	else:
+		locations = load_locations_from_db(args.category)
 
 	if locations:
-		await process_locations(locations)
+		await process_locations(locations, category=args.category)
 	else:
 		print("Keine Locations zu verarbeiten.")
 

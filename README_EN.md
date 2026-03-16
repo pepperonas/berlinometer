@@ -2,11 +2,11 @@
 
 # Berlinometer
 
-**Real-time occupancy tracker for Berlin's bars and clubs**
+**Real-time occupancy tracker for Berlin's bars, clubs and restaurants**
 
 [![CI](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml/badge.svg)](https://github.com/pepperonas/berlinometer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-2.11.0-blue.svg)](https://github.com/pepperonas/berlinometer)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/pepperonas/berlinometer)
 [![Website](https://img.shields.io/website?url=https%3A%2F%2Fberlinometer.de)](https://berlinometer.de)
 
 [![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white)](https://react.dev)
@@ -22,7 +22,7 @@
 
 ---
 
-Find out where the party is tonight. Berlinometer scrapes Google Maps occupancy data for 100+ bars and clubs across Berlin, showing you real-time and historical crowd levels so you can pick the perfect spot.
+Find out where the party is tonight — or where to grab dinner. Berlinometer scrapes Google Maps occupancy data for 100+ bars/clubs and ~3,000 restaurants across Berlin, showing you real-time and historical crowd levels.
 
 ## Screenshots
 
